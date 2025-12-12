@@ -1,7 +1,5 @@
 package forge.game.ability.effects;
 
-import java.util.Map;
-
 import com.google.common.collect.Maps;
 
 import forge.game.Game;
