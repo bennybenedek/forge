@@ -18,6 +18,7 @@ import java.util.List;
 class BlightEffect extends SpellAbilityEffect {
     @Override
     protected String getStackDescription(SpellAbility sa) {
+        final Card card = sa.getHostCard();
 		final StringBuilder sb = new StringBuilder();
 
         List<Player> tgt = getTargetPlayers(sa);
