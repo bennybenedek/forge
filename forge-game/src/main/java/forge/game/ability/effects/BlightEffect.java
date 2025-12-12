@@ -5,12 +5,15 @@ import com.google.common.collect.Maps;
 import forge.game.Game;
 import forge.game.GameEntityCounterTable;
 import forge.game.ability.AbilityUtils;
+import forge.game.ability.SpellAbilityEffect;
 import forge.game.card.Card;
 import forge.game.card.CounterEnumType;
 import forge.game.player.Player;
 import forge.game.spellability.SpellAbility;
 import forge.util.Lang;
 import forge.util.Localizer;
+
+import java.util.List;
 
 class BlightEffect extends SpellAbilityEffect {
     @Override
