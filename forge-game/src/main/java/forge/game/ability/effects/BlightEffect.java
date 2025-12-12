@@ -46,7 +46,7 @@ class BlightEffect extends SpellAbilityEffect {
 				continue;
 			}
 			
-			tgt.addCounter(CounterEnumType.M1M1, amount, placer, table)
+			tgt.addCounter(CounterEnumType.M1M1, amount, p, table);
 		}
 
         table.replaceCounterEffect(game, sa, true);
