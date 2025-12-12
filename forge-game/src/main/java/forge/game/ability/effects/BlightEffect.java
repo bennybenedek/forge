@@ -15,7 +15,7 @@ import forge.util.Localizer;
 
 import java.util.List;
 
-class BlightEffect extends SpellAbilityEffect {
+public class BlightEffect extends SpellAbilityEffect {
     @Override
     protected String getStackDescription(SpellAbility sa) {
         final Card card = sa.getHostCard();
