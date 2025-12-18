@@ -80,7 +80,7 @@ public class RogueWinLoseController {
             // Run is complete - mark as won
             currentRun.setRunWon(true);
             RogueIO.saveRun(currentRun);
-            view.showMessage("Congratulations! You have completed the run!", "Victory", FSkinProp.IMG_RARE_TROPHY);
+            view.showMessage("Congratulations! You have completed the run!", "Victory", FSkinProp.ICO_QUEST_CHARM);
             return; // Skip card rewards and navigation
         }
 
