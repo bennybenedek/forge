@@ -33,6 +33,7 @@ public class CardRewardDialog {
     private static final int CARD_SPACING = 15;
     private static final int PADDING = 30;
 
+    private final String title;
     private final List<PaperCard> cards;
     private final int maxSelections;
     private final int goldReward;
@@ -55,6 +56,7 @@ public class CardRewardDialog {
      * @param echoReward Amount of echoes earned
      */
     public CardRewardDialog(String title, List<PaperCard> cards, int minSelections, int maxSelections, int goldReward, int echoReward) {
+        this.title = title;
         this.cards = cards;
         this.maxSelections = maxSelections;
         this.goldReward = goldReward;
@@ -110,10 +112,7 @@ public class CardRewardDialog {
     }
 
     private String getRewardsText() {
-        if (goldReward > 0 || echoReward > 0) {
-            return String.format("Victory Rewards: %d Gold, %d Echoes", goldReward, echoReward);
-        }
-        return "Victory!";
+        return String.format("Victory! %s.", title);
     }
 
     /**

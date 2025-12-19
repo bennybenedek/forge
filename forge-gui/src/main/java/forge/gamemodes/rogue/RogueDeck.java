@@ -5,6 +5,7 @@ import forge.deck.Deck;
 import forge.item.PaperCard;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * Represents a Rogue Deck configuration: a Commander with a starting deck
@@ -44,14 +45,18 @@ public class RogueDeck {
     /**
      * Draw random cards from the reward pool for post-match rewards.
      * @param count Number of cards to draw
+     * @param filter Optional predicate to filter cards (null for unfiltered)
      * @return List of random cards (may be less than count if pool is small)
      */
-    public List<PaperCard> drawRewardOptions(int count) {
+    public List<PaperCard> drawRewardOptions(int count, Predicate<PaperCard> filter) {
         if (rewardPool == null || rewardPool.isEmpty()) {
             return new ArrayList<>();
         }
 
-        List<PaperCard> allCards = rewardPool.toFlatList();
+        // Use filtered pool if filter provided, otherwise use full pool
+        CardPool poolToUse = (filter != null) ? rewardPool.getFilteredPool(filter) : rewardPool;
+
+        List<PaperCard> allCards = poolToUse.toFlatList();
         if (allCards.size() <= count) {
             return new ArrayList<>(allCards);
         }

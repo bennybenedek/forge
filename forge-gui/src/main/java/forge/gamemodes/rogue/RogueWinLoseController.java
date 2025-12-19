@@ -95,8 +95,9 @@ public class RogueWinLoseController {
                 currentRun.setCurrentGold(currentRun.getCurrentGold() + goldReward);
                 currentRun.setCurrentEchoes(currentRun.getCurrentEchoes() + echoReward);
 
-                // Award card rewards
-                awardCardRewards(currentNode);
+                // Award card rewards (with Elite flag for mythic rewards)
+                boolean isElite = planeboundNode.getPlaneboundType() == RoguePlaneboundType.ELITE;
+                awardCardRewards(currentNode, isElite);
             }
         }
 
@@ -124,7 +125,7 @@ public class RogueWinLoseController {
         }
     }
 
-    private void awardCardRewards(RoguePathNode currentNode) {
+    private void awardCardRewards(RoguePathNode currentNode, boolean isElite) {
         // Get the rogue deck data to draw rewards from
         RogueDeck rogueDeck = currentRun.getSelectedRogueDeck();
 
@@ -133,8 +134,8 @@ public class RogueWinLoseController {
             return;
         }
 
-        // Draw 7 random cards from reward pool
-        List<PaperCard> rewardOptions = rogueDeck.drawRewardOptions(7);
+        // Draw 7 random cards from reward pool (always exclude mythics for first screen)
+        List<PaperCard> rewardOptions = rogueDeck.drawRewardOptions(7, forge.item.PaperCardPredicates.IS_MYTHIC_RARE.negate());
 
         if (rewardOptions.isEmpty()) {
             view.showMessage("No more cards available in reward pool.", "No Rewards", FSkinProp.ADV_CLR_ACTIVE);
@@ -160,6 +161,31 @@ public class RogueWinLoseController {
             echoReward
         );
 
+        // If Elite opponent, show second reward screen with mythic cards
+        if (isElite) {
+            List<PaperCard> mythicOptions = rogueDeck.drawRewardOptions(3, forge.item.PaperCardPredicates.IS_MYTHIC_RARE);
+
+            if (!mythicOptions.isEmpty()) {
+                // Show mythic card selection dialog
+                List<PaperCard> chosenMythics = view.showCardRewardDialog(
+                    "Choose Your Mythic Reward",
+                    mythicOptions,
+                    0,  // min selection (optional)
+                    1,  // max selection
+                    0,  // no additional gold
+                    0   // no additional echoes
+                );
+
+                if (chosenMythics != null && !chosenMythics.isEmpty()) {
+                    // Add chosen mythic to deck
+                    chosenCards.addAll(chosenMythics);
+                }
+
+                // Remove all mythic options from pool
+                rogueDeck.removeFromRewardPool(mythicOptions);
+            }
+        }
+
         if (chosenCards != null && !chosenCards.isEmpty()) {
             // Add chosen cards to the run's current deck
             Deck currentDeck = currentRun.getCurrentDeck();
@@ -169,10 +195,15 @@ public class RogueWinLoseController {
 
             // Show confirmation
             view.showCards("Cards Added to Your Deck", chosenCards);
-
-            // Remove reward options (both chosen and unchosen) from the reward pool
-            rogueDeck.removeFromRewardPool(rewardOptions);
         }
+
+        if (currentNode instanceof NodePlanebound planeboundNode) {
+            view.showMessage("You won " + planeboundNode.getGoldReward() +" Gold.", "Gold Reward", FSkinProp.ICO_QUEST_COIN);
+            view.showMessage("You won " + planeboundNode.getEchoReward() +" Echoes.", "Echo Reward", FSkinProp.ICO_QUEST_GOLD);
+        }
+
+        // Remove reward options (both chosen and unchosen) from the reward pool
+        rogueDeck.removeFromRewardPool(rewardOptions);
     }
 
     private void handleDefeat() {
