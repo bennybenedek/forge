@@ -43,11 +43,20 @@ public class RogueWinLose extends ControlWinLose {
      */
     @Override
     public final boolean populateCustomPanel() {
+        System.out.println("DEBUG: RogueWinLose.populateCustomPanel() called");
         if (controller == null) {
             System.err.println("ERROR: Controller is null in populateCustomPanel!");
             return false;
         }
-        controller.showRewards();
+        System.out.println("DEBUG: Controller is not null, calling showRewards()");
+        try {
+            controller.showRewards();
+            System.out.println("DEBUG: showRewards() completed without exception");
+        } catch (Exception e) {
+            System.err.println("ERROR: Exception in showRewards()!");
+            e.printStackTrace();
+            return false;
+        }
         return true;
     }
 
