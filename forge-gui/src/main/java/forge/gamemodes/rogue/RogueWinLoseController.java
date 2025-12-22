@@ -53,12 +53,17 @@ public class RogueWinLoseController {
         view.showRewards(() -> {
             System.out.println("DEBUG: Inside showRewards runnable - START");
 
-            // Note: Removed matchIsNotOver check because if we're showing win/lose screen,
-            // the match is effectively over (even if game state hasn't fully updated yet).
-            // This fixes a timing issue where on some machines the win/lose screen shows
-            // before isMatchOver() returns true.
+            // Re-check if player won, as game state might have updated since constructor
+            final LobbyPlayer humanLobbyPlayer = GamePlayerUtil.getGuiPlayer();
+            boolean playerWon = lastGame.isMatchWonBy(humanLobbyPlayer);
 
-            if (wonMatch) {
+            System.out.println("DEBUG: Re-checking win condition...");
+            System.out.println("DEBUG: wonMatch (from constructor) = " + wonMatch);
+            System.out.println("DEBUG: playerWon (re-checked) = " + playerWon);
+            System.out.println("DEBUG: isMatchOver (re-checked) = " + lastGame.isMatchOver());
+
+            // Use the re-checked value (game state should be updated by now)
+            if (playerWon) {
                 System.out.println("DEBUG: Player won - calling handleVictory()");
                 handleVictory();
             } else {
