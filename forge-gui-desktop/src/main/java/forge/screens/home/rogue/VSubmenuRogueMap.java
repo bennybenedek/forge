@@ -4,10 +4,11 @@ import forge.gamemodes.rogue.RogueRun;
 import forge.gui.framework.DragCell;
 import forge.gui.framework.DragTab;
 import forge.gui.framework.EDocID;
+import forge.localinstance.skin.FSkinProp;
 import forge.screens.home.EMenuGroup;
 import forge.screens.home.IVSubmenu;
-import forge.screens.home.StartButton;
 import forge.screens.home.VHomeUI;
+import forge.toolbox.FButton;
 import forge.toolbox.FLabel;
 import forge.toolbox.FScrollPane;
 import forge.toolbox.FSkin;
@@ -45,16 +46,22 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
     private final PathVisualizerPanel pathVisualizer = new PathVisualizerPanel();
     private final FScrollPane scrollPathDisplay;
 
-    private final StartButton btnEnterNode = new StartButton();
+    private final FButton btnEnterNode;
+    private final FButton btnEditDeck;
 
     VSubmenuRogueMap() {
         lblTitle.setBackground(FSkin.getColor(FSkin.Colors.CLR_THEME2));
 
+        // Setup buttons with icons
+        btnEditDeck = new FButton("Edit Rogue Deck");
+        btnEditDeck.setIcon(FSkin.getIcon(FSkinProp.ICO_CARD_IMAGE));
+
+        btnEnterNode = new FButton("Enter Node");
+        btnEnterNode.setIcon(FSkin.getIcon(FSkinProp.ICO_OPEN));
+
         // Setup scroll pane for path visualizer
         scrollPathDisplay = new FScrollPane(pathVisualizer, true);
         scrollPathDisplay.setOpaque(false);
-
-        btnEnterNode.setText("Enter Node");
     }
 
     /**
@@ -93,7 +100,8 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
         VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(lblTitle, "w 98%!, h 30px!, gap 1% 0 15px 15px");
         VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(lblLife, "ax center, gap 0 0 10px 10px");
         VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(scrollPathDisplay, "w 96%!, gap 2% 2% 0 0, pushy, growy");
-        VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(btnEnterNode, "w 96%!, h 40px!, ax center, gap 2% 2% 20px 20px");
+        VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(btnEditDeck, "w 30%!, h 40px!, ax center, gap 0 2% 10px 20px, split 2");
+        VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(btnEnterNode, "w 30%!, h 40px!");
 
         VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().repaintSelf();
         VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().revalidate();
@@ -101,6 +109,10 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
 
     public JButton getBtnEnterNode() {
         return btnEnterNode;
+    }
+
+    public JButton getBtnEditDeck() {
+        return btnEditDeck;
     }
 
     public PathVisualizerPanel getPathVisualizer() {

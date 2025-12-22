@@ -187,11 +187,8 @@ public class RogueWinLoseController {
         }
 
         if (chosenCards != null && !chosenCards.isEmpty()) {
-            // Add chosen cards to the run's current deck
-            Deck currentDeck = currentRun.getCurrentDeck();
-            for (PaperCard card : chosenCards) {
-                currentDeck.getMain().add(card);
-            }
+            // Add chosen cards to the run's current deck and update counter
+            currentRun.addCardsToRun(chosenCards);
 
             // Show confirmation
             view.showCards("Cards Added to Your Deck", chosenCards);

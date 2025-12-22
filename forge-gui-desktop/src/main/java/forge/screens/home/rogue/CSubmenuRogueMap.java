@@ -11,10 +11,14 @@ import forge.gamemodes.rogue.*;
 import forge.gui.GuiBase;
 import forge.gui.SOverlayUtils;
 import forge.gui.framework.EDocID;
+import forge.gui.framework.FScreen;
 import forge.gui.framework.ICDoc;
 import forge.item.PaperCard;
 import forge.localinstance.properties.ForgeConstants;
 import forge.player.GamePlayerUtil;
+import forge.Singletons;
+import forge.screens.deckeditor.CDeckEditorUI;
+import forge.screens.deckeditor.controllers.CEditorRogue;
 import forge.screens.home.CHomeUI;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -33,6 +37,7 @@ public enum CSubmenuRogueMap implements ICDoc {
     SINGLETON_INSTANCE;
 
     private final ActionListener actEnterNode = arg0 -> enterNode();
+    private final ActionListener actEditDeck = arg0 -> editDeck();
     private final VSubmenuRogueMap view = VSubmenuRogueMap.SINGLETON_INSTANCE;
 
     // Test run data (for MVP - will be replaced with proper loading later)
@@ -58,6 +63,7 @@ public enum CSubmenuRogueMap implements ICDoc {
     @Override
     public void initialize() {
         view.getBtnEnterNode().addActionListener(actEnterNode);
+        view.getBtnEditDeck().addActionListener(actEditDeck);
     }
 
     private void updateView() {
@@ -208,5 +214,22 @@ public enum CSubmenuRogueMap implements ICDoc {
 
     public void setCurrentRun(RogueRun run) {
         this.currentRun = run;
+    }
+
+    private void editDeck() {
+        if (currentRun == null) {
+            return;
+        }
+
+        // Create a Rogue deck editor
+        CEditorRogue rogueEditor = new CEditorRogue(
+            currentRun,
+            FScreen.DECK_EDITOR_CONSTRUCTED,
+            CDeckEditorUI.SINGLETON_INSTANCE.getCDetailPicture()
+        );
+
+        // Open the deck editor
+        CDeckEditorUI.SINGLETON_INSTANCE.setEditorController(rogueEditor);
+        Singletons.getControl().setCurrentScreen(FScreen.DECK_EDITOR_CONSTRUCTED);
     }
 }

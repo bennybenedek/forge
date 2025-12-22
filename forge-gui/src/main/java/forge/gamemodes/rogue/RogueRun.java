@@ -38,6 +38,7 @@ public class RogueRun {
     private int completedMatches;          // Number of completed matches
     private int matchesWon;                // Win counter
     private int matchesLost;               // Loss counter
+    private int cardsAddedCount;           // Count of cards added as rewards (for removal limits)
 
     // Transient (runtime only, not serialized)
     @XStreamOmitField
@@ -55,6 +56,7 @@ public class RogueRun {
         this.completedMatches = 0;
         this.matchesWon = 0;
         this.matchesLost = 0;
+        this.cardsAddedCount = 0;
         stamp();
     }
 
@@ -156,6 +158,7 @@ public class RogueRun {
             for (PaperCard card : cards) {
                 currentDeck.getMain().add(card);
             }
+            cardsAddedCount += cards.size();
         }
     }
 
@@ -284,6 +287,14 @@ public class RogueRun {
 
     public int getMatchesLost() {
         return matchesLost;
+    }
+
+    public int getCardsAddedCount() {
+        return cardsAddedCount;
+    }
+
+    public void setCardsAddedCount(int cardsAddedCount) {
+        this.cardsAddedCount = cardsAddedCount;
     }
 
     @Override
