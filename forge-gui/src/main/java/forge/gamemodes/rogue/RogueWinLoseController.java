@@ -39,25 +39,24 @@ public class RogueWinLoseController {
         System.out.println("DEBUG: matchIsNotOver = " + matchIsNotOver);
         System.out.println("DEBUG: wonMatch = " + wonMatch);
 
-        if (matchIsNotOver) {
-            view.getBtnQuit().setText(Localizer.getInstance().getMessage("lblQuit"));
+        // Note: We always assume match is over since we're in the win/lose screen
+        // But we keep the matchIsNotOver check here for button setup in case of timing issues
+        view.getBtnContinue().setVisible(false);
+        if (wonMatch) {
+            view.getBtnQuit().setText(Localizer.getInstance().getMessage("lblGreat") + "!");
         } else {
-            view.getBtnContinue().setVisible(false);
-            if (wonMatch) {
-                view.getBtnQuit().setText(Localizer.getInstance().getMessage("lblGreat") + "!");
-            } else {
-                view.getBtnQuit().setText(Localizer.getInstance().getMessage("lblOK"));
-            }
+            view.getBtnQuit().setText(Localizer.getInstance().getMessage("lblOK"));
         }
 
         System.out.println("DEBUG: About to call view.showRewards()");
         // Show rewards on a separate thread
         view.showRewards(() -> {
             System.out.println("DEBUG: Inside showRewards runnable - START");
-            if (matchIsNotOver) {
-                System.out.println("DEBUG: Match not over, returning early");
-                return; // Skip logic if match isn't over yet
-            }
+
+            // Note: Removed matchIsNotOver check because if we're showing win/lose screen,
+            // the match is effectively over (even if game state hasn't fully updated yet).
+            // This fixes a timing issue where on some machines the win/lose screen shows
+            // before isMatchOver() returns true.
 
             if (wonMatch) {
                 System.out.println("DEBUG: Player won - calling handleVictory()");
