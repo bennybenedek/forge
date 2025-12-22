@@ -22,9 +22,18 @@ public class RogueWinLose extends ControlWinLose {
      */
     public RogueWinLose(final ViewWinLose view0, final GameView game0, final CMatchUI matchUI) {
         super(view0, game0, matchUI);
+
+        System.out.println("DEBUG: RogueWinLose constructor - getting singleton instance");
+        System.out.println("DEBUG: Singleton instance: " + CSubmenuRogueMap.SINGLETON_INSTANCE);
+
         // Get current run from the map controller and pass it to the controller
+        System.out.println("DEBUG: RogueWinLose constructor - getting current run");
         var currentRun = CSubmenuRogueMap.SINGLETON_INSTANCE.getCurrentRun();
+        System.out.println("DEBUG: Current run: " + currentRun);
+
+        System.out.println("DEBUG: RogueWinLose constructor - creating RogueWinLoseController");
         controller = new RogueWinLoseController(game0, view0, currentRun);
+        System.out.println("DEBUG: RogueWinLose constructor - completed successfully");
     }
 
     /**

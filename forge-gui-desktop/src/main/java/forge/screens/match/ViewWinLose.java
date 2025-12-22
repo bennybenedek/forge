@@ -100,12 +100,21 @@ public class ViewWinLose implements IWinLoseView<FButton> {
                 control = new GauntletWinLose(this, game0, matchUI);
                 break;
             case RogueCommander:
-                control = new RogueWinLose(this, game0, matchUI);
+                try {
+                    System.out.println("DEBUG: Attempting to create RogueWinLose handler...");
+                    control = new RogueWinLose(this, game0, matchUI);
+                    System.out.println("DEBUG: RogueWinLose handler created successfully!");
+                } catch (Exception e) {
+                    System.err.println("ERROR: Failed to create RogueWinLose handler!");
+                    e.printStackTrace();
+                    // control remains null, will fall back to default
+                }
                 break;
             default: // will catch it after switch
                 break;
         }
         if (null == control) {
+            System.out.println("DEBUG: Using default ControlWinLose handler (control was null)");
             control = new ControlWinLose(this, game0, matchUI);
         }
         this.control = control;
