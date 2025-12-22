@@ -1,5 +1,8 @@
 package forge.download;
 
+import static forge.localinstance.properties.ForgeConstants.GITHUB_SNAPSHOT_URL;
+import static forge.localinstance.properties.ForgeConstants.RELEASE_URL;
+
 import com.google.common.collect.ImmutableList;
 import forge.gui.GuiBase;
 import forge.gui.download.GuiDownloadZipService;
@@ -7,10 +10,7 @@ import forge.gui.util.SOptionPane;
 import forge.localinstance.properties.ForgePreferences;
 import forge.model.FModel;
 import forge.util.*;
-import org.apache.commons.lang3.StringUtils;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.Desktop;
 import java.io.File;
 import java.io.IOException;
 import java.net.*;
@@ -21,9 +21,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static forge.localinstance.properties.ForgeConstants.GITHUB_SNAPSHOT_URL;
-import static forge.localinstance.properties.ForgeConstants.RELEASE_URL;
+import javax.swing.SwingUtilities;
+import org.apache.commons.lang3.StringUtils;
 
 public class AutoUpdater {
     private static final boolean VERSION_FROM_METADATA = true;
@@ -149,18 +148,7 @@ public class AutoUpdater {
             if (buildVersion.equals(version)) {
                 return false;
             }
-        }
-        catch (java.io.FileNotFoundException e) {
-            String message;
-            if (e.getMessage().contains("rogue-commander-latest")) {
-                message = "No Rogue Commander builds available yet.\n\nPlease wait for the build pipeline to complete, then try again.\n\nYou can check the build status at:\nhttps://github.com/Card-Forge/forge/actions";
-            } else {
-                message = "Update files not found.\n\n" + e.getMessage();
-            }
-            SOptionPane.showOptionDialog(message, localizer.getMessage("lblError"), null, ImmutableList.of("Ok"));
-            return false;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             SOptionPane.showOptionDialog(e.getMessage(), localizer.getMessage("lblError"), null, ImmutableList.of("Ok"));
             return false;
         }
