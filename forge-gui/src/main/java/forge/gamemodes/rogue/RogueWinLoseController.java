@@ -1,7 +1,6 @@
 package forge.gamemodes.rogue;
 
 import forge.LobbyPlayer;
-import forge.deck.Deck;
 import forge.game.GameView;
 import forge.game.player.PlayerView;
 import forge.gui.interfaces.IButton;
