@@ -76,6 +76,8 @@ public class RoguePathGenerator {
         int bossIndex = 0;
 
         List<RoguePathNode> nodes = new ArrayList<>();
+        int rowIndex = 0; // Track actual row index (excluding side nodes)
+
         for (int i = 0; i < nodeCount; i++) {
             RoguePlanebound roguePlanebound;
 
@@ -96,9 +98,17 @@ public class RoguePathGenerator {
             NodePlanebound node = new NodePlanebound(roguePlanebound);
 
             // Set row index for life scaling: Row 0 = 5 life, Row 1 = 10 life, etc.
-            node.setRowIndex(i);
+            node.setRowIndex(rowIndex);
+            rowIndex++; // Increment row index for plane nodes
 
             nodes.add(node);
+
+            // Add Sanctum after 2nd plane (index 1)
+            if (i == 1) {
+                NodeSanctum sanctum = new NodeSanctum(5, 2); // Heal 5, Remove 2 cards
+                nodes.add(sanctum);
+                // Note: Sanctum doesn't increment rowIndex (doesn't count as a row)
+            }
         }
 
         // Create linear path from nodes

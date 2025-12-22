@@ -143,14 +143,14 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
         }
 
         // Check if removal would exceed limit
-        int cardsAddedDuringRun = rogueRun.getCardsAddedCount();
-        if (cardsRemovedCount + nonBasicLandsToRemove > cardsAddedDuringRun) {
+        int removalCredits = rogueRun.getRemovalCredits();
+        if (cardsRemovedCount + nonBasicLandsToRemove > removalCredits) {
             // Would exceed removal limit
             Localizer localizer = Localizer.getInstance();
             String message = String.format(
-                "You can only remove %d more non-basic land cards (you've added %d cards during this run).",
-                cardsAddedDuringRun - cardsRemovedCount,
-                cardsAddedDuringRun
+                "You can only remove %d more non-basic land cards (you have %d removal credits available).",
+                removalCredits - cardsRemovedCount,
+                removalCredits
             );
             javax.swing.JOptionPane.showMessageDialog(
                 null,

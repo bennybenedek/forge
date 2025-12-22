@@ -38,7 +38,7 @@ public class RogueRun {
     private int completedMatches;          // Number of completed matches
     private int matchesWon;                // Win counter
     private int matchesLost;               // Loss counter
-    private int cardsAddedCount;           // Count of cards added as rewards (for removal limits)
+    private int removalCredits;            // Credits for removing cards from deck (from rewards and Sanctum)
 
     // Transient (runtime only, not serialized)
     @XStreamOmitField
@@ -56,7 +56,7 @@ public class RogueRun {
         this.completedMatches = 0;
         this.matchesWon = 0;
         this.matchesLost = 0;
-        this.cardsAddedCount = 0;
+        this.removalCredits = 0;
         stamp();
     }
 
@@ -158,8 +158,16 @@ public class RogueRun {
             for (PaperCard card : cards) {
                 currentDeck.getMain().add(card);
             }
-            cardsAddedCount += cards.size();
+            removalCredits += cards.size();
         }
+    }
+
+    /**
+     * Add removal credits without adding cards to deck.
+     * Used by Sanctum and other sources of free card removals.
+     */
+    public void addRemovalCredits(int count) {
+        removalCredits += count;
     }
 
     public void removeCardsFromRun(List<PaperCard> cards) {
@@ -289,12 +297,12 @@ public class RogueRun {
         return matchesLost;
     }
 
-    public int getCardsAddedCount() {
-        return cardsAddedCount;
+    public int getRemovalCredits() {
+        return removalCredits;
     }
 
-    public void setCardsAddedCount(int cardsAddedCount) {
-        this.cardsAddedCount = cardsAddedCount;
+    public void setRemovalCredits(int removalCredits) {
+        this.removalCredits = removalCredits;
     }
 
     @Override

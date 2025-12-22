@@ -81,11 +81,7 @@ public enum CSubmenuRogueMap implements ICDoc {
         if (node instanceof NodePlanebound) {
             startMatch((NodePlanebound) node);
         } else if (node instanceof NodeSanctum) {
-            // TODO: Show sanctum screen
-            NodeSanctum sanctumNode = (NodeSanctum) node;
-            currentRun.healLife(sanctumNode.getHealAmount());
-            currentRun.nextNode();
-            updateView();
+            handleSanctumNode((NodeSanctum) node);
         } else if (node instanceof NodeBazaar || node instanceof NodeEvent || node instanceof NodeChest) {
             // TODO: Implement these node types
             currentRun.nextNode();
@@ -231,5 +227,46 @@ public enum CSubmenuRogueMap implements ICDoc {
         // Open the deck editor
         CDeckEditorUI.SINGLETON_INSTANCE.setEditorController(rogueEditor);
         Singletons.getControl().setCurrentScreen(FScreen.DECK_EDITOR_CONSTRUCTED);
+    }
+
+    private void handleSanctumNode(NodeSanctum sanctumNode) {
+        if (currentRun == null) {
+            return;
+        }
+
+        // Get current and max life
+        int currentLife = currentRun.getCurrentLife();
+        int maxLife = currentRun.getStartingLife();
+        int healAmount = sanctumNode.getHealAmount();
+        int freeRemoves = sanctumNode.getFreeRemoves();
+
+        // Show Sanctum dialog
+        SanctumDialog dialog = new SanctumDialog(currentLife, maxLife, healAmount, freeRemoves);
+        SanctumDialog.SanctumChoice choice = dialog.show();
+
+        // Handle player's choice
+        switch (choice) {
+            case HEAL:
+                // Heal player to maximum life
+                currentRun.setCurrentLife(maxLife);
+                break;
+
+            case REMOVE_CARDS:
+                // Add removal credits (allows removing cards from deck later)
+                currentRun.addRemovalCredits(freeRemoves);
+                break;
+
+            case SKIP:
+                // Do nothing
+                break;
+        }
+
+        // Mark node as completed and move to next
+        sanctumNode.setCompleted(true);
+        currentRun.nextNode();
+
+        // Save run and update view
+        RogueIO.saveRun(currentRun);
+        updateView();
     }
 }
