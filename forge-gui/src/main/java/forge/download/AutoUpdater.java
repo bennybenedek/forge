@@ -133,7 +133,14 @@ public class AutoUpdater {
                 Date snapsTimestamp = simpleDateFormat.parse(FileUtil.readFileToString(url));
                 snapsBuildDate = snapsTimestamp.toString();
                 buildDate = BuildInfo.getTimestamp().toString();
-                return BuildInfo.verifyTimestamp(snapsTimestamp);
+
+                // For rogueCommander development - allow immediate updates (no 23-hour threshold)
+                Date localTimestamp = BuildInfo.getTimestamp();
+                if (localTimestamp == null || snapsTimestamp == null) {
+                    return false;
+                }
+                // Return true if remote build is ANY amount newer than local build
+                return snapsTimestamp.after(localTimestamp);
             }
             if (StringUtils.isEmpty(version) ) {
                 return false;
@@ -142,6 +149,16 @@ public class AutoUpdater {
             if (buildVersion.equals(version)) {
                 return false;
             }
+        }
+        catch (java.io.FileNotFoundException e) {
+            String message;
+            if (e.getMessage().contains("rogue-commander-latest")) {
+                message = "No Rogue Commander builds available yet.\n\nPlease wait for the build pipeline to complete, then try again.\n\nYou can check the build status at:\nhttps://github.com/Card-Forge/forge/actions";
+            } else {
+                message = "Update files not found.\n\n" + e.getMessage();
+            }
+            SOptionPane.showOptionDialog(message, localizer.getMessage("lblError"), null, ImmutableList.of("Ok"));
+            return false;
         }
         catch (Exception e) {
             SOptionPane.showOptionDialog(e.getMessage(), localizer.getMessage("lblError"), null, ImmutableList.of("Ok"));
