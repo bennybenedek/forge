@@ -100,8 +100,8 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
         VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(lblTitle, "w 98%!, h 30px!, gap 1% 0 15px 15px");
         VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(lblLife, "ax center, gap 0 0 10px 10px");
         VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(scrollPathDisplay, "w 96%!, gap 2% 2% 0 0, pushy, growy");
-        VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(btnEditDeck, "w 30%!, h 40px!, ax center, gap 0 2% 10px 20px, split 2");
-        VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(btnEnterNode, "w 30%!, h 40px!");
+        VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(btnEnterNode, "w 30%!, h 40px!, ax center, gap 0 2% 10px 20px, split 2");
+        VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(btnEditDeck, "w 30%!, h 40px!");
 
         VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().repaintSelf();
         VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().revalidate();

@@ -26,21 +26,24 @@ public class RogueWinLoseController {
         this.view = view0;
         this.currentRun = currentRun0;
 
-        // Determine if player won
+        // Determine if player won using GameOutcome (more reliable than isMatchWonBy)
         final LobbyPlayer humanLobbyPlayer = GamePlayerUtil.getGuiPlayer();
-        this.wonMatch = lastGame.isMatchWonBy(humanLobbyPlayer);
+        if (lastGame.getOutcome() != null) {
+            this.wonMatch = lastGame.getOutcome().isWinner(humanLobbyPlayer);
+        } else {
+            // Fallback if GameOutcome is null (shouldn't happen)
+            this.wonMatch = lastGame.isMatchWonBy(humanLobbyPlayer);
+        }
     }
 
     public void showRewards() {
         System.out.println("DEBUG: RogueWinLoseController.showRewards() - START");
         view.getBtnRestart().setVisible(false);
 
-        final boolean matchIsNotOver = !lastGame.isMatchOver();
-        System.out.println("DEBUG: matchIsNotOver = " + matchIsNotOver);
         System.out.println("DEBUG: wonMatch = " + wonMatch);
+        System.out.println("DEBUG: isMatchOver (for reference) = " + lastGame.isMatchOver());
 
-        // Note: We always assume match is over since we're in the win/lose screen
-        // But we keep the matchIsNotOver check here for button setup in case of timing issues
+        // Setup buttons - we're in the win/lose screen, so match is effectively over
         view.getBtnContinue().setVisible(false);
         if (wonMatch) {
             view.getBtnQuit().setText(Localizer.getInstance().getMessage("lblGreat") + "!");
@@ -53,17 +56,12 @@ public class RogueWinLoseController {
         view.showRewards(() -> {
             System.out.println("DEBUG: Inside showRewards runnable - START");
 
-            // Re-check if player won, as game state might have updated since constructor
-            final LobbyPlayer humanLobbyPlayer = GamePlayerUtil.getGuiPlayer();
-            boolean playerWon = lastGame.isMatchWonBy(humanLobbyPlayer);
+            // Use wonMatch which was calculated from GameOutcome in constructor
+            System.out.println("DEBUG: Checking win condition...");
+            System.out.println("DEBUG: wonMatch = " + wonMatch);
+            System.out.println("DEBUG: isMatchOver = " + lastGame.isMatchOver());
 
-            System.out.println("DEBUG: Re-checking win condition...");
-            System.out.println("DEBUG: wonMatch (from constructor) = " + wonMatch);
-            System.out.println("DEBUG: playerWon (re-checked) = " + playerWon);
-            System.out.println("DEBUG: isMatchOver (re-checked) = " + lastGame.isMatchOver());
-
-            // Use the re-checked value (game state should be updated by now)
-            if (playerWon) {
+            if (wonMatch) {
                 System.out.println("DEBUG: Player won - calling handleVictory()");
                 handleVictory();
             } else {
