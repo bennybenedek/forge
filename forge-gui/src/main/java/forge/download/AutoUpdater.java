@@ -135,9 +135,11 @@ public class AutoUpdater {
 
         // Check the internet connection
         System.out.println("DEBUG: Testing network connection...");
-        if (!testNetConnection()) {
-            System.out.println("ERROR: Network connection test failed");
-            SOptionPane.showMessageDialog("Cannot connect to update server.\n\nPlease check your internet connection.", "Network Error", SOptionPane.ERROR_ICON);
+        // Determine which server to test based on build type
+        String serverToTest = buildVersion.contains("SNAPSHOT") ? "github.com" : "releases.cardforge.org";
+        if (!testNetConnection(serverToTest)) {
+            System.out.println("ERROR: Network connection test failed for " + serverToTest);
+            SOptionPane.showMessageDialog("Cannot connect to update server (" + serverToTest + ").\n\nPlease check your internet connection.", "Network Error", SOptionPane.ERROR_ICON);
             return false;
         }
         System.out.println("DEBUG: Network connection OK");
@@ -147,12 +149,15 @@ public class AutoUpdater {
         return compareBuildWithLatestChannelVersion();
     }
 
-    private boolean testNetConnection() {
+    private boolean testNetConnection(String host) {
         try (Socket socket = new Socket()) {
-            InetSocketAddress address = new InetSocketAddress("releases.cardforge.org", 443);
+            System.out.println("DEBUG: Testing connection to " + host + ":443");
+            InetSocketAddress address = new InetSocketAddress(host, 443);
             socket.connect(address, 1000);
+            System.out.println("DEBUG: Connection successful");
             return true;
         } catch (IOException e) {
+            System.out.println("DEBUG: Connection failed: " + e.getMessage());
             return false; // Either timeout or unreachable or failed DNS lookup.
         }
     }
