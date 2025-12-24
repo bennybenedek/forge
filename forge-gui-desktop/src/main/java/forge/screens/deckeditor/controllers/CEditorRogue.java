@@ -17,8 +17,6 @@
  */
 package forge.screens.deckeditor.controllers;
 
-import java.util.Map.Entry;
-
 import forge.deck.CardPool;
 import forge.deck.Deck;
 import forge.deck.DeckSection;
@@ -31,12 +29,13 @@ import forge.item.PaperCard;
 import forge.itemmanager.CardManager;
 import forge.itemmanager.ItemManagerConfig;
 import forge.model.FModel;
-import forge.util.ItemPool;
 import forge.screens.deckeditor.AddBasicLandsDialog;
 import forge.screens.deckeditor.views.VCardCatalog;
 import forge.screens.deckeditor.views.VCurrentDeck;
 import forge.screens.match.controllers.CDetailPicture;
+import forge.util.ItemPool;
 import forge.util.Localizer;
+import java.util.Map.Entry;
 
 /**
  * Deck editor for Rogue Commander mode.
@@ -51,16 +50,71 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
     private int cardsRemovedCount = 0;
     private final ItemPool<PaperCard> basicLandPool;
 
+    // Rogue-specific UI elements
+    private forge.toolbox.FLabel lblRemovalCredits;
+    private forge.toolbox.FLabel btnUndo;
+
+    // Undo action tracking
+    private static class UndoAction {
+        enum Type { ADD, REMOVE }
+        final Type type;
+        final java.util.List<java.util.Map.Entry<PaperCard, Integer>> items;
+        final int nonBasicLandsCount; // For restoring removal credits
+
+        UndoAction(Type type, Iterable<java.util.Map.Entry<PaperCard, Integer>> items, int nonBasicLandsCount) {
+            this.type = type;
+            this.items = new java.util.ArrayList<>();
+            for (java.util.Map.Entry<PaperCard, Integer> entry : items) {
+                this.items.add(entry);
+            }
+            this.nonBasicLandsCount = nonBasicLandsCount;
+        }
+    }
+    private final java.util.Stack<UndoAction> undoStack = new java.util.Stack<>();
+
     public CEditorRogue(final RogueRun rogueRun0, final FScreen screen0, final CDetailPicture cDetailPicture0) {
         super(screen0, cDetailPicture0, GameType.RogueCommander);
         this.rogueRun = rogueRun0;
 
-        // Create infinite pool of basic lands only
+        // Create infinite pool of basic lands from the commander's edition
         basicLandPool = new ItemPool<>(PaperCard.class);
+
+        // Get commander's edition
+        String commanderName = rogueRun0.getSelectedRogueDeck().getCommanderCardName();
+        PaperCard commanderCard = FModel.getMagicDb().getCommonCards().getCard(commanderName);
+        String commanderEdition = (commanderCard != null) ? commanderCard.getEdition() : null;
+
+        // Add basic lands from commander's edition
+        int landsAdded = 0;
         for (Entry<PaperCard, Integer> entry : FModel.getAllCardsNoAlt()) {
             PaperCard card = entry.getKey();
             if (card.getRules().getType().isBasicLand()) {
-                basicLandPool.add(card);
+                // Only add lands from commander's edition if we have one
+                if (card.getEdition().equals(commanderEdition)) {
+                    basicLandPool.add(card);
+                    landsAdded++;
+                }
+            }
+        }
+
+        // Fallback 1: If < 5 lands from commander's edition, use Modern Horizons 3 (MH3) lands
+        if (landsAdded < 5) {
+            basicLandPool.clear();
+            for (Entry<PaperCard, Integer> entry : FModel.getAllCardsNoAlt()) {
+                PaperCard card = entry.getKey();
+                if (card.getRules().getType().isBasicLand() && "MH3".equals(card.getEdition())) {
+                    basicLandPool.add(card);
+                }
+            }
+        }
+
+        // Fallback 2: If still no lands (MH3 not available), add all basic lands
+        if (basicLandPool.isEmpty()) {
+            for (Entry<PaperCard, Integer> entry : FModel.getAllCardsNoAlt()) {
+                PaperCard card = entry.getKey();
+                if (card.getRules().getType().isBasicLand()) {
+                    basicLandPool.add(card);
+                }
             }
         }
 
@@ -123,11 +177,17 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
         // Add to deck manager
         this.getDeckManager().addItems(itemsToAdd);
 
+        // Push ADD action onto undo stack (basic lands don't affect removal credits)
+        undoStack.push(new UndoAction(UndoAction.Type.ADD, itemsToAdd, 0));
+
         // Since catalog is infinite, just select the added items
         // (don't remove them from catalog)
         this.getCatalogManager().selectItemEntrys(itemsToAdd);
 
         this.getDeckController().notifyModelChanged();
+
+        // Update the undo button state
+        updateRemovalCreditsLabel();
     }
 
     @Override
@@ -146,12 +206,7 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
         int removalCredits = rogueRun.getRemovalCredits();
         if (cardsRemovedCount + nonBasicLandsToRemove > removalCredits) {
             // Would exceed removal limit
-            Localizer localizer = Localizer.getInstance();
-            String message = String.format(
-                "You can only remove %d more non-basic land cards (you have %d removal credits available).",
-                removalCredits - cardsRemovedCount,
-                removalCredits
-            );
+            String message = "You cannot remove any more non-basic land cards (You need more removal credits, e.g. from adding non-basic land cards to your Deck from Card Rewards).";
             javax.swing.JOptionPane.showMessageDialog(
                 null,
                 message,
@@ -164,11 +219,17 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
         // Remove from deck manager
         this.getDeckManager().removeItems(items);
 
+        // Push REMOVE action onto undo stack with non-basic land count for credit restoration
+        undoStack.push(new UndoAction(UndoAction.Type.REMOVE, items, nonBasicLandsToRemove));
+
         // Since catalog is infinite, don't add items back to catalog
         // (they're always available)
 
         cardsRemovedCount += nonBasicLandsToRemove;
         this.getDeckController().notifyModelChanged();
+
+        // Update the removal credits label
+        updateRemovalCreditsLabel();
     }
 
     @Override
@@ -233,6 +294,35 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
         // Set title
         VCurrentDeck.SINGLETON_INSTANCE.getLblTitle().setText("Rogue Commander Deck:");
         VCardCatalog.SINGLETON_INSTANCE.getTabLabel().setText("Basic Lands Only");
+
+        // Add Rogue-specific UI elements
+        javax.swing.JPanel header = VCurrentDeck.SINGLETON_INSTANCE.getPnlHeader();
+
+        // Create removal credits label
+        lblRemovalCredits = new forge.toolbox.FLabel.Builder()
+            .text("Removals: 0/" + rogueRun.getRemovalCredits())
+            .fontSize(12)
+            .build();
+        header.add(lblRemovalCredits, "gap 10px, w 90px!, h 26px!");
+
+        // Create undo button
+        btnUndo = new forge.toolbox.FLabel.Builder()
+            .text("Undo")
+            .tooltip("Undo last removal")
+            .fontSize(12)
+            .opaque(true)
+            .hoverable(true)
+            .build();
+        btnUndo.setEnabled(false);
+        btnUndo.setCommand(() -> undoLastRemoval());
+        header.add(btnUndo, "w 50px!, h 26px!");
+
+        // Force header to relayout
+        header.revalidate();
+        header.repaint();
+
+        // Initialize label with current state
+        updateRemovalCreditsLabel();
     }
 
     @Override
@@ -254,6 +344,24 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
 
     @Override
     public void resetUIChanges() {
+        // Remove Rogue-specific UI elements
+        javax.swing.JPanel header = VCurrentDeck.SINGLETON_INSTANCE.getPnlHeader();
+        if (lblRemovalCredits != null) {
+            header.remove(lblRemovalCredits);
+            lblRemovalCredits = null;
+        }
+        if (btnUndo != null) {
+            header.remove(btnUndo);
+            btnUndo = null;
+        }
+
+        // Clear undo stack
+        undoStack.clear();
+
+        // Force header to relayout
+        header.revalidate();
+        header.repaint();
+
         // Reset UI to default state
         VCurrentDeck.SINGLETON_INSTANCE.getBtnSave().setVisible(true);
         VCurrentDeck.SINGLETON_INSTANCE.getBtnSaveAs().setVisible(true);
@@ -269,6 +377,10 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
     public void update() {
         this.getCatalogManager().setup(ItemManagerConfig.CARD_CATALOG);
         this.getDeckManager().setup(ItemManagerConfig.DECK_EDITOR);
+
+        // Reset removal tracking for new editing session
+        cardsRemovedCount = 0;
+        undoStack.clear();
 
         resetUI();
         resetTables();
@@ -296,5 +408,59 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
         }
 
         return additions;
+    }
+
+    /**
+     * Updates the removal credits label to show current/max removals.
+     */
+    private void updateRemovalCreditsLabel() {
+        if (lblRemovalCredits != null) {
+            int removalCredits = rogueRun.getRemovalCredits();
+            int remaining = removalCredits - cardsRemovedCount;
+            lblRemovalCredits.setText(String.format("Removals: %d/%d", cardsRemovedCount, removalCredits));
+
+            // Update button state
+            if (btnUndo != null) {
+                btnUndo.setEnabled(!undoStack.isEmpty());
+            }
+        }
+    }
+
+    /**
+     * Undoes the last action (either ADD or REMOVE).
+     * - If last action was REMOVE: re-adds the cards and restores removal credits
+     * - If last action was ADD: removes the cards that were added
+     */
+    private void undoLastRemoval() {
+        if (undoStack.isEmpty()) {
+            return;
+        }
+
+        // Pop the last action
+        UndoAction action = undoStack.pop();
+
+        // Convert items list to ItemPool for deck manager
+        ItemPool<PaperCard> itemPool = new ItemPool<>(PaperCard.class);
+        for (java.util.Map.Entry<PaperCard, Integer> entry : action.items) {
+            itemPool.add(entry.getKey(), entry.getValue());
+        }
+
+        // Reverse the action
+        if (action.type == UndoAction.Type.REMOVE) {
+            // Last action was REMOVE → undo by adding cards back
+            this.getDeckManager().addItems(itemPool);
+
+            // Restore removal credits (only for non-basic lands)
+            cardsRemovedCount -= action.nonBasicLandsCount;
+
+        } else { // action.type == UndoAction.Type.ADD
+            // Last action was ADD → undo by removing cards
+            this.getDeckManager().removeItems(action.items);
+
+            // No removal credits to restore (additions don't cost credits)
+        }
+
+        this.getDeckController().notifyModelChanged();
+        updateRemovalCreditsLabel();
     }
 }
