@@ -217,16 +217,24 @@ public enum CSubmenuRogueMap implements ICDoc {
             return;
         }
 
-        // Create a Rogue deck editor
+        // Switch to deck editor screen first (this loads saved layout/tab)
+        Singletons.getControl().setCurrentScreen(FScreen.DECK_EDITOR_CONSTRUCTED);
+
+        // Then create and set the Rogue deck editor (this should override whatever tab was loaded)
         CEditorRogue rogueEditor = new CEditorRogue(
             currentRun,
             FScreen.DECK_EDITOR_CONSTRUCTED,
             CDeckEditorUI.SINGLETON_INSTANCE.getCDetailPicture()
         );
-
-        // Open the deck editor
         CDeckEditorUI.SINGLETON_INSTANCE.setEditorController(rogueEditor);
-        Singletons.getControl().setCurrentScreen(FScreen.DECK_EDITOR_CONSTRUCTED);
+
+        // Now select the Card Catalog tab to show our "Basic Lands Only" catalog
+        javax.swing.SwingUtilities.invokeLater(() -> {
+            forge.screens.deckeditor.views.VCardCatalog catalog = forge.screens.deckeditor.views.VCardCatalog.SINGLETON_INSTANCE;
+            if (catalog.getParentCell() != null) {
+                catalog.getParentCell().setSelected(catalog);
+            }
+        });
     }
 
     private void handleSanctumNode(NodeSanctum sanctumNode) {
