@@ -84,6 +84,10 @@ public class GuiDownloadZipService extends GuiDownloadService {
         progressBar.setPercentMode(true);
         progressBar.setDescription("Downloading " + desc);
 
+        System.out.println("DEBUG: GuiDownloadZipService.download() called");
+        System.out.println("DEBUG:   Source URL: " + sourceUrl);
+        System.out.println("DEBUG:   Target filename: " + filename);
+
         try {
             final URL url = new URL(sourceUrl);
             final HttpURLConnection conn = (HttpURLConnection) url.openConnection(getProxy());
@@ -93,14 +97,23 @@ public class GuiDownloadZipService extends GuiDownloadService {
                 conn.setRequestProperty("User-Agent", BuildInfo.getUserAgent());
             }
 
+            System.out.println("DEBUG: Connecting to URL...");
             conn.connect();
 
-            if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
+            int responseCode = conn.getResponseCode();
+            System.out.println("DEBUG: HTTP Response Code: " + responseCode + " (" + conn.getResponseMessage() + ")");
+
+            if (responseCode != HttpURLConnection.HTTP_OK) {
+                System.err.println("ERROR: HTTP request failed with code " + responseCode);
+                System.err.println("ERROR: Response message: " + conn.getResponseMessage());
                 return null;
             }
 
             final long contentLength = conn.getContentLength();
+            System.out.println("DEBUG: Content length: " + contentLength + " bytes");
+
             if (contentLength == 0) {
+                System.err.println("ERROR: Content length is 0 - file is empty or unavailable");
                 return null;
             }
 
@@ -133,13 +146,22 @@ public class GuiDownloadZipService extends GuiDownloadService {
             }
 
             if (cancel) {
+                System.out.println("DEBUG: Download cancelled by user");
                 new File(destFile).delete();
                 return null;
             }
 
+            System.out.println("DEBUG: Download completed successfully!");
+            System.out.println("DEBUG: File saved to: " + destFile);
+            File savedFile = new File(destFile);
+            System.out.println("DEBUG: File exists: " + savedFile.exists());
+            System.out.println("DEBUG: File size: " + savedFile.length() + " bytes");
+
             return destFile;
         }
         catch (final Exception ex) {
+            System.err.println("ERROR: Exception during download:");
+            ex.printStackTrace();
             Log.error("Downloading " + desc, "Error downloading " + desc, ex);
             return null;
         }

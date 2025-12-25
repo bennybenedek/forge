@@ -4,6 +4,7 @@ import static forge.localinstance.properties.ForgeConstants.GITHUB_SNAPSHOT_URL;
 import static forge.localinstance.properties.ForgeConstants.RELEASE_URL;
 
 import com.google.common.collect.ImmutableList;
+import forge.gui.FThreads;
 import forge.gui.GuiBase;
 import forge.gui.download.GuiDownloadZipService;
 import forge.gui.util.SOptionPane;
@@ -294,16 +295,34 @@ public class AutoUpdater {
     }
 
     private boolean downloadFromForge() {
-        System.out.println("Downloading update from " + packageUrl + " to Downloads folder");
+        System.out.println("DEBUG: Downloading from: " + packageUrl);
+        System.out.println("DEBUG: Saving to: " + System.getProperty("user.home") + "/Downloads/" + version + "-upgrade.jar");
+
         WaitCallback<Boolean> callback = new WaitCallback<Boolean>() {
             @Override
             public void run() {
                 GuiBase.getInterface().download(new GuiDownloadZipService("Auto Updater", localizer.getMessage("lblNewVersionDownloading"), packageUrl, System.getProperty("user.home") + "/Downloads/", null, null) {
                     @Override
                     public void downloadAndUnzip() {
+                        System.out.println("DEBUG: Attempting to download JAR installer...");
                         packagePath = download(version + "-upgrade.jar");
+
                         if (packagePath != null) {
+                            System.out.println("DEBUG: Download successful! Saved to: " + packagePath);
                             restartAndUpdate(packagePath);
+                        } else {
+                            System.err.println("ERROR: Download failed - check HTTP response code above");
+                            // Show error dialog to user
+                            FThreads.invokeInEdtLater(() -> {
+                                SOptionPane.showMessageDialog(
+                                    "Failed to download the update.\n\n" +
+                                    "Check the console log for details.\n\n" +
+                                    "Download manually from:\n" +
+                                    "https://github.com/bennybenedek/forge/releases",
+                                    "Download Failed",
+                                    SOptionPane.ERROR_ICON
+                                );
+                            });
                         }
                     }
                 }, this);
