@@ -234,7 +234,7 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
 
     @Override
     protected void buildAddContextMenu(EditorContextMenuBuilder cmb) {
-        // No add context menu needed since catalog is empty
+        cmb.addMoveItems("Add", "to deck");
     }
 
     @Override
