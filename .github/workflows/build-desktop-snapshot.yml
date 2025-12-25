@@ -65,6 +65,16 @@ jobs:
         id: date
         run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
 
+      - name: Rename JAR with version (Rogue Commander only)
+        if: github.ref == 'refs/heads/rogueCommander'
+        run: |
+          # Get version from version.txt (e.g., "2.0.09-SNAPSHOT-12.25")
+          VERSION=$(cat artifacts/version.txt)
+          # Rename the JAR to include the version
+          mv artifacts/forge-installer-*.jar artifacts/forge-installer-${VERSION}.jar || true
+          echo "Renamed JAR to: forge-installer-${VERSION}.jar"
+          ls -lh artifacts/
+
       - name: Upload artifacts to GitHub
         uses: actions/upload-artifact@v4
         with:
