@@ -1,18 +1,15 @@
 package forge.screens.home.rogue;
 
 import com.google.common.collect.ImmutableList;
-import forge.localinstance.skin.FSkinProp;
 import forge.toolbox.FButton;
 import forge.toolbox.FLabel;
 import forge.toolbox.FOptionPane;
-import forge.toolbox.FSkin;
 import forge.toolbox.FSkin.SkinnedPanel;
 import forge.util.Localizer;
-import net.miginfocom.swing.MigLayout;
-
-import javax.swing.SwingConstants;
 import java.awt.Dimension;
 import java.awt.Font;
+import javax.swing.SwingConstants;
+import net.miginfocom.swing.MigLayout;
 
 /**
  * Dialog for Sanctum node interaction.

@@ -1,7 +1,6 @@
 package forge.screens.home.rogue;
 
 import forge.gamemodes.rogue.NodeEvent;
-import forge.toolbox.FSkin;
 import java.awt.*;
 
 /**

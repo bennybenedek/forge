@@ -1,6 +1,7 @@
 package forge.screens.home.rogue;
 
 import forge.LobbyPlayer;
+import forge.Singletons;
 import forge.deck.CardPool;
 import forge.deck.Deck;
 import forge.deck.io.DeckSerializer;
@@ -16,7 +17,6 @@ import forge.gui.framework.ICDoc;
 import forge.item.PaperCard;
 import forge.localinstance.properties.ForgeConstants;
 import forge.player.GamePlayerUtil;
-import forge.Singletons;
 import forge.screens.deckeditor.CDeckEditorUI;
 import forge.screens.deckeditor.controllers.CEditorRogue;
 import forge.screens.home.CHomeUI;
