@@ -2,19 +2,15 @@ package forge.screens.home.rogue;
 
 import forge.gamemodes.rogue.NodeEvent;
 import forge.toolbox.FSkin;
-import java.awt.Graphics;
-import javax.swing.JLabel;
-import javax.swing.SwingConstants;
+import java.awt.*;
 
 /**
  * Visual representation of an Event node in the Rogue Commander path.
  * Events trigger random occurrences or choices for the player.
- * TODO: Add proper UI with event icon and choice preview.
+ * Displays as a small circular node with a scroll/event icon.
  */
-public class NodeEventPanel extends NodePanel {
+public class NodeEventPanel extends NodeCircularPanel {
     private final NodeEvent eventNode;
-    private final JLabel lblTitle;
-    private final JLabel lblSubtitle;
 
     /**
      * Create a panel for displaying an event node.
@@ -25,37 +21,52 @@ public class NodeEventPanel extends NodePanel {
     public NodeEventPanel(NodeEvent node, boolean isCurrentNode) {
         super(node, isCurrentNode);
         this.eventNode = node;
-
-        // Title label
-        lblTitle = new JLabel("❓ Event");
-        lblTitle.setFont(FSkin.getRelativeBoldFont(16).getBaseFont());
-        lblTitle.setForeground(FSkin.getColor(FSkin.Colors.CLR_TEXT).getColor());
-        lblTitle.setHorizontalAlignment(SwingConstants.CENTER);
-        add(lblTitle);
-
-        // Subtitle label
-        lblSubtitle = new JLabel("(???)");
-        lblSubtitle.setFont(FSkin.getRelativeFont(12).getBaseFont());
-        lblSubtitle.setForeground(FSkin.getColor(FSkin.Colors.CLR_TEXT).getColor());
-        lblSubtitle.setHorizontalAlignment(SwingConstants.CENTER);
-        add(lblSubtitle);
     }
 
     @Override
-    public void doLayout() {
-        int x = 10;
-        int y = (PANEL_HEIGHT / 2) - 30;
+    public void paint(Graphics g) {
+        super.paint(g);
 
-        lblTitle.setBounds(x, y, PANEL_WIDTH - 20, 30);
-        y += 35;
+        // Draw scroll icon in the center
+        Graphics2D g2d = (Graphics2D) g;
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        lblSubtitle.setBounds(x, y, PANEL_WIDTH - 20, 25);
+        // Scroll icon parameters
+        int centerX = getWidth() / 2;
+        int centerY = getHeight() / 2;
+        int scrollSize = 32;
+
+        // Draw scroll shape
+        drawScroll(g2d, centerX, centerY, scrollSize);
     }
 
-    @Override
-    protected void paintNodeBorder(Graphics g) {
-        super.paintNodeBorder(g);
+    /**
+     * Draw a scroll/parchment icon centered at the given position.
+     */
+    private void drawScroll(Graphics2D g2d, int centerX, int centerY, int size) {
+        // Main parchment (beige/tan rectangle)
+        g2d.setColor(new Color(245, 222, 179));
+        int scrollWidth = size;
+        int scrollHeight = (int)(size * 0.8);
+        g2d.fillRoundRect(centerX - scrollWidth/2, centerY - scrollHeight/2, scrollWidth, scrollHeight, 5, 5);
 
-        // TODO: Could add mystery theme visual elements here (question marks, random symbols, etc.)
+        // Top and bottom rolls (darker tan circles)
+        g2d.setColor(new Color(210, 180, 140));
+        g2d.fillRect(centerX - scrollWidth/2 - 2, centerY - scrollHeight/2 - 5, scrollWidth + 4, 8);
+        g2d.fillRect(centerX - scrollWidth/2 - 2, centerY + scrollHeight/2 - 3, scrollWidth + 4, 8);
+
+        // Question mark symbol (mysterious event)
+        g2d.setColor(new Color(139, 69, 19));
+        g2d.setFont(new Font("Arial", Font.BOLD, (int)(size * 0.7)));
+        FontMetrics fm = g2d.getFontMetrics();
+        String symbol = "?";
+        int textX = centerX - fm.stringWidth(symbol) / 2;
+        int textY = centerY + fm.getAscent() / 2 - 2;
+        g2d.drawString(symbol, textX, textY);
+
+        // Border for parchment
+        g2d.setColor(new Color(210, 180, 140));
+        g2d.setStroke(new BasicStroke(2));
+        g2d.drawRoundRect(centerX - scrollWidth/2, centerY - scrollHeight/2, scrollWidth, scrollHeight, 5, 5);
     }
 }

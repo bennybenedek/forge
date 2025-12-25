@@ -2,19 +2,15 @@ package forge.screens.home.rogue;
 
 import forge.gamemodes.rogue.NodeChest;
 import forge.toolbox.FSkin;
-import java.awt.Graphics;
-import javax.swing.JLabel;
-import javax.swing.SwingConstants;
+import java.awt.*;
 
 /**
  * Visual representation of a Chest node in the Rogue Commander path.
  * Chests provide rewards without combat.
- * TODO: Add proper UI with chest icon and reward preview.
+ * Displays as a small circular node with a chest icon.
  */
-public class NodeChestPanel extends NodePanel {
+public class NodeChestPanel extends NodeCircularPanel {
     private final NodeChest chestNode;
-    private final JLabel lblTitle;
-    private final JLabel lblSubtitle;
 
     /**
      * Create a panel for displaying a chest node.
@@ -25,37 +21,52 @@ public class NodeChestPanel extends NodePanel {
     public NodeChestPanel(NodeChest node, boolean isCurrentNode) {
         super(node, isCurrentNode);
         this.chestNode = node;
-
-        // Title label
-        lblTitle = new JLabel("📦 Treasure");
-        lblTitle.setFont(FSkin.getRelativeBoldFont(16).getBaseFont());
-        lblTitle.setForeground(FSkin.getColor(FSkin.Colors.CLR_TEXT).getColor());
-        lblTitle.setHorizontalAlignment(SwingConstants.CENTER);
-        add(lblTitle);
-
-        // Subtitle label
-        lblSubtitle = new JLabel("(Free Loot)");
-        lblSubtitle.setFont(FSkin.getRelativeFont(12).getBaseFont());
-        lblSubtitle.setForeground(FSkin.getColor(FSkin.Colors.CLR_TEXT).getColor());
-        lblSubtitle.setHorizontalAlignment(SwingConstants.CENTER);
-        add(lblSubtitle);
     }
 
     @Override
-    public void doLayout() {
-        int x = 10;
-        int y = (PANEL_HEIGHT / 2) - 30;
+    public void paint(Graphics g) {
+        super.paint(g);
 
-        lblTitle.setBounds(x, y, PANEL_WIDTH - 20, 30);
-        y += 35;
+        // Draw chest icon in the center
+        Graphics2D g2d = (Graphics2D) g;
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        lblSubtitle.setBounds(x, y, PANEL_WIDTH - 20, 25);
+        // Chest icon parameters
+        int centerX = getWidth() / 2;
+        int centerY = getHeight() / 2;
+        int chestSize = 32;
+
+        // Draw chest shape
+        drawChest(g2d, centerX, centerY, chestSize);
     }
 
-    @Override
-    protected void paintNodeBorder(Graphics g) {
-        super.paintNodeBorder(g);
+    /**
+     * Draw a treasure chest icon centered at the given position.
+     */
+    private void drawChest(Graphics2D g2d, int centerX, int centerY, int size) {
+        // Chest body (brown rectangle)
+        g2d.setColor(new Color(139, 90, 43));
+        int bodyWidth = size;
+        int bodyHeight = (int)(size * 0.7);
+        g2d.fillRoundRect(centerX - bodyWidth/2, centerY - bodyHeight/2, bodyWidth, bodyHeight, 8, 8);
 
-        // TODO: Could add treasure theme visual elements here (sparkles, gold border, etc.)
+        // Chest lid (slightly darker brown arc)
+        g2d.setColor(new Color(101, 67, 33));
+        g2d.fillArc(centerX - bodyWidth/2, centerY - bodyHeight/2 - 10, bodyWidth, 20, 0, 180);
+
+        // Lock/latch (gold rectangle in center)
+        g2d.setColor(new Color(255, 215, 0));
+        int latchWidth = 12;
+        int latchHeight = 18;
+        g2d.fillRect(centerX - latchWidth/2, centerY - latchHeight/2, latchWidth, latchHeight);
+
+        // Keyhole (black circle)
+        g2d.setColor(Color.BLACK);
+        g2d.fillOval(centerX - 3, centerY - 2, 6, 6);
+
+        // Decorative bands (darker brown stripes)
+        g2d.setColor(new Color(80, 50, 20));
+        g2d.setStroke(new BasicStroke(2));
+        g2d.drawLine(centerX - bodyWidth/2, centerY, centerX + bodyWidth/2, centerY);
     }
 }

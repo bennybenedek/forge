@@ -2,19 +2,15 @@ package forge.screens.home.rogue;
 
 import forge.gamemodes.rogue.NodeSanctum;
 import forge.toolbox.FSkin;
-import java.awt.Graphics;
-import javax.swing.JLabel;
-import javax.swing.SwingConstants;
+import java.awt.*;
 
 /**
  * Visual representation of a Sanctum node in the Rogue Commander path.
  * Sanctums allow the player to heal and remove cards from their deck.
- * TODO: Add proper UI with heart icon, heal amount, and card removal UI.
+ * Displays as a small circular node with a heart icon.
  */
-public class NodeSanctumPanel extends NodePanel {
+public class NodeSanctumPanel extends NodeCircularPanel {
     private final NodeSanctum sanctumNode;
-    private final JLabel lblTitle;
-    private final JLabel lblDetails;
 
     /**
      * Create a panel for displaying a sanctum node.
@@ -25,40 +21,36 @@ public class NodeSanctumPanel extends NodePanel {
     public NodeSanctumPanel(NodeSanctum node, boolean isCurrentNode) {
         super(node, isCurrentNode);
         this.sanctumNode = node;
-
-        // Title label
-        lblTitle = new JLabel("⛪ Sanctum");
-        lblTitle.setFont(FSkin.getRelativeBoldFont(16).getBaseFont());
-        lblTitle.setForeground(FSkin.getColor(FSkin.Colors.CLR_TEXT).getColor());
-        lblTitle.setHorizontalAlignment(SwingConstants.CENTER);
-        add(lblTitle);
-
-        // Details label
-        String details = String.format("Heal %d | Remove up to %d",
-            sanctumNode.getHealAmount(),
-            sanctumNode.getFreeRemoves());
-        lblDetails = new JLabel(details);
-        lblDetails.setFont(FSkin.getRelativeFont(12).getBaseFont());
-        lblDetails.setForeground(FSkin.getColor(FSkin.Colors.CLR_TEXT).getColor());
-        lblDetails.setHorizontalAlignment(SwingConstants.CENTER);
-        add(lblDetails);
     }
 
     @Override
-    public void doLayout() {
-        int x = 10;
-        int y = (PANEL_HEIGHT / 2) - 30;
+    public void paint(Graphics g) {
+        super.paint(g);
 
-        lblTitle.setBounds(x, y, PANEL_WIDTH - 20, 30);
-        y += 35;
+        // Draw heart icon in the center
+        Graphics2D g2d = (Graphics2D) g;
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        lblDetails.setBounds(x, y, PANEL_WIDTH - 20, 25);
+        // Heart icon parameters
+        int centerX = getWidth() / 2;
+        int centerY = getHeight() / 2;
+        int heartSize = 35;
+
+        // Draw heart shape
+        g2d.setColor(new Color(220, 53, 69)); // Red color for healing
+        drawHeart(g2d, centerX, centerY, heartSize);
     }
 
-    @Override
-    protected void paintNodeBorder(Graphics g) {
-        super.paintNodeBorder(g);
-
-        // TODO: Could add healing theme visual elements here (hearts, glow, etc.)
+    /**
+     * Draw a heart icon centered at the given position.
+     */
+    private void drawHeart(Graphics2D g2d, int centerX, int centerY, int size) {
+        // Use heart character for clear, recognizable heart symbol
+        g2d.setFont(new Font("Serif", Font.PLAIN, size));
+        FontMetrics fm = g2d.getFontMetrics();
+        String heart = "♥";
+        int textX = centerX - fm.stringWidth(heart) / 2;
+        int textY = centerY + fm.getAscent() / 2 - fm.getDescent();
+        g2d.drawString(heart, textX, textY);
     }
 }

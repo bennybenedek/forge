@@ -110,13 +110,14 @@ public class PathVisualizerPanel extends SkinnedPanel {
         }
 
         // Center nodes horizontally, stack vertically with spacing
-        int panelWidth = nodePanels.get(0).getPreferredSize().width;
-        int panelHeight = nodePanels.get(0).getPreferredSize().height;
-
-        int startX = (getWidth() - panelWidth) / 2;
         int y = 20;
 
         for (NodePanel nodePanel : nodePanels) {
+            // Use each panel's own preferred size (allows different sized nodes)
+            int panelWidth = nodePanel.getPreferredSize().width;
+            int panelHeight = nodePanel.getPreferredSize().height;
+            int startX = (getWidth() - panelWidth) / 2;  // Center each node based on its own width
+
             nodePanel.setBounds(startX, y, panelWidth, panelHeight);
             y += panelHeight + NODE_SPACING;
         }

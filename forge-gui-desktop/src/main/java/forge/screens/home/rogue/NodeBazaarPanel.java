@@ -2,19 +2,15 @@ package forge.screens.home.rogue;
 
 import forge.gamemodes.rogue.NodeBazaar;
 import forge.toolbox.FSkin;
-import java.awt.Graphics;
-import javax.swing.JLabel;
-import javax.swing.SwingConstants;
+import java.awt.*;
 
 /**
  * Visual representation of a Bazaar node in the Rogue Commander path.
  * Bazaars allow the player to buy cards and items.
- * TODO: Add proper UI with shop icon, coin display, and item preview.
+ * Displays as a small circular node with a coin icon.
  */
-public class NodeBazaarPanel extends NodePanel {
+public class NodeBazaarPanel extends NodeCircularPanel {
     private final NodeBazaar bazaarNode;
-    private final JLabel lblTitle;
-    private final JLabel lblSubtitle;
 
     /**
      * Create a panel for displaying a bazaar node.
@@ -25,37 +21,46 @@ public class NodeBazaarPanel extends NodePanel {
     public NodeBazaarPanel(NodeBazaar node, boolean isCurrentNode) {
         super(node, isCurrentNode);
         this.bazaarNode = node;
-
-        // Title label
-        lblTitle = new JLabel("🏪 Bazaar");
-        lblTitle.setFont(FSkin.getRelativeBoldFont(16).getBaseFont());
-        lblTitle.setForeground(FSkin.getColor(FSkin.Colors.CLR_TEXT).getColor());
-        lblTitle.setHorizontalAlignment(SwingConstants.CENTER);
-        add(lblTitle);
-
-        // Subtitle label
-        lblSubtitle = new JLabel("(Shop)");
-        lblSubtitle.setFont(FSkin.getRelativeFont(12).getBaseFont());
-        lblSubtitle.setForeground(FSkin.getColor(FSkin.Colors.CLR_TEXT).getColor());
-        lblSubtitle.setHorizontalAlignment(SwingConstants.CENTER);
-        add(lblSubtitle);
     }
 
     @Override
-    public void doLayout() {
-        int x = 10;
-        int y = (PANEL_HEIGHT / 2) - 30;
+    public void paint(Graphics g) {
+        super.paint(g);
 
-        lblTitle.setBounds(x, y, PANEL_WIDTH - 20, 30);
-        y += 35;
+        // Draw coin icon in the center
+        Graphics2D g2d = (Graphics2D) g;
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        lblSubtitle.setBounds(x, y, PANEL_WIDTH - 20, 25);
+        // Coin icon parameters
+        int centerX = getWidth() / 2;
+        int centerY = getHeight() / 2;
+        int coinSize = 30;
+
+        // Draw coin shape
+        g2d.setColor(new Color(255, 215, 0)); // Gold color for coins
+        drawCoin(g2d, centerX, centerY, coinSize);
     }
 
-    @Override
-    protected void paintNodeBorder(Graphics g) {
-        super.paintNodeBorder(g);
+    /**
+     * Draw a coin icon centered at the given position.
+     */
+    private void drawCoin(Graphics2D g2d, int centerX, int centerY, int size) {
+        // Draw outer circle (gold coin)
+        g2d.setColor(new Color(255, 215, 0));
+        g2d.fillOval(centerX - size/2, centerY - size/2, size, size);
 
-        // TODO: Could add bazaar theme visual elements here (coins, merchant tent, etc.)
+        // Draw inner circle (darker border)
+        g2d.setColor(new Color(218, 165, 32));
+        g2d.setStroke(new BasicStroke(3));
+        g2d.drawOval(centerX - size/2 + 5, centerY - size/2 + 5, size - 10, size - 10);
+
+        // Draw dollar sign or similar marking
+        g2d.setColor(new Color(139, 90, 0));
+        g2d.setFont(new Font("Arial", Font.BOLD, size/2));
+        FontMetrics fm = g2d.getFontMetrics();
+        String symbol = "$";
+        int textX = centerX - fm.stringWidth(symbol) / 2;
+        int textY = centerY + fm.getAscent() / 2 - 2;
+        g2d.drawString(symbol, textX, textY);
     }
 }
