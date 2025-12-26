@@ -1,9 +1,11 @@
 package forge.screens.home.rogue;
 
 import com.google.common.collect.ImmutableList;
+import forge.localinstance.skin.FSkinProp;
 import forge.toolbox.FButton;
 import forge.toolbox.FLabel;
 import forge.toolbox.FOptionPane;
+import forge.toolbox.FSkin;
 import forge.toolbox.FSkin.SkinnedPanel;
 import forge.util.Localizer;
 import java.awt.Dimension;
@@ -25,14 +27,8 @@ public class SanctumDialog {
         SKIP
     }
 
-    private final int currentLife;
-    private final int maxLife;
-    private final int healAmount;
-    private final int freeRemoves;
     private final MainPanel panel;
-    private final FButton btnHeal;
-    private final FButton btnRemove;
-    private FOptionPane optionPane;
+  private FOptionPane optionPane;
     private SanctumChoice choice = SanctumChoice.SKIP;
 
     /**
@@ -43,10 +39,6 @@ public class SanctumDialog {
      * @param freeRemoves Number of free card removals offered
      */
     public SanctumDialog(int currentLife, int maxLife, int healAmount, int freeRemoves) {
-        this.currentLife = currentLife;
-        this.maxLife = maxLife;
-        this.healAmount = healAmount;
-        this.freeRemoves = freeRemoves;
 
         // Create main panel
         panel = new MainPanel();
@@ -67,7 +59,7 @@ public class SanctumDialog {
                 .build();
 
         // Heal button
-        btnHeal = new FButton("Heal to Maximum Life (" + maxLife + ")");
+      FButton btnHeal = new FButton("♥ Heal " + healAmount + " Life (max. up to " + maxLife + ")");
         btnHeal.addActionListener(e -> {
             choice = SanctumChoice.HEAL;
             optionPane.setResult(0);
@@ -81,7 +73,8 @@ public class SanctumDialog {
         }
 
         // Remove cards button
-        btnRemove = new FButton("Receive " + freeRemoves + " Card Removal Credits");
+      FButton btnRemove = new FButton("Gain " + freeRemoves + " Card Removal Credits");
+        btnRemove.setIcon(FSkin.getIcon(FSkinProp.ICO_CARD_IMAGE));
         btnRemove.addActionListener(e -> {
             choice = SanctumChoice.REMOVE_CARDS;
             optionPane.setResult(0);

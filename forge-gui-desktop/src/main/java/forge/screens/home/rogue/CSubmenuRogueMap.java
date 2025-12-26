@@ -255,8 +255,9 @@ public enum CSubmenuRogueMap implements ICDoc {
         // Handle player's choice
         switch (choice) {
             case HEAL:
-                // Heal player to maximum life
-                currentRun.setCurrentLife(maxLife);
+                // Heal player by healAmount, capped at maximum life
+                int newLife = Math.min(currentLife + healAmount, maxLife);
+                currentRun.setCurrentLife(newLife);
                 break;
 
             case REMOVE_CARDS:
