@@ -78,6 +78,12 @@ public class RoguePathGenerator {
         List<RoguePathNode> nodes = new ArrayList<>();
         int rowIndex = 0; // Track actual row index (excluding side nodes)
 
+        // Add Bazaar at the very start (for testing)
+        // Start Bazaar is always accessible, so rowIndex = -1 (before first row)
+        NodeBazaar startBazaar = new NodeBazaar();
+        startBazaar.setRowIndex(-1);
+        nodes.add(startBazaar);
+
         for (int i = 0; i < nodeCount; i++) {
             RoguePlanebound roguePlanebound;
 
@@ -99,23 +105,33 @@ public class RoguePathGenerator {
 
             // Set row index for life scaling: Row 0 = 5 life, Row 1 = 10 life, etc.
             node.setRowIndex(rowIndex);
-            rowIndex++; // Increment row index for plane nodes
-
             nodes.add(node);
 
             // Add Sanctum after 2nd plane (index 1)
             if (i == 1) {
                 NodeSanctum sanctum = new NodeSanctum(5, 2); // Heal 5, Remove 2 cards
+                sanctum.setRowIndex(rowIndex); // Same row as preceding plane
                 nodes.add(sanctum);
                 // Note: Sanctum doesn't increment rowIndex (doesn't count as a row)
+            }
+
+            // Add Bazaar after ELITE plane (middle node, index 2)
+            if (i == nodeCount / 2) {
+                NodeBazaar bazaar = new NodeBazaar();
+                bazaar.setRowIndex(rowIndex); // Same row as preceding plane
+                nodes.add(bazaar);
+                // Note: Bazaar doesn't increment rowIndex (doesn't count as a row)
             }
 
             // Add second Sanctum after 4th plane (index 3), right before boss
             if (i == 3) {
                 NodeSanctum sanctum = new NodeSanctum(5, 2); // Heal 5, Remove 2 cards
+                sanctum.setRowIndex(rowIndex); // Same row as preceding plane
                 nodes.add(sanctum);
                 // Note: Sanctum doesn't increment rowIndex (doesn't count as a row)
             }
+
+            rowIndex++; // Increment row index for next plane node
         }
 
         // Create linear path from nodes

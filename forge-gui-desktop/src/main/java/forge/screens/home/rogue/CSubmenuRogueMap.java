@@ -22,10 +22,7 @@ import forge.screens.deckeditor.controllers.CEditorRogue;
 import forge.screens.home.CHomeUI;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import javax.swing.SwingUtilities;
 
 /**
@@ -82,7 +79,9 @@ public enum CSubmenuRogueMap implements ICDoc {
             startMatch((NodePlanebound) node);
         } else if (node instanceof NodeSanctum) {
             handleSanctumNode((NodeSanctum) node);
-        } else if (node instanceof NodeBazaar || node instanceof NodeEvent || node instanceof NodeChest) {
+        } else if (node instanceof NodeBazaar) {
+            handleBazaarNode((NodeBazaar) node);
+        } else if (node instanceof NodeEvent || node instanceof NodeChest) {
             // TODO: Implement these node types
             currentRun.nextNode();
             updateView();
@@ -272,6 +271,68 @@ public enum CSubmenuRogueMap implements ICDoc {
 
         // Mark node as completed and move to next
         sanctumNode.setCompleted(true);
+        currentRun.nextNode();
+
+        // Save run and update view
+        RogueIO.saveRun(currentRun);
+        updateView();
+    }
+
+    private void handleBazaarNode(NodeBazaar bazaarNode) {
+        if (currentRun == null) {
+            return;
+        }
+
+        // Get the rogue deck to draw cards from reward pool
+        RogueDeck rogueDeck = currentRun.getSelectedRogueDeck();
+        if (rogueDeck == null) {
+            System.err.println("ERROR: Could not find rogue deck for current run.");
+            currentRun.nextNode();
+            updateView();
+            return;
+        }
+
+        // Generate Bazaar inventory: 9 non-mythic + 1 mythic from reward pool
+        List<PaperCard> nonMythicCards = rogueDeck.drawRewardOptions(9, forge.item.PaperCardPredicates.IS_MYTHIC_RARE.negate());
+        List<PaperCard> mythicCards = rogueDeck.drawRewardOptions(1, forge.item.PaperCardPredicates.IS_MYTHIC_RARE);
+
+        // Combine into single inventory
+        List<PaperCard> inventory = new ArrayList<>();
+        inventory.addAll(nonMythicCards);
+        inventory.addAll(mythicCards);
+
+        if (inventory.isEmpty()) {
+            System.err.println("ERROR: No cards available in reward pool for Bazaar.");
+            currentRun.nextNode();
+            updateView();
+            return;
+        }
+
+        // Get current gold
+        int currentGold = currentRun.getCurrentGold();
+
+        // Show Bazaar dialog
+        BazaarDialog dialog = new BazaarDialog(inventory, currentGold);
+        Set<PaperCard> selectedCards = dialog.show();
+
+        // If player bought cards, add them to deck and deduct gold
+        if (!selectedCards.isEmpty()) {
+            // Add cards to player's deck
+            currentRun.getCurrentDeck().getMain().add(selectedCards);
+
+            // Calculate and deduct gold cost using shared pricing
+            int totalCost = BazaarPricing.calculateTotalCost(selectedCards);
+            currentRun.setCurrentGold(currentGold - totalCost);
+
+            // Remove all cards shown in Bazaar from reward pool (both purchased and not purchased)
+            rogueDeck.removeFromRewardPool(inventory);
+        } else {
+            // Even if nothing purchased, remove cards from pool (they were "seen")
+            rogueDeck.removeFromRewardPool(inventory);
+        }
+
+        // Mark node as completed and move to next
+        bazaarNode.setCompleted(true);
         currentRun.nextNode();
 
         // Save run and update view

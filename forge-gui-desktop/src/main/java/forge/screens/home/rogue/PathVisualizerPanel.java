@@ -93,14 +93,28 @@ public class PathVisualizerPanel extends SkinnedPanel {
             return;
         }
 
-        NodePanel firstPanel = nodePanels.get(0);
-        int panelWidth = firstPanel.getPreferredSize().width;
-        int panelHeight = firstPanel.getPreferredSize().height;
+        // Calculate max width and total height
+        int maxWidth = 0;
+        int totalHeight = 0;
 
-        int totalHeight = (nodePanels.size() * panelHeight) +
-                ((nodePanels.size() - 1) * NODE_SPACING) + 40; // Extra padding
+        for (int i = 0; i < nodePanels.size(); i++) {
+            NodePanel panel = nodePanels.get(i);
+            int panelWidth = panel.getPreferredSize().width;
+            int panelHeight = panel.getPreferredSize().height;
 
-        setPreferredSize(new Dimension(panelWidth + 40, totalHeight));
+            maxWidth = Math.max(maxWidth, panelWidth);
+            totalHeight += panelHeight;
+
+            // Add spacing between nodes (but not after the last node)
+            if (i < nodePanels.size() - 1) {
+                totalHeight += NODE_SPACING;
+            }
+        }
+
+        // Add padding
+        totalHeight += 40;
+
+        setPreferredSize(new Dimension(maxWidth + 40, totalHeight));
     }
 
     @Override
