@@ -301,7 +301,7 @@ public class AutoUpdater {
         WaitCallback<Boolean> callback = new WaitCallback<Boolean>() {
             @Override
             public void run() {
-                GuiBase.getInterface().download(new GuiDownloadZipService("Auto Updater", localizer.getMessage("lblNewVersionDownloading"), packageUrl, System.getProperty("user.home") + "/Downloads/", null, null) {
+                GuiBase.getInterface().download(new GuiDownloadZipService("Auto Updater", "the new version", packageUrl, System.getProperty("user.home") + "/Downloads/", null, null) {
                     @Override
                     public void downloadAndUnzip() {
                         System.out.println("DEBUG: Attempting to download JAR installer...");
@@ -335,23 +335,27 @@ public class AutoUpdater {
     }
     private void restartAndUpdate(String packagePath) {
         if (SOptionPane.showOptionDialog(localizer.getMessage("lblForgeUpdateMessage", packagePath), localizer.getMessage("lblRestart"), null, ImmutableList.of(localizer.getMessage("lblOK")), 0) == 0) {
-            final Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
-            if (desktop != null) {
-                try {
-                    File installer = new File(packagePath);
-                    if (installer.exists()) {
-                        if (packagePath.endsWith(".jar")) {
-                            installer.setExecutable(true, false);
-                            desktop.open(installer);
-                        } else {
-                            desktop.open(installer.getParentFile());
-                        }
+            try {
+                File installer = new File(packagePath);
+                if (installer.exists() && packagePath.endsWith(".jar")) {
+                    // Execute the JAR installer using the same Java that's running Forge
+                    String javaHome = System.getProperty("java.home");
+                    String javaBin = javaHome + File.separator + "bin" + File.separator + "java";
+                    ProcessBuilder pb = new ProcessBuilder(javaBin, "-jar", installer.getAbsolutePath());
+                    pb.start();
+                    System.out.println("DEBUG: Launched installer JAR with: " + javaBin + " -jar " + installer.getAbsolutePath());
+                } else if (installer.exists()) {
+                    // For non-JAR files, open the parent folder
+                    final Desktop desktop = Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
+                    if (desktop != null) {
+                        desktop.open(installer.getParentFile());
                     }
-                } catch (IOException e) {
-                    e.printStackTrace();
+                } else {
+                    System.err.println("ERROR: Installer file not found: " + packagePath);
                 }
-            } else {
-                System.out.println(packagePath);
+            } catch (IOException e) {
+                System.err.println("ERROR: Failed to launch installer:");
+                e.printStackTrace();
             }
             System.exit(0);
         }
