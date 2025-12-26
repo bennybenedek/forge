@@ -109,6 +109,13 @@ public class RoguePathGenerator {
                 nodes.add(sanctum);
                 // Note: Sanctum doesn't increment rowIndex (doesn't count as a row)
             }
+
+            // Add second Sanctum after 4th plane (index 3), right before boss
+            if (i == 3) {
+                NodeSanctum sanctum = new NodeSanctum(5, 2); // Heal 5, Remove 2 cards
+                nodes.add(sanctum);
+                // Note: Sanctum doesn't increment rowIndex (doesn't count as a row)
+            }
         }
 
         // Create linear path from nodes
