@@ -11,7 +11,7 @@ public abstract class NodeCircularPanel extends NodePanel {
     // Smaller dimensions for non-plane nodes
     protected static final int CIRCULAR_SIZE = 75;
 
-    public NodeCircularPanel(RoguePathNode node, boolean isCurrentNode) {
+    protected NodeCircularPanel(RoguePathNode node, boolean isCurrentNode) {
         super(node, isCurrentNode);
 
         // Override size from parent

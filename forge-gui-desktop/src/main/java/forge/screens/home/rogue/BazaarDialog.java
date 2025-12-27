@@ -1,10 +1,8 @@
 package forge.screens.home.rogue;
 
-import com.google.common.collect.ImmutableList;
 import forge.gamemodes.rogue.BazaarPricing;
 import forge.item.PaperCard;
 import forge.localinstance.skin.FSkinProp;
-import forge.toolbox.FButton;
 import forge.toolbox.FLabel;
 import forge.toolbox.FOptionPane;
 import forge.toolbox.FSkin;
@@ -24,19 +22,19 @@ import net.miginfocom.swing.MigLayout;
  * Allows player to purchase cards using gold based on rarity pricing.
  */
 public class BazaarDialog {
-    private static final int DIALOG_WIDTH = 1100;
-    private static final int DIALOG_HEIGHT = 700;
-    private static final int CARD_WIDTH = 180;
-    private static final int CARD_HEIGHT = 250;
+    private static final int DIALOG_WIDTH = 1400;
+    private static final int DIALOG_HEIGHT = 900;
+    private static final int CARD_IMAGE_HEIGHT = 335;  // Height of the card image itself
+    private static final int PRICE_LABEL_HEIGHT = 40;  // Space for price label below card
+    private static final int CARD_WIDTH = 240;
+    private static final int CARD_HEIGHT = CARD_IMAGE_HEIGHT + PRICE_LABEL_HEIGHT;  // Total panel height
     private static final int CARDS_PER_ROW = 5;
 
     private final MainPanel panel;
-    private FOptionPane optionPane;
     private CardZoomUtil zoomUtil;
     private final List<PaperCard> availableCards;
     private final int availableGold;
     private final Set<PaperCard> selectedCards = new HashSet<>();
-    private final FButton btnBuy;
     private final FLabel lblGoldStatus;
 
     /**
@@ -53,7 +51,7 @@ public class BazaarDialog {
 
         // Title label
         FLabel lblTitle = new FLabel.Builder()
-                .text("Bazaar of Wonders")
+                .text("Bazaar")
                 .fontSize(20)
                 .fontStyle(Font.BOLD)
                 .fontAlign(SwingConstants.CENTER)
@@ -73,14 +71,7 @@ public class BazaarDialog {
                 .fontAlign(SwingConstants.CENTER)
                 .build();
 
-        // Buy button (no icon, smaller size)
-        btnBuy = new FButton("Buy Selected Cards");
-        btnBuy.addActionListener(e -> {
-            optionPane.setResult(0);
-            optionPane.setVisible(false);
-        });
-
-        // Add components to panel (button added separately below cards)
+        // Add components to panel
         panel.add(lblTitle, "w 100%!, h 40px!, ax center, wrap");
         panel.add(lblGoldStatus, "w 100%!, h 30px!, ax center, wrap");
         panel.add(lblDescription, "w 100%!, h 25px!, ax center, gap 0 0 10px 15px, wrap");
@@ -96,13 +87,13 @@ public class BazaarDialog {
      */
     public Set<PaperCard> show() {
         final Localizer localizer = Localizer.getInstance();
-        optionPane = new FOptionPane(
+        FOptionPane optionPane = new FOptionPane(
                 null,
                 "Bazaar",
                 null,
                 panel,
-                ImmutableList.of(localizer.getMessage("lblSkip")),
-                -1
+                List.of("Buy Selected Cards", localizer.getMessage("lblSkip")),
+                1  // Default to Skip button
         );
 
         // Setup zoom utility
@@ -116,29 +107,14 @@ public class BazaarDialog {
         panel.repaint();
 
         optionPane.setVisible(true);
+        int result = optionPane.getResult();
         optionPane.dispose();
 
-        return selectedCards;
-    }
-
-    /**
-     * Calculate total cost of selected cards using shared pricing.
-     */
-    private int calculateTotalCost() {
-        return BazaarPricing.calculateTotalCost(selectedCards);
-    }
-
-    /**
-     * Update the gold status label and Buy button state.
-     */
-    private void updateGoldStatus() {
-        int totalCost = calculateTotalCost();
-        int remaining = availableGold - totalCost;
-
-        lblGoldStatus.setText(String.format("Gold: %d / %d (Cost: %d)", remaining, availableGold, totalCost));
-
-        // Disable Buy button if over budget or nothing selected
-        btnBuy.setEnabled(totalCost > 0 && totalCost <= availableGold);
+        // Return selected cards if Buy was clicked (result == 0), otherwise empty set
+        if (result == 0) {
+            return selectedCards;
+        }
+        return new HashSet<>();
     }
 
     private class MainPanel extends SkinnedPanel {
@@ -182,9 +158,7 @@ public class BazaarDialog {
             }
 
             // Calculate starting position for grid
-            int totalRows = (int) Math.ceil((double) cardPanels.size() / CARDS_PER_ROW);
             int gridWidth = CARDS_PER_ROW * CARD_WIDTH + (CARDS_PER_ROW - 1) * 10; // 10px spacing
-            int gridHeight = totalRows * CARD_HEIGHT + (totalRows - 1) * 15; // 15px spacing
 
             int startX = (getWidth() - gridWidth) / 2;
             int startY = 130; // Below header labels
@@ -213,18 +187,6 @@ public class BazaarDialog {
                     add(cardPanel);
                 }
             }
-
-            // Position Buy button below cards grid
-            int buttonWidth = 250;
-            int buttonHeight = 45;
-            int buttonX = (getWidth() - buttonWidth) / 2;
-            int buttonY = startY + gridHeight + 20; // 20px gap after cards
-            btnBuy.setBounds(buttonX, buttonY, buttonWidth, buttonHeight);
-
-            // Add button if not already added
-            if (btnBuy.getParent() == null) {
-                add(btnBuy);
-            }
         }
     }
 
@@ -242,6 +204,13 @@ public class BazaarDialog {
          */
         public void reveal() {
             flip();
+        }
+
+        @Override
+        public void doLayout() {
+            super.doLayout();
+            // Position card image at full size, leaving space below for price label
+            cardPicture.setBounds(0, 0, getWidth(), CARD_IMAGE_HEIGHT);
         }
 
         @Override
@@ -281,29 +250,52 @@ public class BazaarDialog {
         }
 
         /**
-         * Draw price label with coin icon below the card.
+         * Draw price label with coin icon below the card (no background box).
          */
         private void drawPriceLabel(Graphics2D g2d, int width, int height) {
             int price = BazaarPricing.getCardPrice(card);
 
-            // Draw semi-transparent background
-            g2d.setColor(new Color(0, 0, 0, 180));
-            g2d.fillRect(0, height - 30, width, 30);
+            // Calculate position in the space below the card image
+            int labelY = CARD_IMAGE_HEIGHT;
 
             // Draw coin icon
             Image coinIcon = FSkin.getImage(FSkinProp.ICO_QUEST_COIN).getIcon().getImage();
-            int iconSize = 20;
-            int iconX = (width - iconSize - 40) / 2;
-            g2d.drawImage(coinIcon, iconX, height - 25, iconSize, iconSize, null);
+            int iconSize = 28;
+            int iconX = (width - iconSize - 55) / 2;
+            int iconY = labelY + (PRICE_LABEL_HEIGHT - iconSize) / 2;
+            g2d.drawImage(coinIcon, iconX, iconY, iconSize, iconSize, null);
 
-            // Draw price text
-            g2d.setColor(Color.YELLOW);
-            g2d.setFont(new Font("Arial", Font.BOLD, 16));
+            // Draw price text with shadow for visibility
+            g2d.setFont(new Font("Arial", Font.BOLD, 20));
             FontMetrics fm = g2d.getFontMetrics();
             String priceText = String.valueOf(price);
-            int textX = iconX + iconSize + 5;
-            int textY = height - 25 + fm.getAscent();
+            int textX = iconX + iconSize + 8;
+            int textY = labelY + (PRICE_LABEL_HEIGHT + fm.getAscent()) / 2 - 2;
+
+            // Draw shadow
+            g2d.setColor(Color.BLACK);
+            g2d.drawString(priceText, textX + 1, textY + 1);
+
+            // Draw text
+            g2d.setColor(Color.YELLOW);
             g2d.drawString(priceText, textX, textY);
+        }
+
+        /**
+         * Calculate total cost of selected cards using shared pricing.
+         */
+        private int calculateTotalCost() {
+            return BazaarPricing.calculateTotalCost(selectedCards);
+        }
+
+        /**
+         * Update the gold status label.
+         */
+        private void updateGoldStatus() {
+            int totalCost = calculateTotalCost();
+            int remaining = availableGold - totalCost;
+
+            lblGoldStatus.setText(String.format("Gold: %d / %d (Cost: %d)", remaining, availableGold, totalCost));
         }
     }
 }

@@ -1,6 +1,5 @@
 package forge.screens.home.rogue;
 
-import com.google.common.collect.ImmutableList;
 import forge.localinstance.skin.FSkinProp;
 import forge.toolbox.FButton;
 import forge.toolbox.FLabel;
@@ -10,6 +9,7 @@ import forge.toolbox.FSkin.SkinnedPanel;
 import forge.util.Localizer;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.util.List;
 import javax.swing.SwingConstants;
 import net.miginfocom.swing.MigLayout;
 
@@ -28,7 +28,7 @@ public class SanctumDialog {
     }
 
     private final MainPanel panel;
-  private FOptionPane optionPane;
+    private FOptionPane optionPane;
     private SanctumChoice choice = SanctumChoice.SKIP;
 
     /**
@@ -103,7 +103,7 @@ public class SanctumDialog {
                 "Sanctum",
                 null,
                 panel,
-                ImmutableList.of(localizer.getMessage("lblSkip")),
+                List.of(localizer.getMessage("lblSkip")),
                 -1
         );
 
@@ -116,7 +116,7 @@ public class SanctumDialog {
         return choice;
     }
 
-    private class MainPanel extends SkinnedPanel {
+    private static class MainPanel extends SkinnedPanel {
         private MainPanel() {
             super(new MigLayout("insets 20, gap 0, wrap, align center", "[grow, center]", ""));
             setOpaque(false);

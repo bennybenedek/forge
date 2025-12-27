@@ -9,7 +9,6 @@ import java.awt.*;
  * Displays as a small circular node with a coin icon.
  */
 public class NodeBazaarPanel extends NodeCircularPanel {
-    private final NodeBazaar bazaarNode;
 
     /**
      * Create a panel for displaying a bazaar node.
@@ -19,7 +18,6 @@ public class NodeBazaarPanel extends NodeCircularPanel {
      */
     public NodeBazaarPanel(NodeBazaar node, boolean isCurrentNode) {
         super(node, isCurrentNode);
-        this.bazaarNode = node;
     }
 
     @Override
