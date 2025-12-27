@@ -78,12 +78,6 @@ public class RoguePathGenerator {
         List<RoguePathNode> nodes = new ArrayList<>();
         int rowIndex = 0; // Track actual row index (excluding side nodes)
 
-        // Add Bazaar at the very start (for testing)
-        // Start Bazaar is always accessible, so rowIndex = -1 (before first row)
-        NodeBazaar startBazaar = new NodeBazaar();
-        startBazaar.setRowIndex(-1);
-        nodes.add(startBazaar);
-
         for (int i = 0; i < nodeCount; i++) {
             RoguePlanebound roguePlanebound;
 
