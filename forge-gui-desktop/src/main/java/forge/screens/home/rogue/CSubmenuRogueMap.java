@@ -317,19 +317,17 @@ public enum CSubmenuRogueMap implements ICDoc {
 
         // If player bought cards, add them to deck and deduct gold
         if (!selectedCards.isEmpty()) {
-            // Add cards to player's deck
-            currentRun.getCurrentDeck().getMain().add(selectedCards);
+            // Add bought cards to player's deck (same method as card rewards)
+            currentRun.addCardsToRun(new ArrayList<>(selectedCards));
 
             // Calculate and deduct gold cost using shared pricing
             int totalCost = BazaarPricing.calculateTotalCost(selectedCards);
             currentRun.setCurrentGold(currentGold - totalCost);
 
-            // Remove all cards shown in Bazaar from reward pool (both purchased and not purchased)
-            rogueDeck.removeFromRewardPool(inventory);
-        } else {
-            // Even if nothing purchased, remove cards from pool (they were "seen")
-            rogueDeck.removeFromRewardPool(inventory);
+            // Remove ONLY the purchased cards from reward pool (not all inventory)
+            rogueDeck.removeFromRewardPool(new ArrayList<>(selectedCards));
         }
+        // If nothing purchased, don't remove anything - cards stay in pool for future Bazaars
 
         // Mark node as completed and move to next
         bazaarNode.setCompleted(true);

@@ -34,7 +34,7 @@ public class RogueRun {
     private RogueRunState runState;             // Current state of the run
 
     // Match History
-    private List<String> matchResults;     // W/L record per match
+    private final List<String> matchResults;     // W/L record per match
     private int completedMatches;          // Number of completed matches
     private int matchesWon;                // Win counter
     private int matchesLost;               // Loss counter

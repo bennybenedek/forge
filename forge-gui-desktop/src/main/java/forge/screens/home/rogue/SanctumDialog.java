@@ -59,7 +59,7 @@ public class SanctumDialog {
                 .build();
 
         // Heal button
-      FButton btnHeal = new FButton("♥ Heal " + healAmount + " Life (max. up to " + maxLife + ")");
+        FButton btnHeal = new FButton("♥ Heal " + healAmount + " Life (max. up to " + maxLife + ")");
         btnHeal.addActionListener(e -> {
             choice = SanctumChoice.HEAL;
             optionPane.setResult(0);
@@ -73,7 +73,7 @@ public class SanctumDialog {
         }
 
         // Remove cards button
-      FButton btnRemove = new FButton("Gain " + freeRemoves + " Card Removal Credits");
+        FButton btnRemove = new FButton("Gain " + freeRemoves + " Card Removal Credits");
         btnRemove.setIcon(FSkin.getIcon(FSkinProp.ICO_CARD_IMAGE));
         btnRemove.addActionListener(e -> {
             choice = SanctumChoice.REMOVE_CARDS;
