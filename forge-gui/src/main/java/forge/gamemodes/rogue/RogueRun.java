@@ -6,7 +6,6 @@ import forge.gamemodes.match.HostedMatch;
 import forge.item.PaperCard;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -20,7 +19,7 @@ public class RogueRun {
     private String name;  // Set based on filename on load
 
     // Run Configuration
-    private RogueDeck selectedRogueDeck;    // Selected Rogue Deck identifier
+    private RogueDeck selectedRogueDeck;        // Selected Rogue Deck identifier
     private String timestamp;                   // Creation timestamp
 
     // Run State
@@ -29,16 +28,14 @@ public class RogueRun {
     private int startingLife;                   // Initial life (default: 20)
     private int currentGold;                    // Currency (for future Bazaar support)
     private int currentEchoes;                  // Meta-currency (for future Codex support)
-    private RoguePath path;                      // The generated path
+    private RoguePath path;                     // The generated path
     private int currentNodeIndex;               // Current position on path
     private RogueRunState runState;             // Current state of the run
 
     // Match History
-    private final List<String> matchResults;     // W/L record per match
-    private int completedMatches;          // Number of completed matches
-    private int matchesWon;                // Win counter
-    private int matchesLost;               // Loss counter
-    private int removalCredits;            // Credits for removing cards from deck (from rewards and Sanctum)
+    private int matchesWon;                     // Win counter
+    private int matchesLost;                    // Loss counter
+    private int removalCredits;                 // Credits for removing cards from deck (from rewards and Sanctum)
 
     // Transient (runtime only, not serialized)
     @XStreamOmitField
@@ -46,17 +43,14 @@ public class RogueRun {
 
     // Constructors
     public RogueRun() {
-        this.startingLife = 20;
-        this.currentLife = 20;
-        this.currentGold = 2;
-        this.currentEchoes = 2;
-        this.currentNodeIndex = 0;
-        this.runState = RogueRunState.STARTED;
-        this.matchResults = new ArrayList<>();
-        this.completedMatches = 0;
+        this.setStartingLife(20);
+        this.setCurrentGold(0);
+        this.setCurrentEchoes(0);
+        this.setCurrentNodeIndex(0);
+        this.setRemovalCredits(0);
+        this.setRunState(RogueRunState.STARTED);
         this.matchesWon = 0;
         this.matchesLost = 0;
-        this.removalCredits = 0;
         stamp();
     }
 
@@ -138,17 +132,14 @@ public class RogueRun {
 
     // Match result tracking
     public void recordMatchResult(boolean won) {
-        completedMatches++;
         if (won) {
             matchesWon++;
-            matchResults.add("W");
             // Mark current node as completed
             if (getCurrentNode() != null) {
                 getCurrentNode().setCompleted(true);
             }
         } else {
             matchesLost++;
-            matchResults.add("L");
         }
     }
 
@@ -183,10 +174,6 @@ public class RogueRun {
         currentLife = Math.min(currentLife + amount, startingLife);
     }
 
-    public void setLifeAfterMatch(int finalLife) {
-        this.currentLife = finalLife;
-    }
-
     // Match hosting (transient)
     public void setHostedMatch(HostedMatch match) {
         this.hostedMatch = match;
@@ -216,10 +203,6 @@ public class RogueRun {
         return selectedRogueDeck;
     }
 
-    public void setSelectedRogueDeck(RogueDeck selectedRogueDeck) {
-        this.selectedRogueDeck = selectedRogueDeck;
-    }
-
     public String getTimestamp() {
         return timestamp;
     }
@@ -246,7 +229,7 @@ public class RogueRun {
 
     public void setStartingLife(int startingLife) {
         this.startingLife = startingLife;
-        this.currentLife = startingLife;
+        this.setCurrentLife(this.startingLife);
     }
 
     public int getCurrentGold() {
@@ -279,22 +262,6 @@ public class RogueRun {
 
     public void setCurrentNodeIndex(int currentNodeIndex) {
         this.currentNodeIndex = currentNodeIndex;
-    }
-
-    public List<String> getMatchResults() {
-        return matchResults;
-    }
-
-    public int getCompletedMatches() {
-        return completedMatches;
-    }
-
-    public int getMatchesWon() {
-        return matchesWon;
-    }
-
-    public int getMatchesLost() {
-        return matchesLost;
     }
 
     public int getRemovalCredits() {

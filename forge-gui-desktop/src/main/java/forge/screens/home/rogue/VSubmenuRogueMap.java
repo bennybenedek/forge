@@ -49,6 +49,12 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
         .fontStyle(Font.BOLD)
         .build();
 
+    private final FLabel lblRemovalCredits = new FLabel.Builder()
+        .text("Removal Credits: 0")
+        .fontSize(14)
+        .fontStyle(Font.BOLD)
+        .build();
+
     private final PathVisualizerPanel pathVisualizer = new PathVisualizerPanel();
     private final FScrollPane scrollPathDisplay;
 
@@ -58,8 +64,9 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
     VSubmenuRogueMap() {
         lblTitle.setBackground(FSkin.getColor(FSkin.Colors.CLR_THEME2));
 
-        // Add coin icon to gold label
+        // Add icons to labels
         lblGold.setIcon(FSkin.getIcon(FSkinProp.ICO_QUEST_COIN));
+        lblRemovalCredits.setIcon(FSkin.getIcon(FSkinProp.ICO_CARD_IMAGE));
 
         // Setup buttons with icons
         btnEditDeck = new FButton("Edit Rogue Deck");
@@ -80,10 +87,12 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
         if (run != null) {
             lblLife.setText("♥ Life: " + run.getCurrentLife());
             lblGold.setText("Gold: " + run.getCurrentGold());
+            lblRemovalCredits.setText("Removal Credits: " + run.getRemovalCredits());
             pathVisualizer.updatePath(run);
         } else {
             lblLife.setText("♥ Life: 20");
             lblGold.setText("Gold: 0");
+            lblRemovalCredits.setText("Removal Credits: 0");
             pathVisualizer.clearPath();
         }
     }
@@ -109,8 +118,9 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
         VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().setLayout(new MigLayout("insets 0, gap 0, wrap"));
 
         VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(lblTitle, "w 98%!, h 30px!, gap 1% 0 15px 15px");
-        VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(lblLife, "ax center, gap 0 0 10px 10px, split 2");
+        VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(lblLife, "ax center, gap 0 0 10px 10px, split 3");
         VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(lblGold, "gapleft 20px");
+        VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(lblRemovalCredits, "gapleft 20px");
         VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(scrollPathDisplay, "w 96%!, gap 2% 2% 0 0, pushy, growy");
         VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(btnEnterNode, "w 30%!, h 40px!, ax center, gap 0 2% 10px 20px, split 2");
         VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(btnEditDeck, "w 30%!, h 40px!");
