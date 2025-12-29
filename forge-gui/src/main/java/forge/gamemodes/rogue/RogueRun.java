@@ -104,10 +104,6 @@ public class RogueRun {
         }
     }
 
-    public RogueRunState getRunState() {
-        return runState;
-    }
-
     public void setRunState(RogueRunState state) {
         this.runState = state;
     }
@@ -115,6 +111,7 @@ public class RogueRun {
     /**
      * Called after deserialization to ensure state is initialized.
      * Handles backward compatibility with old save files.
+     * Is used by framework even though looks unused.
      */
     private Object readResolve() {
         // Initialize state if it's null (old save files)
@@ -159,14 +156,6 @@ public class RogueRun {
      */
     public void addRemovalCredits(int count) {
         removalCredits += count;
-    }
-
-    public void removeCardsFromRun(List<PaperCard> cards) {
-        if (currentDeck != null && cards != null) {
-            for (PaperCard card : cards) {
-                currentDeck.getMain().remove(card);
-            }
-        }
     }
 
     // Life management
