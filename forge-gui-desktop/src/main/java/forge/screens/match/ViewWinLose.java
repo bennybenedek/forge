@@ -1,20 +1,5 @@
 package forge.screens.match;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Point;
-import java.awt.Toolkit;
-import java.awt.datatransfer.StringSelection;
-import java.util.Collections;
-import java.util.List;
-
-import javax.swing.JPanel;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
-
-import org.apache.commons.lang3.StringUtils;
-
 import forge.game.GameLogEntry;
 import forge.game.GameLogEntryType;
 import forge.game.GameView;
@@ -23,22 +8,21 @@ import forge.gui.UiCommand;
 import forge.gui.interfaces.IWinLoseView;
 import forge.item.PaperCard;
 import forge.localinstance.properties.ForgePreferences.FPref;
-import forge.screens.home.rogue.CardRewardDialog;
 import forge.localinstance.skin.FSkinProp;
 import forge.model.FModel;
-import forge.toolbox.FButton;
-import forge.toolbox.FLabel;
-import forge.toolbox.FOverlay;
-import forge.toolbox.FScrollPane;
-import forge.toolbox.FSkin;
-import forge.toolbox.FSkin.Colors;
-import forge.toolbox.FSkin.SkinColor;
-import forge.toolbox.FSkin.SkinIcon;
-import forge.toolbox.FSkin.SkinnedLabel;
-import forge.toolbox.FSkin.SkinnedPanel;
-import forge.toolbox.FTextArea;
+import forge.screens.home.rogue.CardRewardDialog;
+import forge.toolbox.*;
+import forge.toolbox.FSkin.*;
 import forge.util.Localizer;
+import java.awt.*;
+import java.awt.datatransfer.StringSelection;
+import java.util.Collections;
+import java.util.List;
+import javax.swing.JPanel;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import net.miginfocom.swing.MigLayout;
+import org.apache.commons.lang3.StringUtils;
 
 public class ViewWinLose implements IWinLoseView<FButton> {
     private final ControlWinLose control;
@@ -101,11 +85,8 @@ public class ViewWinLose implements IWinLoseView<FButton> {
                 break;
             case RogueCommander:
                 try {
-                    System.out.println("DEBUG: Attempting to create RogueWinLose handler...");
                     control = new RogueWinLose(this, game0, matchUI);
-                    System.out.println("DEBUG: RogueWinLose handler created successfully!");
                 } catch (Exception e) {
-                    System.err.println("ERROR: Failed to create RogueWinLose handler!");
                     e.printStackTrace();
                     // control remains null, will fall back to default
                 }
