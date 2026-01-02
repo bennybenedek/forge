@@ -219,12 +219,12 @@ public class RogueConfig {
     }
 
     /**
-     * Generate the default linear path for a run.
-     * Uses PathGenerator to create a randomized path from available planebounds.
+     * Generate the default branched path for a run.
+     * Uses PathGenerator to create a randomized branched path from available planebounds.
      *
      */
     public static RoguePath getDefaultPath() {
-        return RoguePathGenerator.generateRandomLinearPath(5);
+        return RoguePathGenerator.generateRandomBranchedPath();
     }
 
     // Helper method to get cards from the database

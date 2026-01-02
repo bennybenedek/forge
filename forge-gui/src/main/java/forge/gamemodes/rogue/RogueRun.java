@@ -30,6 +30,7 @@ public class RogueRun {
     private int currentEchoes;                  // Meta-currency (for future Codex support)
     private RoguePath path;                     // The generated path
     private int currentNodeIndex;               // Current position on path
+    private Integer selectedNodeIndex;          // Player's selected node (null if none)
     private RogueRunState runState;             // Current state of the run
 
     // Match History
@@ -251,6 +252,34 @@ public class RogueRun {
 
     public void setCurrentNodeIndex(int currentNodeIndex) {
         this.currentNodeIndex = currentNodeIndex;
+    }
+
+    public Integer getSelectedNodeIndex() {
+        return selectedNodeIndex;
+    }
+
+    public void setSelectedNodeIndex(Integer selectedNodeIndex) {
+        this.selectedNodeIndex = selectedNodeIndex;
+    }
+
+    /**
+     * Get indices of nodes reachable from the current node.
+     * @return List of reachable node indices
+     */
+    public List<Integer> getReachableNodeIndices() {
+        if (path == null) {
+            return new java.util.ArrayList<>();
+        }
+        return path.getReachableNodeIndices(currentNodeIndex);
+    }
+
+    /**
+     * Check if a node at the given index is reachable from the current position.
+     * @param nodeIndex The index to check
+     * @return true if the node is reachable, false otherwise
+     */
+    public boolean isNodeReachable(int nodeIndex) {
+        return getReachableNodeIndices().contains(nodeIndex);
     }
 
     public int getRemovalCredits() {

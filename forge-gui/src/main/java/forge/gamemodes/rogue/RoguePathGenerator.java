@@ -131,4 +131,120 @@ public class RoguePathGenerator {
         // Create linear path from nodes
         return RoguePath.createLinearPath(nodes.toArray(new RoguePathNode[0]));
     }
+
+    /**
+     * Generate a random branched path with multiple planes per row.
+     * Path structure:
+     * Row 0: 3 NORMAL planes (columns 0, 1, 2)
+     * Row 1: 2 NORMAL planes (columns 0, 1) + Sanctum
+     * Row 2: 1 ELITE plane (column 0) + Bazaar
+     * Row 3: 2 NORMAL planes (columns 0, 1)
+     * Row 4: 1 BOSS plane (column 0)
+     * Total: 9 planes (7 NORMAL + 1 ELITE + 1 BOSS)
+     *
+     * @return RoguePath with branched structure
+     */
+    public static RoguePath generateRandomBranchedPath() {
+        List<RoguePlanebound> availablePlanebounds = RogueConfig.loadPlanebounds();
+
+        if (availablePlanebounds.isEmpty()) {
+            throw new IllegalStateException("No planebounds available for path generation");
+        }
+
+        // Split planebounds into normal, elite and boss lists
+        List<RoguePlanebound> normalPlanebounds = new ArrayList<>();
+        List<RoguePlanebound> elitePlanebounds = new ArrayList<>();
+        List<RoguePlanebound> bossPlanebounds = new ArrayList<>();
+
+        for (RoguePlanebound planebound : availablePlanebounds) {
+            if (planebound.type() == RoguePlaneboundType.BOSS) {
+                bossPlanebounds.add(planebound);
+            } else if (planebound.type() == RoguePlaneboundType.ELITE) {
+                elitePlanebounds.add(planebound);
+            } else {
+                normalPlanebounds.add(planebound);
+            }
+        }
+
+        // Branched path requires: 7 NORMAL, 1 ELITE, 1 BOSS
+        int requiredNormal = 7;
+        int requiredElite = 1;
+        int requiredBoss = 1;
+
+        // Validate we have enough unique planebounds of each type
+        if (normalPlanebounds.size() < requiredNormal) {
+            throw new IllegalStateException(
+                String.format("Not enough normal planebounds: need %d, have %d",
+                    requiredNormal, normalPlanebounds.size()));
+        }
+        if (elitePlanebounds.size() < requiredElite) {
+            throw new IllegalStateException(
+                String.format("Not enough elite planebounds: need %d, have %d",
+                    requiredElite, elitePlanebounds.size()));
+        }
+        if (bossPlanebounds.size() < requiredBoss) {
+            throw new IllegalStateException(
+                String.format("Not enough boss planebounds: need %d, have %d",
+                    requiredBoss, bossPlanebounds.size()));
+        }
+
+        // Shuffle lists for randomization
+        Collections.shuffle(normalPlanebounds, MyRandom.getRandom());
+        Collections.shuffle(elitePlanebounds, MyRandom.getRandom());
+        Collections.shuffle(bossPlanebounds, MyRandom.getRandom());
+
+        List<RoguePathNode> nodes = new ArrayList<>();
+        int normalIndex = 0;
+
+        // Row 0: 3 NORMAL planes (columns 0, 1, 2)
+        for (int col = 0; col < 3; col++) {
+            NodePlanebound node = new NodePlanebound(normalPlanebounds.get(normalIndex++));
+            node.setRowIndex(0);
+            node.setColumnIndex(col);
+            nodes.add(node);
+        }
+
+        // Row 1: 2 NORMAL planes (columns 0, 1)
+        for (int col = 0; col < 2; col++) {
+            NodePlanebound node = new NodePlanebound(normalPlanebounds.get(normalIndex++));
+            node.setRowIndex(1);
+            node.setColumnIndex(col);
+            nodes.add(node);
+        }
+
+        // Sanctum after Row 1 (column -1 indicates side node)
+        NodeSanctum sanctum = new NodeSanctum(5, 2);
+        sanctum.setRowIndex(1);
+        sanctum.setColumnIndex(-1);
+        nodes.add(sanctum);
+
+        // Row 2: 1 ELITE plane (column 0)
+        NodePlanebound eliteNode = new NodePlanebound(elitePlanebounds.get(0));
+        eliteNode.setRowIndex(2);
+        eliteNode.setColumnIndex(0);
+        nodes.add(eliteNode);
+
+        // Bazaar after Row 2 (column -1 indicates side node)
+        NodeBazaar bazaar = new NodeBazaar();
+        bazaar.setRowIndex(2);
+        bazaar.setColumnIndex(-1);
+        nodes.add(bazaar);
+
+        // Row 3: 2 NORMAL planes (columns 0, 1)
+        for (int col = 0; col < 2; col++) {
+            NodePlanebound node = new NodePlanebound(normalPlanebounds.get(normalIndex++));
+            node.setRowIndex(3);
+            node.setColumnIndex(col);
+            nodes.add(node);
+        }
+
+        // Row 4: 1 BOSS plane (column 0)
+        NodePlanebound bossNode = new NodePlanebound(bossPlanebounds.get(0));
+        bossNode.setRowIndex(4);
+        bossNode.setColumnIndex(0);
+        nodes.add(bossNode);
+
+        // Create path from nodes
+        return RoguePath.createLinearPath(nodes.toArray(new RoguePathNode[0]));
+    }
 }

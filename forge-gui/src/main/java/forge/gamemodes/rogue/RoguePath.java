@@ -81,6 +81,107 @@ public class RoguePath {
         return currentIndex >= 0 && currentIndex < nodes.size() - 1;
     }
 
+    /**
+     * Get all nodes in a specific row (excludes side nodes with same rowIndex but col=-1).
+     * @param rowIndex The row index to filter by
+     * @return List of nodes in the specified row
+     */
+    public List<RoguePathNode> getNodesInRow(int rowIndex) {
+        List<RoguePathNode> rowNodes = new ArrayList<>();
+        for (RoguePathNode node : nodes) {
+            if (node.getRowIndex() == rowIndex && node.getColumnIndex() >= 0) {
+                rowNodes.add(node);
+            }
+        }
+        return rowNodes;
+    }
+
+    /**
+     * Get the maximum row index in the path.
+     * @return Highest rowIndex value
+     */
+    public int getMaxRow() {
+        int maxRow = 0;
+        for (RoguePathNode node : nodes) {
+            if (node.getRowIndex() > maxRow) {
+                maxRow = node.getRowIndex();
+            }
+        }
+        return maxRow;
+    }
+
+    /**
+     * Calculate which nodes in the next row are reachable from the given node.
+     * Reachability rules:
+     * - Single node in row OR side node (col=-1): connects to ALL nodes in next row
+     * - Multi-column plane: connects to nodes at (col-1, col, col+1) in next row
+     *
+     * @param fromNode The node to check reachability from
+     * @return List of reachable nodes in the next row
+     */
+    public List<RoguePathNode> getReachableNodes(RoguePathNode fromNode) {
+        if (fromNode == null) {
+            return new ArrayList<>();
+        }
+
+        int nextRow = fromNode.getRowIndex() + 1;
+        List<RoguePathNode> nextRowNodes = getNodesInRow(nextRow);
+
+        if (nextRowNodes.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        // Check if fromNode is single in its row OR is a side node (col=-1)
+        List<RoguePathNode> currentRowNodes = getNodesInRow(fromNode.getRowIndex());
+        boolean isSingleNode = currentRowNodes.size() == 1;
+        boolean isSideNode = fromNode.getColumnIndex() == -1;
+
+        // Single nodes and side nodes connect to ALL in next row
+        if (isSingleNode || isSideNode) {
+            return nextRowNodes;
+        }
+
+        // Multi-column plane: connect to adjacent columns (col-1, col, col+1)
+        List<RoguePathNode> reachable = new ArrayList<>();
+        int fromCol = fromNode.getColumnIndex();
+
+        for (RoguePathNode node : nextRowNodes) {
+            int toCol = node.getColumnIndex();
+            // Check if column is within ±1 range
+            if (Math.abs(toCol - fromCol) <= 1) {
+                reachable.add(node);
+            }
+        }
+
+        return reachable;
+    }
+
+    /**
+     * Get indices of nodes reachable from the node at the given index.
+     * This is the index-based version for UI usage.
+     *
+     * @param fromNodeIndex The index of the node to check reachability from
+     * @return List of indices of reachable nodes
+     */
+    public List<Integer> getReachableNodeIndices(int fromNodeIndex) {
+        if (fromNodeIndex < 0 || fromNodeIndex >= nodes.size()) {
+            return new ArrayList<>();
+        }
+
+        RoguePathNode fromNode = nodes.get(fromNodeIndex);
+        List<RoguePathNode> reachableNodes = getReachableNodes(fromNode);
+
+        List<Integer> indices = new ArrayList<>();
+        for (RoguePathNode node : reachableNodes) {
+            int index = nodes.indexOf(node);
+            if (index >= 0) {
+                indices.add(index);
+            }
+        }
+
+        return indices;
+    }
+
     @Override
     public String toString() {
         return "Path with " + nodes.size() + " nodes (" + getCompletedCount() + " completed)";

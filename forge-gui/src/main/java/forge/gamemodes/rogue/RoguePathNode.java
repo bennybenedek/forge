@@ -8,10 +8,12 @@ public abstract class RoguePathNode {
 
     private boolean completed;
     private int rowIndex;
+    private int columnIndex = 0; // Column position within row (-1 for side nodes)
 
     protected RoguePathNode() {
         this.completed = false;
         this.rowIndex = 0;
+        this.columnIndex = 0;
     }
 
     // Common getters and setters
@@ -29,6 +31,14 @@ public abstract class RoguePathNode {
 
     public void setRowIndex(int rowIndex) {
         this.rowIndex = rowIndex;
+    }
+
+    public int getColumnIndex() {
+        return columnIndex;
+    }
+
+    public void setColumnIndex(int columnIndex) {
+        this.columnIndex = columnIndex;
     }
 
     /**

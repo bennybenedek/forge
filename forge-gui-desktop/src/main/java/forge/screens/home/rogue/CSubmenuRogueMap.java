@@ -61,10 +61,125 @@ public enum CSubmenuRogueMap implements ICDoc {
     public void initialize() {
         view.getBtnEnterNode().addActionListener(actEnterNode);
         view.getBtnEditDeck().addActionListener(actEditDeck);
+        view.getPathVisualizer().setNodeClickHandler(this::handleNodeClick);
+    }
+
+    /**
+     * Handle click on a node panel.
+     */
+    private void handleNodeClick(NodePanel panel) {
+        if (currentRun == null) {
+            return;
+        }
+
+        // Get the index of the clicked node
+        int nodeIndex = view.getPathVisualizer().getNodePanels().indexOf(panel);
+        if (nodeIndex < 0) {
+            return;
+        }
+
+        RoguePathNode clickedNode = currentRun.getPath().getNode(nodeIndex);
+        if (clickedNode == null) {
+            return;
+        }
+
+        // Only allow selecting Planebound nodes (not Sanctum, Bazaar, etc.)
+        if (!(clickedNode instanceof NodePlanebound)) {
+            return;
+        }
+
+        RoguePathNode currentNode = currentRun.getCurrentNode();
+        if (currentNode == null) {
+            return;
+        }
+
+        // Only allow selecting nodes in the current row
+        if (clickedNode.getRowIndex() != currentNode.getRowIndex()) {
+            return;
+        }
+
+        // Allow clicking any plane in the current row to select it
+        // Set selection and update view
+        currentRun.setSelectedNodeIndex(nodeIndex);
+        updateViewWithSelection();
     }
 
     private void updateView() {
         view.updateDisplay(currentRun);
+        updateViewWithSelection();
+    }
+
+    /**
+     * Update the view with selection state and button text.
+     */
+    private void updateViewWithSelection() {
+        if (currentRun == null) {
+            return;
+        }
+
+        // Update path visualizer selection
+        view.getPathVisualizer().setSelectedNode(currentRun.getSelectedNodeIndex());
+
+        // Update button state based on selection
+        RoguePathNode currentNode = currentRun.getCurrentNode();
+        Integer selectedIndex = currentRun.getSelectedNodeIndex();
+
+        if (currentNode == null) {
+            view.getBtnEnterNode().setEnabled(false);
+            view.getBtnEnterNode().setText("No Node Available");
+            return;
+        }
+
+        // Check if current node is a Planebound that requires selection
+        if (currentNode instanceof NodePlanebound) {
+            // Check if there are multiple planes in the current row
+            List<RoguePathNode> currentRowNodes = currentRun.getPath().getNodesInRow(currentNode.getRowIndex());
+            List<RoguePathNode> currentRowPlanes = new ArrayList<>();
+            for (RoguePathNode node : currentRowNodes) {
+                if (node instanceof NodePlanebound) {
+                    currentRowPlanes.add(node);
+                }
+            }
+
+            // If multiple planes in row, require selection
+            if (currentRowPlanes.size() > 1) {
+                // Check if selected node is one of the planes in current row
+                boolean validSelection = false;
+                RoguePathNode selectedNode = null;
+                if (selectedIndex != null) {
+                    selectedNode = currentRun.getPath().getNode(selectedIndex);
+                    if (selectedNode != null && selectedNode instanceof NodePlanebound) {
+                        // Check if selected node is in the current row
+                        if (selectedNode.getRowIndex() == currentNode.getRowIndex()) {
+                            validSelection = true;
+                        }
+                    }
+                }
+
+                if (validSelection) {
+                    view.getBtnEnterNode().setEnabled(true);
+                    view.getBtnEnterNode().setText("Enter " + ((NodePlanebound) selectedNode).getRoguePlanebound().planeboundName());
+                } else {
+                    view.getBtnEnterNode().setEnabled(false);
+                    view.getBtnEnterNode().setText("Select Plane First");
+                }
+            } else {
+                // Single plane - auto-select and enable
+                currentRun.setSelectedNodeIndex(currentRun.getCurrentNodeIndex());
+                view.getPathVisualizer().setSelectedNode(currentRun.getSelectedNodeIndex());
+                view.getBtnEnterNode().setEnabled(true);
+                view.getBtnEnterNode().setText("Enter " + ((NodePlanebound) currentNode).getRoguePlanebound().planeboundName());
+            }
+        } else if (currentNode instanceof NodeSanctum) {
+            view.getBtnEnterNode().setEnabled(true);
+            view.getBtnEnterNode().setText("Enter Sanctum");
+        } else if (currentNode instanceof NodeBazaar) {
+            view.getBtnEnterNode().setEnabled(true);
+            view.getBtnEnterNode().setText("Enter Bazaar");
+        } else {
+            view.getBtnEnterNode().setEnabled(true);
+            view.getBtnEnterNode().setText("Enter Node");
+        }
     }
 
     private void enterNode() {

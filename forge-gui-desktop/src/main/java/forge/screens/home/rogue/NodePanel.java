@@ -3,6 +3,8 @@ package forge.screens.home.rogue;
 import forge.gamemodes.rogue.RoguePathNode;
 import forge.toolbox.FSkin.SkinnedPanel;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 /**
  * Abstract base class for all node panel visualizations.
@@ -15,6 +17,8 @@ public abstract class NodePanel extends SkinnedPanel {
     protected final RoguePathNode node;
     protected final boolean isCurrentNode;
     protected final boolean isCompleted;
+    protected boolean isSelected = false;
+    protected NodeClickHandler clickHandler;
 
     /**
      * Create a panel for displaying a path node.
@@ -32,6 +36,38 @@ public abstract class NodePanel extends SkinnedPanel {
         setPreferredSize(new Dimension(PANEL_WIDTH, PANEL_HEIGHT));
         setMinimumSize(new Dimension(PANEL_WIDTH, PANEL_HEIGHT));
         setMaximumSize(new Dimension(PANEL_WIDTH, PANEL_HEIGHT));
+
+        // Add mouse listener for click handling
+        addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (clickHandler != null) {
+                    clickHandler.onNodeClicked(NodePanel.this);
+                }
+            }
+        });
+    }
+
+    /**
+     * Set the click handler for this panel.
+     */
+    public void setClickHandler(NodeClickHandler handler) {
+        this.clickHandler = handler;
+    }
+
+    /**
+     * Set whether this node is selected.
+     */
+    public void setSelected(boolean selected) {
+        this.isSelected = selected;
+        repaint();
+    }
+
+    /**
+     * Check if this node is selected.
+     */
+    public boolean isSelected() {
+        return isSelected;
     }
 
     @Override
@@ -55,10 +91,14 @@ public abstract class NodePanel extends SkinnedPanel {
         Color borderColor;
         int borderWidth;
 
-        if (isCurrentNode) {
-            // Current node: thick gold border
+        if (isSelected) {
+            // Selected node: thick bright gold border
             borderColor = new Color(255, 215, 0);
             borderWidth = 4;
+        } else if (isCurrentNode) {
+            // Current node: thick dimmer gold border
+            borderColor = new Color(200, 160, 0);
+            borderWidth = 3;
         } else if (isCompleted) {
             // Completed node: thin green border
             borderColor = new Color(0, 200, 0);
@@ -90,5 +130,12 @@ public abstract class NodePanel extends SkinnedPanel {
 
     public RoguePathNode getNode() {
         return node;
+    }
+
+    /**
+     * Interface for handling node click events.
+     */
+    public interface NodeClickHandler {
+        void onNodeClicked(NodePanel panel);
     }
 }
