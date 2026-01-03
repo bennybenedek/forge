@@ -92,13 +92,9 @@ public abstract class NodePanel extends SkinnedPanel {
         int borderWidth;
 
         if (isSelected) {
-            // Selected node: thick bright gold border
+            // Selected node: thick bright gold border (used for all node types)
             borderColor = new Color(255, 215, 0);
             borderWidth = 4;
-        } else if (isCurrentNode) {
-            // Current node: thick dimmer gold border
-            borderColor = new Color(200, 160, 0);
-            borderWidth = 3;
         } else if (isCompleted) {
             // Completed node: thin green border
             borderColor = new Color(0, 200, 0);

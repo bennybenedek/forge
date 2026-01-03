@@ -6,6 +6,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Forge is an open-source Magic: The Gathering rules engine and game client written in Java. It supports cross-platform play (Windows, Mac, Linux, Android) and includes single-player modes (Adventure, Quest) and multiplayer formats (Sealed, Draft, Commander, Cube).
 
+## Important: Compilation Policy
+
+**DO NOT compile the code automatically.** The user will handle all compilation themselves. Only compile if explicitly asked by the user.
+
 ## Build Commands
 
 ### Initial Setup

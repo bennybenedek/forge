@@ -98,9 +98,15 @@ public enum CSubmenuRogueMap implements ICDoc {
             return;
         }
 
-        // Allow clicking any plane in the current row to select it
-        // Set selection and update view
-        currentRun.setSelectedNodeIndex(nodeIndex);
+        // Only allow selecting reachable nodes in the current row
+        List<Integer> visibleInCurrentRow = currentRun.getPath().getVisibleNodesInCurrentRow(currentNode.getRowIndex());
+        if (!visibleInCurrentRow.contains(nodeIndex)) {
+            return; // Not reachable, ignore click
+        }
+
+        // Allow clicking any reachable plane in the current row to select it
+        // Set as current node and update view
+        currentRun.setCurrentNodeIndex(nodeIndex);
         updateViewWithSelection();
     }
 
@@ -118,11 +124,11 @@ public enum CSubmenuRogueMap implements ICDoc {
         }
 
         // Update path visualizer selection
-        view.getPathVisualizer().setSelectedNode(currentRun.getSelectedNodeIndex());
+        view.getPathVisualizer().setSelectedNode(currentRun.getCurrentNodeIndex());
 
-        // Update button state based on selection
+        // Update button state based on current node
         RoguePathNode currentNode = currentRun.getCurrentNode();
-        Integer selectedIndex = currentRun.getSelectedNodeIndex();
+        int currentIndex = currentRun.getCurrentNodeIndex();
 
         if (currentNode == null) {
             view.getBtnEnterNode().setEnabled(false);
@@ -130,7 +136,7 @@ public enum CSubmenuRogueMap implements ICDoc {
             return;
         }
 
-        // Check if current node is a Planebound that requires selection
+        // Check if current node is a Planebound
         if (currentNode instanceof NodePlanebound) {
             // Check if there are multiple planes in the current row
             List<RoguePathNode> currentRowNodes = currentRun.getPath().getNodesInRow(currentNode.getRowIndex());
@@ -141,32 +147,20 @@ public enum CSubmenuRogueMap implements ICDoc {
                 }
             }
 
-            // If multiple planes in row, require selection
+            // If multiple planes in row, check if current selection is valid
             if (currentRowPlanes.size() > 1) {
-                // Check if selected node is one of the planes in current row
-                boolean validSelection = false;
-                RoguePathNode selectedNode = null;
-                if (selectedIndex != null) {
-                    selectedNode = currentRun.getPath().getNode(selectedIndex);
-                    if (selectedNode != null && selectedNode instanceof NodePlanebound) {
-                        // Check if selected node is in the current row
-                        if (selectedNode.getRowIndex() == currentNode.getRowIndex()) {
-                            validSelection = true;
-                        }
-                    }
-                }
-
-                if (validSelection) {
+                // Check if current node is one of the planes in current row
+                RoguePathNode currentNodeCheck = currentRun.getPath().getNode(currentIndex);
+                if (currentNodeCheck instanceof NodePlanebound &&
+                    currentNodeCheck.getRowIndex() == currentNode.getRowIndex()) {
                     view.getBtnEnterNode().setEnabled(true);
-                    view.getBtnEnterNode().setText("Enter " + ((NodePlanebound) selectedNode).getRoguePlanebound().planeboundName());
+                    view.getBtnEnterNode().setText("Enter " + ((NodePlanebound) currentNodeCheck).getRoguePlanebound().planeName());
                 } else {
                     view.getBtnEnterNode().setEnabled(false);
                     view.getBtnEnterNode().setText("Select Plane First");
                 }
             } else {
-                // Single plane - auto-select and enable
-                currentRun.setSelectedNodeIndex(currentRun.getCurrentNodeIndex());
-                view.getPathVisualizer().setSelectedNode(currentRun.getSelectedNodeIndex());
+                // Single plane - enable button
                 view.getBtnEnterNode().setEnabled(true);
                 view.getBtnEnterNode().setText("Enter " + ((NodePlanebound) currentNode).getRoguePlanebound().planeboundName());
             }
@@ -183,11 +177,16 @@ public enum CSubmenuRogueMap implements ICDoc {
     }
 
     private void enterNode() {
-        if (currentRun == null || currentRun.getCurrentNode() == null) {
+        if (currentRun == null) {
             return;
         }
 
+        // Use current node
         RoguePathNode node = currentRun.getCurrentNode();
+
+        if (node == null) {
+            return;
+        }
 
         // Handle different node types
         if (node instanceof NodePlanebound) {

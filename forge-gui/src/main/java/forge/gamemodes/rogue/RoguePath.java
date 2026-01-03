@@ -182,6 +182,46 @@ public class RoguePath {
         return indices;
     }
 
+    /**
+     * Get indices of visible nodes in the current row based on last completed node in previous row.
+     * At the start (first row), all nodes in current row are visible.
+     * For subsequent rows, only nodes reachable from the completed node in previous row are visible.
+     *
+     * @param currentRow The current row index
+     * @return List of indices of visible nodes in current row
+     */
+    public List<Integer> getVisibleNodesInCurrentRow(int currentRow) {
+        List<Integer> visibleIndices = new ArrayList<>();
+
+        // Find last completed node in previous row
+        int previousRow = currentRow - 1;
+        Integer lastCompletedInPrevRow = null;
+
+        if (previousRow >= 0) {
+            for (int i = 0; i < nodes.size(); i++) {
+                if (nodes.get(i).getRowIndex() == previousRow && nodes.get(i).isCompleted()) {
+                    lastCompletedInPrevRow = i;
+                    break;
+                }
+            }
+        }
+
+        // Calculate visible nodes
+        if (lastCompletedInPrevRow != null) {
+            // Return reachable nodes from last completed in previous row
+            return getReachableNodeIndices(lastCompletedInPrevRow);
+        } else {
+            // First row - all nodes in current row are visible
+            for (int i = 0; i < nodes.size(); i++) {
+                if (nodes.get(i).getRowIndex() == currentRow) {
+                    visibleIndices.add(i);
+                }
+            }
+        }
+
+        return visibleIndices;
+    }
+
     @Override
     public String toString() {
         return "Path with " + nodes.size() + " nodes (" + getCompletedCount() + " completed)";

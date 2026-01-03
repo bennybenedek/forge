@@ -19,7 +19,7 @@ public class PathVisualizerPanel extends SkinnedPanel {
     private static final int SIDE_NODE_MARGIN = 20;  // Right margin for side nodes
     private static final int PATH_LINE_WIDTH = 4;
 
-    private List<NodePanel> nodePanels;
+    private final List<NodePanel> nodePanels;
     private int currentNodeIndex;
     private RogueRun currentRun;  // Store run for reachability checks
     private NodePanel.NodeClickHandler clickHandler;
@@ -62,37 +62,18 @@ public class PathVisualizerPanel extends SkinnedPanel {
         currentNodeIndex = path.getNodes().indexOf(currentNode);
         int currentRow = currentNode != null ? currentNode.getRowIndex() : 0;
 
-        // Check if there are multiple planes in current row
-        List<RoguePathNode> currentRowNodes = path.getNodesInRow(currentRow);
-        int currentRowPlaneCount = 0;
-        for (RoguePathNode n : currentRowNodes) {
-            if (n instanceof forge.gamemodes.rogue.NodePlanebound) {
-                currentRowPlaneCount++;
-            }
-        }
-        boolean multiPlaneRow = currentRowPlaneCount > 1;
-
-        // Get reachable node indices for face-down logic
-        List<Integer> reachableIndices = run.getReachableNodeIndices();
+        // Get visible nodes in current row (reachable from last completed in previous row)
+        List<Integer> visibleInCurrentRow = path.getVisibleNodesInCurrentRow(currentRow);
 
         // Create panels for each node
         List<RoguePathNode> nodes = path.getNodes();
         for (int i = 0; i < nodes.size(); i++) {
             RoguePathNode node = nodes.get(i);
-            // Don't show "current" border when there are multiple planes in current row (use selection instead)
-            boolean isCurrent = (i == currentNodeIndex) && !multiPlaneRow;
+            boolean isCurrent = false;
 
-            // Face-down logic: only current row and completed nodes are face-up
-            boolean isFaceDown = true;  // Default to face-down
-
-            if (node.isCompleted()) {
-                // Completed nodes: always face-up
-                isFaceDown = false;
-            } else if (node.getRowIndex() == currentRow) {
-                // Current row: always face-up
-                isFaceDown = false;
-            }
-            // All other nodes remain face-down (including next row until current is completed)
+            // Face-down logic: previous rows face-up, current row visible nodes face-up, rest face-down
+            boolean isFaceDown = node.getRowIndex() < currentRow ? false :
+                                 (node.getRowIndex() == currentRow && visibleInCurrentRow.contains(i)) ? false : true;
 
             NodePanel nodePanel = NodePanelFactory.createPanel(node, isCurrent, isFaceDown);
             nodePanel.setClickHandler(this::handleNodeClick);

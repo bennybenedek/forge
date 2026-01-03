@@ -30,7 +30,6 @@ public class RogueRun {
     private int currentEchoes;                  // Meta-currency (for future Codex support)
     private RoguePath path;                     // The generated path
     private int currentNodeIndex;               // Current position on path
-    private Integer selectedNodeIndex;          // Player's selected node (null if none)
     private RogueRunState runState;             // Current state of the run
 
     // Match History
@@ -71,7 +70,34 @@ public class RogueRun {
 
     // Path navigation
     public void nextNode() {
-        if (currentNodeIndex < path.getNodeCount() - 1) {
+        if (currentNodeIndex >= path.getNodeCount() - 1) {
+            return; // Already at last node
+        }
+
+        RoguePathNode currentNode = path.getNode(currentNodeIndex);
+        if (currentNode == null) {
+            currentNodeIndex++;
+            return;
+        }
+
+        // Check if current node is in a multi-plane row
+        int currentRow = currentNode.getRowIndex();
+        List<RoguePathNode> currentRowNodes = path.getNodesInRow(currentRow);
+
+        // If multiple planes in current row, skip to next row
+        if (currentRowNodes.size() > 1) {
+            // Get reachable nodes in next row from current completed node
+            List<Integer> reachableIndices = path.getReachableNodeIndices(currentNodeIndex);
+
+            if (!reachableIndices.isEmpty()) {
+                // Set to first reachable node in next row
+                currentNodeIndex = reachableIndices.get(0);
+            } else {
+                // No reachable nodes (shouldn't happen), just increment
+                currentNodeIndex++;
+            }
+        } else {
+            // Single node or side node: advance to next node normally
             currentNodeIndex++;
         }
     }
@@ -252,14 +278,6 @@ public class RogueRun {
 
     public void setCurrentNodeIndex(int currentNodeIndex) {
         this.currentNodeIndex = currentNodeIndex;
-    }
-
-    public Integer getSelectedNodeIndex() {
-        return selectedNodeIndex;
-    }
-
-    public void setSelectedNodeIndex(Integer selectedNodeIndex) {
-        this.selectedNodeIndex = selectedNodeIndex;
     }
 
     /**
