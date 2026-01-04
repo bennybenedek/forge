@@ -80,24 +80,14 @@ public class RogueRun {
             return;
         }
 
-        // Check if current node is in a multi-plane row
-        int currentRow = currentNode.getRowIndex();
-        List<RoguePathNode> currentRowNodes = path.getNodesInRow(currentRow);
+        // Get reachable nodes in next row from current completed node
+        List<Integer> reachableIndices = path.getReachableNodeIndices(currentNodeIndex);
 
-        // If multiple planes in current row, skip to next row
-        if (currentRowNodes.size() > 1) {
-            // Get reachable nodes in next row from current completed node
-            List<Integer> reachableIndices = path.getReachableNodeIndices(currentNodeIndex);
-
-            if (!reachableIndices.isEmpty()) {
-                // Set to first reachable node in next row
-                currentNodeIndex = reachableIndices.get(0);
-            } else {
-                // No reachable nodes (shouldn't happen), just increment
-                currentNodeIndex++;
-            }
+        if (!reachableIndices.isEmpty()) {
+            // Set to first reachable node in next row
+            currentNodeIndex = reachableIndices.get(0);
         } else {
-            // Single node or side node: advance to next node normally
+            // No reachable nodes (end of path or error), just increment
             currentNodeIndex++;
         }
     }

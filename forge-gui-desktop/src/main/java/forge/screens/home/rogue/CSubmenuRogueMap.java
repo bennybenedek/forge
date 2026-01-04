@@ -162,7 +162,7 @@ public enum CSubmenuRogueMap implements ICDoc {
             } else {
                 // Single plane - enable button
                 view.getBtnEnterNode().setEnabled(true);
-                view.getBtnEnterNode().setText("Enter " + ((NodePlanebound) currentNode).getRoguePlanebound().planeboundName());
+                view.getBtnEnterNode().setText("Enter " + ((NodePlanebound) currentNode).getRoguePlanebound().planeName());
             }
         } else if (currentNode instanceof NodeSanctum) {
             view.getBtnEnterNode().setEnabled(true);
