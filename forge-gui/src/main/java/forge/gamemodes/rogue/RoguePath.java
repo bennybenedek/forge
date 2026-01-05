@@ -12,11 +12,6 @@ public class RoguePath {
 
     private List<RoguePathNode> nodes;
 
-    // Constructors
-    public RoguePath() {
-        this.nodes = new ArrayList<>();
-    }
-
     public RoguePath(List<RoguePathNode> nodes) {
         this.nodes = nodes != null ? nodes : new ArrayList<>();
     }
@@ -24,11 +19,6 @@ public class RoguePath {
     // Factory method for linear path generation
     public static RoguePath createLinearPath(RoguePathNode... nodes) {
         return new RoguePath(Arrays.asList(nodes));
-    }
-
-    // Node management
-    public void addNode(RoguePathNode node) {
-        nodes.add(node);
     }
 
     public RoguePathNode getNode(int index) {
@@ -57,28 +47,6 @@ public class RoguePath {
 
     public int getCompletedCount() {
         return (int) nodes.stream().filter(RoguePathNode::isCompleted).count();
-    }
-
-    public RoguePathNode getCurrentNode() {
-        for (RoguePathNode node : nodes) {
-            if (!node.isCompleted()) {
-                return node;
-            }
-        }
-        return null; // All nodes completed
-    }
-
-    public int getCurrentNodeIndex() {
-        for (int i = 0; i < nodes.size(); i++) {
-            if (!nodes.get(i).isCompleted()) {
-                return i;
-            }
-        }
-        return -1; // All nodes completed
-    }
-
-    public boolean hasNextNode(int currentIndex) {
-        return currentIndex >= 0 && currentIndex < nodes.size() - 1;
     }
 
     /**
@@ -131,25 +99,64 @@ public class RoguePath {
             return new ArrayList<>();
         }
 
-        // Check if fromNode is single in its row OR is a side node (col=-1)
+        // Check if fromNode is single in its row
         List<RoguePathNode> currentRowNodes = getNodesInRow(fromNode.getRowIndex());
         boolean isSingleNode = currentRowNodes.size() == 1;
-        boolean isSideNode = fromNode.getColumnIndex() == -1;
 
-        // Single nodes and side nodes connect to ALL in next row
-        if (isSingleNode || isSideNode) {
+        // Single nodes connect to ALL in next row
+        if (isSingleNode) {
             return nextRowNodes;
         }
 
-        // Multi-column plane: connect to adjacent columns (col-1, col, col+1)
+        // Multi-column plane: check if it's first/last (side) or middle node
         List<RoguePathNode> reachable = new ArrayList<>();
         int fromCol = fromNode.getColumnIndex();
 
-        for (RoguePathNode node : nextRowNodes) {
-            int toCol = node.getColumnIndex();
-            // Check if column is within ±1 range
-            if (Math.abs(toCol - fromCol) <= 1) {
-                reachable.add(node);
+        // Find min and max column indices in current row
+        int minCol = Integer.MAX_VALUE;
+        int maxCol = Integer.MIN_VALUE;
+        for (RoguePathNode node : currentRowNodes) {
+            int col = node.getColumnIndex();
+            if (col < minCol) minCol = col;
+            if (col > maxCol) maxCol = col;
+        }
+
+        boolean isFirstNode = (fromCol == minCol);
+        boolean isLastNode = (fromCol == maxCol);
+
+        if (isFirstNode) {
+            // First node (leftmost): only reaches first node in next row
+            int minNextCol = Integer.MAX_VALUE;
+            RoguePathNode firstInNextRow = null;
+            for (RoguePathNode node : nextRowNodes) {
+                if (node.getColumnIndex() < minNextCol) {
+                    minNextCol = node.getColumnIndex();
+                    firstInNextRow = node;
+                }
+            }
+            if (firstInNextRow != null) {
+                reachable.add(firstInNextRow);
+            }
+        } else if (isLastNode) {
+            // Last node (rightmost): only reaches last node in next row
+            int maxNextCol = Integer.MIN_VALUE;
+            RoguePathNode lastInNextRow = null;
+            for (RoguePathNode node : nextRowNodes) {
+                if (node.getColumnIndex() > maxNextCol) {
+                    maxNextCol = node.getColumnIndex();
+                    lastInNextRow = node;
+                }
+            }
+            if (lastInNextRow != null) {
+                reachable.add(lastInNextRow);
+            }
+        } else {
+            // Middle nodes: connect to adjacent columns (col-1, col, col+1)
+            for (RoguePathNode node : nextRowNodes) {
+                int toCol = node.getColumnIndex();
+                if (Math.abs(toCol - fromCol) <= 1) {
+                    reachable.add(node);
+                }
             }
         }
 

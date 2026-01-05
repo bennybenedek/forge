@@ -8,7 +8,7 @@ public abstract class RoguePathNode {
 
     private boolean completed;
     private int rowIndex;
-    private int columnIndex = 0; // Column position within row (-1 for side nodes)
+    private int columnIndex = 0; // Column position within row
 
     protected RoguePathNode() {
         this.completed = false;

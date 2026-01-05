@@ -281,15 +281,6 @@ public class RogueRun {
         return path.getReachableNodeIndices(currentNodeIndex);
     }
 
-    /**
-     * Check if a node at the given index is reachable from the current position.
-     * @param nodeIndex The index to check
-     * @return true if the node is reachable, false otherwise
-     */
-    public boolean isNodeReachable(int nodeIndex) {
-        return getReachableNodeIndices().contains(nodeIndex);
-    }
-
     public int getRemovalCredits() {
         return removalCredits;
     }
