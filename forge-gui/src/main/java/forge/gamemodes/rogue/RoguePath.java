@@ -17,7 +17,7 @@ public class RoguePath {
     }
 
     // Factory method for linear path generation
-    public static RoguePath createLinearPath(RoguePathNode... nodes) {
+    public static RoguePath createPath(RoguePathNode... nodes) {
         return new RoguePath(Arrays.asList(nodes));
     }
 
@@ -124,8 +124,8 @@ public class RoguePath {
         boolean isFirstNode = (fromCol == minCol);
         boolean isLastNode = (fromCol == maxCol);
 
-        if (isFirstNode) {
-            // First node (leftmost): only reaches first node in next row
+        // First node (leftmost): only reaches first node in next row
+        if (isFirstNode && nextRowNodes.size() <= currentRowNodes.size()) {
             int minNextCol = Integer.MAX_VALUE;
             RoguePathNode firstInNextRow = null;
             for (RoguePathNode node : nextRowNodes) {
@@ -137,7 +137,7 @@ public class RoguePath {
             if (firstInNextRow != null) {
                 reachable.add(firstInNextRow);
             }
-        } else if (isLastNode) {
+        } else if (isLastNode && nextRowNodes.size() <= currentRowNodes.size()) {
             // Last node (rightmost): only reaches last node in next row
             int maxNextCol = Integer.MIN_VALUE;
             RoguePathNode lastInNextRow = null;

@@ -26,7 +26,7 @@ public abstract class NodePanel extends SkinnedPanel {
      * @param node Node data to display
      * @param isCurrentNode Whether this is the player's current position
      */
-    public NodePanel(RoguePathNode node, boolean isCurrentNode) {
+    protected NodePanel(RoguePathNode node, boolean isCurrentNode) {
         this.node = node;
         this.isCurrentNode = isCurrentNode;
         this.isCompleted = node.isCompleted();

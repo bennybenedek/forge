@@ -72,8 +72,8 @@ public class PathVisualizerPanel extends SkinnedPanel {
             boolean isCurrent = false;
 
             // Face-down logic: previous rows face-up, current row visible nodes face-up, rest face-down
-            boolean isFaceDown = node.getRowIndex() < currentRow ? false :
-                                 (node.getRowIndex() == currentRow && visibleInCurrentRow.contains(i)) ? false : true;
+            boolean isFaceDown = node.getRowIndex() > currentRow
+                || (node.getRowIndex() == currentRow && !visibleInCurrentRow.contains(i));
 
             NodePanel nodePanel = NodePanelFactory.createPanel(node, isCurrent, isFaceDown);
             nodePanel.setClickHandler(this::handleNodeClick);
