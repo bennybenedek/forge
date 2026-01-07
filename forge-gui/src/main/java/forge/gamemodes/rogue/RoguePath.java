@@ -124,31 +124,41 @@ public class RoguePath {
         boolean isFirstNode = (fromCol == minCol);
         boolean isLastNode = (fromCol == maxCol);
 
-        // First node (leftmost): only reaches first node in next row
-        if (isFirstNode && nextRowNodes.size() <= currentRowNodes.size()) {
-            int minNextCol = Integer.MAX_VALUE;
-            RoguePathNode firstInNextRow = null;
-            for (RoguePathNode node : nextRowNodes) {
-                if (node.getColumnIndex() < minNextCol) {
-                    minNextCol = node.getColumnIndex();
-                    firstInNextRow = node;
+        // First node (leftmost):
+        if (isFirstNode) {
+            // same or smaller size: only reaches first node in next row (col = 0)
+            if (nextRowNodes.size() <= currentRowNodes.size()) {
+                nextRowNodes.stream()
+                    .filter(node -> node.getColumnIndex() == 0)
+                    .findFirst()
+                    .ifPresent(reachable::add);
+            }
+            // larger size: reaches first two nodes in next row (col = 0, 1)
+            else {
+                for (RoguePathNode node : nextRowNodes) {
+                    int toCol = node.getColumnIndex();
+                    if (toCol == 0 || toCol == 1) {
+                        reachable.add(node);
+                    }
                 }
             }
-            if (firstInNextRow != null) {
-                reachable.add(firstInNextRow);
+        // Last  node (rightmost):
+        } else if (isLastNode) {
+            // same or smaller size: only reaches last node in next row (col = max)
+            if (nextRowNodes.size() <= currentRowNodes.size()) {
+                // Find max column in next row
+                nextRowNodes.stream()
+                    .max(java.util.Comparator.comparingInt(RoguePathNode::getColumnIndex))
+                    .ifPresent(reachable::add);
             }
-        } else if (isLastNode && nextRowNodes.size() <= currentRowNodes.size()) {
-            // Last node (rightmost): only reaches last node in next row
-            int maxNextCol = Integer.MIN_VALUE;
-            RoguePathNode lastInNextRow = null;
-            for (RoguePathNode node : nextRowNodes) {
-                if (node.getColumnIndex() > maxNextCol) {
-                    maxNextCol = node.getColumnIndex();
-                    lastInNextRow = node;
+            // larger size: reaches last two nodes in next row (col = max, max-1)
+            else {
+                for (RoguePathNode node : nextRowNodes) {
+                    int toCol = node.getColumnIndex();
+                    if (toCol == nextRowNodes.size() - 1 || toCol == nextRowNodes.size() - 2) {
+                        reachable.add(node);
+                    }
                 }
-            }
-            if (lastInNextRow != null) {
-                reachable.add(lastInNextRow);
             }
         } else {
             // Middle nodes: connect to adjacent columns (col-1, col, col+1)
