@@ -71,9 +71,19 @@ public class PathVisualizerPanel extends SkinnedPanel {
             RoguePathNode node = nodes.get(i);
             boolean isCurrent = false;
 
-            // Face-down logic: previous rows face-up, current row visible nodes face-up, rest face-down
-            boolean isFaceDown = node.getRowIndex() > currentRow
-                || (node.getRowIndex() == currentRow && !visibleInCurrentRow.contains(i));
+            // Face-down logic: only show nodes that were reachable in their row
+            boolean isFaceDown;
+            if (node.getRowIndex() < currentRow) {
+                // Past row - only show nodes that were visible when that row was current
+                List<Integer> visibleInThatRow = path.getVisibleNodesInCurrentRow(node.getRowIndex());
+                isFaceDown = !visibleInThatRow.contains(i);
+            } else if (node.getRowIndex() == currentRow) {
+                // Current row - show visible nodes
+                isFaceDown = !visibleInCurrentRow.contains(i);
+            } else {
+                // Future rows - all face-down
+                isFaceDown = true;
+            }
 
             NodePanel nodePanel = NodePanelFactory.createPanel(node, isCurrent, isFaceDown);
             nodePanel.setClickHandler(this::handleNodeClick);
