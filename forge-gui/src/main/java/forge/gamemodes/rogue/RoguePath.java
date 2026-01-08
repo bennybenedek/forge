@@ -253,7 +253,7 @@ public class RoguePath {
             List<RoguePathNode> rowNodes = getNodesInRow(row);
             // Check if this row contains any Planebound nodes
             boolean hasPlaneboundNode = rowNodes.stream()
-                .anyMatch(node -> node instanceof NodePlanebound);
+                .anyMatch(NodePlanebound.class::isInstance);
             if (hasPlaneboundNode) {
                 count++;
             }

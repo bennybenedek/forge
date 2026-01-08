@@ -11,6 +11,9 @@ import java.util.List;
  */
 public class RoguePathGenerator {
 
+    private static int normalPlaneboundIndex;
+    private static int currentRowIndex;
+
     /**
      * Generate a random branched path with multiple planes per row.
      * Path structure:
@@ -20,8 +23,8 @@ public class RoguePathGenerator {
      * Row 3: 3 planes - NORMAL, ELITE, NORMAL (columns 0, 1, 2)
      * Row 4: 1 Bazaar (column 0)
      * Row 5: 2 NORMAL planes (columns 0, 1)
-     * Row 6: 1 BOSS plane (column 0)
-     * Total: 9 planes (7 NORMAL + 1 ELITE + 1 BOSS) + 2 service nodes
+     * Row 6: 1 Sanctum (column 0)
+     * Row 7: 1 BOSS plane (column 0)
      *
      * @return RoguePath with branched structure
      */
@@ -48,6 +51,9 @@ public class RoguePathGenerator {
         int requiredElite = 1;
         int requiredBoss = 1;
 
+        normalPlaneboundIndex = 0;
+        currentRowIndex = 0;
+
         // Validate we have enough unique planebounds of each type
         validateSize(requiredNormal, normalPlanebounds.size());
         validateSize(requiredElite, elitePlanebounds.size());
@@ -59,42 +65,33 @@ public class RoguePathGenerator {
         Collections.shuffle(bossPlanebounds, MyRandom.getRandom());
 
         List<RoguePathNode> nodes = new ArrayList<>();
-        int normalIndex = 0;
 
         // Row 0: 3 NORMAL planes
-        for (int col = 0; col < 3; col++) {
-            addNode(nodes, normalPlanebounds.get(normalIndex++), 0, col);
-        }
+        addNormalPlanebundRow(nodes, normalPlanebounds, 3);
 
         // Row 1: 2 NORMAL planes
-        for (int col = 0; col < 2; col++) {
-            addNode(nodes, normalPlanebounds.get(normalIndex++), 1, col);
-        }
+        addNormalPlanebundRow(nodes, normalPlanebounds, 2);
 
         // Row 2: Sanctum (single node row)
-        NodeSanctum sanctum = new NodeSanctum(5, 2);
-        sanctum.setRowIndex(2);
-        sanctum.setColumnIndex(0);
-        nodes.add(sanctum);
+        addSingleSanctumRow(nodes);
 
         // Row 3: 3 planes - Normal, Elite, Normal
-        addNode(nodes, normalPlanebounds.get(normalIndex++), 3, 0);
-        addNode(nodes, elitePlanebounds.get(0), 3, 1);
-        addNode(nodes, normalPlanebounds.get(normalIndex++), 3, 2);
+        addNode(nodes, normalPlanebounds.get(normalPlaneboundIndex++), currentRowIndex, 0);
+        addNode(nodes, elitePlanebounds.get(0), currentRowIndex, 1);
+        addNode(nodes, normalPlanebounds.get(normalPlaneboundIndex++), currentRowIndex, 2);
+        currentRowIndex++;
 
         // Row 4: Bazaar (single node row)
-        NodeBazaar bazaar = new NodeBazaar();
-        bazaar.setRowIndex(4);
-        bazaar.setColumnIndex(0);
-        nodes.add(bazaar);
+        addSingleBazaarRow(nodes);
 
         // Row 5: 2 NORMAL planes
-        for (int col = 0; col < 2; col++) {
-            addNode(nodes, normalPlanebounds.get(normalIndex++), 5, col);
-        }
+        addNormalPlanebundRow(nodes, normalPlanebounds, 2);
+
+        //Row 6: Sanctum (single node row)
+        addSingleSanctumRow(nodes);
 
         // Row 6: 1 BOSS plane
-        addNode(nodes, bossPlanebounds.get(0), 6, 0);
+        addNode(nodes, bossPlanebounds.get(0), currentRowIndex, 0);
 
         // Create path from nodes
         return RoguePath.createPath(nodes.toArray(new RoguePathNode[0]));
@@ -105,6 +102,28 @@ public class RoguePathGenerator {
             throw new IllegalStateException(
                 "Not enough available Planebounds for Path.");
         }
+    }
+
+    private static void addNormalPlanebundRow(List<RoguePathNode> nodes,
+        List<RoguePlanebound> planebounds, int columnCount) {
+        for (int col = 0; col < columnCount; col++) {
+            addNode(nodes, planebounds.get(normalPlaneboundIndex++), currentRowIndex, col);
+        }
+        currentRowIndex++;
+    }
+
+    private static void addSingleSanctumRow(List<RoguePathNode> nodes) {
+        NodeSanctum sanctum = new NodeSanctum(5, 2);
+        sanctum.setRowIndex(currentRowIndex++);
+        sanctum.setColumnIndex(0);
+        nodes.add(sanctum);
+    }
+
+    private static void addSingleBazaarRow(List<RoguePathNode> nodes) {
+        NodeBazaar bazaar = new NodeBazaar();
+        bazaar.setRowIndex(currentRowIndex++);
+        bazaar.setColumnIndex(0);
+        nodes.add(bazaar);
     }
 
     private static void addNode(List<RoguePathNode> nodes,
