@@ -14,10 +14,9 @@ public class NodeBazaarPanel extends NodeCircularPanel {
      * Create a panel for displaying a bazaar node.
      *
      * @param node Node data to display
-     * @param isCurrentNode Whether this is the player's current position
      */
-    public NodeBazaarPanel(NodeBazaar node, boolean isCurrentNode) {
-        super(node, isCurrentNode);
+    public NodeBazaarPanel(NodeBazaar node) {
+        super(node);
     }
 
     @Override

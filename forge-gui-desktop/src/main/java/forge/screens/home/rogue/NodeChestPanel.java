@@ -15,10 +15,9 @@ public class NodeChestPanel extends NodeCircularPanel {
      * Create a panel for displaying a chest node.
      *
      * @param node Node data to display
-     * @param isCurrentNode Whether this is the player's current position
      */
-    public NodeChestPanel(NodeChest node, boolean isCurrentNode) {
-        super(node, isCurrentNode);
+    public NodeChestPanel(NodeChest node) {
+        super(node);
         this.chestNode = node;
     }
 

@@ -45,7 +45,7 @@ public class SanctumDialog {
 
         // Title label
         FLabel lblTitle = new FLabel.Builder()
-                .text("Sanctum of Respite")
+                .text("Sanctum")
                 .fontSize(20)
                 .fontStyle(Font.BOLD)
                 .fontAlign(SwingConstants.CENTER)

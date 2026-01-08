@@ -15,7 +15,6 @@ public abstract class NodePanel extends SkinnedPanel {
     protected static final int PANEL_HEIGHT = 260;
 
     protected final RoguePathNode node;
-    protected final boolean isCurrentNode;
     protected final boolean isCompleted;
     protected boolean isSelected = false;
     protected NodeClickHandler clickHandler;
@@ -24,11 +23,9 @@ public abstract class NodePanel extends SkinnedPanel {
      * Create a panel for displaying a path node.
      *
      * @param node Node data to display
-     * @param isCurrentNode Whether this is the player's current position
      */
-    protected NodePanel(RoguePathNode node, boolean isCurrentNode) {
+    protected NodePanel(RoguePathNode node) {
         this.node = node;
-        this.isCurrentNode = isCurrentNode;
         this.isCompleted = node.isCompleted();
 
         setLayout(null);
@@ -110,7 +107,7 @@ public abstract class NodePanel extends SkinnedPanel {
         g2d.drawRoundRect(5, 5, getWidth() - 10, getHeight() - 10, 10, 10);
 
         // Draw checkmark for completed nodes
-        if (isCompleted && !isCurrentNode) {
+        if (isCompleted) {
             g2d.setColor(new Color(0, 200, 0, 230));
             g2d.fillOval(getWidth() - 35, 10, 25, 25);
 

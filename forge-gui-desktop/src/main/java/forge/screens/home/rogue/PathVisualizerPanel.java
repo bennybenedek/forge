@@ -14,9 +14,8 @@ import java.util.List;
  * Shows all nodes in a vertical linear progression with connection lines.
  */
 public class PathVisualizerPanel extends SkinnedPanel {
-    private static final int NODE_SPACING = 40;  // Vertical space between nodes (vertical)
+    private static final int NODE_SPACING = 40;  // Vertical space between rows
     private static final int HORIZONTAL_SPACING = 30;  // Horizontal space between nodes in same row
-    private static final int SIDE_NODE_MARGIN = 20;  // Right margin for side nodes
     private static final int PATH_LINE_WIDTH = 4;
 
     private final List<NodePanel> nodePanels;
@@ -69,7 +68,6 @@ public class PathVisualizerPanel extends SkinnedPanel {
         List<RoguePathNode> nodes = path.getNodes();
         for (int i = 0; i < nodes.size(); i++) {
             RoguePathNode node = nodes.get(i);
-            boolean isCurrent = false;
 
             // Face-down logic: only show nodes that were reachable in their row
             boolean isFaceDown;
@@ -85,7 +83,10 @@ public class PathVisualizerPanel extends SkinnedPanel {
                 isFaceDown = true;
             }
 
-            NodePanel nodePanel = NodePanelFactory.createPanel(node, isCurrent, isFaceDown);
+            // Calculate planebound row count for life display
+            int planeboundRowCount = path.countPlaneboundRowsUpTo(node.getRowIndex());
+
+            NodePanel nodePanel = NodePanelFactory.createPanel(node, isFaceDown, planeboundRowCount);
             nodePanel.setClickHandler(this::handleNodeClick);
             nodePanels.add(nodePanel);
             add(nodePanel);
@@ -199,21 +200,8 @@ public class PathVisualizerPanel extends SkinnedPanel {
                 continue;
             }
 
-            // Separate plane nodes from side nodes
-            List<NodePanel> planes = new ArrayList<>();
-            List<NodePanel> sideNodes = new ArrayList<>();
-
-            for (NodePanel panel : rowPanels) {
-                RoguePathNode node = path.getNodes().get(nodePanels.indexOf(panel));
-                if (node.getColumnIndex() == -1) {
-                    sideNodes.add(panel);
-                } else {
-                    planes.add(panel);
-                }
-            }
-
-            // Sort planes by column index
-            planes.sort((p1, p2) -> {
+            // Sort all nodes by column index
+            rowPanels.sort((p1, p2) -> {
                 int idx1 = nodePanels.indexOf(p1);
                 int idx2 = nodePanels.indexOf(p2);
                 RoguePathNode n1 = path.getNodes().get(idx1);
@@ -227,32 +215,20 @@ public class PathVisualizerPanel extends SkinnedPanel {
                 rowHeight = Math.max(rowHeight, panel.getPreferredSize().height);
             }
 
-            // Layout plane nodes horizontally centered
-            if (!planes.isEmpty()) {
-                int totalWidth = 0;
-                for (NodePanel panel : planes) {
-                    totalWidth += panel.getPreferredSize().width;
-                }
-                totalWidth += (planes.size() - 1) * HORIZONTAL_SPACING;
-
-                int startX = (getWidth() - totalWidth) / 2;
-
-                for (NodePanel panel : planes) {
-                    int panelWidth = panel.getPreferredSize().width;
-                    int panelHeight = panel.getPreferredSize().height;
-                    panel.setBounds(startX, y, panelWidth, panelHeight);
-                    startX += panelWidth + HORIZONTAL_SPACING;
-                }
+            // Layout all nodes horizontally centered
+            int totalWidth = 0;
+            for (NodePanel panel : rowPanels) {
+                totalWidth += panel.getPreferredSize().width;
             }
+            totalWidth += (rowPanels.size() - 1) * HORIZONTAL_SPACING;
 
-            // Layout side nodes to the right
-            int sideX = getWidth() - SIDE_NODE_MARGIN;
-            for (NodePanel sidePanel : sideNodes) {
-                int panelWidth = sidePanel.getPreferredSize().width;
-                int panelHeight = sidePanel.getPreferredSize().height;
-                sideX -= panelWidth;
-                sidePanel.setBounds(sideX, y, panelWidth, panelHeight);
-                sideX -= 10;  // Small gap between multiple side nodes
+            int startX = (getWidth() - totalWidth) / 2;
+
+            for (NodePanel panel : rowPanels) {
+                int panelWidth = panel.getPreferredSize().width;
+                int panelHeight = panel.getPreferredSize().height;
+                panel.setBounds(startX, y, panelWidth, panelHeight);
+                startX += panelWidth + HORIZONTAL_SPACING;
             }
 
             y += rowHeight + NODE_SPACING;

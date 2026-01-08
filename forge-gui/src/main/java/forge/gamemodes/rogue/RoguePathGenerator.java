@@ -15,11 +15,13 @@ public class RoguePathGenerator {
      * Generate a random branched path with multiple planes per row.
      * Path structure:
      * Row 0: 3 NORMAL planes (columns 0, 1, 2)
-     * Row 1: 2 NORMAL planes (columns 0, 1) + Sanctum
-     * Row 2: 1 ELITE plane (column 0) + Bazaar
-     * Row 3: 2 NORMAL planes (columns 0, 1)
-     * Row 4: 1 BOSS plane (column 0)
-     * Total: 9 planes (7 NORMAL + 1 ELITE + 1 BOSS)
+     * Row 1: 2 NORMAL planes (columns 0, 1)
+     * Row 2: 1 Sanctum (column 0)
+     * Row 3: 3 planes - NORMAL, ELITE, NORMAL (columns 0, 1, 2)
+     * Row 4: 1 Bazaar (column 0)
+     * Row 5: 2 NORMAL planes (columns 0, 1)
+     * Row 6: 1 BOSS plane (column 0)
+     * Total: 9 planes (7 NORMAL + 1 ELITE + 1 BOSS) + 2 service nodes
      *
      * @return RoguePath with branched structure
      */
@@ -59,40 +61,40 @@ public class RoguePathGenerator {
         List<RoguePathNode> nodes = new ArrayList<>();
         int normalIndex = 0;
 
-        // Row 1: 3 NORMAL planes
+        // Row 0: 3 NORMAL planes
         for (int col = 0; col < 3; col++) {
             addNode(nodes, normalPlanebounds.get(normalIndex++), 0, col);
         }
 
-        // Row 2: 2 NORMAL planes
+        // Row 1: 2 NORMAL planes
         for (int col = 0; col < 2; col++) {
             addNode(nodes, normalPlanebounds.get(normalIndex++), 1, col);
         }
 
-        // Sanctum after Row 1 (column -1 indicates side node)
+        // Row 2: Sanctum (single node row)
         NodeSanctum sanctum = new NodeSanctum(5, 2);
-        sanctum.setRowIndex(1);
-        sanctum.setColumnIndex(-1);
+        sanctum.setRowIndex(2);
+        sanctum.setColumnIndex(0);
         nodes.add(sanctum);
 
-        // Row 3: Normal plane + 1 ELITE plane + Normal plane
-        addNode(nodes, normalPlanebounds.get(normalIndex++), 2, 0);
-        addNode(nodes, elitePlanebounds.get(0), 2, 1);
-        addNode(nodes, normalPlanebounds.get(normalIndex++), 2, 2);
+        // Row 3: 3 planes - Normal, Elite, Normal
+        addNode(nodes, normalPlanebounds.get(normalIndex++), 3, 0);
+        addNode(nodes, elitePlanebounds.get(0), 3, 1);
+        addNode(nodes, normalPlanebounds.get(normalIndex++), 3, 2);
 
-        // Bazaar after Row 2 (column -1 indicates side node)
+        // Row 4: Bazaar (single node row)
         NodeBazaar bazaar = new NodeBazaar();
-        bazaar.setRowIndex(2);
-        bazaar.setColumnIndex(-1);
+        bazaar.setRowIndex(4);
+        bazaar.setColumnIndex(0);
         nodes.add(bazaar);
 
-        // Row 4: 2 NORMAL planes
+        // Row 5: 2 NORMAL planes
         for (int col = 0; col < 2; col++) {
-            addNode(nodes, normalPlanebounds.get(normalIndex++), 3, col);
+            addNode(nodes, normalPlanebounds.get(normalIndex++), 5, col);
         }
 
-        // Row 5: 1 BOSS plane (column 0)
-        addNode(nodes, bossPlanebounds.get(0), 4, 0);
+        // Row 6: 1 BOSS plane
+        addNode(nodes, bossPlanebounds.get(0), 6, 0);
 
         // Create path from nodes
         return RoguePath.createPath(nodes.toArray(new RoguePathNode[0]));

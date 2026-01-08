@@ -47,11 +47,11 @@ public class NodePlaneboundPanel extends NodePanel implements ImageFetcher.Callb
      * Create a panel for displaying a planebound node.
      *
      * @param node Node data to display
-     * @param isCurrentNode Whether this is the player's current position
      * @param isFaceDown Whether to display the card face-down
+     * @param planeboundRowCount Number of Planebound rows up to this node (for life calculation)
      */
-    public NodePlaneboundPanel(NodePlanebound node, boolean isCurrentNode, boolean isFaceDown) {
-        super(node, isCurrentNode);
+    public NodePlaneboundPanel(NodePlanebound node, boolean isFaceDown, int planeboundRowCount) {
+        super(node);
         this.isFaceDown = isFaceDown;
 
       // Card image (plane card) - rotated 90 degrees clockwise for horizontal display
@@ -132,8 +132,8 @@ public class NodePlaneboundPanel extends NodePanel implements ImageFetcher.Callb
 
         add(lblPlaneboundName);
 
-        // Life total label (always shown - it's a known rule that life scales by row)
-        int planeboundLife = 5 + (5 * node.getRowIndex());
+        // Life total label (always shown - it's a known rule that life scales by Planebound row)
+        int planeboundLife = 5 * planeboundRowCount;
         lblLifeTotal = new JLabel("Life: " + planeboundLife);
         lblLifeTotal.setFont(FSkin.getRelativeBoldFont(14).getBaseFont());
         lblLifeTotal.setForeground(FSkin.getColor(FSkin.Colors.CLR_TEXT).getColor());

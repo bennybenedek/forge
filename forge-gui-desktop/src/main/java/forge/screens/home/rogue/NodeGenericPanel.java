@@ -16,10 +16,9 @@ public class NodeGenericPanel extends NodePanel {
      * Create a generic panel for displaying any node type.
      *
      * @param node Node data to display
-     * @param isCurrentNode Whether this is the player's current position
      */
-    public NodeGenericPanel(RoguePathNode node, boolean isCurrentNode) {
-        super(node, isCurrentNode);
+    public NodeGenericPanel(RoguePathNode node) {
+        super(node);
 
         // Display node's toString() representation
         lblTitle = new JLabel(node.toString());

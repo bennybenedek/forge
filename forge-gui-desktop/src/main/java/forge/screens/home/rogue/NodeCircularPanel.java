@@ -11,8 +11,8 @@ public abstract class NodeCircularPanel extends NodePanel {
     // Smaller dimensions for non-plane nodes
     protected static final int CIRCULAR_SIZE = 75;
 
-    protected NodeCircularPanel(RoguePathNode node, boolean isCurrentNode) {
-        super(node, isCurrentNode);
+    protected NodeCircularPanel(RoguePathNode node) {
+        super(node);
 
         // Override size from parent
         setPreferredSize(new Dimension(CIRCULAR_SIZE, CIRCULAR_SIZE));
@@ -29,8 +29,8 @@ public abstract class NodeCircularPanel extends NodePanel {
         Color borderColor;
         int borderWidth;
 
-        if (isCurrentNode) {
-            // Current node: thick gold border
+        if (isSelected) {
+            // Selected node: thick bright gold border
             borderColor = new Color(255, 215, 0);
             borderWidth = 4;
         } else if (isCompleted) {
@@ -50,7 +50,7 @@ public abstract class NodeCircularPanel extends NodePanel {
         g2d.drawOval(margin, margin, getWidth() - (margin * 2), getHeight() - (margin * 2));
 
         // Draw checkmark for completed nodes
-        if (isCompleted && !isCurrentNode) {
+        if (isCompleted) {
             g2d.setColor(new Color(0, 200, 0, 230));
             g2d.fillOval(getWidth() - 35, 10, 25, 25);
 

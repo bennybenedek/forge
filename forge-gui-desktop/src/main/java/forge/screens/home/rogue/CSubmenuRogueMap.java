@@ -83,11 +83,6 @@ public enum CSubmenuRogueMap implements ICDoc {
             return;
         }
 
-        // Only allow selecting Planebound nodes (not Sanctum, Bazaar, etc.)
-        if (!(clickedNode instanceof NodePlanebound)) {
-            return;
-        }
-
         RoguePathNode currentNode = currentRun.getCurrentNode();
         if (currentNode == null) {
             return;
@@ -104,7 +99,13 @@ public enum CSubmenuRogueMap implements ICDoc {
             return; // Not reachable, ignore click
         }
 
-        // Allow clicking any reachable plane in the current row to select it
+        // Check if this is a multi-node row - only allow selection changes if multiple nodes
+        List<RoguePathNode> currentRowNodes = currentRun.getPath().getNodesInRow(currentNode.getRowIndex());
+        if (currentRowNodes.size() == 1) {
+            return; // Single node row - no selection needed, already auto-selected
+        }
+
+        // Allow clicking any reachable node in multi-node row to select it
         // Set as current node and update view
         currentRun.setCurrentNodeIndex(nodeIndex);
         updateViewWithSelection();
@@ -128,7 +129,6 @@ public enum CSubmenuRogueMap implements ICDoc {
 
         // Update button state based on current node
         RoguePathNode currentNode = currentRun.getCurrentNode();
-        int currentIndex = currentRun.getCurrentNodeIndex();
 
         if (currentNode == null) {
             view.getBtnEnterNode().setEnabled(false);
@@ -136,43 +136,23 @@ public enum CSubmenuRogueMap implements ICDoc {
             return;
         }
 
-        // Check if current node is a Planebound
-        if (currentNode instanceof NodePlanebound) {
-            // Check if there are multiple planes in the current row
-            List<RoguePathNode> currentRowNodes = currentRun.getPath().getNodesInRow(currentNode.getRowIndex());
-            List<RoguePathNode> currentRowPlanes = new ArrayList<>();
-            for (RoguePathNode node : currentRowNodes) {
-                if (node instanceof NodePlanebound) {
-                    currentRowPlanes.add(node);
-                }
-            }
+        // Enable button and set text based on node type
+        view.getBtnEnterNode().setEnabled(true);
+        view.getBtnEnterNode().setText(getEnterButtonText(currentNode));
+    }
 
-            // If multiple planes in row, check if current selection is valid
-            if (currentRowPlanes.size() > 1) {
-                // Check if current node is one of the planes in current row
-                RoguePathNode currentNodeCheck = currentRun.getPath().getNode(currentIndex);
-                if (currentNodeCheck instanceof NodePlanebound &&
-                    currentNodeCheck.getRowIndex() == currentNode.getRowIndex()) {
-                    view.getBtnEnterNode().setEnabled(true);
-                    view.getBtnEnterNode().setText("Enter " + ((NodePlanebound) currentNodeCheck).getRoguePlanebound().planeName());
-                } else {
-                    view.getBtnEnterNode().setEnabled(false);
-                    view.getBtnEnterNode().setText("Select Plane First");
-                }
-            } else {
-                // Single plane - enable button
-                view.getBtnEnterNode().setEnabled(true);
-                view.getBtnEnterNode().setText("Enter " + ((NodePlanebound) currentNode).getRoguePlanebound().planeName());
-            }
-        } else if (currentNode instanceof NodeSanctum) {
-            view.getBtnEnterNode().setEnabled(true);
-            view.getBtnEnterNode().setText("Enter Sanctum");
-        } else if (currentNode instanceof NodeBazaar) {
-            view.getBtnEnterNode().setEnabled(true);
-            view.getBtnEnterNode().setText("Enter Bazaar");
+    /**
+     * Get the appropriate button text for entering a node.
+     */
+    private String getEnterButtonText(RoguePathNode node) {
+        if (node instanceof NodePlanebound) {
+            return "Enter " + ((NodePlanebound) node).getRoguePlanebound().planeName();
+        } else if (node instanceof NodeSanctum) {
+            return "Enter Sanctum";
+        } else if (node instanceof NodeBazaar) {
+            return "Enter Bazaar";
         } else {
-            view.getBtnEnterNode().setEnabled(true);
-            view.getBtnEnterNode().setText("Enter Node");
+            return "Enter Node";
         }
     }
 
@@ -277,8 +257,9 @@ public enum CSubmenuRogueMap implements ICDoc {
                 node.getRoguePlanebound().avatarIndex(),
                 0));
 
-            // Calculate life based on row: 5 + (5 * rowIndex)
-            int planeboundLife = 5 + (5 * node.getRowIndex());
+            // Calculate life based on Planebound rows (not total rows - Sanctum/Bazaar don't count)
+            int planeboundRowCount = currentRun.getPath().countPlaneboundRowsUpTo(node.getRowIndex());
+            int planeboundLife = 5 * planeboundRowCount;
             ai.setStartingLife(planeboundLife);
 
             // Start match

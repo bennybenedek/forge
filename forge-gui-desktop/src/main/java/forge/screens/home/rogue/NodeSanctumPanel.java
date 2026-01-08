@@ -15,10 +15,9 @@ public class NodeSanctumPanel extends NodeCircularPanel {
      * Create a panel for displaying a sanctum node.
      *
      * @param node Node data to display
-     * @param isCurrentNode Whether this is the player's current position
      */
-    public NodeSanctumPanel(NodeSanctum node, boolean isCurrentNode) {
-        super(node, isCurrentNode);
+    public NodeSanctumPanel(NodeSanctum node) {
+        super(node);
         this.sanctumNode = node;
     }
 

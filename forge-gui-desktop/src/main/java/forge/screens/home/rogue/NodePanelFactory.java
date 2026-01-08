@@ -12,24 +12,24 @@ public class NodePanelFactory {
      * Create the appropriate panel for the given node type.
      *
      * @param node The node to create a panel for
-     * @param isCurrentNode Whether this is the player's current position
      * @param isFaceDown Whether this node should be displayed face-down
+     * @param planeboundRowCount Number of Planebound rows up to this node (for life calculation)
      * @return A panel instance for displaying the node
      */
-    public static NodePanel createPanel(RoguePathNode node, boolean isCurrentNode, boolean isFaceDown) {
+    public static NodePanel createPanel(RoguePathNode node, boolean isFaceDown, int planeboundRowCount) {
         if (node instanceof NodePlanebound) {
-            return new NodePlaneboundPanel((NodePlanebound) node, isCurrentNode, isFaceDown);
+            return new NodePlaneboundPanel((NodePlanebound) node, isFaceDown, planeboundRowCount);
         } else if (node instanceof NodeSanctum) {
-            return new NodeSanctumPanel((NodeSanctum) node, isCurrentNode);
+            return new NodeSanctumPanel((NodeSanctum) node);
         } else if (node instanceof NodeBazaar) {
-            return new NodeBazaarPanel((NodeBazaar) node, isCurrentNode);
+            return new NodeBazaarPanel((NodeBazaar) node);
         } else if (node instanceof NodeChest) {
-            return new NodeChestPanel((NodeChest) node, isCurrentNode);
+            return new NodeChestPanel((NodeChest) node);
         } else if (node instanceof NodeEvent) {
-            return new NodeEventPanel((NodeEvent) node, isCurrentNode);
+            return new NodeEventPanel((NodeEvent) node);
         }
 
         // Fallback: Create a generic panel for unknown node types
-        return new NodeGenericPanel(node, isCurrentNode);
+        return new NodeGenericPanel(node);
     }
 }

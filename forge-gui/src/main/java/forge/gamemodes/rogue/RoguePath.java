@@ -50,14 +50,14 @@ public class RoguePath {
     }
 
     /**
-     * Get all nodes in a specific row (excludes side nodes with same rowIndex but col=-1).
+     * Get all nodes in a specific row.
      * @param rowIndex The row index to filter by
      * @return List of nodes in the specified row
      */
     public List<RoguePathNode> getNodesInRow(int rowIndex) {
         List<RoguePathNode> rowNodes = new ArrayList<>();
         for (RoguePathNode node : nodes) {
-            if (node.getRowIndex() == rowIndex && node.getColumnIndex() >= 0) {
+            if (node.getRowIndex() == rowIndex) {
                 rowNodes.add(node);
             }
         }
@@ -81,8 +81,8 @@ public class RoguePath {
     /**
      * Calculate which nodes in the next row are reachable from the given node.
      * Reachability rules:
-     * - Single node in row OR side node (col=-1): connects to ALL nodes in next row
-     * - Multi-column plane: connects to nodes at (col-1, col, col+1) in next row
+     * - Single node in row: connects to ALL nodes in next row
+     * - Multi-node row: first/last nodes connect to first/last in next row, middle nodes connect to adjacent (±1)
      *
      * @param fromNode The node to check reachability from
      * @return List of reachable nodes in the next row
@@ -237,6 +237,28 @@ public class RoguePath {
         }
 
         return visibleIndices;
+    }
+
+    /**
+     * Count how many Planebound rows exist up to and including the given row.
+     * Only counts rows that contain at least one NodePlanebound.
+     * Used for calculating opponent life (life should only increase with Plane rows, not Sanctum/Bazaar).
+     *
+     * @param upToRow The row index to count up to (inclusive)
+     * @return Number of Planebound rows from 0 to upToRow
+     */
+    public int countPlaneboundRowsUpTo(int upToRow) {
+        int count = 0;
+        for (int row = 0; row <= upToRow; row++) {
+            List<RoguePathNode> rowNodes = getNodesInRow(row);
+            // Check if this row contains any Planebound nodes
+            boolean hasPlaneboundNode = rowNodes.stream()
+                .anyMatch(node -> node instanceof NodePlanebound);
+            if (hasPlaneboundNode) {
+                count++;
+            }
+        }
+        return count;
     }
 
     @Override

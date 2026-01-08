@@ -15,10 +15,9 @@ public class NodeEventPanel extends NodeCircularPanel {
      * Create a panel for displaying an event node.
      *
      * @param node Node data to display
-     * @param isCurrentNode Whether this is the player's current position
      */
-    public NodeEventPanel(NodeEvent node, boolean isCurrentNode) {
-        super(node, isCurrentNode);
+    public NodeEventPanel(NodeEvent node) {
+        super(node);
         this.eventNode = node;
     }
 

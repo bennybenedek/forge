@@ -10,6 +10,10 @@ Forge is an open-source Magic: The Gathering rules engine and game client writte
 
 **DO NOT compile the code automatically.** The user will handle all compilation themselves. Only compile if explicitly asked by the user.
 
+## Important: Requirements Policy
+
+**DO NOT deviate from user requirements or implement features without explicit permission.** If the requirement is unclear or you think a different approach might be better, **ASK FIRST** using the AskUserQuestion tool before implementing anything. The user will provide clear direction.
+
 ## Build Commands
 
 ### Initial Setup
