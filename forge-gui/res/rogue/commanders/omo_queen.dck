@@ -4,6 +4,7 @@ Name=Omo, Queen of Vesuva
 1 Omo, Queen of Vesuva|M3C|2
 [Main]
 1 Aven Courier|NCC|1
+1 Azami, Lady of Scrolls|CMM|1
 1 Basilisk Gate|M3C|1
 1 Beast Within|M3C|1
 1 Cloudpost|M3C|1
@@ -12,8 +13,7 @@ Name=Omo, Queen of Vesuva
 1 Elvish Archdruid|KHC|1
 1 Elvish Champion|10E|1
 1 Elvish Rejuvenator|M3C|1
-2 Forest|MH3|2
-2 Forest|LCI|2
+3 Forest|MH3|2
 1 Galerider Sliver|CMM|1
 1 Growth Spiral|LCC|1
 1 Harmonize|M3C|1
@@ -21,9 +21,7 @@ Name=Omo, Queen of Vesuva
 1 Heap Gate|CLB|1
 1 Herald of Hoofbeats|MOC|1
 1 Hinterland Harbor|LCC|1
-1 Island|MH3|3
-3 Island|LCI|3
-1 Llanowar Scout|DOM|1
+5 Island|MH3|3
 1 Lumbering Falls|M3C|1
 1 Magus of the Candelabra|M3C|1
 1 Master of the Pearl Trident|LCC|1
@@ -35,8 +33,8 @@ Name=Omo, Queen of Vesuva
 1 Ravenform|LCC|1
 1 Sage of the Maze|M3C|1
 1 Seafloor Oracle|LCC|1
-1 Seer's Sundial|M3C|1
+1 Shifting Sliver|CMM|1
 1 Simic Growth Chamber|M3C|1
-1 Tatyova, Benthic Druid|M3C|1
 1 Urban Evolution|M3C|1
 1 Urza's Mine|M3C|1
+1 Wonderscape Sage|M3C|1
