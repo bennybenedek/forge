@@ -2,7 +2,6 @@
 Name=Omo Queen Rewards
 [Main]
 1 Aggressive Biomancy|M3C|1
-1 Arcane Denial|M3C|1
 1 Azusa, Lost but Seeking|CMM|1
 1 Baldur's Gate|CLB|1
 1 Baru, Wurmspeaker|DMC|1
@@ -20,7 +19,7 @@ Name=Omo Queen Rewards
 1 Descendants' Path|LCC|1
 1 Desert Warfare|M3C|1
 1 Deserted Temple|MH3|1
-1 Diffusion Sliver|M15|1
+1 Diffusion Sliver|CMM|1
 1 Drown in Dreams|M3C|1
 1 Dryad of the Ilysian Grove|M3C|1
 1 Endless Evil|CLB|1
@@ -36,6 +35,7 @@ Name=Omo Queen Rewards
 1 Genesis Wave|FDN|1
 1 Glimmerpost|M3C|1
 1 Harabaz Druid|WWK|1
+1 Heroic Intervention|CMM|1
 1 Hidden Cataract|M3C|1
 1 Hidden Nursery|M3C|1//fv
 1 Horizon of Progress|M3C|1
