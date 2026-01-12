@@ -154,6 +154,65 @@ See `docs/Card-scripting-API/` for detailed scripting documentation:
 - `Targeting.md`: Targeting restrictions
 - `Restrictions.md`: Play restrictions
 
+### Critical Scripting Patterns
+
+#### Plane Cards and Command Zone Effects
+Plane cards sit in the Command zone during Planechase games. **All static abilities on Plane cards MUST include `EffectZone$ Command`** or they will default to checking the Battlefield and not work.
+
+**Correct Pattern:**
+```
+S:Mode$ CombatDamageToughness | EffectZone$ Command | ValidCard$ Creature | Description$ Each creature assigns combat damage equal to its toughness rather than its power.
+```
+
+**Triggered abilities** use a different parameter: `TriggerZones$ Command`
+```
+T:Mode$ ChaosEnsues | TriggerZones$ Command | Execute$ RolledChaos | TriggerDescription$ ...
+```
+
+Other cards that work from Command zone (Commanders, Emblems, etc.) also need these zone specifications.
+
+#### Zone Specifications in SVars
+When using `TriggeredCardController$Valid` patterns in SVars to count or reference cards, the zone specification must be written **without a space** as one word, followed by a space and the card type.
+
+**Correct Syntax:**
+```
+SVar:X:TriggeredCardController$ValidGraveyard Spirit.YouCtrl
+SVar:MaxTgts:TriggeredCardController$ValidBattlefield Creature.YouCtrl
+```
+
+**Incorrect (will not work):**
+```
+SVar:X:TriggeredCardController$Valid Graveyard Spirit.YouCtrl  # Space breaks zone
+SVar:X:TriggeredCardController$ValidGraveyardSpirit.YouCtrl    # Missing space before type
+```
+
+Common zone specifications:
+- `ValidGraveyard` - Cards in graveyard
+- `ValidBattlefield` - Cards on battlefield (creatures, permanents)
+- `ValidHand` - Cards in hand
+- `ValidExile` - Cards in exile
+- `ValidLibrary` - Cards in library
+
+This pattern is also used with `Count$Valid{Zone}` for counting cards in specific zones.
+
+#### Targeting from Triggered Abilities
+When a triggered ability needs the controller of the triggering card to do the targeting (common in "dies" triggers):
+
+```
+TargetingPlayer$ TriggeredCardController | TargetsWithDefinedController$ TriggeredCardController
+```
+
+Example: "Whenever a creature dies, its controller distributes counters..."
+```
+T:Mode$ ChangesZone | Origin$ Battlefield | Destination$ Graveyard | ValidCard$ Creature | TriggerZones$ Command | Execute$ Effect
+SVar:Effect:DB$ PutCounter | ValidTgts$ Creature | TargetsWithDefinedController$ TriggeredCardController | TargetingPlayer$ TriggeredCardController | ...
+```
+
+#### Common Card Script Locations
+- **Plane cards**: `forge-gui/res/cardsfolder/{first_letter}/{plane_name}.txt`
+- All Plane cards have `Types:Plane {Subtype}` and `ManaCost:no cost`
+- Search for Plane cards: `grep -r "^Types:Plane " forge-gui/res/cardsfolder/`
+
 ## Code Quality
 
 ### Checkstyle
