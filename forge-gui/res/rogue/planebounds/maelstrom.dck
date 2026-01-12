@@ -2,7 +2,7 @@
 name=Maelstrom Wanderer
 planeName=The Maelstrom
 avatarIndex=49
-type=0
+type=1
 [Commander]
 1 Maelstrom Wanderer|CMM|1
 [Main]
