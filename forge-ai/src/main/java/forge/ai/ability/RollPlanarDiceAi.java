@@ -114,6 +114,11 @@ public class RollPlanarDiceAi extends SpellAbilityAi {
                             return false;
                         }
                         break;
+                    case "stopifunlimitedhandsize":
+                        if (ai.isUnlimitedHandSize()) {
+                            return false;
+                        }
+                        break;
                     default:
                         System.out.println(TextUtil.concatNoSpace("Unexpected AI hint parameter in card ", plane.getName(), " in RollPlanarDiceAi: ", paramName, "."));
                         break;
