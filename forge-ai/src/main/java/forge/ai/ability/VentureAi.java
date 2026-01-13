@@ -83,6 +83,16 @@ public class VentureAi extends SpellAbilityAi {
             return faces.get(0);
         }
 
+        // Check if the source card has a preferred dungeon
+        if (sa.getHostCard() != null && sa.getHostCard().hasSVar("AIPreferredDungeon")) {
+            String preferredDungeon = sa.getHostCard().getSVar("AIPreferredDungeon");
+            for (ICardFace face : faces) {
+                if (preferredDungeon.equals(face.getName())) {
+                    return face;
+                }
+            }
+        }
+
         // Don't choose Tomb of Annihilation when life in danger unless we can win right away or can't lose for 0 life
         int lifeInDanger = AiProfileUtil.getIntProperty(ai, AiProps.AI_IN_DANGER_THRESHOLD);
         if ((ai.getLife() <= lifeInDanger && !ai.cantLoseForZeroOrLessLife())
