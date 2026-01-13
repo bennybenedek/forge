@@ -9,6 +9,7 @@ SVar:RolledChaos:DB$ Sacrifice | ValidTgts$ Player | SacValid$ Creature | Rememb
 SVar:DBToken:DB$ Token | TokenScript$ c_a_food_sac | TokenAmount$ Z | ConditionDefined$ Remembered | ConditionPresent$ Card | SubAbility$ DBCleanup
 SVar:DBCleanup:DB$ Cleanup | ClearRemembered$ True
 SVar:Z:Remembered$Valid Creature.toughnessGE4/Plus.1
+SVar:AIRollPlanarDieParams:Mode$ Always | OppHasCreatureInPlay$ True | RollInMain1$ True | LowPriority$ True | MinTurn$ 1
 DeckHas:Ability$Token|Sacrifice & Type$Food
 DeckHints:Type$Food
 Oracle:When you planeswalk to The Wilds and at the beginning of your upkeep, create a Food token.\nWhenever chaos ensues, target player sacrifices a creature. If they do, you create a Food token. You create two Food tokens instead if the sacrificed creature's toughness was 4 or greater.

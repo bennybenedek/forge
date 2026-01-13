@@ -86,6 +86,19 @@ public class RollPlanarDiceAi extends SpellAbilityAi {
                             return false;
                         }
                         break;
+                    case "anyplayercardsingraveyardge":
+                        boolean anyPlayerHasCards = false;
+                        int threshold = Integer.parseInt(paramValue);
+                        for (Player p : ai.getGame().getPlayers()) {
+                            if (p.getCardsIn(ZoneType.Graveyard).size() >= threshold) {
+                                anyPlayerHasCards = true;
+                                break;
+                            }
+                        }
+                        if (!anyPlayerHasCards) {
+                            return false;
+                        }
+                        break;
                     case "hascreatureinplay": // TODO: All abilities below only test the presence of the option. The value (true/false) is not yet tested.
                         if (!detectCreatureInZone(ai, ZoneType.Battlefield)) {
                             return false;
