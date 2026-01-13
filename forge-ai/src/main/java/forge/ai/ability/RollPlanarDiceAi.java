@@ -3,6 +3,7 @@ package forge.ai.ability;
 
 import forge.ai.*;
 import forge.game.card.Card;
+import forge.game.combat.CombatUtil;
 import forge.game.phase.PhaseType;
 import forge.game.player.Player;
 import forge.game.spellability.SpellAbility;
@@ -87,6 +88,11 @@ public class RollPlanarDiceAi extends SpellAbilityAi {
                         break;
                     case "hascreatureinplay": // TODO: All abilities below only test the presence of the option. The value (true/false) is not yet tested.
                         if (!detectCreatureInZone(ai, ZoneType.Battlefield)) {
+                            return false;
+                        }
+                        break;
+                    case "hasattackablecreature":
+                        if (!detectAttackableCreature(ai)) {
                             return false;
                         }
                         break;
@@ -206,5 +212,14 @@ public class RollPlanarDiceAi extends SpellAbilityAi {
             }
         }
         return hasCreatureInPlay;
+    }
+
+    private boolean detectAttackableCreature(Player p) {
+        for (Card c : p.getCreaturesInPlay()) {
+            if (CombatUtil.canAttack(c)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
