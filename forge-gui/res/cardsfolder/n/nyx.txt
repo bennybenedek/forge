@@ -9,6 +9,7 @@ SVar:RolledChaos:DB$ ChooseColor | SubAbility$ DBMana | AILogic$ MostProminentCo
 SVar:DBMana:DB$ Mana | Produced$ Chosen | Amount$ X | SubAbility$ DBCleanup
 SVar:DBCleanup:DB$ Cleanup | ClearChosenColor$ True
 SVar:X:Count$Devotion.Chosen
+SVar:AIRollPlanarDieParams:Mode$ Always | MinTurn$ 1 | RollInMain1$ True
 DeckHas:Ability$LifeGain
 DeckHints:Type$Enchantment
 Oracle:Nontoken creatures are enchantments in addition to their other types.\nConstellation — Whenever an enchantment you control enters, you gain 1 life.\nWhenever chaos ensues, choose a color. Add an amount of mana of that color equal to your devotion to that color.
