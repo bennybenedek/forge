@@ -4,5 +4,5 @@ Types:Plane Lorwyn
 S:Mode$ CombatDamageToughness | EffectZone$ Command | ValidCard$ Creature | Description$ Each creature assigns combat damage equal to its toughness rather than its power.
 T:Mode$ ChaosEnsues | TriggerZones$ Command | Execute$ RolledChaos | TriggerDescription$ Whenever chaos ensues, creatures you control get +0/+2 and gain trample until end of turn.
 SVar:RolledChaos:DB$ PumpAll | ValidCards$ Creature.ActivePlayerCtrl | NumDef$ +2 | KW$ Trample
-SVar:AIRollPlanarDieParams:Mode$ Always | HasCreatureInPlay$ True | RollInMain1$ True | LowPriority$ True | MaxRollsPerTurn$ 3 | MinTurn$ 1
+SVar:AIRollPlanarDieParams:Mode$ Always | HasCreatureInPlay$ True | RollInMain1$ True | LowPriority$ True | MinTurn$ 1
 Oracle:Each creature assigns combat damage equal to its toughness rather than its power.\nWhenever chaos ensues, creatures you control get +0/+2 and gain trample until end of turn.

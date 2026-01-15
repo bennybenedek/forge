@@ -6,4 +6,5 @@ SVar:LlanowarAb:AB$ Mana | Cost$ T | Amount$ 2 | Produced$ G | SpellDescription$
 T:Mode$ ChaosEnsues | TriggerZones$ Command | Execute$ RolledChaos | TriggerDescription$ Whenever chaos ensues, untap all creatures you control.
 SVar:RolledChaos:DB$ UntapAll | ValidCards$ Creature.YouCtrl
 SVar:AIRollPlanarDieParams:Mode$ Always | HasCreatureInPlay$ True | MinTurn$ 1
+
 Oracle:All creatures have "{T}: Add {G}{G}."\nWhenever chaos ensues, untap all creatures you control.
