@@ -13,7 +13,6 @@ import forge.game.staticability.StaticAbilityCantAttackBlock;
 import forge.game.staticability.StaticAbilityMustAttack;
 import forge.game.trigger.Trigger;
 import forge.game.trigger.TriggerType;
-
 import java.util.List;
 import java.util.function.Function;
 
@@ -35,7 +34,7 @@ public class CreatureEvaluator implements Function<Card, Integer> {
             value += addValue(20, "non-token"); // tokens should be worth less than actual cards
         }
         if (c.isCommander()) {
-            value += addValue(200, "commander"); // Commanders are central to strategy
+            value += addValue(100, "commander"); // Commanders are central to strategy
         }
         int power = c.getNetCombatDamage();
         final int toughness = c.getNetToughness();
