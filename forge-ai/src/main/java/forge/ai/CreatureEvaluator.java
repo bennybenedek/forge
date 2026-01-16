@@ -34,6 +34,9 @@ public class CreatureEvaluator implements Function<Card, Integer> {
         if (!c.isToken()) {
             value += addValue(20, "non-token"); // tokens should be worth less than actual cards
         }
+        if (c.isCommander()) {
+            value += addValue(200, "commander"); // Commanders are central to strategy
+        }
         int power = c.getNetCombatDamage();
         final int toughness = c.getNetToughness();
 
