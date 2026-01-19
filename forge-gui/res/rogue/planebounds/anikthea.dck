@@ -18,7 +18,7 @@ type=0
 1 Dryad of the Ilysian Grove|CMM|1
 1 Enchantress's Presence|CMM|1
 1 Entomb|UMA|1
-3 Forest|MH3|1
+3 Forest|CMM|5
 1 Fortified Village|LCC|1
 1 Godless Shrine|EOE|1
 1 Grasp of Fate|CMM|1
@@ -29,11 +29,10 @@ type=0
 1 Jukai Naturalist|CMM|1
 1 Mindwrack Harpy|CMM|1
 1 Mirari's Wake|CMM|1
-1 Necroblossom Snarl|CMM|1
 1 Nyx Weaver|CMM|1
 1 Overgrown Tomb|ECL|1
 1 Path to Exile|ONC|1
-3 Plains|FDN|1
+3 Plains|CMM|5
 1 Ripples of Undeath|MH3|1
 1 Sanctum Weaver|CMM|1
 1 Sandsteppe Citadel|CMM|1
@@ -44,9 +43,10 @@ type=0
 1 Starfield Mystic|CMM|1
 1 Starfield of Nyx|CMM|1
 1 Sterling Grove|MH2|1
-2 Swamp|MH3|1
+2 Swamp|CMM|4
 1 Swords to Plowshares|DSC|1
 1 Sythis, Harvest's Hand|CMM|1
 1 Temple Garden|ECL|1
+1 Temple of Plenty|FDN|1
 1 Weaver of Harmony|NEO|1
 1 Woodland Cemetery|DSC|1
