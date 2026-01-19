@@ -121,6 +121,10 @@ public class RogueRun {
         }
     }
 
+    public RogueRunState getRunState() {
+        return runState;
+    }
+
     public void setRunState(RogueRunState state) {
         this.runState = state;
     }

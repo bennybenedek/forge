@@ -3,9 +3,44 @@ package forge.gamemodes.rogue;
 /**
  * Data for a Planebound encounter. Represents a plane with its associated Planebound
  * commander and deck.
+ *
+ * Note: This is a regular class instead of a record to support XStream serialization.
  */
-public record RoguePlanebound(String planeName, String planeboundName, String deckPath,
-                              int avatarIndex, RoguePlaneboundType type) {
+public class RoguePlanebound {
+    private final String planeName;
+    private final String planeboundName;
+    private final String deckPath;
+    private final int avatarIndex;
+    private final RoguePlaneboundType type;
+
+    public RoguePlanebound(String planeName, String planeboundName, String deckPath,
+                           int avatarIndex, RoguePlaneboundType type) {
+        this.planeName = planeName;
+        this.planeboundName = planeboundName;
+        this.deckPath = deckPath;
+        this.avatarIndex = avatarIndex;
+        this.type = type;
+    }
+
+    public String planeName() {
+        return planeName;
+    }
+
+    public String planeboundName() {
+        return planeboundName;
+    }
+
+    public String deckPath() {
+        return deckPath;
+    }
+
+    public int avatarIndex() {
+        return avatarIndex;
+    }
+
+    public RoguePlaneboundType type() {
+        return type;
+    }
 
     @Override
     public String toString() {

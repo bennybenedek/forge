@@ -63,6 +63,24 @@ public class RogueIO {
         xStream.allowTypeHierarchy(NodeEvent.class);
         xStream.allowTypeHierarchy(NodeChest.class);
         xStream.allowTypeHierarchy(RoguePlaneboundType.class);
+        xStream.allowTypeHierarchy(RoguePlanebound.class);
+        // Allow main rogue classes
+        xStream.allowTypeHierarchy(RogueRun.class);
+        xStream.allowTypeHierarchy(RogueDeck.class);
+        xStream.allowTypeHierarchy(RoguePath.class);
+        xStream.allowTypeHierarchy(RogueRunState.class);
+        // Allow Arrays.asList internal class
+        xStream.allowTypeHierarchy(java.util.Arrays.class);
+        xStream.allowTypes(new Class[] { java.util.Arrays.asList().getClass() });
+        // Allow array types for node classes (required for deserialization)
+        xStream.allowTypes(new Class[] {
+            RoguePathNode[].class,
+            NodePlanebound[].class,
+            NodeSanctum[].class,
+            NodeBazaar[].class,
+            NodeEvent[].class,
+            NodeChest[].class
+        });
         // Bypass invalid reference to allow loading earlier saves
         xStream.ignoreUnknownElements();
         xStream.setMode(XStream.NO_REFERENCES);
