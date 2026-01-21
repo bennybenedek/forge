@@ -12,6 +12,9 @@ import forge.toolbox.FLabel;
 import forge.toolbox.FSkin;
 import forge.util.Localizer;
 import java.awt.Font;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
@@ -39,6 +42,7 @@ public enum VSubmenuRogueStats implements IVSubmenu<CSubmenuRogueStats> {
     private final FLabel lblRunsStarted = new FLabel.Builder().text("Runs Started: 0").fontSize(14).build();
     private final FLabel lblRunsCompleted = new FLabel.Builder().text("Runs Completed: 0").fontSize(14).build();
     private final FLabel lblRunsWon = new FLabel.Builder().text("Runs Won: 0").fontSize(14).build();
+    private final FLabel lblRunsLost = new FLabel.Builder().text("Runs Lost: 0").fontSize(14).build();
 
     // Match statistics
     private final FLabel lblMatchesWon = new FLabel.Builder().text("Matches Won: 0").fontSize(14).build();
@@ -48,6 +52,10 @@ public enum VSubmenuRogueStats implements IVSubmenu<CSubmenuRogueStats> {
     private final FLabel lblMaxLife = new FLabel.Builder().text("Max Life Reached: 0").fontSize(14).build();
     private final FLabel lblMaxGold = new FLabel.Builder().text("Max Gold Earned: 0").fontSize(14).build();
     private final FLabel lblMaxCreatureTypes = new FLabel.Builder().text("Max Creature Types: 0").fontSize(14).build();
+
+    // Per-commander statistics (dynamically populated)
+    private JPanel commanderStatsPanel;
+    private final List<FLabel> commanderStatLabels = new ArrayList<>();
 
     // Buttons
     private final FButton btnBack;
@@ -72,11 +80,63 @@ public enum VSubmenuRogueStats implements IVSubmenu<CSubmenuRogueStats> {
         lblRunsStarted.setText("Runs Started: " + runsStarted);
         lblRunsCompleted.setText("Runs Completed: " + runsCompleted);
         lblRunsWon.setText("Runs Won: " + runsWon);
+        lblRunsLost.setText("Runs Lost: " + (runsCompleted - runsWon));
         lblMatchesWon.setText("Matches Won: " + matchesWon);
         lblMatchesLost.setText("Matches Lost: " + matchesLost);
         lblMaxLife.setText("Max Life Reached: " + maxLife);
         lblMaxGold.setText("Max Gold Earned: " + maxGold);
         lblMaxCreatureTypes.setText("Max Creature Types: " + maxCreatureTypes);
+    }
+
+    /**
+     * Update the per-commander statistics display.
+     * @param commanderStats Map of commander name -> [runsStarted, runsWon]
+     */
+    public void updateCommanderStats(Map<String, int[]> commanderStats) {
+        if (commanderStatsPanel == null) {
+            return;
+        }
+
+        // Clear existing labels
+        commanderStatsPanel.removeAll();
+        commanderStatLabels.clear();
+
+        // Add section header
+        FLabel lblCommanderSection = new FLabel.Builder()
+            .text("Commander Statistics")
+            .fontSize(16)
+            .fontStyle(Font.BOLD)
+            .build();
+        commanderStatsPanel.add(lblCommanderSection, "gapbottom 10");
+
+        if (commanderStats.isEmpty()) {
+            FLabel lblNoData = new FLabel.Builder()
+                .text("No commanders used yet")
+                .fontSize(14)
+                .build();
+            commanderStatsPanel.add(lblNoData);
+            commanderStatLabels.add(lblNoData);
+        } else {
+            // Sort commanders alphabetically
+            List<String> sortedCommanders = new ArrayList<>(commanderStats.keySet());
+            sortedCommanders.sort(String::compareToIgnoreCase);
+
+            for (String commander : sortedCommanders) {
+                int[] stats = commanderStats.get(commander);
+                int started = stats[0];
+                int won = stats[1];
+
+                FLabel lblCommander = new FLabel.Builder()
+                    .text(commander + ": " + won + "/" + started + " runs won")
+                    .fontSize(14)
+                    .build();
+                commanderStatsPanel.add(lblCommander);
+                commanderStatLabels.add(lblCommander);
+            }
+        }
+
+        commanderStatsPanel.revalidate();
+        commanderStatsPanel.repaint();
     }
 
     @Override
@@ -129,7 +189,8 @@ public enum VSubmenuRogueStats implements IVSubmenu<CSubmenuRogueStats> {
         panel.add(lblRunSection, "gapbottom 10");
         panel.add(lblRunsStarted);
         panel.add(lblRunsCompleted);
-        panel.add(lblRunsWon, "gapbottom 20");
+        panel.add(lblRunsWon);
+        panel.add(lblRunsLost, "gapbottom 20");
 
         // Section: Match Statistics
         FLabel lblMatchSection = new FLabel.Builder()
@@ -150,7 +211,12 @@ public enum VSubmenuRogueStats implements IVSubmenu<CSubmenuRogueStats> {
         panel.add(lblMilestoneSection, "gapbottom 10");
         panel.add(lblMaxLife);
         panel.add(lblMaxGold);
-        panel.add(lblMaxCreatureTypes);
+        panel.add(lblMaxCreatureTypes, "gapbottom 20");
+
+        // Section: Commander Statistics (dynamically populated)
+        commanderStatsPanel = new JPanel(new MigLayout("insets 0, gap 5, wrap 1", "[250px]", ""));
+        commanderStatsPanel.setOpaque(false);
+        panel.add(commanderStatsPanel, "grow");
 
         return panel;
     }

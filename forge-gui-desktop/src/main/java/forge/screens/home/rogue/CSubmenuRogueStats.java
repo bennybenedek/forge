@@ -5,6 +5,9 @@ import forge.gui.framework.EDocID;
 import forge.gui.framework.ICDoc;
 import forge.screens.home.CHomeUI;
 import forge.toolbox.FOptionPane;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Controls the Rogue Commander statistics screen.
@@ -43,6 +46,16 @@ public enum CSubmenuRogueStats implements ICDoc {
             progress.getMaxGoldInRun(),
             progress.getMaxCreatureTypesInDeck()
         );
+
+        // Load per-commander statistics
+        Map<String, int[]> commanderStats = new HashMap<>();
+        Set<String> commandersUsed = progress.getCommandersUsed();
+        for (String commander : commandersUsed) {
+            int runsStarted = progress.getRunsStartedWithCommander(commander);
+            int runsWon = progress.getRunsWonWithCommander(commander);
+            commanderStats.put(commander, new int[]{runsStarted, runsWon});
+        }
+        view.updateCommanderStats(commanderStats);
     }
 
     private void goBack() {

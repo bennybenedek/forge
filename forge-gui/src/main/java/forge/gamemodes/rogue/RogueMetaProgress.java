@@ -241,6 +241,14 @@ public class RogueMetaProgress {
         return maxGoldInRun;
     }
 
+    public Set<String> getCommandersUsed() {
+        return new HashSet<>(commandersUsed);
+    }
+
+    public int getRunsStartedWithCommander(String commanderName) {
+        return runsStartedPerCommander.getOrDefault(commanderName, 0);
+    }
+
     // ==================== Persistence ====================
 
     private static File getMetaProgressFile() {
