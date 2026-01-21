@@ -285,6 +285,14 @@ public class RogueRun {
         return path.getReachableNodeIndices(currentNodeIndex);
     }
 
+    public int getMatchesWon() {
+        return matchesWon;
+    }
+
+    public int getMatchesLost() {
+        return matchesLost;
+    }
+
     public int getRemovalCredits() {
         return removalCredits;
     }

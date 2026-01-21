@@ -112,9 +112,14 @@ public class RogueIO {
         }
     }
 
+    private static final String META_PROGRESS_FILE = "meta_progress.dat";
+
     public static File[] getRogueFiles() {
         ensureRogueDirectoryExists();
-        final FilenameFilter filter = (dir, name) -> name.endsWith(SUFFIX_DATA) && !name.startsWith(PREFIX_LOCKED);
+        final FilenameFilter filter = (dir, name) ->
+            name.endsWith(SUFFIX_DATA) &&
+            !name.startsWith(PREFIX_LOCKED) &&
+            !name.equals(META_PROGRESS_FILE);
         final File folder = new File(ROGUE_SAVE_DIR);
         return folder.listFiles(filter);
     }

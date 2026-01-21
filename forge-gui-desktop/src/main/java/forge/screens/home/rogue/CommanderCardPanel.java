@@ -1,5 +1,7 @@
 package forge.screens.home.rogue;
 
+import forge.ImageCache;
+import forge.ImageKeys;
 import forge.gamemodes.rogue.RogueDeck;
 import forge.gui.CardPicturePanel;
 import forge.item.PaperCard;
@@ -7,17 +9,21 @@ import forge.toolbox.FSkin.SkinnedPanel;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
 import java.util.function.Consumer;
 
 /**
  * Panel for displaying a commander card in the start view.
  * Shows the commander card and allows single selection.
+ * For locked commanders, shows a card back with a lock indicator.
  */
 public class CommanderCardPanel extends SkinnedPanel {
     private final RogueDeck commander;
     private final PaperCard commanderCard;
     private final CardPicturePanel cardPicture;
-  private boolean selected;
+    private boolean selected;
+    private boolean highlighted;  // For locked commanders when clicked
+    private final boolean locked;
     private Consumer<CommanderCardPanel> selectionCallback;
 
     public CommanderCardPanel(RogueDeck commander, VSubmenuRogueStart view) {
@@ -26,13 +32,20 @@ public class CommanderCardPanel extends SkinnedPanel {
         // Get the commander card from the start deck
         this.commanderCard = commander.getStartDeck().getCommanders().get(0);
         this.selected = false;
+        this.locked = !commander.isUnlocked();
         this.cardPicture = new CardPicturePanel();
 
         setOpaque(false);
         setLayout(null); // Manual layout
 
-        // Display commander card
-        cardPicture.setItem(commanderCard);
+        // Display commander card or card back for locked commanders
+        if (locked) {
+            BufferedImage cardBack = ImageCache.getOriginalImage(
+                ImageKeys.getTokenKey(ImageKeys.HIDDEN_CARD), true, null);
+            cardPicture.setItem(cardBack);
+        } else {
+            cardPicture.setItem(commanderCard);
+        }
         cardPicture.setOpaque(false);
         add(cardPicture);
 
@@ -56,9 +69,9 @@ public class CommanderCardPanel extends SkinnedPanel {
             }
         });
 
-        // Add mouse wheel listener for card zoom
+        // Add mouse wheel listener for card zoom (only for unlocked commanders)
         addMouseWheelListener(e -> {
-            if (e.getWheelRotation() < 0 && view.getZoomUtil() != null) { // Scroll up to zoom
+            if (!locked && e.getWheelRotation() < 0 && view.getZoomUtil() != null) { // Scroll up to zoom
                 view.getZoomUtil().showZoom(commanderCard);
             }
         });
@@ -80,8 +93,21 @@ public class CommanderCardPanel extends SkinnedPanel {
         return selected;
     }
 
+    public void setHighlighted(boolean highlighted) {
+        this.highlighted = highlighted;
+        repaint();
+    }
+
+    public boolean isHighlighted() {
+        return highlighted;
+    }
+
     public RogueDeck getCommander() {
         return commander;
+    }
+
+    public boolean isLocked() {
+        return locked;
     }
 
     @Override
@@ -94,12 +120,12 @@ public class CommanderCardPanel extends SkinnedPanel {
     public void paint(Graphics g) {
         super.paint(g);
 
-        // Draw selection indicators if selected
-        if (selected) {
-            Graphics2D g2d = (Graphics2D) g;
-            int width = getWidth();
-            int height = getHeight();
+        Graphics2D g2d = (Graphics2D) g;
+        int width = getWidth();
+        int height = getHeight();
 
+        // Draw selection indicators if selected (unlocked commanders)
+        if (selected) {
             // Draw thick green border
             g2d.setColor(new Color(0, 255, 0, 200));
             g2d.setStroke(new BasicStroke(6));
@@ -120,6 +146,12 @@ public class CommanderCardPanel extends SkinnedPanel {
             int[] xPoints = {checkX + 7, checkX + 12, checkX + 23};
             int[] yPoints = {checkY + 15, checkY + 20, checkY + 10};
             g2d.drawPolyline(xPoints, yPoints, 3);
+        }
+        // Draw yellow/gold border if highlighted (locked commanders when clicked)
+        else if (highlighted) {
+            g2d.setColor(new Color(255, 215, 0));  // Gold color
+            g2d.setStroke(new BasicStroke(6));
+            g2d.drawRect(3, 3, width - 6, height - 6);
         }
     }
 }

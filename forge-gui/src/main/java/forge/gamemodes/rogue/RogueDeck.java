@@ -21,6 +21,7 @@ public class RogueDeck {
     private String themeDescription;        // Theme/archetype (e.g., "Instants/Sorceries matter")
     private int avatarIndex;                // Avatar image index
     private int sleeveIndex;                // Sleeve image index
+    private transient RogueUnlockCondition rogueUnlockCondition;  // Unlock condition (transient - not serialized)
 
     // Constructors
     public RogueDeck() {
@@ -142,6 +143,47 @@ public class RogueDeck {
 
     public void setSleeveIndex(int sleeveIndex) {
         this.sleeveIndex = sleeveIndex;
+    }
+
+    public RogueUnlockCondition getUnlockCondition() {
+        return rogueUnlockCondition;
+    }
+
+    public void setUnlockCondition(RogueUnlockCondition rogueUnlockCondition) {
+        this.rogueUnlockCondition = rogueUnlockCondition;
+    }
+
+    /**
+     * Check if this commander is unlocked and available for selection.
+     * A commander is unlocked if:
+     * - It has no unlock condition (always available)
+     * - Its unlock condition evaluates to true
+     * - It has been manually unlocked via meta progress
+     * @return true if the commander can be selected
+     */
+    public boolean isUnlocked() {
+        // Check if manually unlocked first
+        if (RogueMetaProgress.getInstance().isCommanderManuallyUnlocked(commanderCardName)) {
+            return true;
+        }
+        // No condition means always unlocked
+        if (rogueUnlockCondition == null) {
+            return true;
+        }
+        // Evaluate the condition
+        return rogueUnlockCondition.evaluate();
+    }
+
+    /**
+     * Get the description of the unlock requirement for display.
+     * @return Human-readable unlock requirement, or null if always available
+     */
+    public String getUnlockDescription() {
+        if (rogueUnlockCondition == null || (
+            rogueUnlockCondition.isDefault() && !rogueUnlockCondition.isAlwaysLocked())) {
+            return null;
+        }
+        return rogueUnlockCondition.getDescription();
     }
 
     @Override

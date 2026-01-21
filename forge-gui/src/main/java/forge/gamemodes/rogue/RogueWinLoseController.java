@@ -66,6 +66,9 @@ public class RogueWinLoseController {
         // Record the victory (this also marks the node as completed)
         currentRun.recordMatchResult(true);
 
+        // Track meta progress for match
+        RogueMetaProgress.getInstance().onMatchCompleted(currentRun, true);
+
         // Persist life total from match
         persistLifeTotal();
 
@@ -75,6 +78,7 @@ public class RogueWinLoseController {
         if (isLastNode) {
             // Run is complete - mark as won
             currentRun.setRunWon(true);
+            RogueMetaProgress.getInstance().onRunCompleted(currentRun, true);
             RogueIO.saveRun(currentRun);
             view.showMessage("Congratulations! You have completed the run!", "Victory", FSkinProp.ICO_QUEST_CHARM);
             return; // Skip card rewards and navigation
@@ -208,6 +212,10 @@ public class RogueWinLoseController {
         // Record the loss and mark run as failed
         currentRun.recordMatchResult(false);
         currentRun.setRunFailed(true);
+
+        // Track meta progress
+        RogueMetaProgress.getInstance().onMatchCompleted(currentRun, false);
+        RogueMetaProgress.getInstance().onRunCompleted(currentRun, false);
 
         // Save run state
         RogueIO.saveRun(currentRun);

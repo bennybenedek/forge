@@ -1,10 +1,10 @@
 package forge.screens.home.rogue;
 
 import forge.gamemodes.rogue.*;
-import forge.gui.UiCommand;
 import forge.gui.framework.EDocID;
 import forge.gui.framework.ICDoc;
 import forge.screens.home.CHomeUI;
+import java.util.Comparator;
 import java.util.List;
 import javax.swing.SwingUtilities;
 
@@ -24,7 +24,12 @@ public enum CSubmenuRogueStart implements ICDoc {
 
     @Override
     public void initialize() {
-        view.getBtnBeginRun().setCommand((UiCommand) this::beginNewRun);
+        view.getBtnBeginRun().addActionListener(e -> beginNewRun());
+        view.getBtnStats().addActionListener(e -> openStats());
+    }
+
+    private void openStats() {
+        CHomeUI.SINGLETON_INSTANCE.itemClick(EDocID.HOME_ROGUESTATS);
     }
 
     @Override
@@ -36,10 +41,16 @@ public enum CSubmenuRogueStart implements ICDoc {
     private void loadAvailableCommanders() {
         List<RogueDeck> availableDecks = RogueConfig.loadRogueDecks();
 
+        // Sort commanders: unlocked first (alphabetically), then locked (alphabetically)
+        availableDecks.sort(Comparator
+            .comparing((RogueDeck d) -> !d.isUnlocked())  // false (unlocked) before true (locked)
+            .thenComparing(RogueDeck::getName));
+
         // Clear existing commander panels
         view.getCommanderGridPanel().clear();
 
         // Create card panel for each commander
+        CommanderCardPanel firstUnlockedPanel = null;
         for (RogueDeck deck : availableDecks) {
             CommanderCardPanel cardPanel = new CommanderCardPanel(deck, view);
 
@@ -47,14 +58,21 @@ public enum CSubmenuRogueStart implements ICDoc {
             cardPanel.setSelectionCallback(this::onCommanderSelected);
 
             view.getCommanderGridPanel().addCommanderPanel(cardPanel);
+
+            // Track first unlocked commander
+            if (firstUnlockedPanel == null && !cardPanel.isLocked()) {
+                firstUnlockedPanel = cardPanel;
+            }
         }
 
-        // Select first commander by default
-        if (!availableDecks.isEmpty() && !view.getCommanderPanels().isEmpty()) {
-            CommanderCardPanel firstPanel = view.getCommanderPanels().get(0);
-            firstPanel.setSelected(true);
-            selectedDeck = firstPanel.getCommander();
-            updateCommanderDetails();
+        // Select first unlocked commander by default
+        if (firstUnlockedPanel != null) {
+            firstUnlockedPanel.setSelected(true);
+            selectedDeck = firstUnlockedPanel.getCommander();
+            updateCommanderDetails(firstUnlockedPanel);
+            view.getBtnBeginRun().setEnabled(true);
+        } else {
+            view.getBtnBeginRun().setEnabled(false);
         }
 
         // Refresh layout
@@ -63,8 +81,22 @@ public enum CSubmenuRogueStart implements ICDoc {
     }
 
     private void onCommanderSelected(CommanderCardPanel clickedPanel) {
-        // Deselect all other panels (single-selection mode)
+        // For locked commanders, just show details but don't select
+        if (clickedPanel.isLocked()) {
+            // Deselect and unhighlight all panels, then highlight clicked
+            for (CommanderCardPanel panel : view.getCommanderPanels()) {
+                panel.setSelected(false);
+                panel.setHighlighted(panel == clickedPanel);
+            }
+            selectedDeck = null;
+            view.getBtnBeginRun().setEnabled(false);
+            updateCommanderDetails(clickedPanel);
+            return;
+        }
+
+        // Clear highlights and deselect other panels (single-selection mode)
         for (CommanderCardPanel panel : view.getCommanderPanels()) {
+            panel.setHighlighted(false);
             if (panel != clickedPanel) {
                 panel.setSelected(false);
             }
@@ -74,31 +106,56 @@ public enum CSubmenuRogueStart implements ICDoc {
         boolean newState = !clickedPanel.isSelected();
         clickedPanel.setSelected(newState);
 
-        // Update selected deck
+        // Update selected deck and button state
         if (newState) {
             selectedDeck = clickedPanel.getCommander();
-            updateCommanderDetails();
+            view.getBtnBeginRun().setEnabled(true);
+            updateCommanderDetails(clickedPanel);
         } else {
             // If deselecting, clear details
             selectedDeck = null;
+            view.getBtnBeginRun().setEnabled(false);
             view.getLblCommanderName().setText("");
+            view.getLblDescriptionLabel().setText("Description:");
             view.getTxtDescription().setText("");
             view.getTxtTheme().setText("");
         }
     }
 
-    private void updateCommanderDetails() {
-        if (selectedDeck != null) {
-            view.getLblCommanderName().setText(selectedDeck.getCommanderCardName());
-            view.getTxtDescription().setText(selectedDeck.getDescription());
-            view.getTxtTheme().setText(selectedDeck.getThemeDescription());
+    private void updateCommanderDetails(CommanderCardPanel panel) {
+        RogueDeck deck = panel.getCommander();
 
-            // Force UI refresh for text areas
-            view.getTxtDescription().revalidate();
-            view.getTxtDescription().repaint();
-            view.getTxtTheme().revalidate();
-            view.getTxtTheme().repaint();
+        if (panel.isLocked()) {
+            // Show unlock condition for locked commanders
+            view.getLblCommanderName().setText("???");
+            view.getLblDescriptionLabel().setText("Unlock:");
+            String unlockDesc = deck.getUnlockDescription();
+            if (unlockDesc != null && !unlockDesc.isEmpty()) {
+                view.getTxtDescription().setText(unlockDesc);
+            } else {
+                view.getTxtDescription().setText("Locked");
+            }
+            // Hide theme row for locked commanders
+            view.getLblThemeLabel().setVisible(false);
+            view.getScrollTheme().setVisible(false);
+        } else {
+            // Show normal details for unlocked commanders
+            view.getLblCommanderName().setText(deck.getCommanderCardName());
+            view.getLblDescriptionLabel().setText("Description:");
+            view.getTxtDescription().setText(deck.getDescription());
+            view.getTxtTheme().setText(deck.getThemeDescription());
+            // Show theme row for unlocked commanders
+            view.getLblThemeLabel().setVisible(true);
+            view.getScrollTheme().setVisible(true);
         }
+
+        // Force UI refresh for text areas
+        view.getLblDescriptionLabel().revalidate();
+        view.getLblDescriptionLabel().repaint();
+        view.getTxtDescription().revalidate();
+        view.getTxtDescription().repaint();
+        view.getTxtTheme().revalidate();
+        view.getTxtTheme().repaint();
     }
 
     private void beginNewRun() {
@@ -120,6 +177,9 @@ public enum CSubmenuRogueStart implements ICDoc {
         // Format: DeckName_Timestamp (e.g., "MeriaRogueCommander_12-11-25_143022")
         String runName = selectedDeck.getName() + "_" + System.currentTimeMillis();
         newRun.setName(runName);
+
+        // Track meta progress
+        RogueMetaProgress.getInstance().onRunStarted(selectedDeck.getCommanderCardName());
 
         // Save the run
         RogueIO.saveRun(newRun);

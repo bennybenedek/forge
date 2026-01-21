@@ -3,23 +3,18 @@ package forge.screens.home.rogue;
 import forge.gui.framework.DragCell;
 import forge.gui.framework.DragTab;
 import forge.gui.framework.EDocID;
+import forge.localinstance.skin.FSkinProp;
 import forge.screens.home.EMenuGroup;
 import forge.screens.home.IVSubmenu;
 import forge.screens.home.VHomeUI;
-import forge.toolbox.FLabel;
-import forge.toolbox.FScrollPane;
-import forge.toolbox.FSkin;
-import forge.toolbox.FTextArea;
+import forge.toolbox.*;
 import forge.util.Localizer;
 import forge.view.arcane.CardPanel;
 import java.awt.Dimension;
 import java.awt.Window;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JPanel;
-import javax.swing.ScrollPaneConstants;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import net.miginfocom.swing.MigLayout;
 
 /**
@@ -34,7 +29,7 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
     private static final int CARD_WIDTH = 223;
     private static final int CARD_HEIGHT = Math.round(CARD_WIDTH * CardPanel.ASPECT_RATIO);
     private static final int CARD_SPACING = 15;
-    private static final int CARDS_PER_ROW = 4;
+    private static final int CARDS_PER_ROW = 5;
 
     // Fields used with interface IVDoc
     private DragCell parentCell;
@@ -58,18 +53,32 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
         .fontAlign(SwingConstants.LEFT)
         .build();
 
-    private final FTextArea txtDescription = new FTextArea("");
-    private final FTextArea txtTheme = new FTextArea("");
-
-    // Action buttons
-    private final FLabel btnBeginRun = new FLabel.Builder()
-        .opaque(true)
-        .hoverable(true)
-        .text("Start Run")
-        .fontSize(16)
+    private final FLabel lblDescriptionLabel = new FLabel.Builder()
+        .text("Description:")
+        .fontSize(14)
         .build();
 
+    private final FLabel lblThemeLabel = new FLabel.Builder()
+        .text("Theme:")
+        .fontSize(14)
+        .build();
+
+    private final FTextArea txtDescription = new FTextArea("");
+    private final FTextArea txtTheme = new FTextArea("");
+    private FScrollPane scrollTheme;
+
+    // Action buttons
+    private final FButton btnBeginRun;
+    private final FButton btnStats;
+
     private VSubmenuRogueStart() {
+        // Setup buttons with icons (matching Path View style)
+        btnBeginRun = new FButton("Start Run");
+        btnBeginRun.setIcon(FSkin.getImage(FSkinProp.ICO_ALPHASTRIKE).resize(24, 24).getIcon());
+
+        btnStats = new FButton("Stats");
+        btnStats.setIcon(FSkin.getImage(FSkinProp.ICO_QUEST_BOOK).resize(24, 24).getIcon());
+
         lblTitle.setBackground(FSkin.getColor(FSkin.Colors.CLR_THEME2));
 
         // Setup description text areas
@@ -147,22 +156,26 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
         panel.add(new FLabel.Builder().text("Commander:").fontSize(14).build(), "cell 0 0, alignx left, aligny top");
         panel.add(lblCommanderName, "cell 1 0, alignx left, growx");
 
-        // Row 2: Description
-        panel.add(new FLabel.Builder().text("Description:").fontSize(14).build(), "cell 0 1, alignx left, aligny top");
+        // Row 2: Description (label can change to "Unlock:" for locked commanders)
+        panel.add(lblDescriptionLabel, "cell 0 1, alignx left, aligny top");
         panel.add(new FScrollPane(txtDescription, false,
             ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
             ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER),
             "cell 1 1, growx, h 60px!");
 
-        // Row 3: Theme
-        panel.add(new FLabel.Builder().text("Theme:").fontSize(14).build(), "cell 0 2, alignx left, aligny top");
-        panel.add(new FScrollPane(txtTheme, false,
+        // Row 3: Theme (hidden for locked commanders)
+        panel.add(lblThemeLabel, "cell 0 2, alignx left, aligny top");
+        scrollTheme = new FScrollPane(txtTheme, false,
             ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
-            ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER),
-            "cell 1 2, growx, h 40px!");
+            ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        panel.add(scrollTheme, "cell 1 2, growx, h 40px!");
 
-        // Row 4: Begin button
-        panel.add(btnBeginRun, "cell 0 3, span 2, alignx center, w 200px!, h 40px!");
+        // Row 4: Buttons
+        JPanel buttonPanel = new JPanel(new MigLayout("insets 0, gap 10"));
+        buttonPanel.setOpaque(false);
+        buttonPanel.add(btnBeginRun, "w 150px!, h 40px!");
+        buttonPanel.add(btnStats, "w 150px!, h 40px!");
+        panel.add(buttonPanel, "cell 0 3, span 2, alignx center");
 
         return panel;
     }
@@ -182,6 +195,10 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
         return lblCommanderName;
     }
 
+    public FLabel getLblDescriptionLabel() {
+        return lblDescriptionLabel;
+    }
+
     public FTextArea getTxtDescription() {
         return txtDescription;
     }
@@ -190,8 +207,20 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
         return txtTheme;
     }
 
-    public FLabel getBtnBeginRun() {
+    public FLabel getLblThemeLabel() {
+        return lblThemeLabel;
+    }
+
+    public FScrollPane getScrollTheme() {
+        return scrollTheme;
+    }
+
+    public JButton getBtnBeginRun() {
         return btnBeginRun;
+    }
+
+    public JButton getBtnStats() {
+        return btnStats;
     }
 
     public List<CommanderCardPanel> getCommanderPanels() {

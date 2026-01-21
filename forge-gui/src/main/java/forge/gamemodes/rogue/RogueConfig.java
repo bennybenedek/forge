@@ -122,6 +122,12 @@ public class RogueConfig {
         rogueDeck.setAvatarIndex(Integer.parseInt(meta.getProperty("avatarIndex", "1")));
         rogueDeck.setSleeveIndex(Integer.parseInt(meta.getProperty("sleeveIndex", "1")));
 
+        // Set unlock condition
+        String unlockString = meta.getProperty("unlock", null);
+        if (unlockString != null && !unlockString.isEmpty()) {
+            rogueDeck.setUnlockCondition(new RogueUnlockCondition(unlockString));
+        }
+
         return rogueDeck;
     }
 
