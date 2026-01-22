@@ -1,12 +1,7 @@
 package forge.screens.match.winlose;
 
-import java.util.List;
-
-import org.apache.commons.lang3.StringUtils;
-
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.utils.Align;
-
 import forge.Forge;
 import forge.assets.FSkinColor;
 import forge.assets.FSkinColor.Colors;
@@ -22,13 +17,10 @@ import forge.item.PaperCard;
 import forge.localinstance.skin.FSkinProp;
 import forge.menu.FMagnifyView;
 import forge.model.FModel;
-import forge.toolbox.FButton;
-import forge.toolbox.FContainer;
-import forge.toolbox.FDisplayObject;
-import forge.toolbox.FLabel;
-import forge.toolbox.FOverlay;
-import forge.toolbox.FTextArea;
+import forge.toolbox.*;
 import forge.util.Utils;
+import java.util.List;
+import org.apache.commons.lang3.StringUtils;
 
 public class ViewWinLose extends FOverlay implements IWinLoseView<FButton> {
     private static final float INSETS_FACTOR = 0.025f;
@@ -282,8 +274,7 @@ public class ViewWinLose extends FOverlay implements IWinLoseView<FButton> {
     }
 
     @Override
-    public List<PaperCard> showCardRewardDialog(String title, List<PaperCard> cards,
-        int minSelections, int maxSelections, int goldReward, int echoReward) {
+    public List<PaperCard> showCardRewardDialog(String title, List<PaperCard> cards, int maxSelections) {
         return List.of();
     }
 }
