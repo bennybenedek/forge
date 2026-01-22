@@ -446,9 +446,9 @@ public enum CSubmenuRogueMap implements ICDoc {
             return;
         }
 
-        // Generate Bazaar inventory: 9 non-mythic + 1 mythic from reward pool
-        List<PaperCard> nonMythicCards = rogueDeck.drawRewardOptions(9, forge.item.PaperCardPredicates.IS_MYTHIC_RARE.negate());
-        List<PaperCard> mythicCards = rogueDeck.drawRewardOptions(1, forge.item.PaperCardPredicates.IS_MYTHIC_RARE);
+        // Generate Bazaar inventory: Draw 8 non-mythic + 2 mythic (by default) from reward pool
+        List<PaperCard> nonMythicCards = rogueDeck.drawRewardOptions(8, forge.item.PaperCardPredicates.IS_MYTHIC_RARE.negate());
+        List<PaperCard> mythicCards = rogueDeck.drawRewardOptions(2, forge.item.PaperCardPredicates.IS_MYTHIC_RARE);
 
         // Combine into single inventory
         List<PaperCard> inventory = new ArrayList<>();

@@ -9,6 +9,7 @@ import forge.item.PaperCard;
 import forge.localinstance.skin.FSkinProp;
 import forge.player.GamePlayerUtil;
 import forge.util.Localizer;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -135,31 +136,25 @@ public class RogueWinLoseController {
             return;
         }
 
-        // Draw 7 random cards from reward pool (always exclude mythics for first screen)
-        List<PaperCard> rewardOptions = rogueDeck.drawRewardOptions(7, forge.item.PaperCardPredicates.IS_MYTHIC_RARE.negate());
+        // Draw 7 cards from reward pool (6 random non-mythic and 1 random mythic by default)
+        List<PaperCard> nonMythicCards = rogueDeck.drawRewardOptions(6, forge.item.PaperCardPredicates.IS_MYTHIC_RARE.negate());
+        List<PaperCard> mythicCards = rogueDeck.drawRewardOptions(1, forge.item.PaperCardPredicates.IS_MYTHIC_RARE);
+
+        // Combine to single card reward list
+        List<PaperCard> rewardOptions = new ArrayList<>();
+        rewardOptions.addAll(nonMythicCards);
+        rewardOptions.addAll(mythicCards);
 
         if (rewardOptions.isEmpty()) {
             view.showMessage("No more cards available in reward pool.", "No Rewards", FSkinProp.ADV_CLR_ACTIVE);
             return;
         }
 
-        // Get rewards earned from current node (only planebound nodes have rewards)
-        int goldReward = 0;
-        int echoReward = 0;
-        if (currentNode instanceof NodePlanebound) {
-            NodePlanebound planeboundNode = (NodePlanebound) currentNode;
-            goldReward = planeboundNode.getGoldReward();
-            echoReward = planeboundNode.getEchoReward();
-        }
-
         // Show visual card selection dialog
         List<PaperCard> chosenCards = view.showCardRewardDialog(
             "Choose Your Rewards",
             rewardOptions,
-            0,
-            3,
-            goldReward,
-            echoReward
+            3
         );
 
         // If Elite opponent, show second reward screen with mythic cards
@@ -171,10 +166,7 @@ public class RogueWinLoseController {
                 List<PaperCard> chosenMythics = view.showCardRewardDialog(
                     "Choose Your Mythic Reward",
                     mythicOptions,
-                    0,  // min selection (optional)
-                    1,  // max selection
-                    0,  // no additional gold
-                    0   // no additional echoes
+                    1
                 );
 
                 if (chosenMythics != null && !chosenMythics.isEmpty()) {

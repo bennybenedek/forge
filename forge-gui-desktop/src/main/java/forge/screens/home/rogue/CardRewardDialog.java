@@ -7,7 +7,8 @@ import forge.toolbox.FOptionPane;
 import forge.toolbox.FSkin.SkinnedPanel;
 import forge.util.Localizer;
 import forge.view.arcane.CardPanel;
-import java.awt.*;
+import java.awt.Dimension;
+import java.awt.Font;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -27,10 +28,7 @@ public class CardRewardDialog {
     private static final int PADDING = 30;
 
     private final String title;
-    private final List<PaperCard> cards;
     private final int maxSelections;
-    private final int goldReward;
-    private final int echoReward;
     private final Set<PaperCard> selectedCards;
     private final List<SelectableCardPanel> cardPanels;
     private final MainPanel panel;
@@ -43,17 +41,11 @@ public class CardRewardDialog {
      * Create a card reward selection dialog.
      * @param title Dialog title
      * @param cards List of cards to choose from
-     * @param minSelections Minimum number of cards to select (0 for optional)
      * @param maxSelections Maximum number of cards to select
-     * @param goldReward Amount of gold earned
-     * @param echoReward Amount of echoes earned
      */
-    public CardRewardDialog(String title, List<PaperCard> cards, int minSelections, int maxSelections, int goldReward, int echoReward) {
+    public CardRewardDialog(String title, List<PaperCard> cards, int maxSelections) {
         this.title = title;
-        this.cards = cards;
         this.maxSelections = maxSelections;
-        this.goldReward = goldReward;
-        this.echoReward = echoReward;
         this.selectedCards = new HashSet<>();
         this.cardPanels = new ArrayList<>();
 
