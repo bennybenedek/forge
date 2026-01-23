@@ -168,8 +168,8 @@ public enum VSubmenuRogueStats implements IVSubmenu<CSubmenuRogueStats> {
         // Buttons panel
         JPanel buttonPanel = new JPanel(new MigLayout("insets 0, gap 10"));
         buttonPanel.setOpaque(false);
-        buttonPanel.add(btnBack, "w 150px!, h 40px!");
-        buttonPanel.add(btnReset, "w 150px!, h 40px!");
+        buttonPanel.add(btnBack, "w 180px!, h 40px!");
+        buttonPanel.add(btnReset, "w 180px!, h 40px!");
         VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(buttonPanel, "ax center, gap 0 0 20px 20px");
 
         VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().repaintSelf();
