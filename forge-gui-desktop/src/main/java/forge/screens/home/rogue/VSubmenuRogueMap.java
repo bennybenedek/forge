@@ -1,5 +1,6 @@
 package forge.screens.home.rogue;
 
+import forge.gamemodes.rogue.RogueMetaProgress;
 import forge.gamemodes.rogue.RogueRun;
 import forge.gui.framework.DragCell;
 import forge.gui.framework.DragTab;
@@ -49,6 +50,12 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
         .fontStyle(Font.BOLD)
         .build();
 
+    private final FLabel lblEchoes = new FLabel.Builder()
+        .text("Echoes: 0")
+        .fontSize(14)
+        .fontStyle(Font.BOLD)
+        .build();
+
     private final FLabel lblRemovalCredits = new FLabel.Builder()
         .text("Removal Credits: 0")
         .fontSize(14)
@@ -66,6 +73,7 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
 
         // Add icons to labels
         lblGold.setIcon(FSkin.getIcon(FSkinProp.ICO_QUEST_COIN));
+        lblEchoes.setIcon(FSkin.getIcon(FSkinProp.ICO_QUEST_GOLD));
         lblRemovalCredits.setIcon(FSkin.getIcon(FSkinProp.ICO_CARD_IMAGE));
 
         // Setup buttons with icons
@@ -84,6 +92,10 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
      * Update the display with current run data.
      */
     public void updateDisplay(RogueRun run) {
+        // Echoes come from meta progression (persistent), not from the run
+        int totalEchoes = RogueMetaProgress.getInstance().getTotalEchoes();
+        lblEchoes.setText("Echoes: " + totalEchoes);
+
         if (run != null) {
             lblLife.setText("♥ Life: " + run.getCurrentLife());
             lblGold.setText("Gold: " + run.getCurrentGold());
@@ -118,8 +130,9 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
         VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().setLayout(new MigLayout("insets 0, gap 0, wrap"));
 
         VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(lblTitle, "w 98%!, h 30px!, gap 1% 0 15px 15px");
-        VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(lblLife, "ax center, gap 0 0 10px 10px, split 3");
+        VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(lblLife, "ax center, gap 0 0 10px 10px, split 4");
         VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(lblGold, "gapleft 20px");
+        VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(lblEchoes, "gapleft 20px");
         VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(lblRemovalCredits, "gapleft 20px");
         VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(scrollPathDisplay, "w 96%!, gap 2% 2% 0 0, pushy, growy");
         VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(btnEnterNode, "w 30%!, h 40px!, ax center, gap 0 2% 10px 20px, split 2");

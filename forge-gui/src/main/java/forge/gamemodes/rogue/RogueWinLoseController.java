@@ -73,13 +73,27 @@ public class RogueWinLoseController {
         // Persist life total from match
         persistLifeTotal();
 
+        // Apply Lingering Aura healing (after life persistence)
+        RogueMetaProgress progress = RogueMetaProgress.getInstance();
+        int healAmount = progress.getPostMatchHealAmount();
+        if (healAmount > 0) {
+            int lifeBefore = currentRun.getCurrentLife();
+            currentRun.healLife(healAmount);
+            int healedAmount = currentRun.getCurrentLife() - lifeBefore;
+            if (healedAmount > 0) {
+                view.showMessage("Lingering Aura healed " + healedAmount + " life.", "Boon Effect", FSkinProp.ICO_QUEST_CHARM);
+            }
+        }
+
         // Check if this was the last node (run completed)
         boolean isLastNode = currentRun.getCurrentNodeIndex() >= currentRun.getPath().getNodeCount() - 1;
 
         if (isLastNode) {
+            // Echoes are already added to meta progress after each match, no transfer needed
+
             // Run is complete - mark as won
             currentRun.setRunWon(true);
-            RogueMetaProgress.getInstance().onRunCompleted(currentRun, true);
+            progress.onRunCompleted(currentRun, true);
             RogueIO.saveRun(currentRun);
             view.showMessage("Congratulations! You have completed the run!", "Victory", FSkinProp.ICO_QUEST_CHARM);
             return; // Skip card rewards and navigation
@@ -94,8 +108,14 @@ public class RogueWinLoseController {
                 NodePlanebound planeboundNode = (NodePlanebound) currentNode;
                 int goldReward = planeboundNode.getGoldReward();
                 int echoReward = planeboundNode.getEchoReward();
+
+                // Gold is run-specific (spent at Bazaar during the run)
                 currentRun.setCurrentGold(currentRun.getCurrentGold() + goldReward);
-                currentRun.setCurrentEchoes(currentRun.getCurrentEchoes() + echoReward);
+
+                // Echoes are meta-progression currency - add directly to meta progress
+                if (echoReward > 0) {
+                    progress.addEchoes(echoReward);
+                }
 
                 // Award card rewards (with Elite flag for mythic rewards)
                 boolean isElite = planeboundNode.getPlaneboundType() == RoguePlaneboundType.ELITE;
@@ -205,9 +225,12 @@ public class RogueWinLoseController {
         currentRun.recordMatchResult(false);
         currentRun.setRunFailed(true);
 
+        // Echoes are already added to meta progress after each match win, no transfer needed
+
         // Track meta progress
-        RogueMetaProgress.getInstance().onMatchCompleted(currentRun, false);
-        RogueMetaProgress.getInstance().onRunCompleted(currentRun, false);
+        RogueMetaProgress progress = RogueMetaProgress.getInstance();
+        progress.onMatchCompleted(currentRun, false);
+        progress.onRunCompleted(currentRun, false);
 
         // Save run state
         RogueIO.saveRun(currentRun);

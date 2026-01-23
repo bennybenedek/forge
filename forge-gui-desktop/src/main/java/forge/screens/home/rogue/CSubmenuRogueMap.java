@@ -291,6 +291,12 @@ public enum CSubmenuRogueMap implements ICDoc {
             // Override starting life with persistent life from run
             human.setStartingLife(currentRun.getCurrentLife());
 
+            // Apply Foresight boon: +1 starting hand card
+            int extraCards = RogueMetaProgress.getInstance().getExtraStartingCards();
+            if (extraCards > 0) {
+                human.setStartingHand(human.getStartingHand() + extraCards);
+            }
+
             // Use the singleton lobbyPlayer for consistent player identification
             // This ensures isMatchWonBy() works correctly in RogueWinLoseController
             LobbyPlayer lobbyPlayer = GamePlayerUtil.getGuiPlayer();

@@ -26,10 +26,15 @@ public enum CSubmenuRogueStart implements ICDoc {
     public void initialize() {
         view.getBtnBeginRun().addActionListener(e -> beginNewRun());
         view.getBtnStats().addActionListener(e -> openStats());
+        view.getBtnAether().addActionListener(e -> openAether());
     }
 
     private void openStats() {
         CHomeUI.SINGLETON_INSTANCE.itemClick(EDocID.HOME_ROGUESTATS);
+    }
+
+    private void openAether() {
+        CHomeUI.SINGLETON_INSTANCE.itemClick(EDocID.HOME_ROGUEAETHER);
     }
 
     @Override
@@ -173,13 +178,28 @@ public enum CSubmenuRogueStart implements ICDoc {
             path
         );
 
+        // Apply Aether boon effects at run start
+        RogueMetaProgress progress = RogueMetaProgress.getInstance();
+
+        // Vital Infusion: +starting life
+        int lifeBonus = progress.getStartingLifeBonus();
+        if (lifeBonus > 0) {
+            newRun.setStartingLife(newRun.getStartingLife() + lifeBonus);
+        }
+
+        // Aether Market: +starting gold
+        int goldBonus = progress.getStartingGoldBonus();
+        if (goldBonus > 0) {
+            newRun.setCurrentGold(newRun.getCurrentGold() + goldBonus);
+        }
+
         // Generate unique name for the run (used as filename)
         // Format: DeckName_Timestamp (e.g., "MeriaRogueCommander_12-11-25_143022")
         String runName = selectedDeck.getName() + "_" + System.currentTimeMillis();
         newRun.setName(runName);
 
         // Track meta progress
-        RogueMetaProgress.getInstance().onRunStarted(selectedDeck.getCommanderCardName());
+        progress.onRunStarted(selectedDeck.getCommanderCardName());
 
         // Save the run
         RogueIO.saveRun(newRun);

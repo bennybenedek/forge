@@ -45,6 +45,11 @@ public class RogueMetaProgress {
     // Explicit unlocks (for manually unlocked commanders)
     private Set<String> unlockedCommanders;
 
+    // Aether system - persistent echoes and boons
+    private int totalEchoes;                      // Persistent echo currency
+    private Map<String, Integer> boonRanks;       // Boon ID -> current rank (0 = not unlocked)
+    private Set<String> activeBoons;              // Currently equipped boon IDs (max 3)
+
     // Private constructor for singleton
     private RogueMetaProgress() {
         totalRunsStarted = 0;
@@ -59,6 +64,11 @@ public class RogueMetaProgress {
         maxLifeInRun = 0;
         maxGoldInRun = 0;
         unlockedCommanders = new HashSet<>();
+
+        // Initialize Aether system
+        totalEchoes = 0;
+        boonRanks = new HashMap<>();
+        activeBoons = new HashSet<>();
     }
 
     /**
@@ -94,6 +104,11 @@ public class RogueMetaProgress {
         maxLifeInRun = 0;
         maxGoldInRun = 0;
         unlockedCommanders = new HashSet<>();
+
+        // Reset Aether system
+        totalEchoes = 0;
+        boonRanks = new HashMap<>();
+        activeBoons = new HashSet<>();
         save();
     }
 
@@ -247,6 +262,218 @@ public class RogueMetaProgress {
 
     public int getRunsStartedWithCommander(String commanderName) {
         return runsStartedPerCommander.getOrDefault(commanderName, 0);
+    }
+
+    // ==================== Aether System - Echo Management ====================
+
+    public int getTotalEchoes() {
+        return totalEchoes;
+    }
+
+    public void addEchoes(int amount) {
+        if (amount > 0) {
+            totalEchoes += amount;
+            save();
+        }
+    }
+
+    public boolean spendEchoes(int amount) {
+        if (amount > 0 && totalEchoes >= amount) {
+            totalEchoes -= amount;
+            save();
+            return true;
+        }
+        return false;
+    }
+
+    // ==================== Aether System - Boon Management ====================
+
+    /**
+     * Get the current rank of a boon (0 = not unlocked).
+     */
+    public int getBoonRank(BoonType type) {
+        if (boonRanks == null) {
+            boonRanks = new HashMap<>();
+        }
+        return boonRanks.getOrDefault(type.getId(), 0);
+    }
+
+    /**
+     * Attempt to upgrade a boon to the next rank.
+     * @return true if upgrade was successful, false if not enough echoes or already max rank
+     */
+    public boolean upgradeBoon(BoonType type) {
+        if (boonRanks == null) {
+            boonRanks = new HashMap<>();
+        }
+
+        int currentRank = getBoonRank(type);
+        if (currentRank >= type.getMaxRank()) {
+            return false; // Already max rank
+        }
+
+        int cost = type.getEchoCostForRank(currentRank + 1);
+        if (totalEchoes < cost) {
+            return false; // Not enough echoes
+        }
+
+        totalEchoes -= cost;
+        boonRanks.put(type.getId(), currentRank + 1);
+        save();
+        return true;
+    }
+
+    /**
+     * Check if a boon is currently active.
+     */
+    public boolean isBoonActive(BoonType type) {
+        if (activeBoons == null) {
+            activeBoons = new HashSet<>();
+        }
+        return activeBoons.contains(type.getId());
+    }
+
+    /**
+     * Get all currently active boons.
+     */
+    public Set<BoonType> getActiveBoons() {
+        Set<BoonType> active = new HashSet<>();
+        if (activeBoons == null) {
+            activeBoons = new HashSet<>();
+            return active;
+        }
+        for (String id : activeBoons) {
+            BoonType type = BoonType.fromId(id);
+            if (type != null) {
+                active.add(type);
+            }
+        }
+        return active;
+    }
+
+    /**
+     * Get the count of currently active boons.
+     */
+    public int getActiveBoonCount() {
+        if (activeBoons == null) {
+            activeBoons = new HashSet<>();
+        }
+        return activeBoons.size();
+    }
+
+    /**
+     * Activate a boon (max 3 can be active).
+     * @return true if activated, false if not unlocked or already 3 active
+     */
+    public boolean activateBoon(BoonType type) {
+        if (activeBoons == null) {
+            activeBoons = new HashSet<>();
+        }
+
+        // Must be unlocked (rank > 0)
+        if (getBoonRank(type) == 0) {
+            return false;
+        }
+
+        // If already active, nothing to do
+        if (activeBoons.contains(type.getId())) {
+            return true;
+        }
+
+        // Check max 3 active limit
+        if (activeBoons.size() >= 3) {
+            return false;
+        }
+
+        activeBoons.add(type.getId());
+        save();
+        return true;
+    }
+
+    /**
+     * Deactivate a boon.
+     */
+    public void deactivateBoon(BoonType type) {
+        if (activeBoons == null) {
+            activeBoons = new HashSet<>();
+        }
+        activeBoons.remove(type.getId());
+        save();
+    }
+
+    /**
+     * Reset all boons to rank 0 and refund all spent echoes.
+     * @return The amount of echoes refunded
+     */
+    public int resetBoons() {
+        if (boonRanks == null) {
+            boonRanks = new HashMap<>();
+        }
+        if (activeBoons == null) {
+            activeBoons = new HashSet<>();
+        }
+
+        // Calculate total echoes spent on all boons
+        int refund = 0;
+        for (BoonType type : BoonType.values()) {
+            int rank = getBoonRank(type);
+            // Sum costs for each rank from 1 to current rank
+            for (int r = 1; r <= rank; r++) {
+                refund += type.getEchoCostForRank(r);
+            }
+        }
+
+        // Refund echoes
+        totalEchoes += refund;
+
+        // Clear all boon data
+        boonRanks.clear();
+        activeBoons.clear();
+
+        save();
+        return refund;
+    }
+
+    // ==================== Aether System - Boon Effect Getters ====================
+
+    /**
+     * Get the starting life bonus from Vital Infusion.
+     */
+    public int getStartingLifeBonus() {
+        if (!isBoonActive(BoonType.VITAL_INFUSION)) {
+            return 0;
+        }
+        return BoonType.VITAL_INFUSION.getEffectValueAtRank(getBoonRank(BoonType.VITAL_INFUSION));
+    }
+
+    /**
+     * Get the starting gold bonus from Aether Market.
+     */
+    public int getStartingGoldBonus() {
+        if (!isBoonActive(BoonType.AETHER_MARKET)) {
+            return 0;
+        }
+        return BoonType.AETHER_MARKET.getEffectValueAtRank(getBoonRank(BoonType.AETHER_MARKET));
+    }
+
+    /**
+     * Get the post-match healing amount from Lingering Aura.
+     */
+    public int getPostMatchHealAmount() {
+        if (!isBoonActive(BoonType.LINGERING_AURA)) {
+            return 0;
+        }
+        return BoonType.LINGERING_AURA.getEffectValueAtRank(getBoonRank(BoonType.LINGERING_AURA));
+    }
+
+    /**
+     * Get the extra starting hand cards from Foresight.
+     */
+    public int getExtraStartingCards() {
+        if (!isBoonActive(BoonType.FORESIGHT)) {
+            return 0;
+        }
+        return BoonType.FORESIGHT.getEffectValueAtRank(getBoonRank(BoonType.FORESIGHT));
     }
 
     // ==================== Persistence ====================

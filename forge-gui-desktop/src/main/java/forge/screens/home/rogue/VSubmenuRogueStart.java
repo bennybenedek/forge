@@ -70,6 +70,7 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
     // Action buttons
     private final FButton btnBeginRun;
     private final FButton btnStats;
+    private final FButton btnAether;
 
     private VSubmenuRogueStart() {
         // Setup buttons with icons (matching Path View style)
@@ -78,6 +79,9 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
 
         btnStats = new FButton("Stats");
         btnStats.setIcon(FSkin.getImage(FSkinProp.ICO_QUEST_BOOK).resize(24, 24).getIcon());
+
+        btnAether = new FButton("Aether");
+        btnAether.setIcon(FSkin.getImage(FSkinProp.ICO_QUEST_GOLD).resize(24, 24).getIcon());
 
         lblTitle.setBackground(FSkin.getColor(FSkin.Colors.CLR_THEME2));
 
@@ -174,6 +178,7 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
         JPanel buttonPanel = new JPanel(new MigLayout("insets 0, gap 10"));
         buttonPanel.setOpaque(false);
         buttonPanel.add(btnBeginRun, "w 150px!, h 40px!");
+        buttonPanel.add(btnAether, "w 150px!, h 40px!");
         buttonPanel.add(btnStats, "w 150px!, h 40px!");
         panel.add(buttonPanel, "cell 0 3, span 2, alignx center");
 
@@ -221,6 +226,10 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
 
     public JButton getBtnStats() {
         return btnStats;
+    }
+
+    public JButton getBtnAether() {
+        return btnAether;
     }
 
     public List<CommanderCardPanel> getCommanderPanels() {
