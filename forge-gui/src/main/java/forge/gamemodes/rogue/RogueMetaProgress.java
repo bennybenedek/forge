@@ -476,6 +476,16 @@ public class RogueMetaProgress {
         return BoonType.FORESIGHT.getEffectValueAtRank(getBoonRank(BoonType.FORESIGHT));
     }
 
+    /**
+     * Get the extra mythic cards count from Mythic Collector.
+     */
+    public int getExtraMythicCards() {
+        if (!isBoonActive(BoonType.MYTHIC_COLLECTOR)) {
+            return 0;
+        }
+        return BoonType.MYTHIC_COLLECTOR.getEffectValueAtRank(getBoonRank(BoonType.MYTHIC_COLLECTOR));
+    }
+
     // ==================== Persistence ====================
 
     private static File getMetaProgressFile() {

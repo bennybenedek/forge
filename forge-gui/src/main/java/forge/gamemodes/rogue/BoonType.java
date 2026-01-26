@@ -27,7 +27,13 @@ public enum BoonType {
         "Start each match with 1 additional opening hand card.",
         new int[]{8},           // Echo cost (single rank)
         new int[]{1},           // Effect value: +1 card
-        1);
+        1),
+
+    MYTHIC_COLLECTOR("mythic_collector", "Mythic Collector",
+        "More cards from Card Rewards and Bazaar will be mythic rarity.",
+        new int[]{3, 6, 9},     // Echo costs per rank
+        new int[]{1, 2, 3},     // Effect values: +1/+2/+3 extra mythics
+        3);
 
     private final String id;
     private final String displayName;
@@ -103,9 +109,56 @@ public enum BoonType {
                 return "Heal " + value + " Life after each Plane match victory.";
             case FORESIGHT:
                 return "Start each match with +" + value + " opening hand card.";
+            case MYTHIC_COLLECTOR:
+                return "+" + value + " more mythic cards in Rewards and Bazaar.";
             default:
                 return description;
         }
+    }
+
+    /**
+     * Get the description showing all rank values (e.g., "+2/4/6") with the current rank highlighted.
+     * Uses HTML formatting for highlighting. If rank is 0, no value is highlighted.
+     * @param currentRank The current rank (0 = not unlocked)
+     * @return HTML-formatted description string
+     */
+    public String getDescriptionWithAllRanks(int currentRank) {
+        String allValues = buildAllValuesString(currentRank);
+
+        switch (this) {
+            case VITAL_INFUSION:
+                return "<html>Begin each Run with +" + allValues + " Max Life.</html>";
+            case AETHER_MARKET:
+                return "<html>Gain +" + allValues + " starting Gold.</html>";
+            case LINGERING_AURA:
+                return "<html>Heal " + allValues + " Life after each match victory.</html>";
+            case FORESIGHT:
+                return "<html>Start each match with +" + allValues + " extra card.</html>";
+            case MYTHIC_COLLECTOR:
+                return "<html>+" + allValues + " more mythic cards in Rewards and Bazaar.</html>";
+            default:
+                return "<html>" + description + "</html>";
+        }
+    }
+
+    /**
+     * Build the all-values string (e.g., "2/4/6" or "<b><u>2</u></b>/4/6") with current rank highlighted.
+     */
+    private String buildAllValuesString(int currentRank) {
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < effectValues.length; i++) {
+            if (i > 0) {
+                sb.append(" / ");
+            }
+            int rankForThisValue = i + 1; // ranks are 1-indexed
+            if (rankForThisValue == currentRank) {
+                // Highlight current rank with bold and underline
+                sb.append("<b><u>").append(effectValues[i]).append("</u></b>");
+            } else {
+                sb.append(effectValues[i]);
+            }
+        }
+        return sb.toString();
     }
 
     /**

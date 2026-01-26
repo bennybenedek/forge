@@ -18,7 +18,8 @@
       "Bash(git mv:*)",
       "Bash(mvn checkstyle:check:*)",
       "Bash(mvn checkstyle:checkstyle:*)",
-      "Bash(git show-ref:*)"
+      "Bash(git show-ref:*)",
+      "WebSearch"
     ],
     "deny": [],
     "ask": []

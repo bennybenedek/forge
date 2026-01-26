@@ -205,14 +205,14 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
 
             lblName = new FLabel.Builder()
                 .text(type.getDisplayName())
-                .fontSize(14)
+                .fontSize(16)
                 .fontStyle(Font.BOLD)
                 .fontAlign(SwingConstants.CENTER)
                 .build();
 
             lblDescription = new FLabel.Builder()
                 .text(type.getDescription())
-                .fontSize(12)
+                .fontSize(14)
                 .fontAlign(SwingConstants.CENTER)
                 .build();
 
@@ -247,12 +247,8 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
         public void update(int rank, boolean active, int echoes, int activeBoonCount) {
             lblRank.setText("Rank: " + rank + "/" + type.getMaxRank());
 
-            // Update description to show current effect value
-            if (rank > 0) {
-                lblDescription.setText(type.getDescriptionAtRank(rank));
-            } else {
-                lblDescription.setText(type.getDescription());
-            }
+            // Update description to show all rank values with current rank highlighted
+            lblDescription.setText(type.getDescriptionWithAllRanks(rank));
 
             // Update upgrade button using cached icon instance
             if (rank >= type.getMaxRank()) {

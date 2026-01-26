@@ -156,9 +156,15 @@ public class RogueWinLoseController {
             return;
         }
 
-        // Draw 7 cards from reward pool (6 random non-mythic and 1 random mythic by default)
-        List<PaperCard> nonMythicCards = rogueDeck.drawRewardOptions(6, forge.item.PaperCardPredicates.IS_MYTHIC_RARE.negate());
-        List<PaperCard> mythicCards = rogueDeck.drawRewardOptions(1, forge.item.PaperCardPredicates.IS_MYTHIC_RARE);
+        // Draw 7 cards from reward pool (base: 6 non-mythic + 1 mythic, adjusted by Mythic Collector boon)
+        int extraMythics = RogueMetaProgress.getInstance().getExtraMythicCards();
+        int baseNonMythics = 6;
+        int baseMythics = 1;
+        int totalNonMythics = Math.max(0, baseNonMythics - extraMythics);
+        int totalMythics = baseMythics + extraMythics;
+
+        List<PaperCard> nonMythicCards = rogueDeck.drawRewardOptions(totalNonMythics, forge.item.PaperCardPredicates.IS_MYTHIC_RARE.negate());
+        List<PaperCard> mythicCards = rogueDeck.drawRewardOptions(totalMythics, forge.item.PaperCardPredicates.IS_MYTHIC_RARE);
 
         // Combine to single card reward list
         List<PaperCard> rewardOptions = new ArrayList<>();
