@@ -459,8 +459,8 @@ public class RogueMetaProgress {
     /**
      * Get the post-match healing amount from Lingering Aura.
      */
-    public int getPostMatchHealAmount() {
-        if (!isBoonActive(BoonType.LINGERING_AURA)) {
+    public int getPostMatchHealAmount(RogueRun currentRun) {
+        if (!isBoonActive(BoonType.LINGERING_AURA) || currentRun.getCurrentLife() >= currentRun.getStartingLife()) {
             return 0;
         }
         return BoonType.LINGERING_AURA.getEffectValueAtRank(getBoonRank(BoonType.LINGERING_AURA));

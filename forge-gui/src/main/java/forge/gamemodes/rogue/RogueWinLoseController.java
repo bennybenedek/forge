@@ -75,7 +75,7 @@ public class RogueWinLoseController {
 
         // Apply Lingering Aura healing (after life persistence)
         RogueMetaProgress progress = RogueMetaProgress.getInstance();
-        int healAmount = progress.getPostMatchHealAmount();
+        int healAmount = progress.getPostMatchHealAmount(currentRun);
         if (healAmount > 0) {
             int lifeBefore = currentRun.getCurrentLife();
             currentRun.healLife(healAmount);
@@ -88,9 +88,29 @@ public class RogueWinLoseController {
         // Check if this was the last node (run completed)
         boolean isLastNode = currentRun.getCurrentNodeIndex() >= currentRun.getPath().getNodeCount() - 1;
 
-        if (isLastNode) {
-            // Echoes are already added to meta progress after each match, no transfer needed
+        // Get current node for rewards (applies to ALL nodes including Boss)
+        RoguePathNode currentNode = currentRun.getCurrentNode();
 
+        // Award gold and echo rewards for ALL planebound nodes (including Boss)
+        if (currentNode instanceof NodePlanebound) {
+            NodePlanebound planeboundNode = (NodePlanebound) currentNode;
+            int goldReward = planeboundNode.getGoldReward();
+            int echoReward = planeboundNode.getEchoReward();
+
+            // Gold is run-specific (spent at Bazaar during the run)
+            currentRun.setCurrentGold(currentRun.getCurrentGold() + goldReward);
+
+            // Echoes are meta-progression currency - add directly to meta progress
+            if (echoReward > 0) {
+                progress.addEchoes(echoReward);
+            }
+
+            // Show gold and echo rewards
+            view.showMessage("You won " + goldReward + " Gold.", "Gold Reward", FSkinProp.ICO_QUEST_COIN);
+            view.showMessage("You won " + echoReward + " Echoes.", "Echo Reward", FSkinProp.ICO_QUEST_GOLD);
+        }
+
+        if (isLastNode) {
             // Run is complete - mark as won
             currentRun.setRunWon(true);
             progress.onRunCompleted(currentRun, true);
@@ -99,28 +119,12 @@ public class RogueWinLoseController {
             return; // Skip card rewards and navigation
         }
 
-        // Award gold/echo rewards and card rewards (only for non-final nodes)
-        RoguePathNode currentNode = currentRun.getCurrentNode();
-
-        if (currentNode != null) {
-            // Award card, gold and echo rewards (only planebound nodes have rewards)
-            if (currentNode instanceof NodePlanebound) {
-                NodePlanebound planeboundNode = (NodePlanebound) currentNode;
-                int goldReward = planeboundNode.getGoldReward();
-                int echoReward = planeboundNode.getEchoReward();
-
-                // Gold is run-specific (spent at Bazaar during the run)
-                currentRun.setCurrentGold(currentRun.getCurrentGold() + goldReward);
-
-                // Echoes are meta-progression currency - add directly to meta progress
-                if (echoReward > 0) {
-                    progress.addEchoes(echoReward);
-                }
-
-                // Award card rewards (with Elite flag for mythic rewards)
-                boolean isElite = planeboundNode.getPlaneboundType() == RoguePlaneboundType.ELITE;
-                awardCardRewards(currentNode, isElite);
-            }
+        // Award card rewards (only for non-final nodes)
+        if (currentNode instanceof NodePlanebound) {
+            NodePlanebound planeboundNode = (NodePlanebound) currentNode;
+            // Award card rewards (with Elite flag for mythic rewards)
+            boolean isElite = planeboundNode.getPlaneboundType() == RoguePlaneboundType.ELITE;
+            awardCardRewards(currentNode, isElite);
         }
 
         // Move to next node
@@ -211,11 +215,6 @@ public class RogueWinLoseController {
 
             // Show confirmation
             view.showCards("Cards Added to Your Deck", chosenCards);
-        }
-
-        if (currentNode instanceof NodePlanebound planeboundNode) {
-            view.showMessage("You won " + planeboundNode.getGoldReward() +" Gold.", "Gold Reward", FSkinProp.ICO_QUEST_COIN);
-            view.showMessage("You won " + planeboundNode.getEchoReward() +" Echoes.", "Echo Reward", FSkinProp.ICO_QUEST_GOLD);
         }
 
         // Remove reward options (both chosen and unchosen) from the reward pool
