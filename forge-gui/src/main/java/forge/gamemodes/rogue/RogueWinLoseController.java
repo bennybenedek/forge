@@ -91,11 +91,15 @@ public class RogueWinLoseController {
         // Get current node for rewards (applies to ALL nodes including Boss)
         RoguePathNode currentNode = currentRun.getCurrentNode();
 
+        // Track gold and echo rewards for showing messages later
+        int goldReward = 0;
+        int echoReward = 0;
+
         // Award gold and echo rewards for ALL planebound nodes (including Boss)
         if (currentNode instanceof NodePlanebound) {
             NodePlanebound planeboundNode = (NodePlanebound) currentNode;
-            int goldReward = planeboundNode.getGoldReward();
-            int echoReward = planeboundNode.getEchoReward();
+            goldReward = planeboundNode.getGoldReward();
+            echoReward = planeboundNode.getEchoReward();
 
             // Gold is run-specific (spent at Bazaar during the run)
             currentRun.setCurrentGold(currentRun.getCurrentGold() + goldReward);
@@ -104,13 +108,14 @@ public class RogueWinLoseController {
             if (echoReward > 0) {
                 progress.addEchoes(echoReward);
             }
-
-            // Show gold and echo rewards
-            view.showMessage("You won " + goldReward + " Gold.", "Gold Reward", FSkinProp.ICO_QUEST_COIN);
-            view.showMessage("You won " + echoReward + " Echoes.", "Echo Reward", FSkinProp.ICO_QUEST_GOLD);
         }
 
         if (isLastNode) {
+            // Show echo rewards for Boss before victory message
+            if (echoReward > 0) {
+                view.showMessage("You won " + echoReward + " Echoes.", "Echo Reward", FSkinProp.ICO_QUEST_GOLD);
+            }
+
             // Run is complete - mark as won
             currentRun.setRunWon(true);
             progress.onRunCompleted(currentRun, true);
@@ -124,7 +129,7 @@ public class RogueWinLoseController {
             NodePlanebound planeboundNode = (NodePlanebound) currentNode;
             // Award card rewards (with Elite flag for mythic rewards)
             boolean isElite = planeboundNode.getPlaneboundType() == RoguePlaneboundType.ELITE;
-            awardCardRewards(currentNode, isElite);
+            awardCardRewards(isElite, goldReward, echoReward);
         }
 
         // Move to next node
@@ -151,7 +156,7 @@ public class RogueWinLoseController {
         }
     }
 
-    private void awardCardRewards(RoguePathNode currentNode, boolean isElite) {
+    private void awardCardRewards(boolean isElite, int goldReward, int echoReward) {
         // Get the rogue deck data to draw rewards from
         RogueDeck rogueDeck = currentRun.getSelectedRogueDeck();
 
@@ -215,6 +220,15 @@ public class RogueWinLoseController {
 
             // Show confirmation
             view.showCards("Cards Added to Your Deck", chosenCards);
+        }
+
+        // Show gold and echo rewards after card rewards
+        if (goldReward > 0) {
+            view.showMessage("You won " + goldReward + " Gold.", "Gold Reward", FSkinProp.ICO_QUEST_COIN);
+        }
+
+        if (echoReward > 0) {
+            view.showMessage("You won " + echoReward + " Echoes.", "Echo Reward", FSkinProp.ICO_QUEST_GOLD);
         }
 
         // Remove reward options (both chosen and unchosen) from the reward pool

@@ -40,7 +40,8 @@ public enum CSubmenuRogueAether implements ICDoc {
             VSubmenuRogueAether.BoonPanel panel = entry.getValue();
 
             panel.getBtnUpgrade().addActionListener(e -> upgradeBoon(type));
-            panel.getChkActive().addActionListener(e -> toggleBoonActive(type, panel.getChkActive().isSelected()));
+            // Panel click toggles active state (when unlocked)
+            panel.setToggleCallback(p -> toggleBoonActive(p.getType(), !p.isActive()));
         }
     }
 
@@ -69,7 +70,12 @@ public enum CSubmenuRogueAether implements ICDoc {
 
     private void upgradeBoon(BoonType type) {
         RogueMetaProgress progress = RogueMetaProgress.getInstance();
+        int rankBefore = progress.getBoonRank(type);
         if (progress.upgradeBoon(type)) {
+            // Auto-activate boon when first unlocked (rank goes from 0 to 1)
+            if (rankBefore == 0 && progress.getBoonRank(type) == 1) {
+                progress.activateBoon(type);
+            }
             refreshDisplay();
         }
     }

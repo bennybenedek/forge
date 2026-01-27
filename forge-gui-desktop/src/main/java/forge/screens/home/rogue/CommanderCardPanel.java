@@ -23,6 +23,7 @@ public class CommanderCardPanel extends SkinnedPanel {
     private final CardPicturePanel cardPicture;
     private boolean selected;
     private boolean highlighted;  // For locked commanders when clicked
+    private boolean hovered;      // For hover effect
     private final boolean locked;
     private Consumer<CommanderCardPanel> selectionCallback;
 
@@ -60,12 +61,16 @@ public class CommanderCardPanel extends SkinnedPanel {
 
             @Override
             public void mouseEntered(MouseEvent e) {
+                hovered = true;
                 setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                repaint();
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
+                hovered = false;
                 setCursor(Cursor.getDefaultCursor());
+                repaint();
             }
         });
 
@@ -151,6 +156,12 @@ public class CommanderCardPanel extends SkinnedPanel {
         else if (highlighted) {
             g2d.setColor(new Color(255, 215, 0));  // Gold color
             g2d.setStroke(new BasicStroke(6));
+            g2d.drawRect(3, 3, width - 6, height - 6);
+        }
+        // Draw hover border (yellow/gold) when not selected and not highlighted
+        else if (hovered) {
+            g2d.setColor(new Color(255, 215, 0));  // Gold color
+            g2d.setStroke(new BasicStroke(4));
             g2d.drawRect(3, 3, width - 6, height - 6);
         }
     }

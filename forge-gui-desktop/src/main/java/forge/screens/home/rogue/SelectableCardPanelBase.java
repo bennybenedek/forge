@@ -21,6 +21,7 @@ public abstract class SelectableCardPanelBase extends SkinnedPanel {
     protected final PaperCard card;
     protected final CardPicturePanel cardPicture;
     protected boolean selected;
+    protected boolean hovered;
     protected boolean faceDown;
     protected boolean animating;
     protected double scaleX;
@@ -62,12 +63,16 @@ public abstract class SelectableCardPanelBase extends SkinnedPanel {
 
             @Override
             public void mouseEntered(MouseEvent e) {
+                hovered = true;
                 setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                repaint();
             }
 
             @Override
             public void mouseExited(MouseEvent e) {
+                hovered = false;
                 setCursor(Cursor.getDefaultCursor());
+                repaint();
             }
         });
 
@@ -192,10 +197,24 @@ public abstract class SelectableCardPanelBase extends SkinnedPanel {
             super.paint(g);
         }
 
-        // Draw selection indicators ON TOP of everything (only if not animating)
-        if (selected && !animating) {
-            drawSelectionHighlight(g2d, width, height);
+        // Draw hover/selection indicators ON TOP of everything (only if not animating)
+        if (!animating) {
+            if (selected) {
+                drawSelectionHighlight(g2d, width, height);
+            } else if (hovered && !faceDown) {
+                // Draw yellow/gold hover border when not selected and card is revealed
+                drawHoverHighlight(g2d, width, height);
+            }
         }
+    }
+
+    /**
+     * Draw the hover highlight (yellow/gold border).
+     */
+    protected void drawHoverHighlight(Graphics2D g2d, int width, int height) {
+        g2d.setColor(new Color(255, 215, 0));  // Gold color
+        g2d.setStroke(new BasicStroke(4));
+        g2d.drawRect(3, 3, width - 6, height - 6);
     }
 
     /**

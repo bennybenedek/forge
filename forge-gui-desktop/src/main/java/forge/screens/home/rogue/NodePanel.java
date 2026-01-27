@@ -17,6 +17,7 @@ public abstract class NodePanel extends SkinnedPanel {
     protected final RoguePathNode node;
     protected final boolean isCompleted;
     protected boolean isSelected = false;
+    protected boolean isHovered = false;
     protected NodeClickHandler clickHandler;
 
     /**
@@ -34,13 +35,27 @@ public abstract class NodePanel extends SkinnedPanel {
         setMinimumSize(new Dimension(PANEL_WIDTH, PANEL_HEIGHT));
         setMaximumSize(new Dimension(PANEL_WIDTH, PANEL_HEIGHT));
 
-        // Add mouse listener for click handling
+        // Add mouse listener for click and hover handling
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (clickHandler != null) {
                     clickHandler.onNodeClicked(NodePanel.this);
                 }
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                isHovered = true;
+                setCursor(java.awt.Cursor.getPredefinedCursor(java.awt.Cursor.HAND_CURSOR));
+                repaint();
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                isHovered = false;
+                setCursor(java.awt.Cursor.getDefaultCursor());
+                repaint();
             }
         });
     }
@@ -88,7 +103,11 @@ public abstract class NodePanel extends SkinnedPanel {
         Color borderColor;
         int borderWidth;
 
-        if (isSelected) {
+        if (isHovered && !isSelected) {
+            // Hovered node (not selected): yellow/gold border to show interactivity
+            borderColor = new Color(255, 215, 0);
+            borderWidth = 3;
+        } else if (isSelected) {
             // Selected node: thick bright gold border (used for all node types)
             borderColor = new Color(255, 215, 0);
             borderWidth = 4;

@@ -9,13 +9,21 @@ import forge.screens.home.EMenuGroup;
 import forge.screens.home.IVSubmenu;
 import forge.screens.home.VHomeUI;
 import forge.toolbox.FButton;
-import forge.toolbox.FCheckBox;
 import forge.toolbox.FLabel;
 import forge.toolbox.FSkin;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
@@ -45,7 +53,7 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
         .build();
 
     private final FLabel lblActiveBoons = new FLabel.Builder()
-        .text("Active Boons: 0/3")
+        .text("Active Boons: 0/3 (click to toggle)")
         .fontSize(14)
         .build();
 
@@ -147,7 +155,7 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
                               Map<BoonType, Integer> boonRanks,
                               Set<BoonType> activeBoons) {
         lblEchoes.setText("Echoes: " + echoes);
-        lblActiveBoons.setText("Active Boons: " + activeBoonCount + "/3");
+        lblActiveBoons.setText("Active Boons: " + activeBoonCount + "/3 (click to toggle)");
 
         for (Map.Entry<BoonType, BoonPanel> entry : boonPanels.entrySet()) {
             BoonType type = entry.getKey();
@@ -182,6 +190,9 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
 
     /**
      * Inner class representing a single boon panel in the grid.
+     * Click the panel to toggle active state (when unlocked).
+     * Shows green border and "ACTIVE" badge when active.
+     * Shows yellow/gold border on hover.
      */
     public static class BoonPanel extends FSkin.SkinnedPanel {
         private final BoonType type;
@@ -189,12 +200,20 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
         private final FLabel lblDescription;
         private final FLabel lblRank;
         private final FButton btnUpgrade;
-        private final FCheckBox chkActive;
         // Cache own icon instance to avoid shared state issues (similar to NodePlaneboundPanel pattern)
         private final javax.swing.Icon cachedEchoIcon;
 
+        // Visual state
+        private boolean isActive = false;
+        private boolean isHovered = false;
+        private boolean canToggle = false;
+        private int currentRank = 0;
+
+        // Click callback for toggling active state
+        private Consumer<BoonPanel> toggleCallback;
+
         public BoonPanel(BoonType type) {
-            super(new MigLayout("insets 10 10 10 10, gap 5, wrap, fill"));
+            super(new MigLayout("insets 15 15 15 15, gap 5, wrap, fill"));
             this.type = type;
 
             // Create and cache own icon instance at construction time
@@ -224,8 +243,6 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
 
             btnUpgrade = new FButton("Unlock");
             btnUpgrade.setIcon(cachedEchoIcon);
-            chkActive = new FCheckBox("Active");
-            chkActive.setEnabled(false);
 
             add(lblName, "growx, ax center");
             add(lblDescription, "growx, ax center, wmax 370px");
@@ -234,17 +251,52 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
             // Spacer to push controls to bottom
             add(new JPanel() {{ setOpaque(false); }}, "growy, pushy");
 
-            JPanel controls = new JPanel(new MigLayout("insets 0, gap 15"));
-            controls.setOpaque(false);
-            controls.add(btnUpgrade, "w 160px!, h 30px!");
-            controls.add(chkActive);
-            add(controls, "ax center, dock south");
+            // Upgrade button centered at bottom
+            add(btnUpgrade, "ax center, w 160px!, h 30px!");
+
+            // Add mouse listener for hover and click
+            addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    // Only toggle if clicking outside the upgrade button and can toggle
+                    if (canToggle && toggleCallback != null) {
+                        toggleCallback.accept(BoonPanel.this);
+                    }
+                }
+
+                @Override
+                public void mouseEntered(MouseEvent e) {
+                    isHovered = true;
+                    if (canToggle) {
+                        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                    }
+                    repaint();
+                }
+
+                @Override
+                public void mouseExited(MouseEvent e) {
+                    isHovered = false;
+                    setCursor(Cursor.getDefaultCursor());
+                    repaint();
+                }
+            });
+        }
+
+        /**
+         * Set the callback for when the panel is clicked to toggle active state.
+         */
+        public void setToggleCallback(Consumer<BoonPanel> callback) {
+            this.toggleCallback = callback;
         }
 
         /**
          * Update the panel display based on current boon state.
          */
         public void update(int rank, boolean active, int echoes, int activeBoonCount) {
+            this.currentRank = rank;
+            this.isActive = active;
+            this.canToggle = rank > 0 && (active || activeBoonCount < 3);
+
             lblRank.setText("Rank: " + rank + "/" + type.getMaxRank());
 
             // Update description to show all rank values with current rank highlighted
@@ -261,18 +313,72 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
                 btnUpgrade.setEnabled(echoes >= cost);
             }
 
-            // Update active checkbox
-            chkActive.setSelected(active);
-            boolean canToggle = rank > 0 && (active || activeBoonCount < 3);
-            chkActive.setEnabled(canToggle);
+            // Update cursor based on toggle ability
+            if (isHovered && canToggle) {
+                setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            } else {
+                setCursor(Cursor.getDefaultCursor());
+            }
+
+            repaint();
+        }
+
+        @Override
+        public void paint(Graphics g) {
+            super.paint(g);
+
+            Graphics2D g2d = (Graphics2D) g;
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+            int width = getWidth();
+            int height = getHeight();
+
+            // Draw border based on state
+            if (isHovered && canToggle) {
+                // Hovered (and can toggle): yellow/gold border - takes priority to show clickability
+                g2d.setColor(new Color(255, 215, 0));
+                g2d.setStroke(new BasicStroke(4));
+                g2d.drawRoundRect(2, 2, width - 4, height - 4, 10, 10);
+            } else if (isActive) {
+                // Active (not hovered): thick green border
+                g2d.setColor(new Color(0, 255, 0, 200));
+                g2d.setStroke(new BasicStroke(4));
+                g2d.drawRoundRect(2, 2, width - 4, height - 4, 10, 10);
+            } else if (currentRank > 0) {
+                // Unlocked but not active: subtle border
+                g2d.setColor(new Color(100, 100, 100, 150));
+                g2d.setStroke(new BasicStroke(2));
+                g2d.drawRoundRect(2, 2, width - 4, height - 4, 10, 10);
+            }
+
+            // Draw "ACTIVE" badge in top-right corner (always shown when active)
+            if (isActive) {
+                int badgeWidth = 60;
+                int badgeHeight = 20;
+                int badgeX = width - badgeWidth - 8;
+                int badgeY = 8;
+
+                // Badge background
+                g2d.setColor(new Color(0, 200, 0, 230));
+                g2d.fillRoundRect(badgeX, badgeY, badgeWidth, badgeHeight, 8, 8);
+
+                // Badge text
+                g2d.setColor(Color.WHITE);
+                g2d.setFont(g2d.getFont().deriveFont(Font.BOLD, 11f));
+                g2d.drawString("ACTIVE", badgeX + 8, badgeY + 14);
+            }
+        }
+
+        public BoonType getType() {
+            return type;
         }
 
         public FButton getBtnUpgrade() {
             return btnUpgrade;
         }
 
-        public FCheckBox getChkActive() {
-            return chkActive;
+        public boolean isActive() {
+            return isActive;
         }
     }
 }
