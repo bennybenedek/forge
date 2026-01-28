@@ -1313,8 +1313,7 @@ public class CardFactoryUtil {
             sbUnExiled.append("ValidCard$ Card.Self | Static$ True | Secondary$ True | ");
             sbUnExiled.append("TriggerDescription$ Blank");
 
-            final Trigger haunterUnExiled = TriggerHandler.parseTrigger(sbUnExiled.toString(), card,
-                    intrinsic);
+            final Trigger haunterUnExiled = TriggerHandler.parseTrigger(sbUnExiled.toString(), card, intrinsic);
 
             final SpellAbility unhaunt = AbilityFactory.getAbility("DB$ Haunt", card);
 
@@ -1328,8 +1327,7 @@ public class CardFactoryUtil {
             sbHauntRemoved.append("ValidCard$ Creature.HauntedBy | Static$ True | Secondary$ True | ");
             sbHauntRemoved.append("TriggerDescription$ Blank");
 
-            final Trigger trigHauntRemoved = TriggerHandler.parseTrigger(sbHauntRemoved.toString(), card,
-                    intrinsic);
+            final Trigger trigHauntRemoved = TriggerHandler.parseTrigger(sbHauntRemoved.toString(), card, intrinsic);
             trigHauntRemoved.setOverridingAbility(unhaunt);
 
             triggers.add(trigHauntRemoved);
@@ -1363,7 +1361,6 @@ public class CardFactoryUtil {
             haunterDies.setOverridingAbility(hauntDiesAbility);
 
             triggers.add(haunterDies);
-
             triggers.add(hauntedDies);
 
             for (final Trigger trigger : triggers) {
@@ -3610,7 +3607,7 @@ public class CardFactoryUtil {
             final AbilitySub repeatSub = (AbilitySub) AbilityFactory.getAbility(repeatStr, card);
             sa.setSubAbility(repeatSub);
 
-            final String effectStr = "DB$ Effect | RememberObjects$ Imprinted,ImprintedRemembered | ExileOnMoved$ Battlefield | StaticAbilities$ AttackChosen";
+            final String effectStr = "DB$ Effect | RememberObjects$ Imprinted & ImprintedRemembered | ExileOnMoved$ Battlefield | StaticAbilities$ AttackChosen";
             final AbilitySub effectSub = (AbilitySub) AbilityFactory.getAbility(effectStr, card);
             repeatSub.setAdditionalAbility("RepeatSubAbility", effectSub);
 
