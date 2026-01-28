@@ -29,7 +29,11 @@ public abstract class NodeCircularPanel extends NodePanel {
         Color borderColor;
         int borderWidth;
 
-        if (isSelected) {
+        if (isHovered && !isSelected) {
+            // Hovered node (not selected): yellow/gold border to show interactivity
+            borderColor = new Color(255, 215, 0);
+            borderWidth = 3;
+        } else if (isSelected) {
             // Selected node: thick bright gold border
             borderColor = new Color(255, 215, 0);
             borderWidth = 4;

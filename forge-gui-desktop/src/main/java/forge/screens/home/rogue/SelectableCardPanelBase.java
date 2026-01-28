@@ -2,15 +2,23 @@ package forge.screens.home.rogue;
 
 import forge.ImageCache;
 import forge.ImageKeys;
+import forge.game.card.Card;
+import forge.game.card.CardView;
 import forge.gui.CardPicturePanel;
 import forge.item.PaperCard;
+import forge.localinstance.skin.FSkinProp;
+import forge.toolbox.FSkin;
+import forge.toolbox.FSkin.SkinIcon;
 import forge.toolbox.FSkin.SkinnedPanel;
+import forge.toolbox.imaging.FImageUtil;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.util.function.Supplier;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
 import javax.swing.Timer;
 
 /**
@@ -18,6 +26,9 @@ import javax.swing.Timer;
  * Provides common functionality for card selection dialogs.
  */
 public abstract class SelectableCardPanelBase extends SkinnedPanel {
+    private static final int FLIP_BUTTON_SIZE = 28;
+    private static final int FLIP_BUTTON_MARGIN = 8;
+
     protected final PaperCard card;
     protected final CardPicturePanel cardPicture;
     protected boolean selected;
@@ -27,6 +38,11 @@ public abstract class SelectableCardPanelBase extends SkinnedPanel {
     protected double scaleX;
     private Timer animationTimer;
     private final Supplier<CardZoomUtil> zoomUtilSupplier;
+
+    // Double-faced card support
+    protected final boolean hasBackFace;
+    protected boolean showingAltFace;
+    private final JLabel flipButton;
 
     /**
      * Create a selectable card panel.
@@ -43,6 +59,10 @@ public abstract class SelectableCardPanelBase extends SkinnedPanel {
         this.cardPicture = new CardPicturePanel();
         this.zoomUtilSupplier = zoomUtilSupplier;
 
+        // Check if card has a back face (transform, flip, meld, modal)
+        this.hasBackFace = card.hasBackFace();
+        this.showingAltFace = false;
+
         setOpaque(false);
         setLayout(null); // Manual layout
 
@@ -51,12 +71,38 @@ public abstract class SelectableCardPanelBase extends SkinnedPanel {
         cardPicture.setOpaque(false);
         add(cardPicture);
 
+        // Create flip button for double-faced cards (hidden until card is revealed)
+        if (hasBackFace) {
+            flipButton = new JLabel();
+            SkinIcon flipIcon = FSkin.getIcon(FSkinProp.ICO_FLIPCARD);
+            // Scale icon to fit button size
+            Image scaledImage = flipIcon.getIcon().getImage().getScaledInstance(
+                FLIP_BUTTON_SIZE - 4, FLIP_BUTTON_SIZE - 4, Image.SCALE_SMOOTH);
+            flipButton.setIcon(new ImageIcon(scaledImage));
+            flipButton.setOpaque(false);
+            flipButton.setVisible(false); // Hidden until card is revealed
+            flipButton.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+            flipButton.setToolTipText("Flip to other side");
+            flipButton.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    if (!animating && !faceDown) {
+                        flipToOtherFace();
+                        e.consume(); // Prevent selection toggle
+                    }
+                }
+            });
+            add(flipButton);
+        } else {
+            flipButton = null;
+        }
+
         // Add mouse listener for selection
         addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                // Toggle selection when revealed
-                if (!faceDown) {
+                // Toggle selection when revealed (but not if clicking flip button)
+                if (!faceDown && !isClickOnFlipButton(e)) {
                     toggleSelection();
                 }
             }
@@ -81,14 +127,26 @@ public abstract class SelectableCardPanelBase extends SkinnedPanel {
             if (!faceDown && e.getWheelRotation() < 0) {
                 CardZoomUtil zoomUtil = zoomUtilSupplier != null ? zoomUtilSupplier.get() : null;
                 if (zoomUtil != null) {
-                    zoomUtil.showZoom(card);
+                    // Zoom the currently displayed face
+                    zoomUtil.showZoom(card, showingAltFace);
                 }
             }
         });
     }
 
     /**
-     * Update the card display (face-up or face-down).
+     * Check if the click was on the flip button area.
+     */
+    private boolean isClickOnFlipButton(MouseEvent e) {
+        if (flipButton == null || !flipButton.isVisible()) {
+            return false;
+        }
+        Rectangle bounds = flipButton.getBounds();
+        return bounds.contains(e.getPoint());
+    }
+
+    /**
+     * Update the card display (face-up or face-down, front or back face).
      */
     protected void updateCardDisplay() {
         if (faceDown) {
@@ -96,9 +154,40 @@ public abstract class SelectableCardPanelBase extends SkinnedPanel {
             BufferedImage cardBack = ImageCache.getOriginalImage(
                 ImageKeys.getTokenKey(ImageKeys.HIDDEN_CARD), true, null);
             cardPicture.setItem(cardBack);
+            // Hide flip button when face-down
+            if (flipButton != null) {
+                flipButton.setVisible(false);
+            }
+        } else if (showingAltFace && hasBackFace) {
+            // Show alternate face using CardView's alternate state
+            Card gameCard = Card.getCardForUi(card);
+            if (gameCard != null) {
+                CardView cardView = CardView.get(gameCard);
+                if (cardView.getAlternateState() != null) {
+                    BufferedImage altImage = FImageUtil.getImage(cardView.getAlternateState());
+                    if (altImage != null) {
+                        cardPicture.setItem(altImage);
+                    } else {
+                        // Fallback to front face if alt image not available
+                        cardPicture.setItem(card);
+                    }
+                } else {
+                    cardPicture.setItem(card);
+                }
+            } else {
+                cardPicture.setItem(card);
+            }
+            // Show flip button
+            if (flipButton != null) {
+                flipButton.setVisible(true);
+            }
         } else {
-            // Show actual card
+            // Show front face
             cardPicture.setItem(card);
+            // Show flip button for double-faced cards
+            if (flipButton != null) {
+                flipButton.setVisible(true);
+            }
         }
     }
 
@@ -109,34 +198,49 @@ public abstract class SelectableCardPanelBase extends SkinnedPanel {
         if (animating || !faceDown) {
             return; // Already revealed or animating
         }
+        runFlipAnimation(() -> faceDown = false);
+    }
 
+    /**
+     * Start the flip animation to show the other face of a double-faced card.
+     */
+    public void flipToOtherFace() {
+        if (animating || faceDown || !hasBackFace) {
+            return; // Can't flip if animating, face-down, or no back face
+        }
+        runFlipAnimation(() -> showingAltFace = !showingAltFace);
+    }
+
+    /**
+     * Run the flip animation with a custom action at the midpoint.
+     * @param midpointAction Action to run when the card is "edge-on" (scale = 0)
+     */
+    private void runFlipAnimation(Runnable midpointAction) {
         animating = true;
         final int animationDuration = 300; // milliseconds
         final int framesPerSecond = 60;
         final int frameDelay = 1000 / framesPerSecond;
         final int totalFrames = animationDuration / frameDelay;
-        final double scaleStep = 2.0 / totalFrames; // Scale from 1.0 to -1.0 to 1.0
+        final double scaleStep = 2.0 / totalFrames;
 
         final int[] currentFrame = {0};
-        final boolean[] imageFlipped = {false};
+        final boolean[] actionExecuted = {false};
 
         animationTimer = new Timer(frameDelay, e -> {
             currentFrame[0]++;
 
             // Calculate scale (1.0 -> 0.0 -> 1.0)
             if (currentFrame[0] <= totalFrames / 2) {
-                // First half: shrink from 1.0 to 0.0
                 scaleX = 1.0 - (currentFrame[0] * scaleStep);
             } else {
-                // Second half: expand from 0.0 to 1.0
                 scaleX = (currentFrame[0] - totalFrames / 2) * scaleStep;
             }
 
-            // Flip the card image at the middle of the animation
-            if (!imageFlipped[0] && currentFrame[0] >= totalFrames / 2) {
-                faceDown = false;
+            // Execute midpoint action and update display
+            if (!actionExecuted[0] && currentFrame[0] >= totalFrames / 2) {
+                midpointAction.run();
                 updateCardDisplay();
-                imageFlipped[0] = true;
+                actionExecuted[0] = true;
             }
 
             repaint();
@@ -171,6 +275,12 @@ public abstract class SelectableCardPanelBase extends SkinnedPanel {
     public void doLayout() {
         // Make card picture fill the panel
         cardPicture.setBounds(0, 0, getWidth(), getHeight());
+
+        // Position flip button in top-left corner (top-right has checkmark)
+        if (flipButton != null) {
+            flipButton.setBounds(FLIP_BUTTON_MARGIN, FLIP_BUTTON_MARGIN,
+                FLIP_BUTTON_SIZE, FLIP_BUTTON_SIZE);
+        }
     }
 
     @Override

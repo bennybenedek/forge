@@ -95,6 +95,15 @@ public class CardZoomUtil {
      * @param card The card to zoom
      */
     public void showZoom(PaperCard card) {
+        showZoom(card, false);
+    }
+
+    /**
+     * Show zoomed view of a card, optionally showing the alternate face.
+     * @param card The card to zoom
+     * @param showAltFace Whether to show the alternate face (for double-faced cards)
+     */
+    public void showZoom(PaperCard card, boolean showAltFace) {
         if (zoomOverlay == null) {
             return;
         }
@@ -109,9 +118,19 @@ public class CardZoomUtil {
         Card gameCard = Card.getCardForUi(card);
         if (gameCard != null) {
             CardView cardView = CardView.get(gameCard);
-            BufferedImage cardImage = FImageUtil.getImageXlhq(cardView.getCurrentState());
-            if (cardImage == null) {
-                cardImage = FImageUtil.getImage(cardView.getCurrentState());
+            BufferedImage cardImage;
+
+            // Get the appropriate face based on showAltFace
+            if (showAltFace && card.hasBackFace() && cardView.getAlternateState() != null) {
+                cardImage = FImageUtil.getImageXlhq(cardView.getAlternateState());
+                if (cardImage == null) {
+                    cardImage = FImageUtil.getImage(cardView.getAlternateState());
+                }
+            } else {
+                cardImage = FImageUtil.getImageXlhq(cardView.getCurrentState());
+                if (cardImage == null) {
+                    cardImage = FImageUtil.getImage(cardView.getCurrentState());
+                }
             }
 
             if (cardImage != null) {
