@@ -6,7 +6,7 @@ package forge.gamemodes.rogue;
 public enum RoguePlaneboundType {
     NORMAL(2, 2),   // Standard planebound encounter
     ELITE(4, 4),    // Elite difficulty planebound
-    BOSS(0, 8);     // Boss encounter
+    BOSS(0, 10);     // Boss encounter
 
     private final int goldReward;
     private final int echoReward;
