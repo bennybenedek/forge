@@ -1,10 +1,5 @@
 package forge.screens.deckeditor.controllers;
 
-import java.util.Map.Entry;
-import java.util.function.Predicate;
-
-import javax.swing.JLabel;
-
 import forge.card.CardRules;
 import forge.card.CardRulesPredicates;
 import forge.card.MagicColor;
@@ -18,6 +13,9 @@ import forge.screens.deckeditor.CDeckEditorUI;
 import forge.screens.deckeditor.views.VStatistics;
 import forge.util.ItemPool;
 import forge.util.Localizer;
+import java.util.Map.Entry;
+import java.util.function.Predicate;
+import javax.swing.JLabel;
 
 /**
  * Controls the "analysis" panel in the deck editor UI.
@@ -71,10 +69,12 @@ public enum CStatistics implements ICDoc {
         final ItemPool<PaperCard> deck = ItemPool.createFrom(ed.getDeckManager().getPool(), PaperCard.class);
 
         int total = deck.countAll();
+        int totalWithoutLands = total - deck.countAll(PaperCardPredicates.fromRules(CardRulesPredicates.IS_LAND));
         final int[] shardCount = calculateShards(deck);
 
         // Hack-ish: avoid /0 cases, but still populate labels :)
         if (total == 0) { total = 1; }
+        if (totalWithoutLands == 0) { totalWithoutLands = 1; }
 
         setLabelValue(VStatistics.SINGLETON_INSTANCE.getLblCreature(), deck, CardRulesPredicates.IS_CREATURE, total);
         setLabelValue(VStatistics.SINGLETON_INSTANCE.getLblLand(), deck, CardRulesPredicates.IS_LAND, total);
@@ -113,6 +113,7 @@ public enum CStatistics implements ICDoc {
             tmc += e.getKey().getRules().getManaCost().getCMC() * e.getValue();
         }
         final double amc = Math.round((double) tmc / (double) total * 100) / 100.0d;
+        final double amcNoLands = Math.round((double) tmc / (double) totalWithoutLands * 100) / 100.0d;
 
         final int landCount = deck.countAll(PaperCardPredicates.fromRules(CardRulesPredicates.IS_LAND));
         final int deckSize = deck.countAll();
@@ -124,8 +125,10 @@ public enum CStatistics implements ICDoc {
                 String.format("%s: %d", Localizer.getInstance().getMessage("lblTotalManaCost").toUpperCase(), tmc));
         VStatistics.SINGLETON_INSTANCE.getLblAMC().setText(String.format("%s: %.2f",
                 Localizer.getInstance().getMessage("lblAverageManaCost").toUpperCase(), amc));
-        VStatistics.SINGLETON_INSTANCE.getLblExpectedLands().setText(
-                String.format("AVG. LANDS IN OPENING HAND: %.2f", expectedLands));
+        VStatistics.SINGLETON_INSTANCE.getLblAMCWithoutLands().setText(String.format("%s: %.2f",
+            Localizer.getInstance().getMessage("lblAverageManaCostWithoutLands").toUpperCase(), amcNoLands));
+        VStatistics.SINGLETON_INSTANCE.getLblExpectedLands().setText(String.format("%s: %.2f",
+            Localizer.getInstance().getMessage("lblExpectedLands").toUpperCase(), expectedLands));
     }
 
     /**
