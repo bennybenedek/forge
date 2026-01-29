@@ -114,12 +114,28 @@ public enum CStatistics implements ICDoc {
         }
         final double amc = Math.round((double) tmc / (double) total * 100) / 100.0d;
 
+        final int landCount = deck.countAll(PaperCardPredicates.fromRules(CardRulesPredicates.IS_LAND));
+        final int deckSize = deck.countAll();
+        final double expectedLands = expectedLandsInOpeningHand(deckSize, landCount);
+
         VStatistics.SINGLETON_INSTANCE.getLblTotal().setText(
                 String.format("%s: %d", Localizer.getInstance().getMessage("lblTotalCards").toUpperCase(), deck.countAll()));
         VStatistics.SINGLETON_INSTANCE.getLblTMC().setText(
                 String.format("%s: %d", Localizer.getInstance().getMessage("lblTotalManaCost").toUpperCase(), tmc));
         VStatistics.SINGLETON_INSTANCE.getLblAMC().setText(String.format("%s: %.2f",
                 Localizer.getInstance().getMessage("lblAverageManaCost").toUpperCase(), amc));
+        VStatistics.SINGLETON_INSTANCE.getLblExpectedLands().setText(
+                String.format("AVG. LANDS IN OPENING HAND: %.2f", expectedLands));
+    }
+
+    /**
+     * Calculate the expected number of lands in a 7-card opening hand.
+     */
+    public static double expectedLandsInOpeningHand(int deckSize, int landCount) {
+        if (deckSize == 0) return 0.0;
+        int openingHandSize = 7;
+        double expected = openingHandSize * ((double) landCount / deckSize);
+        return Math.round(expected * 100.0) / 100.0;
     }
 
     /**

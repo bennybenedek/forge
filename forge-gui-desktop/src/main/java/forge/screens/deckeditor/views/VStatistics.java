@@ -44,6 +44,10 @@ public enum VStatistics implements IVDoc<CStatistics> {
             .text(String.format("%s: 0.00", Localizer.getInstance().getMessage("lblAverageManaCost").toUpperCase()))
             .tooltip(Localizer.getInstance().getMessage("lblAverageManaCost"))
             .fontStyle(Font.BOLD).fontSize(11).fontStyle(Font.BOLD).build();
+    private FLabel lblExpectedLands = new FLabel.Builder()
+            .text("AVG. LANDS IN OPENING HAND: 0.00")
+            .tooltip("Expected number of lands in a 7-card opening hand")
+            .fontStyle(Font.BOLD).fontSize(11).fontStyle(Font.BOLD).build();
     private FLabel lblCardCountHeader = new FLabel.Builder()
             .text(Localizer.getInstance().getMessage("lblCardByColorTypeCMC")).tooltip(Localizer.getInstance().getMessage("lblBreakdownOfColorTypeCMC"))
             .fontStyle(Font.BOLD).fontSize(11).fontStyle(Font.BOLD).build();
@@ -135,6 +139,7 @@ public enum VStatistics implements IVDoc<CStatistics> {
         pnlStats.add(lblTotal, "w 96%!, h 20px!, span 3 1, gap 2% 0 0 0");
         pnlStats.add(lblTMC, "w 96%!, h 20px!, span 3 1, gap 2% 0 0 0");
         pnlStats.add(lblAMC, "w 96%!, h 20px!, span 3 1, gap 2% 0 0 0");
+        pnlStats.add(lblExpectedLands, "w 96%!, h 20px!, span 3 1, gap 2% 0 0 0");
 
         // Add labels to container
         final String constraints = "w 32%!, h 35px!";
@@ -293,6 +298,8 @@ public enum VStatistics implements IVDoc<CStatistics> {
     public FLabel getLblTMC() { return lblTMC; }
     /** @return {@link forge.toolbox.FLabel} */
     public FLabel getLblAMC() { return lblAMC; }
+    /** @return {@link forge.toolbox.FLabel} */
+    public FLabel getLblExpectedLands() { return lblExpectedLands; }
 
     //========== Other methods
 
