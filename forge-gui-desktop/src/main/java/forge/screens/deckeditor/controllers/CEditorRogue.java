@@ -35,6 +35,7 @@ import forge.screens.deckeditor.AddBasicLandsDialog;
 import forge.screens.deckeditor.views.VCardCatalog;
 import forge.screens.deckeditor.views.VCurrentDeck;
 import forge.screens.home.CHomeUI;
+import forge.screens.home.rogue.CSubmenuRogueMap;
 import forge.screens.match.controllers.CDetailPicture;
 import forge.util.ItemPool;
 import java.util.Map.Entry;
@@ -50,13 +51,13 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
 
     private static final String REMOVAL_CREDITS = "Removal Credits";
     private final DeckController<Deck> controller;
-    private final RogueRun rogueRun;
     private final ItemPool<PaperCard> basicLandPool;
+    private RogueRun rogueRun;
 
     // Rogue-specific UI elements
     private forge.toolbox.FLabel lblRemovalCredits;
     private forge.toolbox.FLabel btnUndo;
-    private forge.toolbox.FLabel btnBackToPath;
+
 
     // Undo action tracking
     private static class UndoAction {
@@ -265,6 +266,7 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
 
     @Override
     protected void resetUI() {
+        forge.toolbox.FLabel btnBackToPath;
         super.resetUI();
 
         // Hide add buttons (can't add cards from catalog)
@@ -357,6 +359,17 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
 
     @Override
     public void update() {
+        // Refresh rogueRun reference from singleton to handle tab navigation edge case
+        // (ensures we always show the current run, not a stale reference from a previous run)
+        RogueRun currentRun = CSubmenuRogueMap.SINGLETON_INSTANCE.getCurrentRun();
+        if (currentRun == null) {
+            // No active run - navigate back to start screen
+            Singletons.getControl().setCurrentScreen(FScreen.HOME_SCREEN);
+            CHomeUI.SINGLETON_INSTANCE.itemClick(EDocID.HOME_ROGUESTART);
+            return;
+        }
+        this.rogueRun = currentRun;
+
         this.getCatalogManager().setup(ItemManagerConfig.CARD_CATALOG);
         this.getDeckManager().setup(ItemManagerConfig.DECK_EDITOR);
 
