@@ -17,6 +17,7 @@
  */
 package forge.screens.deckeditor.controllers;
 
+import forge.Singletons;
 import forge.deck.CardPool;
 import forge.deck.Deck;
 import forge.deck.DeckSection;
@@ -24,6 +25,7 @@ import forge.game.GameType;
 import forge.gamemodes.rogue.RogueIO;
 import forge.gamemodes.rogue.RogueRun;
 import forge.gui.UiCommand;
+import forge.gui.framework.EDocID;
 import forge.gui.framework.FScreen;
 import forge.item.PaperCard;
 import forge.itemmanager.CardManager;
@@ -32,6 +34,7 @@ import forge.model.FModel;
 import forge.screens.deckeditor.AddBasicLandsDialog;
 import forge.screens.deckeditor.views.VCardCatalog;
 import forge.screens.deckeditor.views.VCurrentDeck;
+import forge.screens.home.CHomeUI;
 import forge.screens.match.controllers.CDetailPicture;
 import forge.util.ItemPool;
 import java.util.Map.Entry;
@@ -44,6 +47,8 @@ import java.util.Map.Entry;
  * - Cannot add other cards (they must come from rewards)
  */
 public final class CEditorRogue extends CDeckEditor<Deck> {
+
+    private static final String REMOVAL_CREDITS = "Removal Credits";
     private final DeckController<Deck> controller;
     private final RogueRun rogueRun;
     private final ItemPool<PaperCard> basicLandPool;
@@ -51,6 +56,7 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
     // Rogue-specific UI elements
     private forge.toolbox.FLabel lblRemovalCredits;
     private forge.toolbox.FLabel btnUndo;
+    private forge.toolbox.FLabel btnBackToPath;
 
     // Undo action tracking
     private static class UndoAction {
@@ -278,9 +284,9 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
         // Hide basic lands button (card catalog provides this functionality)
         getBtnAddBasicLands().setVisible(false);
 
-        // Keep remove buttons visible
+        // Keep remove button visible, hide remove4
         getBtnRemove().setVisible(true);
-        getBtnRemove4().setVisible(true);
+        getBtnRemove4().setVisible(false);
 
         // Hide deck management buttons (can't save/load in Rogue mode)
         VCurrentDeck.SINGLETON_INSTANCE.getBtnSave().setVisible(false);
@@ -300,20 +306,30 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
         // Add Rogue-specific UI elements to deck manager button panel
         // These will automatically be isolated to this editor instance (not shared)
         lblRemovalCredits = new forge.toolbox.FLabel.Builder()
-            .text("Removals: " + rogueRun.getRemovalCredits())
-            .fontSize(12)
+            .text(REMOVAL_CREDITS + ": " + rogueRun.getRemovalCredits())
+            .fontSize(14)
             .build();
         this.getDeckManager().getPnlButtons().add(lblRemovalCredits, "w 18%!, h 30px!, gapx 5");
 
         btnUndo = new forge.toolbox.FLabel.Builder()
             .text("Undo")
-            .tooltip("Undo last removal")
-            .fontSize(12)
+            .tooltip("Undo last addition / removal")
+            .fontSize(14)
             .opaque(true)
             .hoverable(true)
             .build();
         btnUndo.setCommand(this::undoLastRemoval);
         this.getDeckManager().getPnlButtons().add(btnUndo, "w 12%!, h 30px!, gapx 5");
+
+        btnBackToPath = new forge.toolbox.FLabel.Builder()
+            .text("Back To Path")
+            .tooltip("Return to the Rogue Commander path")
+            .fontSize(14)
+            .opaque(true)
+            .hoverable(true)
+            .build();
+        btnBackToPath.setCommand(this::navigateBackToPath);
+        this.getDeckManager().getPnlButtons().add(btnBackToPath, "w 18%!, h 30px!, gapx 5");
 
         // Update label text and button state
         updateRemovalCreditsLabel();
@@ -390,13 +406,21 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
      */
     private void updateRemovalCreditsLabel() {
         if (lblRemovalCredits != null) {
-            lblRemovalCredits.setText("Removals: " + rogueRun.getRemovalCredits());
+            lblRemovalCredits.setText(REMOVAL_CREDITS + ": " + rogueRun.getRemovalCredits());
 
             // Update undo button state
             if (btnUndo != null) {
                 btnUndo.setEnabled(!undoStack.isEmpty());
             }
         }
+    }
+
+    /**
+     * Navigate back to the Rogue Commander path view.
+     */
+    private void navigateBackToPath() {
+        Singletons.getControl().setCurrentScreen(FScreen.HOME_SCREEN);
+        CHomeUI.SINGLETON_INSTANCE.itemClick(EDocID.HOME_ROGUEMAP);
     }
 
     /**
