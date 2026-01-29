@@ -21,26 +21,12 @@ public class RogueDeck {
     private String themeDescription;        // Theme/archetype (e.g., "Instants/Sorceries matter")
     private int avatarIndex;                // Avatar image index
     private int sleeveIndex;                // Sleeve image index
-    private transient RogueUnlockCondition rogueUnlockCondition;  // Unlock condition (transient - not serialized)
+    private String landEdition;             // Land edition code for basic lands in Deck Editor (optional)
+    private transient RogueUnlockCondition rogueUnlockCondition;  // Unlock condition
 
     // Constructors
     public RogueDeck() {
         this.rewardPool = new CardPool();
-    }
-
-    public RogueDeck(String name, String commanderCardName) {
-        this.name = name;
-        this.commanderCardName = commanderCardName;
-        this.rewardPool = new CardPool();
-    }
-
-    // Factory method to create a deep copy of the start deck
-    public Deck createStartingDeck() {
-        if (startDeck == null) {
-            return null;
-        }
-        // Create a deep copy to avoid modifying the original
-        return new Deck(startDeck);
     }
 
     /**
@@ -143,6 +129,14 @@ public class RogueDeck {
 
     public void setSleeveIndex(int sleeveIndex) {
         this.sleeveIndex = sleeveIndex;
+    }
+
+    public String getLandEdition() {
+        return landEdition;
+    }
+
+    public void setLandEdition(String landEdition) {
+        this.landEdition = landEdition;
     }
 
     public RogueUnlockCondition getUnlockCondition() {

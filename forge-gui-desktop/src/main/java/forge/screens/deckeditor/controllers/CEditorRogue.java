@@ -86,34 +86,24 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
         // Get commander's edition
         String commanderName = rogueRun0.getSelectedRogueDeck().getCommanderCardName();
         PaperCard commanderCard = FModel.getMagicDb().getCommonCards().getCard(commanderName);
+
+        // Add basic lands from desired set (deck meta data) or commander's edition
+        String deckEdition = rogueRun.getSelectedRogueDeck().getLandEdition();
         String commanderEdition = (commanderCard != null) ? commanderCard.getEdition() : null;
 
-        // Add basic lands from commander's edition
         int landsAdded = 0;
         for (Entry<PaperCard, Integer> entry : FModel.getAllCardsNoAlt()) {
             PaperCard card = entry.getKey();
-            if (card.getRules().getType().isBasicLand()) {
-                // Only add lands from commander's edition if we have one
-                if (card.getEdition().equals(commanderEdition)) {
+            if (card.getRules().getType().isBasicLand() && (
+                card.getEdition().equals(deckEdition)
+                    || card.getEdition().equals(commanderEdition)))  {
                     basicLandPool.add(card);
                     landsAdded++;
-                }
             }
         }
 
-        // Fallback 1: If < 5 lands from commander's edition, use Modern Horizons 3 (MH3) lands
+        // Fallback 2: If less than 5 lands added, add all basic lands
         if (landsAdded < 5) {
-            basicLandPool.clear();
-            for (Entry<PaperCard, Integer> entry : FModel.getAllCardsNoAlt()) {
-                PaperCard card = entry.getKey();
-                if (card.getRules().getType().isBasicLand() && "MH3".equals(card.getEdition())) {
-                    basicLandPool.add(card);
-                }
-            }
-        }
-
-        // Fallback 2: If still no lands (MH3 not available), add all basic lands
-        if (basicLandPool.isEmpty()) {
             for (Entry<PaperCard, Integer> entry : FModel.getAllCardsNoAlt()) {
                 PaperCard card = entry.getKey();
                 if (card.getRules().getType().isBasicLand()) {
@@ -319,7 +309,7 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
             .hoverable(true)
             .build();
         btnUndo.setCommand(this::undoLastRemoval);
-        this.getDeckManager().getPnlButtons().add(btnUndo, "w 12%!, h 30px!, gapx 5");
+        this.getDeckManager().getPnlButtons().add(btnUndo, "w 12%!, h 30px!, gapx 60");
 
         btnBackToPath = new forge.toolbox.FLabel.Builder()
             .text("Back To Path")

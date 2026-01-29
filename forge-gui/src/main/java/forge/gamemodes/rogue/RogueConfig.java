@@ -121,6 +121,7 @@ public class RogueConfig {
         rogueDeck.setThemeDescription(meta.getProperty("theme", ""));
         rogueDeck.setAvatarIndex(Integer.parseInt(meta.getProperty("avatarIndex", "1")));
         rogueDeck.setSleeveIndex(Integer.parseInt(meta.getProperty("sleeveIndex", "1")));
+        rogueDeck.setLandEdition(meta.getProperty("landEdition", ""));
 
         // Set unlock condition
         String unlockString = meta.getProperty("unlock", null);
