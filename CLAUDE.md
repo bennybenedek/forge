@@ -14,6 +14,15 @@ Forge is an open-source Magic: The Gathering rules engine and game client writte
 
 **DO NOT deviate from user requirements or implement features without explicit permission.** If the requirement is unclear or you think a different approach might be better, **ASK FIRST** using the AskUserQuestion tool before implementing anything. The user will provide clear direction.
 
+## Important: Coding Style Policy
+
+**BE LEAN - use as little code as possible.** Before implementing anything:
+
+1. **Check existing patterns first** - Always look at how similar functionality is implemented elsewhere in the project, especially in `forge-gui-desktop/src/main/java/forge/screens/home/rogue/` for Rogue Commander specific code.
+2. **Reuse, don't reinvent** - If the codebase already has a way to do something (e.g., drawing icons, loading images, handling events), use that exact approach.
+3. **Minimal code** - Write the least amount of code needed. No verbose solutions when a simple one exists.
+4. **No over-engineering** - Don't add extra abstractions, helper methods, or "improvements" unless explicitly requested.
+
 ## Build Commands
 
 ### Initial Setup

@@ -1,5 +1,6 @@
 package forge.screens.home.rogue;
 
+import forge.ImageCache;
 import forge.game.card.Card;
 import forge.game.card.CardView;
 import forge.item.PaperCard;
@@ -114,30 +115,40 @@ public class CardZoomUtil {
         currentZoomedCard = card;
         zoomOverlay.removeAll();
 
-        // Get high-quality card image
-        Card gameCard = Card.getCardForUi(card);
-        if (gameCard != null) {
-            CardView cardView = CardView.get(gameCard);
-            BufferedImage cardImage;
+        BufferedImage cardImage = null;
 
-            // Get the appropriate face based on showAltFace
-            if (showAltFace && card.hasBackFace() && cardView.getAlternateState() != null) {
-                cardImage = FImageUtil.getImageXlhq(cardView.getAlternateState());
-                if (cardImage == null) {
-                    cardImage = FImageUtil.getImage(cardView.getAlternateState());
-                }
-            } else {
-                cardImage = FImageUtil.getImageXlhq(cardView.getCurrentState());
-                if (cardImage == null) {
-                    cardImage = FImageUtil.getImage(cardView.getCurrentState());
+        // Get the appropriate face based on showAltFace
+        if (showAltFace && card.hasBackFace()) {
+            // Use ImageCache.getImage with altState=true for back face
+            cardImage = ImageCache.getImage(card, -1, -1, true);
+        } else {
+            // Front face
+            cardImage = ImageCache.getImage(card, -1, -1, false);
+        }
+
+        // Fallback to FImageUtil if ImageCache returned null or default
+        if (cardImage == null || ImageCache.isDefaultImage(cardImage)) {
+            Card gameCard = Card.getCardForUi(card);
+            if (gameCard != null) {
+                CardView cardView = CardView.get(gameCard);
+                if (showAltFace && card.hasBackFace() && cardView.getAlternateState() != null) {
+                    cardImage = FImageUtil.getImageXlhq(cardView.getAlternateState());
+                    if (cardImage == null) {
+                        cardImage = FImageUtil.getImage(cardView.getAlternateState());
+                    }
+                } else {
+                    cardImage = FImageUtil.getImageXlhq(cardView.getCurrentState());
+                    if (cardImage == null) {
+                        cardImage = FImageUtil.getImage(cardView.getCurrentState());
+                    }
                 }
             }
+        }
 
-            if (cardImage != null) {
-                FImagePanel imagePanel = new FImagePanel();
-                imagePanel.setImage(cardImage, 0, AutoSizeImageMode.SOURCE);
-                zoomOverlay.add(imagePanel, "w 80%!, h 80%!");
-            }
+        if (cardImage != null) {
+            FImagePanel imagePanel = new FImagePanel();
+            imagePanel.setImage(cardImage, 0, AutoSizeImageMode.SOURCE);
+            zoomOverlay.add(imagePanel, "w 80%!, h 80%!");
         }
 
         zoomOverlay.setVisible(true);
