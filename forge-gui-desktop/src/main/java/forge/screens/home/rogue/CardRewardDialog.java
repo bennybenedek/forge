@@ -1,6 +1,7 @@
 package forge.screens.home.rogue;
 
 import com.google.common.collect.ImmutableList;
+import forge.deckchooser.FDeckViewer;
 import forge.item.PaperCard;
 import forge.toolbox.FLabel;
 import forge.toolbox.FOptionPane;
@@ -81,7 +82,7 @@ public class CardRewardDialog {
         int numRows = (int) Math.ceil(cards.size() / 4.0);
 
         int dialogWidth = cardsPerRow * (CARD_WIDTH + CARD_SPACING) - CARD_SPACING + 2 * PADDING;
-        int dialogHeight = numRows * (CARD_HEIGHT + CARD_SPACING) - CARD_SPACING + 140 + 2 * PADDING; // 140px for labels (removed button)
+        int dialogHeight = numRows * (CARD_HEIGHT + CARD_SPACING) - CARD_SPACING + 140 + 2 * PADDING; // 140px for labels
 
         Dimension dialogSize = new Dimension(dialogWidth, dialogHeight);
         panel.setPreferredSize(dialogSize);
@@ -106,37 +107,46 @@ public class CardRewardDialog {
      */
     public List<PaperCard> show() {
         final Localizer localizer = Localizer.getInstance();
-        optionPane = new FOptionPane(
-                null,
-                "Card Rewards",
-                null,
-                panel,
-                ImmutableList.of(localizer.getMessage("lblOK"), localizer.getMessage("lblCancel")),
-                0
-        );
+        final int VIEW_DECK_OPTION = 2;
 
-        // Setup zoom utility
-        zoomUtil = new CardZoomUtil(optionPane);
-        zoomUtil.setupZoomOverlay();
+        int result;
+        do {
+            optionPane = new FOptionPane(
+                    null,
+                    "Card Rewards",
+                    null,
+                    panel,
+                    ImmutableList.of(localizer.getMessage("lblOK"), localizer.getMessage("lblCancel"), "View Deck"),
+                    0
+            );
 
-        panel.revalidate();
-        panel.repaint();
+            // Setup zoom utility
+            zoomUtil = new CardZoomUtil(optionPane);
+            zoomUtil.setupZoomOverlay();
 
-        // Automatically reveal all cards after dialog is shown
-        // Use invokeLater to ensure it runs after the dialog is displayed
-        SwingUtilities.invokeLater(() -> {
-            Timer revealTimer = new Timer(200, e -> {
-                revealAllCards();
-                ((Timer) e.getSource()).stop();
+            panel.revalidate();
+            panel.repaint();
+
+            // Automatically reveal all cards after dialog is shown
+            // Use invokeLater to ensure it runs after the dialog is displayed
+            SwingUtilities.invokeLater(() -> {
+                Timer revealTimer = new Timer(200, e -> {
+                    revealAllCards();
+                    ((Timer) e.getSource()).stop();
+                });
+                revealTimer.setRepeats(false);
+                revealTimer.start();
             });
-            revealTimer.setRepeats(false);
-            revealTimer.start();
-        });
 
-        optionPane.setVisible(true);
+            optionPane.setVisible(true);
+            result = optionPane.getResult();
+            optionPane.dispose();
 
-        int result = optionPane.getResult();
-        optionPane.dispose();
+            // If View Deck clicked, show deck and re-display dialog
+            if (result == VIEW_DECK_OPTION) {
+                showCurrentDeck();
+            }
+        } while (result == VIEW_DECK_OPTION);
 
         if (result == 0) {
             return new ArrayList<>(selectedCards);
@@ -151,6 +161,13 @@ public class CardRewardDialog {
 
     private String getInfoText() {
         return String.format("Select up to %d cards (%d selected)", maxSelections, selectedCards.size());
+    }
+
+    private void showCurrentDeck() {
+        var currentRun = CSubmenuRogueMap.SINGLETON_INSTANCE.getCurrentRun();
+        if (currentRun != null && currentRun.getCurrentDeck() != null) {
+            FDeckViewer.show(currentRun.getCurrentDeck());
+        }
     }
 
     private void toggleCardSelection(SelectableCardPanel cardPanel) {

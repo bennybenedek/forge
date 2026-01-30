@@ -1,5 +1,6 @@
 package forge.screens.home.rogue;
 
+import forge.deckchooser.FDeckViewer;
 import forge.gamemodes.rogue.BazaarPricing;
 import forge.item.PaperCard;
 import forge.localinstance.skin.FSkinProp;
@@ -87,34 +88,51 @@ public class BazaarDialog {
      */
     public Set<PaperCard> show() {
         final Localizer localizer = Localizer.getInstance();
-        FOptionPane optionPane = new FOptionPane(
-                null,
-                "Bazaar",
-                null,
-                panel,
-                List.of("Buy Selected Cards", localizer.getMessage("lblSkip")),
-                1  // Default to Skip button
-        );
+        final int VIEW_DECK_OPTION = 2;
 
-        // Setup zoom utility
-        zoomUtil = new CardZoomUtil(optionPane);
-        zoomUtil.setupZoomOverlay();
+        int result;
+        do {
+            FOptionPane optionPane = new FOptionPane(
+                    null,
+                    "Bazaar",
+                    null,
+                    panel,
+                    List.of("Buy Selected Cards", localizer.getMessage("lblSkip"), "View Deck"),
+                    1  // Default to Skip button
+            );
 
-        // Start the card reveal animation
-        panel.startRevealAnimation();
+            // Setup zoom utility
+            zoomUtil = new CardZoomUtil(optionPane);
+            zoomUtil.setupZoomOverlay();
 
-        panel.revalidate();
-        panel.repaint();
+            // Start the card reveal animation
+            panel.startRevealAnimation();
 
-        optionPane.setVisible(true);
-        int result = optionPane.getResult();
-        optionPane.dispose();
+            panel.revalidate();
+            panel.repaint();
+
+            optionPane.setVisible(true);
+            result = optionPane.getResult();
+            optionPane.dispose();
+
+            // If View Deck clicked, show deck and re-display dialog
+            if (result == VIEW_DECK_OPTION) {
+                showCurrentDeck();
+            }
+        } while (result == VIEW_DECK_OPTION);
 
         // Return selected cards if Buy was clicked (result == 0), otherwise empty set
         if (result == 0) {
             return selectedCards;
         }
         return new HashSet<>();
+    }
+
+    private void showCurrentDeck() {
+        var currentRun = CSubmenuRogueMap.SINGLETON_INSTANCE.getCurrentRun();
+        if (currentRun != null && currentRun.getCurrentDeck() != null) {
+            FDeckViewer.show(currentRun.getCurrentDeck());
+        }
     }
 
     private class MainPanel extends SkinnedPanel {
