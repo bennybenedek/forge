@@ -73,20 +73,22 @@ public class RogueWinLoseController {
         // Persist life total from match
         persistLifeTotal();
 
-        // Apply Lingering Aura healing (after life persistence)
-        RogueMetaProgress progress = RogueMetaProgress.getInstance();
-        int healAmount = progress.getPostMatchHealAmount(currentRun);
-        if (healAmount > 0) {
-            int lifeBefore = currentRun.getCurrentLife();
-            currentRun.healLife(healAmount);
-            int healedAmount = currentRun.getCurrentLife() - lifeBefore;
-            if (healedAmount > 0) {
-                view.showMessage("Lingering Aura healed " + healedAmount + " life.", "Boon Effect", FSkinProp.ICO_QUEST_CHARM);
-            }
-        }
-
         // Check if this was the last node (run completed)
         boolean isLastNode = currentRun.getCurrentNodeIndex() >= currentRun.getPath().getNodeCount() - 1;
+
+        // Apply Lingering Aura healing (after life persistence, but not for Boss/last node)
+        RogueMetaProgress progress = RogueMetaProgress.getInstance();
+        if (!isLastNode) {
+            int healAmount = progress.getPostMatchHealAmount(currentRun);
+            if (healAmount > 0) {
+                int lifeBefore = currentRun.getCurrentLife();
+                currentRun.healLife(healAmount);
+                int healedAmount = currentRun.getCurrentLife() - lifeBefore;
+                if (healedAmount > 0) {
+                    view.showMessage("Lingering Aura healed " + healedAmount + " life.", "Boon Effect", FSkinProp.ICO_QUEST_CHARM);
+                }
+            }
+        }
 
         // Get current node for rewards (applies to ALL nodes including Boss)
         RoguePathNode currentNode = currentRun.getCurrentNode();
