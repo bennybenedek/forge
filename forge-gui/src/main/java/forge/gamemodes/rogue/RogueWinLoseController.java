@@ -192,6 +192,9 @@ public class RogueWinLoseController {
             3
         );
 
+        // Remove normal reward options from pool
+        rogueDeck.removeFromRewardPool(rewardOptions);
+
         // If Elite opponent, show second reward screen with mythic cards
         if (isElite) {
             List<PaperCard> mythicOptions = rogueDeck.drawRewardOptions(3, forge.item.PaperCardPredicates.IS_MYTHIC_RARE);
@@ -230,9 +233,6 @@ public class RogueWinLoseController {
         if (echoReward > 0) {
             view.showMessage("You won " + echoReward + " Echoes.", "Echo Reward", FSkinProp.ICO_QUEST_GOLD);
         }
-
-        // Remove reward options (both chosen and unchosen) from the reward pool
-        rogueDeck.removeFromRewardPool(rewardOptions);
     }
 
     private void handleDefeat() {
