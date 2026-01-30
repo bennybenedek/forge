@@ -52,6 +52,12 @@ public class RogueWinLose extends ControlWinLose {
         controller.actionOnQuit();
 
         var currentRun = CSubmenuRogueMap.SINGLETON_INSTANCE.getCurrentRun();
+
+        // Clear hosted match so new matches can be started
+        if (currentRun != null) {
+            currentRun.setHostedMatch(null);
+        }
+
         if (currentRun != null && (currentRun.isRunFailed() || currentRun.isRunWon())) {
             // Run is over (won or lost) - send player back to Commander selection
             CSubmenuRogueMap.SINGLETON_INSTANCE.setCurrentRun(null);

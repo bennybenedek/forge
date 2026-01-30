@@ -196,8 +196,9 @@ public enum CSubmenuRogueMap implements ICDoc {
             return;
         }
 
-        // Enable button and set text based on node type
-        view.getBtnEnterNode().setEnabled(true);
+        // Disable button if match already in progress (prevents duplicate match tabs)
+        boolean matchInProgress = currentRun.getHostedMatch() != null;
+        view.getBtnEnterNode().setEnabled(!matchInProgress);
         view.getBtnEnterNode().setText(getEnterButtonText(currentNode));
     }
 
@@ -243,6 +244,11 @@ public enum CSubmenuRogueMap implements ICDoc {
     }
 
     private void startMatch(NodePlanebound node) {
+        // Prevent starting a new match if one is already in progress this session
+        if (currentRun.getHostedMatch() != null) {
+            return;
+        }
+
         // Show loading overlay
         SwingUtilities.invokeLater(() -> {
             SOverlayUtils.startGameOverlay();
