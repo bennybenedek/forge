@@ -293,7 +293,7 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
 
         // Set title
         VCurrentDeck.SINGLETON_INSTANCE.getLblTitle().setText("Rogue Commander Deck:");
-        VCardCatalog.SINGLETON_INSTANCE.getTabLabel().setText("Basic Lands Only");
+        VCardCatalog.SINGLETON_INSTANCE.getTabLabel().setText("Rogue Commander");
 
         // Add Rogue-specific UI elements to deck manager button panel
         // These will automatically be isolated to this editor instance (not shared)
@@ -301,7 +301,7 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
             .text(REMOVAL_CREDITS + ": " + rogueRun.getRemovalCredits())
             .fontSize(14)
             .build();
-        this.getDeckManager().getPnlButtons().add(lblRemovalCredits, "w 18%!, h 30px!, gapx 5");
+        this.getDeckManager().getPnlButtons().add(lblRemovalCredits, "w 22%!, h 30px!, gapx 5");
 
         btnUndo = new forge.toolbox.FLabel.Builder()
             .text("Undo")

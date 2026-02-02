@@ -23,10 +23,10 @@ import javax.swing.Timer;
  * Displays cards as images and allows selecting up to a maximum number.
  */
 public class CardRewardDialog {
-    private static final int CARD_WIDTH = 223;  // Larger cards for readability
+    private static final int CARD_WIDTH = 240;  // Larger cards for readability
     private static final int CARD_HEIGHT = Math.round(CARD_WIDTH * CardPanel.ASPECT_RATIO);
     private static final int CARD_SPACING = 15;
-    private static final int PADDING = 30;
+    private static final int PADDING = 20;
 
     private final String title;
     private final int maxSelections;
@@ -82,7 +82,7 @@ public class CardRewardDialog {
         int numRows = (int) Math.ceil(cards.size() / 4.0);
 
         int dialogWidth = cardsPerRow * (CARD_WIDTH + CARD_SPACING) - CARD_SPACING + 2 * PADDING;
-        int dialogHeight = numRows * (CARD_HEIGHT + CARD_SPACING) - CARD_SPACING + 140 + 2 * PADDING; // 140px for labels
+        int dialogHeight = numRows * (CARD_HEIGHT + CARD_SPACING) - CARD_SPACING + 80 + 2 * PADDING; // 80px for labels
 
         Dimension dialogSize = new Dimension(dialogWidth, dialogHeight);
         panel.setPreferredSize(dialogSize);
@@ -203,7 +203,7 @@ public class CardRewardDialog {
 
             // Layout info label
             lblInfo.setBounds(PADDING, y, totalWidth - 2 * PADDING, 30);
-            y += 30 + 15;
+            y += 30 + 10;
 
             // Layout card panels in rows of up to 4 cards
             int cardsPerRow = 4;
