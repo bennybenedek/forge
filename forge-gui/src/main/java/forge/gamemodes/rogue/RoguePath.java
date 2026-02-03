@@ -2,6 +2,7 @@ package forge.gamemodes.rogue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -61,6 +62,9 @@ public class RoguePath {
                 rowNodes.add(node);
             }
         }
+        // order nodes by columnIndes ascending
+        rowNodes.sort(Comparator.comparingInt(RoguePathNode::getColumnIndex));
+
         return rowNodes;
     }
 
@@ -92,6 +96,7 @@ public class RoguePath {
             return new ArrayList<>();
         }
 
+        // Get nodes in the next row, order by columnIndex
         int nextRow = fromNode.getRowIndex() + 1;
         List<RoguePathNode> nextRowNodes = getNodesInRow(nextRow);
 
@@ -161,10 +166,42 @@ public class RoguePath {
                 }
             }
         } else {
-            // Middle nodes: connect to adjacent columns (col-1, col, col+1)
+            // Middle / non-edge nodes
+
+            // if current row and next row have same size,
+            // connect only to same column index
+            if (nextRowNodes.size() == currentRowNodes.size()) {
+                nextRowNodes.stream()
+                    .filter(node -> node.getColumnIndex() == fromCol)
+                    .findFirst()
+                    .ifPresent(reachable::add);
+
+                return reachable;
+            }
+
+            // otherwise: connect to adjacent columns
+
+            // if next row has less nodes, shift indices to right by difference of middle position
+            int indexShift = 0;
+            if (nextRowNodes.size() < currentRowNodes.size()) {
+                //get middle index of current row / next row
+                double middleIndexCurrent = currentRowNodes.size() / 2.0;
+                double middleIndexNext = nextRowNodes.size() / 2.0;
+
+                indexShift = (int) Math.round(middleIndexCurrent - middleIndexNext);
+            }
+
+            // if either both col.size of same row and col.size of next row is even or odd,
+            // connect only to same column index
+            boolean currentRowEven = currentRowNodes.size() % 2 == 0;
+            boolean nextRowEven = nextRowNodes.size() % 2 == 0;
+            boolean sameParity = currentRowEven == nextRowEven;
+
+            // if current row and next row are both even or both odd, connect only to same column
+            // otherwise connect to same column and +1 column
             for (RoguePathNode node : nextRowNodes) {
-                int toCol = node.getColumnIndex();
-                if (Math.abs(toCol - fromCol) <= 1) {
+                int toCol = node.getColumnIndex() + indexShift;
+                if (toCol == fromCol || (!sameParity && toCol - fromCol == 1)) {
                     reachable.add(node);
                 }
             }
