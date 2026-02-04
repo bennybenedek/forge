@@ -17,6 +17,7 @@ import java.util.Map;
  * - MaxLife$ N - Unlock after reaching N life in any run
  * - MaxGold$ N - Unlock after earning N gold in any run
  * - CreatureTypes$ N - Unlock after having N different creature types in deck
+ * - LegendaryPermanents$ N - Unlock after having N legendary permanents in deck
  */
 public class RogueUnlockCondition {
 
@@ -105,6 +106,9 @@ public class RogueUnlockCondition {
             case "CreatureTypes":
                 return progress.getMaxCreatureTypesInDeck() >= parseIntSafe(value);
 
+            case "LegendaryPermanents":
+                return progress.getMaxLegendaryPermanentsInDeck() >= parseIntSafe(value);
+
             default:
                 System.err.println("Unknown unlock condition key: " + key);
                 return true; // Unknown conditions are ignored (don't block unlock)
@@ -167,6 +171,8 @@ public class RogueUnlockCondition {
                 return "Earn " + value + " gold in a run.";
             case "CreatureTypes":
                 return "Have " + value + "+ creature types in your deck.";
+            case "LegendaryPermanents":
+                return "Have " + value + "+ legendary permanents in your deck.";
             default:
                 return key + ": " + value;
         }

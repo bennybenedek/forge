@@ -17,6 +17,7 @@ public class NodeBazaarPanel extends NodeCircularPanel {
      */
     public NodeBazaarPanel(NodeBazaar node) {
         super(node);
+        setToolTipText("Bazaar: Spend gold to buy cards for your deck.");
     }
 
     @Override

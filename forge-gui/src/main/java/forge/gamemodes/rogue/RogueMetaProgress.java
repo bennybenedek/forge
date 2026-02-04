@@ -39,6 +39,7 @@ public class RogueMetaProgress {
 
     // Milestone tracking (captured during/after runs)
     private int maxCreatureTypesInDeck;
+    private int maxLegendaryPermanentsInDeck;
     private int maxLifeInRun;
     private int maxGoldInRun;
 
@@ -61,6 +62,7 @@ public class RogueMetaProgress {
         runsWonPerCommander = new HashMap<>();
         commandersUsed = new HashSet<>();
         maxCreatureTypesInDeck = 0;
+        maxLegendaryPermanentsInDeck = 0;
         maxLifeInRun = 0;
         maxGoldInRun = 0;
         unlockedCommanders = new HashSet<>();
@@ -101,6 +103,7 @@ public class RogueMetaProgress {
         runsWonPerCommander = new HashMap<>();
         commandersUsed = new HashSet<>();
         maxCreatureTypesInDeck = 0;
+        maxLegendaryPermanentsInDeck = 0;
         maxLifeInRun = 0;
         maxGoldInRun = 0;
         unlockedCommanders = new HashSet<>();
@@ -176,6 +179,12 @@ public class RogueMetaProgress {
         if (creatureTypes > maxCreatureTypesInDeck) {
             maxCreatureTypesInDeck = creatureTypes;
         }
+
+        // Track legendary permanents in deck
+        int legendaryPermanents = countLegendaryPermanentsInDeck(run.getCurrentDeck());
+        if (legendaryPermanents > maxLegendaryPermanentsInDeck) {
+            maxLegendaryPermanentsInDeck = legendaryPermanents;
+        }
     }
 
     /**
@@ -193,6 +202,23 @@ public class RogueMetaProgress {
             }
         }
         return creatureTypes.size();
+    }
+
+    /**
+     * Count legendary permanents in a deck.
+     */
+    private int countLegendaryPermanentsInDeck(forge.deck.Deck deck) {
+        if (deck == null || deck.getMain() == null) {
+            return 0;
+        }
+
+        int count = 0;
+        for (forge.item.PaperCard card : deck.getMain().toFlatList()) {
+            if (card.getRules().getType().isLegendary() && card.getRules().getType().isPermanent()) {
+                count++;
+            }
+        }
+        return count;
     }
 
     /**
@@ -246,6 +272,10 @@ public class RogueMetaProgress {
 
     public int getMaxCreatureTypesInDeck() {
         return maxCreatureTypesInDeck;
+    }
+
+    public int getMaxLegendaryPermanentsInDeck() {
+        return maxLegendaryPermanentsInDeck;
     }
 
     public int getMaxLifeInRun() {

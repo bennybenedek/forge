@@ -19,6 +19,7 @@ public class NodeSanctumPanel extends NodeCircularPanel {
     public NodeSanctumPanel(NodeSanctum node) {
         super(node);
         this.sanctumNode = node;
+        setToolTipText("Sanctum: Restore life and remove cards from your deck.");
     }
 
     @Override

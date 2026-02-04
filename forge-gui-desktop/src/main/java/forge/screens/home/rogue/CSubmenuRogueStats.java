@@ -44,7 +44,8 @@ public enum CSubmenuRogueStats implements ICDoc {
             progress.getTotalMatchesLost(),
             progress.getMaxLifeInRun(),
             progress.getMaxGoldInRun(),
-            progress.getMaxCreatureTypesInDeck()
+            progress.getMaxCreatureTypesInDeck(),
+            progress.getMaxLegendaryPermanentsInDeck()
         );
 
         // Load per-commander statistics

@@ -52,6 +52,7 @@ public enum VSubmenuRogueStats implements IVSubmenu<CSubmenuRogueStats> {
     private final FLabel lblMaxLife = new FLabel.Builder().text("Max Life Reached: 0").fontSize(14).build();
     private final FLabel lblMaxGold = new FLabel.Builder().text("Max Gold Earned: 0").fontSize(14).build();
     private final FLabel lblMaxCreatureTypes = new FLabel.Builder().text("Max Creature Types: 0").fontSize(14).build();
+    private final FLabel lblMaxLegendaryPermanents = new FLabel.Builder().text("Max Legendary Permanents: 0").fontSize(14).build();
 
     // Per-commander statistics (dynamically populated)
     private JPanel commanderStatsPanel;
@@ -76,7 +77,7 @@ public enum VSubmenuRogueStats implements IVSubmenu<CSubmenuRogueStats> {
      */
     public void updateDisplay(int runsStarted, int runsCompleted, int runsWon,
                               int matchesWon, int matchesLost,
-                              int maxLife, int maxGold, int maxCreatureTypes) {
+                              int maxLife, int maxGold, int maxCreatureTypes, int maxLegendaryPermanents) {
         lblRunsStarted.setText("Runs Started: " + runsStarted);
         lblRunsCompleted.setText("Runs Completed: " + runsCompleted);
         lblRunsWon.setText("Runs Won: " + runsWon);
@@ -86,6 +87,7 @@ public enum VSubmenuRogueStats implements IVSubmenu<CSubmenuRogueStats> {
         lblMaxLife.setText("Max Life Reached: " + maxLife);
         lblMaxGold.setText("Max Gold Earned: " + maxGold);
         lblMaxCreatureTypes.setText("Max Creature Types: " + maxCreatureTypes);
+        lblMaxLegendaryPermanents.setText("Max Legendary Permanents: " + maxLegendaryPermanents);
     }
 
     /**
@@ -211,7 +213,8 @@ public enum VSubmenuRogueStats implements IVSubmenu<CSubmenuRogueStats> {
         panel.add(lblMilestoneSection, "gapbottom 10");
         panel.add(lblMaxLife);
         panel.add(lblMaxGold);
-        panel.add(lblMaxCreatureTypes, "gapbottom 20");
+        panel.add(lblMaxCreatureTypes);
+        panel.add(lblMaxLegendaryPermanents, "gapbottom 20");
 
         // Section: Commander Statistics (dynamically populated)
         commanderStatsPanel = new JPanel(new MigLayout("insets 0, gap 5, wrap 1", "[250px]", ""));
