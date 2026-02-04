@@ -283,6 +283,21 @@ public class EffectAi extends SpellAbilityAi {
                     return new AiAbilityDecision(100, AiPlayDecision.WillPlay);
                 }
                 return new AiAbilityDecision(0, AiPlayDecision.CantPlayAi);
+            } else if (logic.equals("MakeUnblockable")) {
+                // For effects that make creatures unblockable - only target creatures that can actually attack
+                sa.resetTargets();
+                List<Card> options = CardUtil.getValidCardsToTarget(sa);
+                options = CardLists.filterControlledBy(options, ai);
+                if (sa.getPayCosts().hasTapCost()) {
+                    options.remove(sa.getHostCard());
+                }
+                // Filter to only creatures that can attack
+                options = CardLists.filter(options, card -> ComputerUtilCombat.canAttackNextTurn(card));
+                if (!options.isEmpty() && phase.isPlayerTurn(ai) && phase.getPhase().isBefore(PhaseType.COMBAT_DECLARE_BLOCKERS)) {
+                    sa.getTargets().add(ComputerUtilCard.getBestCreatureAI(options));
+                    return new AiAbilityDecision(100, AiPlayDecision.WillPlay);
+                }
+                return new AiAbilityDecision(0, AiPlayDecision.CantPlayAi);
             } else if (logic.equals("Burn")) {
                 SpellAbility burn = sa.getSubAbility();
                 return SpellApiToAi.Converter.get(burn).canPlayWithSubs(ai, burn).willingToPlay() ? new AiAbilityDecision(100, AiPlayDecision.WillPlay) : new AiAbilityDecision(0, AiPlayDecision.CantPlayAi);
