@@ -154,15 +154,15 @@ public class RogueUnlockCondition {
     private String getConditionDescription(String key, String value) {
         switch (key) {
             case "RunsStarted":
-                return "Start " + value + " run(s).";
+                return "Start " + value + " Run(s).";
             case "RunsCompleted":
-                return "Complete " + value + " run(s).";
+                return "Complete " + value + " Run(s).";
             case "RunsWon":
-                return "Win a run.";
+                return "Win a Run.";
             case "MatchesWon":
                 return "Win " + value + " matches.";
             case "WinWithCommander":
-                return "Win a run with " + value;
+                return "Win a Run with " + value;
             case "UseCommander":
                 return "Use " + value + " in a run.";
             case "MaxLife":
