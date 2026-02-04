@@ -158,7 +158,7 @@ public class RogueUnlockCondition {
             case "RunsCompleted":
                 return "Complete " + value + " run(s).";
             case "RunsWon":
-                return "Win " + value + " run(s).";
+                return "Win a run.";
             case "MatchesWon":
                 return "Win " + value + " matches.";
             case "WinWithCommander":
