@@ -29,7 +29,6 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
     private static final int CARD_WIDTH = 223;
     private static final int CARD_HEIGHT = Math.round(CARD_WIDTH * CardPanel.ASPECT_RATIO);
     private static final int CARD_SPACING = 15;
-    private static final int CARDS_PER_ROW = 5;
 
     // Fields used with interface IVDoc
     private DragCell parentCell;
@@ -284,10 +283,13 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
             int cardIndex = 0;
             int y = 15; // Top padding
 
-            // Layout cards in rows of up to 4
+            // Calculate how many cards fit per row based on available width
+            int cardsPerRow = Math.max(1, (totalWidth + CARD_SPACING) / (CARD_WIDTH + CARD_SPACING));
+
+            // Layout cards in rows
             while (cardIndex < commanderPanels.size()) {
                 // Calculate how many cards in this row
-                int cardsInThisRow = Math.min(CARDS_PER_ROW, commanderPanels.size() - cardIndex);
+                int cardsInThisRow = Math.min(cardsPerRow, commanderPanels.size() - cardIndex);
                 int rowWidth = cardsInThisRow * CARD_WIDTH + (cardsInThisRow - 1) * CARD_SPACING;
                 int startX = (totalWidth - rowWidth) / 2;
 
@@ -311,7 +313,10 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
                 return new Dimension(0, 0);
             }
 
-            int numRows = (int) Math.ceil(commanderPanels.size() / (double) CARDS_PER_ROW);
+            // Use current width if available, otherwise estimate
+            int availableWidth = getWidth() > 0 ? getWidth() : 1200;
+            int cardsPerRow = Math.max(1, (availableWidth + CARD_SPACING) / (CARD_WIDTH + CARD_SPACING));
+            int numRows = (int) Math.ceil(commanderPanels.size() / (double) cardsPerRow);
             int height = numRows * (CARD_HEIGHT + CARD_SPACING) + 15; // Extra padding at top and bottom
             return new Dimension(800, height);
         }

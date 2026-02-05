@@ -27,6 +27,7 @@ public class CardRewardDialog {
     private static final int CARD_HEIGHT = Math.round(CARD_WIDTH * CardPanel.ASPECT_RATIO);
     private static final int CARD_SPACING = 15;
     private static final int PADDING = 20;
+    private static final int MAX_CARDS_PER_ROW = 4;
 
     private final String title;
     private final int maxSelections;
@@ -77,9 +78,9 @@ public class CardRewardDialog {
             panel.add(cardPanel);
         }
 
-        // Calculate dialog size (max 4 cards per row)
-        int cardsPerRow = Math.min(cards.size(), 4);
-        int numRows = (int) Math.ceil(cards.size() / 4.0);
+        // Calculate dialog size
+        int cardsPerRow = Math.min(cards.size(), MAX_CARDS_PER_ROW);
+        int numRows = (int) Math.ceil(cards.size() / (double) MAX_CARDS_PER_ROW);
 
         int dialogWidth = cardsPerRow * (CARD_WIDTH + CARD_SPACING) - CARD_SPACING + 2 * PADDING;
         int dialogHeight = numRows * (CARD_HEIGHT + CARD_SPACING) - CARD_SPACING + 80 + 2 * PADDING; // 80px for labels
@@ -205,8 +206,10 @@ public class CardRewardDialog {
             lblInfo.setBounds(PADDING, y, totalWidth - 2 * PADDING, 30);
             y += 30 + 10;
 
-            // Layout card panels in rows of up to 4 cards
-            int cardsPerRow = 4;
+            // Layout card panels - calculate how many fit, capped at MAX_CARDS_PER_ROW
+            int availableWidth = totalWidth - 2 * PADDING;
+            int cardsPerRow = Math.min(MAX_CARDS_PER_ROW,
+                    Math.max(1, (availableWidth + CARD_SPACING) / (CARD_WIDTH + CARD_SPACING)));
             int cardIndex = 0;
 
             for (int row = 0; cardIndex < cardPanels.size(); row++) {

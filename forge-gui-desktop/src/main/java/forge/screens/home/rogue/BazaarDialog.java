@@ -29,7 +29,8 @@ public class BazaarDialog {
     private static final int PRICE_LABEL_HEIGHT = 40;  // Space for price label below card
     private static final int CARD_WIDTH = 240;
     private static final int CARD_HEIGHT = CARD_IMAGE_HEIGHT + PRICE_LABEL_HEIGHT;  // Total panel height
-    private static final int CARDS_PER_ROW = 5;
+    private static final int CARD_SPACING = 10;
+    private static final int MAX_CARDS_PER_ROW = 5;
 
     private final MainPanel panel;
     private CardZoomUtil zoomUtil;
@@ -175,13 +176,17 @@ public class BazaarDialog {
                 return;
             }
 
-            // Calculate starting position for grid
-            int gridWidth = CARDS_PER_ROW * CARD_WIDTH + (CARDS_PER_ROW - 1) * 10; // 10px spacing
+            // Calculate how many cards fit per row, capped at MAX_CARDS_PER_ROW
+            int availableWidth = getWidth();
+            int cardsPerRow = Math.min(MAX_CARDS_PER_ROW,
+                    Math.max(1, (availableWidth + CARD_SPACING) / (CARD_WIDTH + CARD_SPACING)));
 
-            int startX = (getWidth() - gridWidth) / 2;
+            // Calculate starting position for grid
+            int gridWidth = cardsPerRow * CARD_WIDTH + (cardsPerRow - 1) * CARD_SPACING;
+            int startX = (availableWidth - gridWidth) / 2;
             int startY = 130; // Below header labels
 
-            // Layout cards in grid (5 per row)
+            // Layout cards in grid
             int x = startX;
             int y = startY;
             int cardCount = 0;
@@ -190,12 +195,12 @@ public class BazaarDialog {
                 cardPanel.setBounds(x, y, CARD_WIDTH, CARD_HEIGHT);
 
                 cardCount++;
-                if (cardCount % CARDS_PER_ROW == 0) {
+                if (cardCount % cardsPerRow == 0) {
                     // Start new row
                     x = startX;
                     y += CARD_HEIGHT + 15;
                 } else {
-                    x += CARD_WIDTH + 10;
+                    x += CARD_WIDTH + CARD_SPACING;
                 }
             }
 

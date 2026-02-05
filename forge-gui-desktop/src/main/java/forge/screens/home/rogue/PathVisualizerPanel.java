@@ -148,33 +148,41 @@ public class PathVisualizerPanel extends SkinnedPanel {
      * Calculate the preferred size based on number of nodes.
      */
     private void calculatePreferredSize() {
-        if (nodePanels.isEmpty()) {
+        if (nodePanels.isEmpty() || currentRun == null || currentRun.getPath() == null) {
             setPreferredSize(new Dimension(0, 0));
             return;
         }
 
-        // Calculate max width and total height
-        int maxWidth = 0;
-        int totalHeight = 0;
+        RoguePath path = currentRun.getPath();
+        java.util.Map<Integer, List<NodePanel>> rowMap = groupNodesByRow();
+        int maxRow = path.getMaxRow();
 
-        for (int i = 0; i < nodePanels.size(); i++) {
-            NodePanel panel = nodePanels.get(i);
-            int panelWidth = panel.getPreferredSize().width;
-            int panelHeight = panel.getPreferredSize().height;
+        int maxRowWidth = 0;
+        int totalHeight = 20; // Top padding
 
-            maxWidth = Math.max(maxWidth, panelWidth);
-            totalHeight += panelHeight;
-
-            // Add spacing between nodes (but not after the last node)
-            if (i < nodePanels.size() - 1) {
-                totalHeight += NODE_SPACING;
+        for (int row = 0; row <= maxRow; row++) {
+            List<NodePanel> rowPanels = rowMap.get(row);
+            if (rowPanels == null || rowPanels.isEmpty()) {
+                continue;
             }
+
+            // Calculate row width (all panels + spacing)
+            int rowWidth = 0;
+            int rowHeight = 0;
+            for (NodePanel panel : rowPanels) {
+                rowWidth += panel.getPreferredSize().width;
+                rowHeight = Math.max(rowHeight, panel.getPreferredSize().height);
+            }
+            rowWidth += (rowPanels.size() - 1) * HORIZONTAL_SPACING;
+
+            maxRowWidth = Math.max(maxRowWidth, rowWidth);
+            totalHeight += rowHeight + NODE_SPACING;
         }
 
         // Add padding
-        totalHeight += 40;
+        totalHeight += 20;
 
-        setPreferredSize(new Dimension(maxWidth + 40, totalHeight));
+        setPreferredSize(new Dimension(maxRowWidth + 40, totalHeight));
     }
 
     @Override

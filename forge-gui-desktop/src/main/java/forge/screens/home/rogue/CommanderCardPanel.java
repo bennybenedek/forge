@@ -80,9 +80,6 @@ public class CommanderCardPanel extends SkinnedPanel {
                 view.getZoomUtil().showZoom(commanderCard);
             }
         });
-
-        // Set tooltip with commander name
-        setToolTipText(commander.getName());
     }
 
     public void setSelectionCallback(Consumer<CommanderCardPanel> callback) {
