@@ -42,6 +42,7 @@ public class BazaarDialog {
     private int cardWidth;
     private int cardImageHeight;
     private int cardHeight;
+    private int priceLabelHeight;
 
     /**
      * Create a Bazaar dialog.
@@ -111,6 +112,7 @@ public class BazaarDialog {
         // Initialize card dimensions (doLayout will recalculate based on actual size)
         cardWidth = BASE_CARD_WIDTH;
         cardImageHeight = baseCardImageHeight;
+        priceLabelHeight = PRICE_LABEL_HEIGHT;
         cardHeight = baseCardHeight;
 
         Dimension dialogSize = new Dimension(dialogWidth, dialogHeight);
@@ -233,10 +235,11 @@ public class BazaarDialog {
             float heightScale = availableHeight > 0 ? Math.min(1.0f, (float) availableHeight / desiredHeight) : 1.0f;
             float scale = Math.min(widthScale, heightScale);
 
-            // Apply scale to card dimensions
+            // Apply scale to card dimensions (including price label)
             cardWidth = Math.round(BASE_CARD_WIDTH * scale);
             cardImageHeight = Math.round(cardWidth * CardPanel.ASPECT_RATIO);
-            cardHeight = cardImageHeight + PRICE_LABEL_HEIGHT;
+            priceLabelHeight = Math.round(PRICE_LABEL_HEIGHT * scale);
+            cardHeight = cardImageHeight + priceLabelHeight;
 
             // Calculate starting position for grid (centered horizontally, top-aligned vertically)
             int gridWidth = cardsPerRow * cardWidth + (cardsPerRow - 1) * CARD_SPACING;
@@ -339,19 +342,22 @@ public class BazaarDialog {
             // Calculate position in the space below the card image
             int labelY = cardImageHeight;
 
+            // Scale icon size proportionally
+            int iconSize = Math.max(16, Math.round(28 * priceLabelHeight / (float) PRICE_LABEL_HEIGHT));
+            int fontSize = Math.max(12, Math.round(20 * priceLabelHeight / (float) PRICE_LABEL_HEIGHT));
+
             // Draw coin icon
             Image coinIcon = FSkin.getImage(FSkinProp.ICO_QUEST_COIN).getIcon().getImage();
-            int iconSize = 28;
             int iconX = (width - iconSize - 55) / 2;
-            int iconY = labelY + (PRICE_LABEL_HEIGHT - iconSize) / 2;
+            int iconY = labelY + (priceLabelHeight - iconSize) / 2;
             g2d.drawImage(coinIcon, iconX, iconY, iconSize, iconSize, null);
 
             // Draw price text with shadow for visibility
-            g2d.setFont(new Font("Arial", Font.BOLD, 20));
+            g2d.setFont(new Font("Arial", Font.BOLD, fontSize));
             FontMetrics fm = g2d.getFontMetrics();
             String priceText = String.valueOf(price);
             int textX = iconX + iconSize + 8;
-            int textY = labelY + (PRICE_LABEL_HEIGHT + fm.getAscent()) / 2 - 2;
+            int textY = labelY + (priceLabelHeight + fm.getAscent()) / 2 - 2;
 
             // Draw shadow
             g2d.setColor(Color.BLACK);
