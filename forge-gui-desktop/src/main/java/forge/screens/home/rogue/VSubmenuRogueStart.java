@@ -257,12 +257,12 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
     }
 
     /**
-     * Panel that displays commander cards in a grid (max 4 per row).
+     * Panel that displays commander cards in a responsive grid.
+     * Cards scale down on smaller screens, with optimal cards-per-row calculated dynamically.
      */
     public class CommanderGridPanel extends FSkin.SkinnedPanel {
-        // Computed card dimensions (may be scaled)
-        private int cardWidth = BASE_CARD_WIDTH;
-        private int cardHeight = Math.round(BASE_CARD_WIDTH * CardPanel.ASPECT_RATIO);
+        private int cardWidth;
+        private int cardHeight;
 
         public CommanderGridPanel() {
             super(null);
