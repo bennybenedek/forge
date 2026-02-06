@@ -10,6 +10,11 @@ import forge.util.Localizer;
 import forge.view.arcane.CardPanel;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsEnvironment;
+import java.awt.Insets;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -23,11 +28,12 @@ import javax.swing.Timer;
  * Displays cards as images and allows selecting up to a maximum number.
  */
 public class CardRewardDialog {
-    private static final int CARD_WIDTH = 240;  // Larger cards for readability
-    private static final int CARD_HEIGHT = Math.round(CARD_WIDTH * CardPanel.ASPECT_RATIO);
+    private static final int BASE_CARD_WIDTH = 240;  // Desired card width
     private static final int CARD_SPACING = 15;
     private static final int PADDING = 20;
     private static final int MAX_CARDS_PER_ROW = 4;
+    private static final int MAX_ROWS = 2;
+    private static final int HEADER_HEIGHT = 65;  // Space for labels (compact)
 
     private final String title;
     private final int maxSelections;
@@ -38,6 +44,10 @@ public class CardRewardDialog {
     private final FLabel lblRewards;
     private FOptionPane optionPane;
     private CardZoomUtil zoomUtil;
+
+    // Computed card dimensions (may be scaled down)
+    private int cardWidth;
+    private int cardHeight;
 
     /**
      * Create a card reward selection dialog.
@@ -78,16 +88,39 @@ public class CardRewardDialog {
             panel.add(cardPanel);
         }
 
-        // Calculate dialog size
+        // Calculate layout: max cards per row, max 2 rows
         int cardsPerRow = Math.min(cards.size(), MAX_CARDS_PER_ROW);
-        int numRows = (int) Math.ceil(cards.size() / (double) MAX_CARDS_PER_ROW);
+        int numRows = Math.min(MAX_ROWS, (int) Math.ceil(cards.size() / (double) cardsPerRow));
 
-        int dialogWidth = cardsPerRow * (CARD_WIDTH + CARD_SPACING) - CARD_SPACING + 2 * PADDING;
-        int dialogHeight = numRows * (CARD_HEIGHT + CARD_SPACING) - CARD_SPACING + 80 + 2 * PADDING; // 80px for labels
+        // Get usable screen space (accounts for taskbar and DPI scaling)
+        GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment()
+                .getDefaultScreenDevice().getDefaultConfiguration();
+        Rectangle screenBounds = gc.getBounds();
+        Insets screenInsets = Toolkit.getDefaultToolkit().getScreenInsets(gc);
+        int usableWidth = screenBounds.width - screenInsets.left - screenInsets.right;
+        int usableHeight = screenBounds.height - screenInsets.top - screenInsets.bottom;
+
+        // Reserve space for dialog title bar (~30px) and FOptionPane buttons (~50px)
+        int maxDialogWidth = (int) (usableWidth * 0.9);
+        int maxDialogHeight = (int) (usableHeight * 0.9) - 80;
+
+        // Calculate desired dimensions at full card size
+        int baseCardHeight = Math.round(BASE_CARD_WIDTH * CardPanel.ASPECT_RATIO);
+        int desiredWidth = cardsPerRow * (BASE_CARD_WIDTH + CARD_SPACING) - CARD_SPACING + 2 * PADDING;
+        int desiredHeight = numRows * (baseCardHeight + CARD_SPACING) - CARD_SPACING + HEADER_HEIGHT + PADDING;
+
+        // Dialog size is desired size capped to screen bounds
+        int dialogWidth = Math.min(desiredWidth, maxDialogWidth);
+        int dialogHeight = Math.min(desiredHeight, maxDialogHeight);
+
+        // Initialize card dimensions (doLayout will recalculate based on actual size)
+        cardWidth = BASE_CARD_WIDTH;
+        cardHeight = baseCardHeight;
 
         Dimension dialogSize = new Dimension(dialogWidth, dialogHeight);
         panel.setPreferredSize(dialogSize);
         panel.setMinimumSize(dialogSize);
+        panel.setSize(dialogSize);
     }
 
     private void revealAllCards() {
@@ -195,40 +228,61 @@ public class CardRewardDialog {
 
         @Override
         public void doLayout() {
-            int y = PADDING;
             int totalWidth = getWidth();
+            int totalHeight = getHeight();
 
-            // Layout rewards label
-            lblRewards.setBounds(PADDING, y, totalWidth - 2 * PADDING, 35);
-            y += 35 + 5;
+            int y = PADDING;
 
-            // Layout info label
-            lblInfo.setBounds(PADDING, y, totalWidth - 2 * PADDING, 30);
-            y += 30 + 10;
+            // Layout rewards label (compact)
+            lblRewards.setBounds(PADDING, y, totalWidth - 2 * PADDING, 28);
+            y += 28 + 3;
 
-            // Layout card panels - calculate how many fit, capped at MAX_CARDS_PER_ROW
+            // Layout info label (compact)
+            lblInfo.setBounds(PADDING, y, totalWidth - 2 * PADDING, 22);
+            y += 22 + 5;
+
+            // Calculate available space for cards
             int availableWidth = totalWidth - 2 * PADDING;
-            int cardsPerRow = Math.min(MAX_CARDS_PER_ROW,
-                    Math.max(1, (availableWidth + CARD_SPACING) / (CARD_WIDTH + CARD_SPACING)));
-            int cardIndex = 0;
+            int availableHeight = totalHeight - y - 10; // small bottom margin
 
-            for (int row = 0; cardIndex < cardPanels.size(); row++) {
-                // Calculate how many cards in this row
+            // Calculate cards per row and number of rows
+            int cardsPerRow = Math.min(MAX_CARDS_PER_ROW, cardPanels.size());
+            int numRows = Math.min(MAX_ROWS, (int) Math.ceil(cardPanels.size() / (double) cardsPerRow));
+
+            // Calculate scale to fit cards in available space
+            int baseCardHeight = Math.round(BASE_CARD_WIDTH * CardPanel.ASPECT_RATIO);
+            int desiredWidth = cardsPerRow * (BASE_CARD_WIDTH + CARD_SPACING) - CARD_SPACING;
+            int desiredHeight = numRows * (baseCardHeight + CARD_SPACING) - CARD_SPACING;
+
+            float widthScale = availableWidth > 0 ? Math.min(1.0f, (float) availableWidth / desiredWidth) : 1.0f;
+            float heightScale = availableHeight > 0 ? Math.min(1.0f, (float) availableHeight / desiredHeight) : 1.0f;
+            float scale = Math.min(widthScale, heightScale);
+
+            // Apply scale to card dimensions
+            cardWidth = Math.round(BASE_CARD_WIDTH * scale);
+            cardHeight = Math.round(cardWidth * CardPanel.ASPECT_RATIO);
+
+            // Calculate grid dimensions for vertical centering
+            int gridHeight = numRows * cardHeight + (numRows - 1) * CARD_SPACING;
+            int cardStartY = y + (availableHeight - gridHeight) / 2;
+
+            // Layout card panels (centered vertically)
+            int cardIndex = 0;
+            int cardY = cardStartY;
+            for (int row = 0; cardIndex < cardPanels.size() && row < MAX_ROWS; row++) {
                 int cardsInThisRow = Math.min(cardsPerRow, cardPanels.size() - cardIndex);
-                int rowWidth = cardsInThisRow * CARD_WIDTH + (cardsInThisRow - 1) * CARD_SPACING;
+                int rowWidth = cardsInThisRow * cardWidth + (cardsInThisRow - 1) * CARD_SPACING;
                 int startX = (totalWidth - rowWidth) / 2;
 
-                // Position cards in this row
                 int x = startX;
                 for (int col = 0; col < cardsInThisRow; col++) {
                     SelectableCardPanel cardPanel = cardPanels.get(cardIndex);
-                    cardPanel.setBounds(x, y, CARD_WIDTH, CARD_HEIGHT);
-                    x += CARD_WIDTH + CARD_SPACING;
+                    cardPanel.setBounds(x, cardY, cardWidth, cardHeight);
+                    x += cardWidth + CARD_SPACING;
                     cardIndex++;
                 }
 
-                // Move to next row
-                y += CARD_HEIGHT + CARD_SPACING;
+                cardY += cardHeight + CARD_SPACING;
             }
         }
     }

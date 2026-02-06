@@ -9,6 +9,7 @@ import forge.toolbox.FOptionPane;
 import forge.toolbox.FSkin;
 import forge.toolbox.FSkin.SkinnedPanel;
 import forge.util.Localizer;
+import forge.view.arcane.CardPanel;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -23,14 +24,12 @@ import net.miginfocom.swing.MigLayout;
  * Allows player to purchase cards using gold based on rarity pricing.
  */
 public class BazaarDialog {
-    private static final int DIALOG_WIDTH = 1400;
-    private static final int DIALOG_HEIGHT = 900;
-    private static final int CARD_IMAGE_HEIGHT = 335;  // Height of the card image itself
+    private static final int BASE_CARD_WIDTH = 240;  // Desired card width
     private static final int PRICE_LABEL_HEIGHT = 40;  // Space for price label below card
-    private static final int CARD_WIDTH = 240;
-    private static final int CARD_HEIGHT = CARD_IMAGE_HEIGHT + PRICE_LABEL_HEIGHT;  // Total panel height
     private static final int CARD_SPACING = 10;
     private static final int MAX_CARDS_PER_ROW = 5;
+    private static final int MAX_ROWS = 2;
+    private static final int HEADER_HEIGHT = 95;  // Space for title, gold status, description (compact)
 
     private final MainPanel panel;
     private CardZoomUtil zoomUtil;
@@ -38,6 +37,11 @@ public class BazaarDialog {
     private final int availableGold;
     private final Set<PaperCard> selectedCards = new HashSet<>();
     private final FLabel lblGoldStatus;
+
+    // Computed card dimensions (may be scaled down)
+    private int cardWidth;
+    private int cardImageHeight;
+    private int cardHeight;
 
     /**
      * Create a Bazaar dialog.
@@ -73,14 +77,46 @@ public class BazaarDialog {
                 .fontAlign(SwingConstants.CENTER)
                 .build();
 
-        // Add components to panel
-        panel.add(lblTitle, "w 100%!, h 40px!, ax center, wrap");
-        panel.add(lblGoldStatus, "w 100%!, h 30px!, ax center, wrap");
-        panel.add(lblDescription, "w 100%!, h 25px!, ax center, gap 0 0 10px 15px, wrap");
+        // Add components to panel (compact layout to maximize card space)
+        panel.add(lblTitle, "w 100%!, h 28px!, ax center, wrap");
+        panel.add(lblGoldStatus, "w 100%!, h 22px!, ax center, wrap");
+        panel.add(lblDescription, "w 100%!, h 20px!, ax center, gap 0 0 5px 10px, wrap");
 
-        Dimension dialogSize = new Dimension(DIALOG_WIDTH, DIALOG_HEIGHT);
+        // Calculate layout: max 5 cards per row, max 2 rows
+        int cardsPerRow = Math.min(availableCards.size(), MAX_CARDS_PER_ROW);
+        int numRows = Math.min(MAX_ROWS, (int) Math.ceil(availableCards.size() / (double) cardsPerRow));
+
+        // Get usable screen space (accounts for taskbar and DPI scaling)
+        GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment()
+                .getDefaultScreenDevice().getDefaultConfiguration();
+        Rectangle screenBounds = gc.getBounds();
+        Insets screenInsets = Toolkit.getDefaultToolkit().getScreenInsets(gc);
+        int usableWidth = screenBounds.width - screenInsets.left - screenInsets.right;
+        int usableHeight = screenBounds.height - screenInsets.top - screenInsets.bottom;
+
+        // Reserve space for dialog title bar (~30px) and FOptionPane buttons (~50px)
+        int maxDialogWidth = (int) (usableWidth * 0.9);
+        int maxDialogHeight = (int) (usableHeight * 0.9) - 80;
+
+        // Calculate desired dimensions at full card size
+        int baseCardImageHeight = Math.round(BASE_CARD_WIDTH * CardPanel.ASPECT_RATIO);
+        int baseCardHeight = baseCardImageHeight + PRICE_LABEL_HEIGHT;
+        int desiredWidth = cardsPerRow * (BASE_CARD_WIDTH + CARD_SPACING) - CARD_SPACING + 40;
+        int desiredHeight = numRows * (baseCardHeight + 15) - 15 + HEADER_HEIGHT + 15;
+
+        // Dialog size is desired size capped to screen bounds
+        int dialogWidth = Math.min(desiredWidth, maxDialogWidth);
+        int dialogHeight = Math.min(desiredHeight, maxDialogHeight);
+
+        // Initialize card dimensions (doLayout will recalculate based on actual size)
+        cardWidth = BASE_CARD_WIDTH;
+        cardImageHeight = baseCardImageHeight;
+        cardHeight = baseCardHeight;
+
+        Dimension dialogSize = new Dimension(dialogWidth, dialogHeight);
         panel.setPreferredSize(dialogSize);
         panel.setMinimumSize(dialogSize);
+        panel.setSize(dialogSize);
     }
 
     /**
@@ -176,15 +212,36 @@ public class BazaarDialog {
                 return;
             }
 
-            // Calculate how many cards fit per row, capped at MAX_CARDS_PER_ROW
-            int availableWidth = getWidth();
-            int cardsPerRow = Math.min(MAX_CARDS_PER_ROW,
-                    Math.max(1, (availableWidth + CARD_SPACING) / (CARD_WIDTH + CARD_SPACING)));
+            int totalWidth = getWidth();
+            int totalHeight = getHeight();
 
-            // Calculate starting position for grid
-            int gridWidth = cardsPerRow * CARD_WIDTH + (cardsPerRow - 1) * CARD_SPACING;
-            int startX = (availableWidth - gridWidth) / 2;
-            int startY = 130; // Below header labels
+            // Calculate available space for cards
+            int availableWidth = totalWidth - 40; // 40 padding (20 each side)
+            int availableHeight = totalHeight - HEADER_HEIGHT - 15;
+
+            // Calculate cards per row and number of rows
+            int cardsPerRow = Math.min(MAX_CARDS_PER_ROW, cardPanels.size());
+            int numRows = Math.min(MAX_ROWS, (int) Math.ceil(cardPanels.size() / (double) cardsPerRow));
+
+            // Calculate scale to fit cards in available space
+            int baseCardImageHeight = Math.round(BASE_CARD_WIDTH * CardPanel.ASPECT_RATIO);
+            int baseCardHeight = baseCardImageHeight + PRICE_LABEL_HEIGHT;
+            int desiredWidth = cardsPerRow * (BASE_CARD_WIDTH + CARD_SPACING) - CARD_SPACING;
+            int desiredHeight = numRows * (baseCardHeight + 15) - 15;
+
+            float widthScale = availableWidth > 0 ? Math.min(1.0f, (float) availableWidth / desiredWidth) : 1.0f;
+            float heightScale = availableHeight > 0 ? Math.min(1.0f, (float) availableHeight / desiredHeight) : 1.0f;
+            float scale = Math.min(widthScale, heightScale);
+
+            // Apply scale to card dimensions
+            cardWidth = Math.round(BASE_CARD_WIDTH * scale);
+            cardImageHeight = Math.round(cardWidth * CardPanel.ASPECT_RATIO);
+            cardHeight = cardImageHeight + PRICE_LABEL_HEIGHT;
+
+            // Calculate starting position for grid (centered horizontally, top-aligned vertically)
+            int gridWidth = cardsPerRow * cardWidth + (cardsPerRow - 1) * CARD_SPACING;
+            int startX = (totalWidth - gridWidth) / 2;
+            int startY = HEADER_HEIGHT;
 
             // Layout cards in grid
             int x = startX;
@@ -192,15 +249,16 @@ public class BazaarDialog {
             int cardCount = 0;
 
             for (SelectableCardPanel cardPanel : cardPanels) {
-                cardPanel.setBounds(x, y, CARD_WIDTH, CARD_HEIGHT);
+                if (cardCount >= MAX_CARDS_PER_ROW * MAX_ROWS) break;
+
+                cardPanel.setBounds(x, y, cardWidth, cardHeight);
 
                 cardCount++;
                 if (cardCount % cardsPerRow == 0) {
-                    // Start new row
                     x = startX;
-                    y += CARD_HEIGHT + 15;
+                    y += cardHeight + 15;
                 } else {
-                    x += CARD_WIDTH + CARD_SPACING;
+                    x += cardWidth + CARD_SPACING;
                 }
             }
 
@@ -233,7 +291,7 @@ public class BazaarDialog {
         public void doLayout() {
             super.doLayout();
             // Position card image at full size, leaving space below for price label
-            cardPicture.setBounds(0, 0, getWidth(), CARD_IMAGE_HEIGHT);
+            cardPicture.setBounds(0, 0, getWidth(), cardImageHeight);
         }
 
         @Override
@@ -279,7 +337,7 @@ public class BazaarDialog {
             int price = BazaarPricing.getCardPrice(card);
 
             // Calculate position in the space below the card image
-            int labelY = CARD_IMAGE_HEIGHT;
+            int labelY = cardImageHeight;
 
             // Draw coin icon
             Image coinIcon = FSkin.getImage(FSkinProp.ICO_QUEST_COIN).getIcon().getImage();
