@@ -26,7 +26,7 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
     final Localizer localizer = Localizer.getInstance();
 
     // Card display constants
-    private static final int BASE_CARD_WIDTH = 223;
+    private static final int BASE_CARD_WIDTH = 250;  // Cards scale down dynamically if too big
     private static final int CARD_SPACING = 15;
     private static final int MAX_CARDS_PER_ROW = 6;
     private static final int MAX_ROWS = 2;
@@ -138,13 +138,13 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
     @Override
     public void populate() {
         VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().removeAll();
-        VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().setLayout(new MigLayout("insets 0, gap 0, wrap, fill"));
+        VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().setLayout(new MigLayout("insets 0, gap 0, wrap"));
 
         VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(lblTitle, "w 98%!, h 30px!, gap 1% 0 15px 15px");
-        // Commander grid grows to fill available space, pushing details panel down
-        VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(pnlCommanderGrid, "w 98%!, grow, push, gap 1% 0 15px 0");
+        // Commander grid - takes its preferred size based on cards
+        VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(pnlCommanderGrid, "w 98%!, gap 1% 0 15px 15px");
 
-        // Add commander details panel (fixed at bottom)
+        // Commander details panel - right after grid
         JPanel pnlDetails = createDetailsPanel();
         VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(pnlDetails, "w 98%!, gap 1% 0 0 15px");
 
@@ -287,28 +287,45 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
 
             int totalWidth = getWidth();
             int totalHeight = getHeight();
+            int numCards = commanderPanels.size();
+            int availableHeight = totalHeight - 30; // padding
 
-            // Calculate cards per row (max 6, but also fit within width)
-            int cardsPerRow = Math.min(MAX_CARDS_PER_ROW,
-                    Math.max(1, (totalWidth + CARD_SPACING) / (BASE_CARD_WIDTH + CARD_SPACING)));
+            // Find the cardsPerRow that gives the largest cards while fitting all
+            int bestCardsPerRow = 1;
+            int bestCardWidth = 0;
 
-            // Calculate number of rows needed (max 2)
-            int numRows = Math.min(MAX_ROWS, (int) Math.ceil(commanderPanels.size() / (double) cardsPerRow));
+            for (int tryCardsPerRow = 1; tryCardsPerRow <= Math.min(numCards, MAX_CARDS_PER_ROW); tryCardsPerRow++) {
+                int tryNumRows = (int) Math.ceil(numCards / (double) tryCardsPerRow);
+                if (tryNumRows > MAX_ROWS) continue;
 
-            // Calculate scale factor to fit within available space
-            int baseCardHeight = Math.round(BASE_CARD_WIDTH * CardPanel.ASPECT_RATIO);
-            int desiredWidth = cardsPerRow * (BASE_CARD_WIDTH + CARD_SPACING) - CARD_SPACING;
-            int desiredHeight = numRows * (baseCardHeight + CARD_SPACING) - CARD_SPACING + 30; // +30 padding
+                // Calculate max card width based on width constraint
+                int maxWidthFromWidth = (totalWidth - (tryCardsPerRow - 1) * CARD_SPACING) / tryCardsPerRow;
 
-            float widthScale = totalWidth > 0 ? Math.min(1.0f, (float) totalWidth / desiredWidth) : 1.0f;
-            float heightScale = totalHeight > 0 ? Math.min(1.0f, (float) totalHeight / desiredHeight) : 1.0f;
-            float scale = Math.min(widthScale, heightScale);
+                // Calculate max card width based on height constraint
+                int availableForCards = availableHeight - (tryNumRows - 1) * CARD_SPACING;
+                int maxHeightFromHeight = availableForCards / tryNumRows;
+                int maxWidthFromHeight = Math.round(maxHeightFromHeight / CardPanel.ASPECT_RATIO);
 
-            // Apply scale
-            cardWidth = Math.round(BASE_CARD_WIDTH * scale);
+                // Take the smaller of the two (limiting factor)
+                int maxCardWidth = Math.min(maxWidthFromWidth, maxWidthFromHeight);
+
+                // Cap at base size (no growth beyond base)
+                maxCardWidth = Math.min(maxCardWidth, BASE_CARD_WIDTH);
+
+                if (maxCardWidth > bestCardWidth) {
+                    bestCardWidth = maxCardWidth;
+                    bestCardsPerRow = tryCardsPerRow;
+                }
+            }
+
+            int cardsPerRow = bestCardsPerRow;
+            int numRows = (int) Math.ceil(numCards / (double) cardsPerRow);
+
+            // Apply the best card size
+            cardWidth = bestCardWidth;
             cardHeight = Math.round(cardWidth * CardPanel.ASPECT_RATIO);
 
-            // Layout cards
+            // Layout cards at top of grid area
             int cardIndex = 0;
             int y = 15;
 
@@ -335,11 +352,12 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
                 return new Dimension(0, 0);
             }
 
-            // Calculate preferred size for 2 rows at base card size
+            // Calculate preferred size for max 2 rows at base card size
             int cardsPerRow = Math.min(MAX_CARDS_PER_ROW, commanderPanels.size());
             int numRows = Math.min(MAX_ROWS, (int) Math.ceil(commanderPanels.size() / (double) cardsPerRow));
             int baseCardHeight = Math.round(BASE_CARD_WIDTH * CardPanel.ASPECT_RATIO);
-            int height = numRows * (baseCardHeight + CARD_SPACING) + 15;
+            // Height: rows of cards + spacing between rows + padding
+            int height = numRows * baseCardHeight + (numRows - 1) * CARD_SPACING + 30;
             int width = cardsPerRow * (BASE_CARD_WIDTH + CARD_SPACING) - CARD_SPACING;
             return new Dimension(width, height);
         }

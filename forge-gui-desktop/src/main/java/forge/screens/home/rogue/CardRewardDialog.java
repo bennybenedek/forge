@@ -262,13 +262,9 @@ public class CardRewardDialog {
             cardWidth = Math.round(BASE_CARD_WIDTH * scale);
             cardHeight = Math.round(cardWidth * CardPanel.ASPECT_RATIO);
 
-            // Calculate grid dimensions for vertical centering
-            int gridHeight = numRows * cardHeight + (numRows - 1) * CARD_SPACING;
-            int cardStartY = y + (availableHeight - gridHeight) / 2;
-
-            // Layout card panels (centered vertically)
+            // Layout card panels (top-aligned after header)
             int cardIndex = 0;
-            int cardY = cardStartY;
+            int cardY = y;
             for (int row = 0; cardIndex < cardPanels.size() && row < MAX_ROWS; row++) {
                 int cardsInThisRow = Math.min(cardsPerRow, cardPanels.size() - cardIndex);
                 int rowWidth = cardsInThisRow * cardWidth + (cardsInThisRow - 1) * CARD_SPACING;
