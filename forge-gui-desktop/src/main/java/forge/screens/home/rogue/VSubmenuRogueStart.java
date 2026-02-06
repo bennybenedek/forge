@@ -325,9 +325,13 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
             cardWidth = bestCardWidth;
             cardHeight = Math.round(cardWidth * CardPanel.ASPECT_RATIO);
 
-            // Layout cards at top of grid area
+            // Calculate actual grid height and center vertically
+            int actualGridHeight = numRows * cardHeight + (numRows - 1) * CARD_SPACING;
+            int startY = Math.max(15, (totalHeight - actualGridHeight) / 2);
+
+            // Layout cards
             int cardIndex = 0;
-            int y = 15;
+            int y = startY;
 
             for (int row = 0; row < MAX_ROWS && cardIndex < commanderPanels.size(); row++) {
                 int cardsInThisRow = Math.min(cardsPerRow, commanderPanels.size() - cardIndex);
