@@ -27,10 +27,9 @@ import javax.swing.Timer;
  * Provides common functionality for card selection dialogs.
  */
 public abstract class SelectableCardPanelBase extends SkinnedPanel implements ImageFetcher.Callback {
-    // Icon is 80x120 in FSkinProp, maintain 2:3 aspect ratio
-    private static final int FLIP_ICON_WIDTH = 32;
-    private static final int FLIP_ICON_HEIGHT = 48;
-    private static final int FLIP_ICON_MARGIN = 5;
+    // Flip icon dimensions (2:3 aspect ratio matching FSkinProp)
+    private static final int FLIP_ICON_WIDTH = 44;
+    private static final int FLIP_ICON_HEIGHT = 66;
 
     protected final PaperCard card;
     protected final CardPicturePanel cardPicture;
@@ -117,13 +116,17 @@ public abstract class SelectableCardPanelBase extends SkinnedPanel implements Im
     }
 
     /**
-     * Check if the click was on the flip icon area (top-left corner).
+     * Check if the click was on the flip icon area.
+     * Icon is positioned in upper third, right side.
      */
     private boolean isClickOnFlipIcon(MouseEvent e) {
+        int iconX = (int) (getWidth() * 0.72) - FLIP_ICON_WIDTH / 2;
+        int iconY = (int) (getHeight() * 0.18);
+        int padding = 4;
         int x = e.getX();
         int y = e.getY();
-        return x >= FLIP_ICON_MARGIN && x <= FLIP_ICON_MARGIN + FLIP_ICON_WIDTH
-            && y >= FLIP_ICON_MARGIN && y <= FLIP_ICON_MARGIN + FLIP_ICON_HEIGHT;
+        return x >= iconX - padding && x <= iconX + FLIP_ICON_WIDTH + padding
+            && y >= iconY - padding && y <= iconY + FLIP_ICON_HEIGHT + padding;
     }
 
     /**
@@ -295,23 +298,24 @@ public abstract class SelectableCardPanelBase extends SkinnedPanel implements Im
     }
 
     /**
-     * Draw the flip icon in the top-left corner with a semi-transparent background.
+     * Draw the flip icon in upper third, right side (Moxfield style).
      */
     private void drawFlipIcon(Graphics2D g2d) {
-        int padding = 5;
-        int bgX = FLIP_ICON_MARGIN - padding;
-        int bgY = FLIP_ICON_MARGIN - padding;
-        int bgW = FLIP_ICON_WIDTH + padding * 2;
-        int bgH = FLIP_ICON_HEIGHT + padding * 2;
-        int cornerRadius = bgW; // Full width = pill/oval shape
+        // Position: upper third vertically, right side horizontally
+        int iconX = (int) (getWidth() * 0.72) - FLIP_ICON_WIDTH / 2;
+        int iconY = (int) (getHeight() * 0.18);
 
-        // Draw semi-transparent light background
-        g2d.setColor(new Color(255, 255, 255, 115));
-        g2d.fillRoundRect(bgX, bgY, bgW, bgH, cornerRadius, cornerRadius);
+        // Draw nearly opaque black background with oval/pill shape for visibility
+        int padding = 5;
+        int bgWidth = FLIP_ICON_WIDTH + padding * 2;
+        int bgHeight = FLIP_ICON_HEIGHT + padding * 2;
+        int cornerRadius = bgWidth; // Full width = oval/pill shape
+        g2d.setColor(new Color(0, 0, 0, 230)); // Tiny bit of transparency
+        g2d.fillRoundRect(iconX - padding, iconY - padding, bgWidth, bgHeight, cornerRadius, cornerRadius);
 
         // Draw the icon
         FSkin.drawImage(g2d, FSkin.getIcon(FSkinProp.ICO_FLIPCARD),
-            FLIP_ICON_MARGIN, FLIP_ICON_MARGIN, FLIP_ICON_WIDTH, FLIP_ICON_HEIGHT);
+            iconX, iconY, FLIP_ICON_WIDTH, FLIP_ICON_HEIGHT);
     }
 
     /**
