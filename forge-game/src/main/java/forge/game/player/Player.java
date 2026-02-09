@@ -2891,10 +2891,6 @@ public class Player extends GameEntity implements Comparable<Player> {
         view.setHasLost(b);
     }
 
-    public void setAvatarLifeDifference(int val) {
-        view.setAvatarLifeDifference(val);
-    }
-
     public int getExtraTurnCount() {
         return view.getExtraTurnCount();
     }
@@ -4031,7 +4027,7 @@ public class Player extends GameEntity implements Comparable<Player> {
     }
 
     public List<String> getUnlockedDoors() {
-        return StreamUtil.stream(getCardsIn(ZoneType.Battlefield))
+        return getCardsIn(ZoneType.Battlefield).stream()
                 .filter(Card::isRoom)
                 .map(Card::getUnlockedRoomNames)
                 .flatMap(Collection::stream)
