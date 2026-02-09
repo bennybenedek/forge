@@ -4,52 +4,52 @@ import forge.gamemodes.rogue.NodeSanctum;
 import java.awt.*;
 
 /**
- * Visual representation of a Sanctum node in the Rogue Commander path.
- * Sanctums allow the player to heal and remove cards from their deck.
- * Displays as a small circular node with a heart icon.
+ * Visual representation of a Sanctum node in the Rogue Commander path. Sanctums allow the player to
+ * heal and remove cards from their deck. Displays as a small circular node with a heart icon.
  */
 public class NodeSanctumPanel extends NodeCircularPanel {
-    private final NodeSanctum sanctumNode;
 
-    /**
-     * Create a panel for displaying a sanctum node.
-     *
-     * @param node Node data to display
-     */
-    public NodeSanctumPanel(NodeSanctum node) {
-        super(node);
-        this.sanctumNode = node;
-        setToolTipText("Sanctum: Restore life and remove cards from your deck.");
-    }
+  private final NodeSanctum sanctumNode;
 
-    @Override
-    public void paint(Graphics g) {
-        super.paint(g);
+  /**
+   * Create a panel for displaying a sanctum node.
+   *
+   * @param node Node data to display
+   */
+  public NodeSanctumPanel(NodeSanctum node) {
+    super(node);
+    this.sanctumNode = node;
+    setToolTipText("Sanctum: Restore life and remove cards from your deck.");
+  }
 
-        // Draw heart icon in the center
-        Graphics2D g2d = (Graphics2D) g;
-        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+  @Override
+  public void paint(Graphics g) {
+    super.paint(g);
 
-        // Heart icon parameters
-        int centerX = getWidth() / 2;
-        int centerY = getHeight() / 2;
-        int heartSize = 35;
+    // Draw heart icon in the center
+    Graphics2D g2d = (Graphics2D) g;
+    g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        // Draw heart shape
-        g2d.setColor(new Color(220, 53, 69)); // Red color for healing
-        drawHeart(g2d, centerX, centerY, heartSize);
-    }
+    // Heart icon parameters
+    int centerX = getWidth() / 2;
+    int centerY = getHeight() / 2;
+    int heartSize = 35;
 
-    /**
-     * Draw a heart icon centered at the given position.
-     */
-    private void drawHeart(Graphics2D g2d, int centerX, int centerY, int size) {
-        // Use heart character for clear, recognizable heart symbol
-        g2d.setFont(new Font("Serif", Font.PLAIN, size));
-        FontMetrics fm = g2d.getFontMetrics();
-        String heart = "♥";
-        int textX = centerX - fm.stringWidth(heart) / 2;
-        int textY = centerY + fm.getAscent() / 2 - fm.getDescent();
-        g2d.drawString(heart, textX, textY);
-    }
+    // Draw heart shape
+    g2d.setColor(new Color(220, 53, 69)); // Red color for healing
+    drawHeart(g2d, centerX, centerY, heartSize);
+  }
+
+  /**
+   * Draw a heart icon centered at the given position.
+   */
+  private void drawHeart(Graphics2D g2d, int centerX, int centerY, int size) {
+    // Use heart character for clear, recognizable heart symbol
+    g2d.setFont(new Font("Serif", Font.PLAIN, size));
+    FontMetrics fm = g2d.getFontMetrics();
+    String heart = "♥";
+    int textX = centerX - fm.stringWidth(heart) / 2;
+    int textY = centerY + fm.getAscent() / 2 - fm.getDescent();
+    g2d.drawString(heart, textX, textY);
+  }
 }

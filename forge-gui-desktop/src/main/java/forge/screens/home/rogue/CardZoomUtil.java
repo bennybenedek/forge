@@ -21,209 +21,215 @@ import javax.swing.JPanel;
 import net.miginfocom.swing.MigLayout;
 
 /**
- * Utility class for card zoom functionality.
- * Provides shared zoom overlay logic for dialogs and panels that display cards.
+ * Utility class for card zoom functionality. Provides shared zoom overlay logic for dialogs and
+ * panels that display cards.
  */
 public class CardZoomUtil {
-    private JPanel zoomOverlay;
-    private PaperCard currentZoomedCard;
-    private final Window parentWindow;
 
-    /**
-     * Create a CardZoomUtil for the given parent window.
-     * @param parentWindow The window (JDialog or JFrame) that will host the zoom overlay
-     */
-    public CardZoomUtil(Window parentWindow) {
-        this.parentWindow = parentWindow;
+  private JPanel zoomOverlay;
+  private PaperCard currentZoomedCard;
+  private final Window parentWindow;
+
+  /**
+   * Create a CardZoomUtil for the given parent window.
+   *
+   * @param parentWindow The window (JDialog or JFrame) that will host the zoom overlay
+   */
+  public CardZoomUtil(Window parentWindow) {
+    this.parentWindow = parentWindow;
+  }
+
+  /**
+   * Setup the zoom overlay on the parent window's glass pane.
+   */
+  public void setupZoomOverlay() {
+    if (parentWindow == null) {
+      return;
     }
 
-    /**
-     * Setup the zoom overlay on the parent window's glass pane.
-     */
-    public void setupZoomOverlay() {
-        if (parentWindow == null) {
-            return;
+    zoomOverlay = new JPanel() {
+      @Override
+      protected void paintComponent(Graphics g) {
+        // Semi-transparent black background
+        g.setColor(new Color(0, 0, 0, 200));
+        g.fillRect(0, 0, getWidth(), getHeight());
+      }
+    };
+    zoomOverlay.setOpaque(false);
+    zoomOverlay.setLayout(new MigLayout("insets 0, wrap, ax center, ay center"));
+    zoomOverlay.setVisible(false);
+
+    // Add mouse listener to close zoom on click
+    zoomOverlay.addMouseListener(new MouseAdapter() {
+      @Override
+      public void mouseClicked(MouseEvent e) {
+        closeZoom();
+      }
+    });
+
+    // Add mouse wheel listener to close zoom on scroll down
+    zoomOverlay.addMouseWheelListener(e -> {
+      if (e.getWheelRotation() > 0) { // Scroll down
+        closeZoom();
+      }
+    });
+
+    // Add key listener for ESC to close
+    zoomOverlay.addKeyListener(new KeyAdapter() {
+      @Override
+      public void keyPressed(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
+          closeZoom();
         }
+      }
+    });
+    zoomOverlay.setFocusable(true);
 
-        zoomOverlay = new JPanel() {
-            @Override
-            protected void paintComponent(Graphics g) {
-                // Semi-transparent black background
-                g.setColor(new Color(0, 0, 0, 200));
-                g.fillRect(0, 0, getWidth(), getHeight());
-            }
-        };
-        zoomOverlay.setOpaque(false);
-        zoomOverlay.setLayout(new MigLayout("insets 0, wrap, ax center, ay center"));
-        zoomOverlay.setVisible(false);
+    // Set as glass pane
+    if (parentWindow instanceof JDialog) {
+      ((JDialog) parentWindow).setGlassPane(zoomOverlay);
+    } else if (parentWindow instanceof JFrame) {
+      ((JFrame) parentWindow).setGlassPane(zoomOverlay);
+    }
+  }
 
-        // Add mouse listener to close zoom on click
-        zoomOverlay.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                closeZoom();
-            }
-        });
+  /**
+   * Show zoomed view of a card.
+   *
+   * @param card The card to zoom
+   */
+  public void showZoom(PaperCard card) {
+    showZoom(card, false);
+  }
 
-        // Add mouse wheel listener to close zoom on scroll down
-        zoomOverlay.addMouseWheelListener(e -> {
-            if (e.getWheelRotation() > 0) { // Scroll down
-                closeZoom();
-            }
-        });
-
-        // Add key listener for ESC to close
-        zoomOverlay.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {
-                    closeZoom();
-                }
-            }
-        });
-        zoomOverlay.setFocusable(true);
-
-        // Set as glass pane
-        if (parentWindow instanceof JDialog) {
-            ((JDialog) parentWindow).setGlassPane(zoomOverlay);
-        } else if (parentWindow instanceof JFrame) {
-            ((JFrame) parentWindow).setGlassPane(zoomOverlay);
-        }
+  /**
+   * Show zoomed view of a card, optionally showing the alternate face.
+   *
+   * @param card        The card to zoom
+   * @param showAltFace Whether to show the alternate face (for double-faced cards)
+   */
+  public void showZoom(PaperCard card, boolean showAltFace) {
+    if (zoomOverlay == null) {
+      return;
     }
 
-    /**
-     * Show zoomed view of a card.
-     * @param card The card to zoom
-     */
-    public void showZoom(PaperCard card) {
-        showZoom(card, false);
+    // Always set glass pane when showing zoom (multiple components may share the same window)
+    setGlassPane();
+
+    currentZoomedCard = card;
+    zoomOverlay.removeAll();
+
+    BufferedImage cardImage = null;
+
+    // Get the appropriate face based on showAltFace
+    if (showAltFace && card.hasBackFace()) {
+      // Use ImageCache.getImage with altState=true for back face
+      cardImage = ImageCache.getImage(card, -1, -1, true);
+    } else {
+      // Front face
+      cardImage = ImageCache.getImage(card, -1, -1, false);
     }
 
-    /**
-     * Show zoomed view of a card, optionally showing the alternate face.
-     * @param card The card to zoom
-     * @param showAltFace Whether to show the alternate face (for double-faced cards)
-     */
-    public void showZoom(PaperCard card, boolean showAltFace) {
-        if (zoomOverlay == null) {
-            return;
-        }
-
-        // Always set glass pane when showing zoom (multiple components may share the same window)
-        setGlassPane();
-
-        currentZoomedCard = card;
-        zoomOverlay.removeAll();
-
-        BufferedImage cardImage = null;
-
-        // Get the appropriate face based on showAltFace
-        if (showAltFace && card.hasBackFace()) {
-            // Use ImageCache.getImage with altState=true for back face
-            cardImage = ImageCache.getImage(card, -1, -1, true);
+    // Fallback to FImageUtil if ImageCache returned null or default
+    if (cardImage == null || ImageCache.isDefaultImage(cardImage)) {
+      Card gameCard = Card.getCardForUi(card);
+      if (gameCard != null) {
+        CardView cardView = CardView.get(gameCard);
+        if (showAltFace && card.hasBackFace() && cardView.getAlternateState() != null) {
+          cardImage = FImageUtil.getImageXlhq(cardView.getAlternateState());
+          if (cardImage == null) {
+            cardImage = FImageUtil.getImage(cardView.getAlternateState());
+          }
         } else {
-            // Front face
-            cardImage = ImageCache.getImage(card, -1, -1, false);
+          cardImage = FImageUtil.getImageXlhq(cardView.getCurrentState());
+          if (cardImage == null) {
+            cardImage = FImageUtil.getImage(cardView.getCurrentState());
+          }
         }
-
-        // Fallback to FImageUtil if ImageCache returned null or default
-        if (cardImage == null || ImageCache.isDefaultImage(cardImage)) {
-            Card gameCard = Card.getCardForUi(card);
-            if (gameCard != null) {
-                CardView cardView = CardView.get(gameCard);
-                if (showAltFace && card.hasBackFace() && cardView.getAlternateState() != null) {
-                    cardImage = FImageUtil.getImageXlhq(cardView.getAlternateState());
-                    if (cardImage == null) {
-                        cardImage = FImageUtil.getImage(cardView.getAlternateState());
-                    }
-                } else {
-                    cardImage = FImageUtil.getImageXlhq(cardView.getCurrentState());
-                    if (cardImage == null) {
-                        cardImage = FImageUtil.getImage(cardView.getCurrentState());
-                    }
-                }
-            }
-        }
-
-        if (cardImage != null) {
-            FImagePanel imagePanel = new FImagePanel();
-            imagePanel.setImage(cardImage, 0, AutoSizeImageMode.SOURCE);
-            zoomOverlay.add(imagePanel, "w 80%!, h 80%!");
-        }
-
-        zoomOverlay.setVisible(true);
-        zoomOverlay.requestFocusInWindow();
-        zoomOverlay.revalidate();
-        zoomOverlay.repaint();
+      }
     }
 
-    /**
-     * Show zoomed view of a pre-rendered card image.
-     * Useful for displaying rotated or modified card images.
-     * @param cardImage The card image to zoom
-     */
-    public void showZoom(BufferedImage cardImage) {
-        if (zoomOverlay == null || cardImage == null) {
-            return;
-        }
-
-        // Always set glass pane when showing zoom (multiple components may share the same window)
-        setGlassPane();
-
-        currentZoomedCard = null; // No PaperCard associated
-        zoomOverlay.removeAll();
-
-        FImagePanel imagePanel = new FImagePanel();
-        imagePanel.setImage(cardImage, 0, AutoSizeImageMode.SOURCE);
-        zoomOverlay.add(imagePanel, "w 80%!, h 80%!");
-
-        zoomOverlay.setVisible(true);
-        zoomOverlay.requestFocusInWindow();
-        zoomOverlay.revalidate();
-        zoomOverlay.repaint();
+    if (cardImage != null) {
+      FImagePanel imagePanel = new FImagePanel();
+      imagePanel.setImage(cardImage, 0, AutoSizeImageMode.SOURCE);
+      zoomOverlay.add(imagePanel, "w 80%!, h 80%!");
     }
 
-    /**
-     * Set this overlay as the active glass pane on the parent window.
-     * Called every time zoom is shown to ensure multiple components sharing
-     * the same window don't interfere with each other.
-     */
-    private void setGlassPane() {
-        if (parentWindow == null || zoomOverlay == null) {
-            return;
-        }
+    zoomOverlay.setVisible(true);
+    zoomOverlay.requestFocusInWindow();
+    zoomOverlay.revalidate();
+    zoomOverlay.repaint();
+  }
 
-        if (parentWindow instanceof JDialog) {
-            ((JDialog) parentWindow).setGlassPane(zoomOverlay);
-        } else if (parentWindow instanceof JFrame) {
-            ((JFrame) parentWindow).setGlassPane(zoomOverlay);
-        }
+  /**
+   * Show zoomed view of a pre-rendered card image. Useful for displaying rotated or modified card
+   * images.
+   *
+   * @param cardImage The card image to zoom
+   */
+  public void showZoom(BufferedImage cardImage) {
+    if (zoomOverlay == null || cardImage == null) {
+      return;
     }
 
-    /**
-     * Close the zoom overlay.
-     */
-    public void closeZoom() {
-        if (zoomOverlay != null) {
-            zoomOverlay.setVisible(false);
-            zoomOverlay.removeAll();
-            currentZoomedCard = null;
-        }
+    // Always set glass pane when showing zoom (multiple components may share the same window)
+    setGlassPane();
+
+    currentZoomedCard = null; // No PaperCard associated
+    zoomOverlay.removeAll();
+
+    FImagePanel imagePanel = new FImagePanel();
+    imagePanel.setImage(cardImage, 0, AutoSizeImageMode.SOURCE);
+    zoomOverlay.add(imagePanel, "w 80%!, h 80%!");
+
+    zoomOverlay.setVisible(true);
+    zoomOverlay.requestFocusInWindow();
+    zoomOverlay.revalidate();
+    zoomOverlay.repaint();
+  }
+
+  /**
+   * Set this overlay as the active glass pane on the parent window. Called every time zoom is shown
+   * to ensure multiple components sharing the same window don't interfere with each other.
+   */
+  private void setGlassPane() {
+    if (parentWindow == null || zoomOverlay == null) {
+      return;
     }
 
-    /**
-     * Get the current zoomed card.
-     * @return The currently zoomed card, or null if no card is zoomed
-     */
-    public PaperCard getCurrentZoomedCard() {
-        return currentZoomedCard;
+    if (parentWindow instanceof JDialog) {
+      ((JDialog) parentWindow).setGlassPane(zoomOverlay);
+    } else if (parentWindow instanceof JFrame) {
+      ((JFrame) parentWindow).setGlassPane(zoomOverlay);
     }
+  }
 
-    /**
-     * Check if a card is currently being zoomed.
-     * @return true if a card is being displayed in zoom mode
-     */
-    public boolean isZooming() {
-        return zoomOverlay != null && zoomOverlay.isVisible();
+  /**
+   * Close the zoom overlay.
+   */
+  public void closeZoom() {
+    if (zoomOverlay != null) {
+      zoomOverlay.setVisible(false);
+      zoomOverlay.removeAll();
+      currentZoomedCard = null;
     }
+  }
+
+  /**
+   * Get the current zoomed card.
+   *
+   * @return The currently zoomed card, or null if no card is zoomed
+   */
+  public PaperCard getCurrentZoomedCard() {
+    return currentZoomedCard;
+  }
+
+  /**
+   * Check if a card is currently being zoomed.
+   *
+   * @return true if a card is being displayed in zoom mode
+   */
+  public boolean isZooming() {
+    return zoomOverlay != null && zoomOverlay.isVisible();
+  }
 }

@@ -1,7 +1,6 @@
 package forge.screens.home.rogue;
 
 import forge.gamemodes.rogue.BoonType;
-import forge.gamemodes.rogue.RogueTutorial;
 import forge.gui.framework.DragCell;
 import forge.gui.framework.DragTab;
 import forge.gui.framework.EDocID;
@@ -25,355 +24,357 @@ import javax.swing.SwingConstants;
 import net.miginfocom.swing.MigLayout;
 
 /**
- * Assembles Swing components for the Aether screen.
- * Allows players to spend Echoes on permanent upgrades (Boons).
+ * Assembles Swing components for the Aether screen. Allows players to spend Echoes on permanent
+ * upgrades (Boons).
  */
 public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
-    SINGLETON_INSTANCE;
+  SINGLETON_INSTANCE;
 
-    private DragCell parentCell;
-    private final DragTab tab = new DragTab("Aether");
+  private DragCell parentCell;
+  private final DragTab tab = new DragTab("Aether");
 
-    private final FLabel lblTitle = new FLabel.Builder()
-        .text("The Aether - Codex of Echoes")
-        .fontAlign(SwingConstants.CENTER)
-        .opaque(true)
-        .fontSize(16)
-        .build();
+  private final FLabel lblTitle = new FLabel.Builder()
+      .text("The Aether - Codex of Echoes")
+      .fontAlign(SwingConstants.CENTER)
+      .opaque(true)
+      .fontSize(16)
+      .build();
 
-    private final FLabel lblEchoes = new FLabel.Builder()
-        .text("Echoes: 0")
-        .fontSize(16)
-        .fontStyle(Font.BOLD)
-        .build();
+  private final FLabel lblEchoes = new FLabel.Builder()
+      .text("Echoes: 0")
+      .fontSize(16)
+      .fontStyle(Font.BOLD)
+      .build();
 
-    private final FLabel lblActiveBoons = new FLabel.Builder()
-        .text("Active Boons: 0/3 (click to toggle)")
-        .fontSize(14)
-        .build();
+  private final FLabel lblActiveBoons = new FLabel.Builder()
+      .text("Active Boons: 0/3 (click to toggle)")
+      .fontSize(14)
+      .build();
 
-    // Boon panels - one for each boon type
-    private final Map<BoonType, BoonPanel> boonPanels = new EnumMap<>(BoonType.class);
+  // Boon panels - one for each boon type
+  private final Map<BoonType, BoonPanel> boonPanels = new EnumMap<>(BoonType.class);
 
-    private final FButton btnBack;
-    private final FButton btnResetBoons;
+  private final FButton btnBack;
+  private final FButton btnResetBoons;
 
-    VSubmenuRogueAether() {
-        lblTitle.setBackground(FSkin.getColor(FSkin.Colors.CLR_THEME2));
-        lblEchoes.setIcon(FSkin.getIcon(FSkinProp.ICO_QUEST_GOLD));
-        btnBack = new FButton("Back");
-        btnBack.setIcon(FSkin.getImage(FSkinProp.ICO_OPEN).resize(24, 24).getIcon());
-        btnResetBoons = new FButton("Reset Boons");
-        btnResetBoons.setIcon(FSkin.getImage(FSkinProp.ICO_DELETE).resize(24, 24).getIcon());
+  VSubmenuRogueAether() {
+    lblTitle.setBackground(FSkin.getColor(FSkin.Colors.CLR_THEME2));
+    lblEchoes.setIcon(FSkin.getIcon(FSkinProp.ICO_QUEST_GOLD));
+    btnBack = new FButton("Back");
+    btnBack.setIcon(FSkin.getImage(FSkinProp.ICO_OPEN).resize(24, 24).getIcon());
+    btnResetBoons = new FButton("Reset Boons");
+    btnResetBoons.setIcon(FSkin.getImage(FSkinProp.ICO_DELETE).resize(24, 24).getIcon());
 
-        // Create boon panels once at construction time (so listeners can be attached in initialize)
-        for (BoonType type : BoonType.values()) {
-            boonPanels.put(type, new BoonPanel(type));
-        }
+    // Create boon panels once at construction time (so listeners can be attached in initialize)
+    for (BoonType type : BoonType.values()) {
+      boonPanels.put(type, new BoonPanel(type));
+    }
+  }
+
+  @Override
+  public EMenuGroup getGroupEnum() {
+    return EMenuGroup.ROGUE;
+  }
+
+  @Override
+  public String getMenuTitle() {
+    return "Aether";
+  }
+
+  @Override
+  public EDocID getItemEnum() {
+    return EDocID.HOME_ROGUEAETHER;
+  }
+
+  @Override
+  public EDocID getDocumentID() {
+    return EDocID.HOME_ROGUEAETHER;
+  }
+
+  @Override
+  public DragTab getTabLabel() {
+    return tab;
+  }
+
+  @Override
+  public CSubmenuRogueAether getLayoutControl() {
+    return CSubmenuRogueAether.SINGLETON_INSTANCE;
+  }
+
+  @Override
+  public void populate() {
+    VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().removeAll();
+    VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().setLayout(new MigLayout("insets 0, gap 0, wrap"));
+
+    VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(lblTitle, "w 98%!, h 30px!, gap 1% 0 15px 15px");
+
+    // Echo and active boon display
+    JPanel headerPanel = new JPanel(new MigLayout("insets 10, gap 20"));
+    headerPanel.setOpaque(false);
+    headerPanel.add(lblEchoes);
+    headerPanel.add(lblActiveBoons);
+    VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(headerPanel, "w 98%!, gap 1% 0 10px 10px");
+
+    // Boon grid
+    JPanel boonGrid = createBoonGrid();
+    VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(boonGrid, "w 98%!, gap 1% 0 20px 20px");
+
+    // Buttons
+    JPanel buttonPanel = new JPanel(new MigLayout("insets 0, gap 10"));
+    buttonPanel.setOpaque(false);
+    buttonPanel.add(btnBack, "w 180px!, h 40px!");
+    buttonPanel.add(btnResetBoons, "w 180px!, h 40px!");
+    VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(buttonPanel, "ax center, gap 0 0 20px 20px");
+
+    VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().repaintSelf();
+    VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().revalidate();
+  }
+
+  private JPanel createBoonGrid() {
+    JPanel panel = new JPanel(new MigLayout("insets 20, gap 15, wrap 2"));
+    panel.setOpaque(false);
+
+    // Reuse existing panels (created in constructor)
+    for (BoonType type : BoonType.values()) {
+      panel.add(boonPanels.get(type), "w 400px!, h 150px!");
     }
 
-    @Override
-    public EMenuGroup getGroupEnum() {
-        return EMenuGroup.ROGUE;
+    return panel;
+  }
+
+  /**
+   * Update the display with current meta progress data.
+   */
+  public void updateDisplay(int echoes, int activeBoonCount,
+      Map<BoonType, Integer> boonRanks,
+      Set<BoonType> activeBoons) {
+    lblEchoes.setText("Echoes: " + echoes);
+    lblActiveBoons.setText("Active Boons: " + activeBoonCount + "/3 (click to toggle)");
+
+    for (Map.Entry<BoonType, BoonPanel> entry : boonPanels.entrySet()) {
+      BoonType type = entry.getKey();
+      BoonPanel panel = entry.getValue();
+      int rank = boonRanks.getOrDefault(type, 0);
+      boolean isActive = activeBoons.contains(type);
+      panel.update(rank, isActive, echoes, activeBoonCount);
     }
+  }
 
-    @Override
-    public String getMenuTitle() {
-        return "Aether";
-    }
+  public JButton getBtnBack() {
+    return btnBack;
+  }
 
-    @Override
-    public EDocID getItemEnum() {
-        return EDocID.HOME_ROGUEAETHER;
-    }
+  public JButton getBtnResetBoons() {
+    return btnResetBoons;
+  }
 
-    @Override
-    public EDocID getDocumentID() {
-        return EDocID.HOME_ROGUEAETHER;
-    }
+  public Map<BoonType, BoonPanel> getBoonPanels() {
+    return boonPanels;
+  }
 
-    @Override
-    public DragTab getTabLabel() {
-        return tab;
-    }
+  @Override
+  public void setParentCell(DragCell cell0) {
+    this.parentCell = cell0;
+  }
 
-    @Override
-    public CSubmenuRogueAether getLayoutControl() {
-        return CSubmenuRogueAether.SINGLETON_INSTANCE;
-    }
+  @Override
+  public DragCell getParentCell() {
+    return parentCell;
+  }
 
-    @Override
-    public void populate() {
-        VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().removeAll();
-        VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().setLayout(new MigLayout("insets 0, gap 0, wrap"));
+  /**
+   * Inner class representing a single boon panel in the grid. Click the panel to toggle active
+   * state (when unlocked). Shows green border and "ACTIVE" badge when active. Shows yellow/gold
+   * border on hover.
+   */
+  public static class BoonPanel extends FSkin.SkinnedPanel {
 
-        VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(lblTitle, "w 98%!, h 30px!, gap 1% 0 15px 15px");
+    private final BoonType type;
+    private final FLabel lblName;
+    private final FLabel lblDescription;
+    private final FLabel lblRank;
+    private final FButton btnUpgrade;
+    // Cache own icon instance to avoid shared state issues (similar to NodePlaneboundPanel pattern)
+    private final javax.swing.Icon cachedEchoIcon;
 
-        // Echo and active boon display
-        JPanel headerPanel = new JPanel(new MigLayout("insets 10, gap 20"));
-        headerPanel.setOpaque(false);
-        headerPanel.add(lblEchoes);
-        headerPanel.add(lblActiveBoons);
-        VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(headerPanel, "w 98%!, gap 1% 0 10px 10px");
+    // Visual state
+    private boolean isActive = false;
+    private boolean isHovered = false;
+    private boolean canToggle = false;
+    private int currentRank = 0;
 
-        // Boon grid
-        JPanel boonGrid = createBoonGrid();
-        VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(boonGrid, "w 98%!, gap 1% 0 20px 20px");
+    // Click callback for toggling active state
+    private Consumer<BoonPanel> toggleCallback;
 
-        // Buttons
-        JPanel buttonPanel = new JPanel(new MigLayout("insets 0, gap 10"));
-        buttonPanel.setOpaque(false);
-        buttonPanel.add(btnBack, "w 180px!, h 40px!");
-        buttonPanel.add(btnResetBoons, "w 180px!, h 40px!");
-        VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(buttonPanel, "ax center, gap 0 0 20px 20px");
+    public BoonPanel(BoonType type) {
+      super(new MigLayout("insets 15 15 15 15, gap 5, wrap, fill"));
+      this.type = type;
 
-        VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().repaintSelf();
-        VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().revalidate();
-    }
+      // Create and cache own icon instance at construction time
+      cachedEchoIcon = FSkin.getImage(FSkinProp.ICO_QUEST_GOLD).resize(16, 16).getIcon();
 
-    private JPanel createBoonGrid() {
-        JPanel panel = new JPanel(new MigLayout("insets 20, gap 15, wrap 2"));
-        panel.setOpaque(false);
+      setOpaque(true);
+      setBackground(FSkin.getColor(FSkin.Colors.CLR_THEME2));
 
-        // Reuse existing panels (created in constructor)
-        for (BoonType type : BoonType.values()) {
-            panel.add(boonPanels.get(type), "w 400px!, h 150px!");
-        }
+      lblName = new FLabel.Builder()
+          .text(type.getDisplayName())
+          .fontSize(16)
+          .fontStyle(Font.BOLD)
+          .fontAlign(SwingConstants.CENTER)
+          .build();
 
-        return panel;
-    }
+      lblDescription = new FLabel.Builder()
+          .text(type.getDescription())
+          .fontSize(14)
+          .fontAlign(SwingConstants.CENTER)
+          .build();
 
-    /**
-     * Update the display with current meta progress data.
-     */
-    public void updateDisplay(int echoes, int activeBoonCount,
-                              Map<BoonType, Integer> boonRanks,
-                              Set<BoonType> activeBoons) {
-        lblEchoes.setText("Echoes: " + echoes);
-        lblActiveBoons.setText("Active Boons: " + activeBoonCount + "/3 (click to toggle)");
+      lblRank = new FLabel.Builder()
+          .text("Rank: 0/" + type.getMaxRank())
+          .fontSize(12)
+          .fontAlign(SwingConstants.CENTER)
+          .build();
 
-        for (Map.Entry<BoonType, BoonPanel> entry : boonPanels.entrySet()) {
-            BoonType type = entry.getKey();
-            BoonPanel panel = entry.getValue();
-            int rank = boonRanks.getOrDefault(type, 0);
-            boolean isActive = activeBoons.contains(type);
-            panel.update(rank, isActive, echoes, activeBoonCount);
-        }
-    }
+      btnUpgrade = new FButton("Unlock");
+      btnUpgrade.setIcon(cachedEchoIcon);
 
-    public JButton getBtnBack() {
-        return btnBack;
-    }
+      add(lblName, "growx, ax center");
+      add(lblDescription, "growx, ax center, wmax 370px");
+      add(lblRank, "growx, ax center");
 
-    public JButton getBtnResetBoons() {
-        return btnResetBoons;
-    }
+      // Spacer to push controls to bottom
+      add(new JPanel() {{
+        setOpaque(false);
+      }}, "growy, pushy");
 
-    public Map<BoonType, BoonPanel> getBoonPanels() {
-        return boonPanels;
-    }
+      // Upgrade button centered at bottom
+      add(btnUpgrade, "ax center, w 160px!, h 30px!");
 
-    @Override
-    public void setParentCell(DragCell cell0) {
-        this.parentCell = cell0;
-    }
-
-    @Override
-    public DragCell getParentCell() {
-        return parentCell;
-    }
-
-    /**
-     * Inner class representing a single boon panel in the grid.
-     * Click the panel to toggle active state (when unlocked).
-     * Shows green border and "ACTIVE" badge when active.
-     * Shows yellow/gold border on hover.
-     */
-    public static class BoonPanel extends FSkin.SkinnedPanel {
-        private final BoonType type;
-        private final FLabel lblName;
-        private final FLabel lblDescription;
-        private final FLabel lblRank;
-        private final FButton btnUpgrade;
-        // Cache own icon instance to avoid shared state issues (similar to NodePlaneboundPanel pattern)
-        private final javax.swing.Icon cachedEchoIcon;
-
-        // Visual state
-        private boolean isActive = false;
-        private boolean isHovered = false;
-        private boolean canToggle = false;
-        private int currentRank = 0;
-
-        // Click callback for toggling active state
-        private Consumer<BoonPanel> toggleCallback;
-
-        public BoonPanel(BoonType type) {
-            super(new MigLayout("insets 15 15 15 15, gap 5, wrap, fill"));
-            this.type = type;
-
-            // Create and cache own icon instance at construction time
-            cachedEchoIcon = FSkin.getImage(FSkinProp.ICO_QUEST_GOLD).resize(16, 16).getIcon();
-
-            setOpaque(true);
-            setBackground(FSkin.getColor(FSkin.Colors.CLR_THEME2));
-
-            lblName = new FLabel.Builder()
-                .text(type.getDisplayName())
-                .fontSize(16)
-                .fontStyle(Font.BOLD)
-                .fontAlign(SwingConstants.CENTER)
-                .build();
-
-            lblDescription = new FLabel.Builder()
-                .text(type.getDescription())
-                .fontSize(14)
-                .fontAlign(SwingConstants.CENTER)
-                .build();
-
-            lblRank = new FLabel.Builder()
-                .text("Rank: 0/" + type.getMaxRank())
-                .fontSize(12)
-                .fontAlign(SwingConstants.CENTER)
-                .build();
-
-            btnUpgrade = new FButton("Unlock");
-            btnUpgrade.setIcon(cachedEchoIcon);
-
-            add(lblName, "growx, ax center");
-            add(lblDescription, "growx, ax center, wmax 370px");
-            add(lblRank, "growx, ax center");
-
-            // Spacer to push controls to bottom
-            add(new JPanel() {{ setOpaque(false); }}, "growy, pushy");
-
-            // Upgrade button centered at bottom
-            add(btnUpgrade, "ax center, w 160px!, h 30px!");
-
-            // Add mouse listener for hover and click
-            addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    // Only toggle if clicking outside the upgrade button and can toggle
-                    if (canToggle && toggleCallback != null) {
-                        toggleCallback.accept(BoonPanel.this);
-                    }
-                }
-
-                @Override
-                public void mouseEntered(MouseEvent e) {
-                    isHovered = true;
-                    if (canToggle) {
-                        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-                    }
-                    repaint();
-                }
-
-                @Override
-                public void mouseExited(MouseEvent e) {
-                    isHovered = false;
-                    setCursor(Cursor.getDefaultCursor());
-                    repaint();
-                }
-            });
-        }
-
-        /**
-         * Set the callback for when the panel is clicked to toggle active state.
-         */
-        public void setToggleCallback(Consumer<BoonPanel> callback) {
-            this.toggleCallback = callback;
-        }
-
-        /**
-         * Update the panel display based on current boon state.
-         */
-        public void update(int rank, boolean active, int echoes, int activeBoonCount) {
-            this.currentRank = rank;
-            this.isActive = active;
-            this.canToggle = rank > 0 && (active || activeBoonCount < 3);
-
-            lblRank.setText("Rank: " + rank + "/" + type.getMaxRank());
-
-            // Update description to show all rank values with current rank highlighted
-            lblDescription.setText(type.getDescriptionWithAllRanks(rank));
-
-            // Update upgrade button using cached icon instance
-            if (rank >= type.getMaxRank()) {
-                btnUpgrade.setText("Max Rank");
-                btnUpgrade.setEnabled(false);
-            } else {
-                int cost = type.getEchoCostForRank(rank + 1);
-                btnUpgrade.setText(rank == 0 ? "Unlock (" + cost + ")" : "Upgrade (" + cost + ")");
-                btnUpgrade.setIcon(cachedEchoIcon);
-                btnUpgrade.setEnabled(echoes >= cost);
-            }
-
-            // Update cursor based on toggle ability
-            if (isHovered && canToggle) {
-                setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            } else {
-                setCursor(Cursor.getDefaultCursor());
-            }
-
-            repaint();
+      // Add mouse listener for hover and click
+      addMouseListener(new MouseAdapter() {
+        @Override
+        public void mouseClicked(MouseEvent e) {
+          // Only toggle if clicking outside the upgrade button and can toggle
+          if (canToggle && toggleCallback != null) {
+            toggleCallback.accept(BoonPanel.this);
+          }
         }
 
         @Override
-        public void paint(Graphics g) {
-            super.paint(g);
-
-            Graphics2D g2d = (Graphics2D) g;
-            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-            int width = getWidth();
-            int height = getHeight();
-
-            // Draw border based on state
-            if (isHovered && canToggle) {
-                // Hovered (and can toggle): yellow/gold border - takes priority to show clickability
-                g2d.setColor(new Color(255, 215, 0));
-                g2d.setStroke(new BasicStroke(4));
-                g2d.drawRoundRect(2, 2, width - 4, height - 4, 10, 10);
-            } else if (isActive) {
-                // Active (not hovered): thick green border
-                g2d.setColor(new Color(0, 255, 0, 200));
-                g2d.setStroke(new BasicStroke(4));
-                g2d.drawRoundRect(2, 2, width - 4, height - 4, 10, 10);
-            } else if (currentRank > 0) {
-                // Unlocked but not active: subtle border
-                g2d.setColor(new Color(100, 100, 100, 150));
-                g2d.setStroke(new BasicStroke(2));
-                g2d.drawRoundRect(2, 2, width - 4, height - 4, 10, 10);
-            }
-
-            // Draw "ACTIVE" badge in top-right corner (always shown when active)
-            if (isActive) {
-                int badgeWidth = 60;
-                int badgeHeight = 20;
-                int badgeX = width - badgeWidth - 8;
-                int badgeY = 8;
-
-                // Badge background
-                g2d.setColor(new Color(0, 200, 0, 230));
-                g2d.fillRoundRect(badgeX, badgeY, badgeWidth, badgeHeight, 8, 8);
-
-                // Badge text
-                g2d.setColor(Color.WHITE);
-                g2d.setFont(g2d.getFont().deriveFont(Font.BOLD, 11f));
-                g2d.drawString("ACTIVE", badgeX + 8, badgeY + 14);
-            }
+        public void mouseEntered(MouseEvent e) {
+          isHovered = true;
+          if (canToggle) {
+            setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+          }
+          repaint();
         }
 
-        public BoonType getType() {
-            return type;
+        @Override
+        public void mouseExited(MouseEvent e) {
+          isHovered = false;
+          setCursor(Cursor.getDefaultCursor());
+          repaint();
         }
-
-        public FButton getBtnUpgrade() {
-            return btnUpgrade;
-        }
-
-        public boolean isActive() {
-            return isActive;
-        }
+      });
     }
+
+    /**
+     * Set the callback for when the panel is clicked to toggle active state.
+     */
+    public void setToggleCallback(Consumer<BoonPanel> callback) {
+      this.toggleCallback = callback;
+    }
+
+    /**
+     * Update the panel display based on current boon state.
+     */
+    public void update(int rank, boolean active, int echoes, int activeBoonCount) {
+      this.currentRank = rank;
+      this.isActive = active;
+      this.canToggle = rank > 0 && (active || activeBoonCount < 3);
+
+      lblRank.setText("Rank: " + rank + "/" + type.getMaxRank());
+
+      // Update description to show all rank values with current rank highlighted
+      lblDescription.setText(type.getDescriptionWithAllRanks(rank));
+
+      // Update upgrade button using cached icon instance
+      if (rank >= type.getMaxRank()) {
+        btnUpgrade.setText("Max Rank");
+        btnUpgrade.setEnabled(false);
+      } else {
+        int cost = type.getEchoCostForRank(rank + 1);
+        btnUpgrade.setText(rank == 0 ? "Unlock (" + cost + ")" : "Upgrade (" + cost + ")");
+        btnUpgrade.setIcon(cachedEchoIcon);
+        btnUpgrade.setEnabled(echoes >= cost);
+      }
+
+      // Update cursor based on toggle ability
+      if (isHovered && canToggle) {
+        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+      } else {
+        setCursor(Cursor.getDefaultCursor());
+      }
+
+      repaint();
+    }
+
+    @Override
+    public void paint(Graphics g) {
+      super.paint(g);
+
+      Graphics2D g2d = (Graphics2D) g;
+      g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+      int width = getWidth();
+      int height = getHeight();
+
+      // Draw border based on state
+      if (isHovered && canToggle) {
+        // Hovered (and can toggle): yellow/gold border - takes priority to show clickability
+        g2d.setColor(new Color(255, 215, 0));
+        g2d.setStroke(new BasicStroke(4));
+        g2d.drawRoundRect(2, 2, width - 4, height - 4, 10, 10);
+      } else if (isActive) {
+        // Active (not hovered): thick green border
+        g2d.setColor(new Color(0, 255, 0, 200));
+        g2d.setStroke(new BasicStroke(4));
+        g2d.drawRoundRect(2, 2, width - 4, height - 4, 10, 10);
+      } else if (currentRank > 0) {
+        // Unlocked but not active: subtle border
+        g2d.setColor(new Color(100, 100, 100, 150));
+        g2d.setStroke(new BasicStroke(2));
+        g2d.drawRoundRect(2, 2, width - 4, height - 4, 10, 10);
+      }
+
+      // Draw "ACTIVE" badge in top-right corner (always shown when active)
+      if (isActive) {
+        int badgeWidth = 60;
+        int badgeHeight = 20;
+        int badgeX = width - badgeWidth - 8;
+        int badgeY = 8;
+
+        // Badge background
+        g2d.setColor(new Color(0, 200, 0, 230));
+        g2d.fillRoundRect(badgeX, badgeY, badgeWidth, badgeHeight, 8, 8);
+
+        // Badge text
+        g2d.setColor(Color.WHITE);
+        g2d.setFont(g2d.getFont().deriveFont(Font.BOLD, 11f));
+        g2d.drawString("ACTIVE", badgeX + 8, badgeY + 14);
+      }
+    }
+
+    public BoonType getType() {
+      return type;
+    }
+
+    public FButton getBtnUpgrade() {
+      return btnUpgrade;
+    }
+
+    public boolean isActive() {
+      return isActive;
+    }
+  }
 }

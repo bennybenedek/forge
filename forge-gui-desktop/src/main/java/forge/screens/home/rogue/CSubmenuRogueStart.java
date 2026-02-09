@@ -9,222 +9,223 @@ import java.util.List;
 import javax.swing.SwingUtilities;
 
 /**
- * Controls the Rogue Commander start screen.
- * Handles commander selection via card grid and new run creation.
+ * Controls the Rogue Commander start screen. Handles commander selection via card grid and new run
+ * creation.
  */
 public enum CSubmenuRogueStart implements ICDoc {
-    SINGLETON_INSTANCE;
+  SINGLETON_INSTANCE;
 
-    private final VSubmenuRogueStart view = VSubmenuRogueStart.SINGLETON_INSTANCE;
-    private RogueDeck selectedDeck;
+  private final VSubmenuRogueStart view = VSubmenuRogueStart.SINGLETON_INSTANCE;
+  private RogueDeck selectedDeck;
 
-    @Override
-    public void register() {
+  @Override
+  public void register() {
+  }
+
+  @Override
+  public void initialize() {
+    view.getBtnBeginRun().addActionListener(e -> beginNewRun());
+    view.getBtnStats().addActionListener(e -> openStats());
+    view.getBtnAether().addActionListener(e -> openAether());
+  }
+
+  private void openStats() {
+    CHomeUI.SINGLETON_INSTANCE.itemClick(EDocID.HOME_ROGUESTATS);
+  }
+
+  private void openAether() {
+    CHomeUI.SINGLETON_INSTANCE.itemClick(EDocID.HOME_ROGUEAETHER);
+  }
+
+  @Override
+  public void update() {
+    loadAvailableCommanders();
+    SwingUtilities.invokeLater(() -> {
+      view.getBtnBeginRun().requestFocusInWindow();
+      showTutorials();
+    });
+  }
+
+  private void showTutorials() {
+    RogueTutorialHelper.showIfNotSeen(RogueTutorial.WELCOME, RogueTutorial.COMMANDER_SELECTION);
+
+    // Show RUN_COMPLETE tutorial after first completed run
+    if (RogueMetaProgress.getInstance().getTotalRunsCompleted() > 0) {
+      RogueTutorialHelper.showIfNotSeen(RogueTutorial.RUN_COMPLETE);
+    }
+  }
+
+  private void loadAvailableCommanders() {
+    List<RogueDeck> availableDecks = RogueConfig.loadRogueDecks();
+
+    // Sort commanders: unlocked first (alphabetically), then locked (alphabetically)
+    availableDecks.sort(Comparator
+        .comparing((RogueDeck d) -> !d.isUnlocked())  // false (unlocked) before true (locked)
+        .thenComparing(RogueDeck::getName));
+
+    // Clear existing commander panels
+    view.getCommanderGridPanel().clear();
+
+    // Create card panel for each commander
+    CommanderCardPanel firstUnlockedPanel = null;
+    for (RogueDeck deck : availableDecks) {
+      CommanderCardPanel cardPanel = new CommanderCardPanel(deck, view);
+
+      // Set selection callback to update details and handle single-selection
+      cardPanel.setSelectionCallback(this::onCommanderSelected);
+
+      view.getCommanderGridPanel().addCommanderPanel(cardPanel);
+
+      // Track first unlocked commander
+      if (firstUnlockedPanel == null && !cardPanel.isLocked()) {
+        firstUnlockedPanel = cardPanel;
+      }
     }
 
-    @Override
-    public void initialize() {
-        view.getBtnBeginRun().addActionListener(e -> beginNewRun());
-        view.getBtnStats().addActionListener(e -> openStats());
-        view.getBtnAether().addActionListener(e -> openAether());
+    // Select first unlocked commander by default
+    if (firstUnlockedPanel != null) {
+      firstUnlockedPanel.setSelected(true);
+      selectedDeck = firstUnlockedPanel.getCommander();
+      updateCommanderDetails(firstUnlockedPanel);
+      view.getBtnBeginRun().setEnabled(true);
+    } else {
+      view.getBtnBeginRun().setEnabled(false);
     }
 
-    private void openStats() {
-        CHomeUI.SINGLETON_INSTANCE.itemClick(EDocID.HOME_ROGUESTATS);
+    // Update Aether button state - locked until first run completed
+    boolean aetherUnlocked = RogueMetaProgress.getInstance().getTotalRunsCompleted() > 0;
+    view.getBtnAether().setEnabled(aetherUnlocked);
+    view.getBtnAether()
+        .setToolTipText(aetherUnlocked ? null : "Unlock the Aether by completing your first Run.");
+
+    // Refresh layout
+    view.getCommanderGridPanel().revalidate();
+    view.getCommanderGridPanel().repaint();
+  }
+
+  private void onCommanderSelected(CommanderCardPanel clickedPanel) {
+    // For locked commanders, just show details but don't select
+    if (clickedPanel.isLocked()) {
+      // Deselect and unhighlight all panels, then highlight clicked
+      for (CommanderCardPanel panel : view.getCommanderPanels()) {
+        panel.setSelected(false);
+        panel.setHighlighted(panel == clickedPanel);
+      }
+      selectedDeck = null;
+      view.getBtnBeginRun().setEnabled(false);
+      updateCommanderDetails(clickedPanel);
+      return;
     }
 
-    private void openAether() {
-        CHomeUI.SINGLETON_INSTANCE.itemClick(EDocID.HOME_ROGUEAETHER);
+    // Clear highlights and deselect other panels (single-selection mode)
+    for (CommanderCardPanel panel : view.getCommanderPanels()) {
+      panel.setHighlighted(false);
+      if (panel != clickedPanel) {
+        panel.setSelected(false);
+      }
     }
 
-    @Override
-    public void update() {
-        loadAvailableCommanders();
-        SwingUtilities.invokeLater(() -> {
-            view.getBtnBeginRun().requestFocusInWindow();
-            showTutorials();
-        });
+    // Toggle the clicked panel
+    boolean newState = !clickedPanel.isSelected();
+    clickedPanel.setSelected(newState);
+
+    // Update selected deck and button state
+    if (newState) {
+      selectedDeck = clickedPanel.getCommander();
+      view.getBtnBeginRun().setEnabled(true);
+      updateCommanderDetails(clickedPanel);
+    } else {
+      // If deselecting, clear details
+      selectedDeck = null;
+      view.getBtnBeginRun().setEnabled(false);
+      view.getLblCommanderName().setText("");
+      view.getLblDescriptionLabel().setText("Description:");
+      view.getTxtDescription().setText("");
+      view.getTxtTheme().setText("");
+    }
+  }
+
+  private void updateCommanderDetails(CommanderCardPanel panel) {
+    RogueDeck deck = panel.getCommander();
+
+    if (panel.isLocked()) {
+      // Show unlock condition for locked commanders
+      view.getLblCommanderName().setText("???");
+      view.getLblDescriptionLabel().setText("Unlock:");
+      String unlockDesc = deck.getUnlockDescription();
+      if (unlockDesc != null && !unlockDesc.isEmpty()) {
+        view.getTxtDescription().setText(unlockDesc);
+      } else {
+        view.getTxtDescription().setText("Locked");
+      }
+      // Hide theme row for locked commanders
+      view.getLblThemeLabel().setVisible(false);
+      view.getScrollTheme().setVisible(false);
+    } else {
+      // Show normal details for unlocked commanders
+      view.getLblCommanderName().setText(deck.getCommanderCardName());
+      view.getLblDescriptionLabel().setText("Description:");
+      view.getTxtDescription().setText(deck.getDescription());
+      view.getTxtTheme().setText(deck.getThemeDescription());
+      // Show theme row for unlocked commanders
+      view.getLblThemeLabel().setVisible(true);
+      view.getScrollTheme().setVisible(true);
     }
 
-    private void showTutorials() {
-        RogueTutorialHelper.showIfNotSeen(RogueTutorial.WELCOME, RogueTutorial.COMMANDER_SELECTION);
+    // Force UI refresh for text areas
+    view.getLblDescriptionLabel().revalidate();
+    view.getLblDescriptionLabel().repaint();
+    view.getTxtDescription().revalidate();
+    view.getTxtDescription().repaint();
+    view.getTxtTheme().revalidate();
+    view.getTxtTheme().repaint();
+  }
 
-        // Show RUN_COMPLETE tutorial after first completed run
-        if (RogueMetaProgress.getInstance().getTotalRunsCompleted() > 0) {
-            RogueTutorialHelper.showIfNotSeen(RogueTutorial.RUN_COMPLETE);
-        }
+  private void beginNewRun() {
+    if (selectedDeck == null) {
+      System.err.println("Error: No commander selected");
+      return;
     }
 
-    private void loadAvailableCommanders() {
-        List<RogueDeck> availableDecks = RogueConfig.loadRogueDecks();
+    // Generate path for the run
+    RoguePath path = RogueConfig.getDefaultPath();
 
-        // Sort commanders: unlocked first (alphabetically), then locked (alphabetically)
-        availableDecks.sort(Comparator
-            .comparing((RogueDeck d) -> !d.isUnlocked())  // false (unlocked) before true (locked)
-            .thenComparing(RogueDeck::getName));
+    // Create new run
+    RogueRun newRun = new RogueRun(
+        selectedDeck,
+        path
+    );
 
-        // Clear existing commander panels
-        view.getCommanderGridPanel().clear();
+    // Apply Aether boon effects at run start
+    RogueMetaProgress progress = RogueMetaProgress.getInstance();
 
-        // Create card panel for each commander
-        CommanderCardPanel firstUnlockedPanel = null;
-        for (RogueDeck deck : availableDecks) {
-            CommanderCardPanel cardPanel = new CommanderCardPanel(deck, view);
-
-            // Set selection callback to update details and handle single-selection
-            cardPanel.setSelectionCallback(this::onCommanderSelected);
-
-            view.getCommanderGridPanel().addCommanderPanel(cardPanel);
-
-            // Track first unlocked commander
-            if (firstUnlockedPanel == null && !cardPanel.isLocked()) {
-                firstUnlockedPanel = cardPanel;
-            }
-        }
-
-        // Select first unlocked commander by default
-        if (firstUnlockedPanel != null) {
-            firstUnlockedPanel.setSelected(true);
-            selectedDeck = firstUnlockedPanel.getCommander();
-            updateCommanderDetails(firstUnlockedPanel);
-            view.getBtnBeginRun().setEnabled(true);
-        } else {
-            view.getBtnBeginRun().setEnabled(false);
-        }
-
-        // Update Aether button state - locked until first run completed
-        boolean aetherUnlocked = RogueMetaProgress.getInstance().getTotalRunsCompleted() > 0;
-        view.getBtnAether().setEnabled(aetherUnlocked);
-        view.getBtnAether().setToolTipText(aetherUnlocked ? null : "Unlock the Aether by completing your first Run.");
-
-        // Refresh layout
-        view.getCommanderGridPanel().revalidate();
-        view.getCommanderGridPanel().repaint();
+    // Vital Infusion: +starting life
+    int lifeBonus = progress.getStartingLifeBonus();
+    if (lifeBonus > 0) {
+      newRun.setStartingLife(newRun.getStartingLife() + lifeBonus);
     }
 
-    private void onCommanderSelected(CommanderCardPanel clickedPanel) {
-        // For locked commanders, just show details but don't select
-        if (clickedPanel.isLocked()) {
-            // Deselect and unhighlight all panels, then highlight clicked
-            for (CommanderCardPanel panel : view.getCommanderPanels()) {
-                panel.setSelected(false);
-                panel.setHighlighted(panel == clickedPanel);
-            }
-            selectedDeck = null;
-            view.getBtnBeginRun().setEnabled(false);
-            updateCommanderDetails(clickedPanel);
-            return;
-        }
-
-        // Clear highlights and deselect other panels (single-selection mode)
-        for (CommanderCardPanel panel : view.getCommanderPanels()) {
-            panel.setHighlighted(false);
-            if (panel != clickedPanel) {
-                panel.setSelected(false);
-            }
-        }
-
-        // Toggle the clicked panel
-        boolean newState = !clickedPanel.isSelected();
-        clickedPanel.setSelected(newState);
-
-        // Update selected deck and button state
-        if (newState) {
-            selectedDeck = clickedPanel.getCommander();
-            view.getBtnBeginRun().setEnabled(true);
-            updateCommanderDetails(clickedPanel);
-        } else {
-            // If deselecting, clear details
-            selectedDeck = null;
-            view.getBtnBeginRun().setEnabled(false);
-            view.getLblCommanderName().setText("");
-            view.getLblDescriptionLabel().setText("Description:");
-            view.getTxtDescription().setText("");
-            view.getTxtTheme().setText("");
-        }
+    // Aether Market: +starting gold
+    int goldBonus = progress.getStartingGoldBonus();
+    if (goldBonus > 0) {
+      newRun.setCurrentGold(newRun.getCurrentGold() + goldBonus);
     }
 
-    private void updateCommanderDetails(CommanderCardPanel panel) {
-        RogueDeck deck = panel.getCommander();
+    // Generate unique name for the run (used as filename)
+    // Format: DeckName_Timestamp (e.g., "MeriaRogueCommander_12-11-25_143022")
+    String runName = selectedDeck.getName() + "_" + System.currentTimeMillis();
+    newRun.setName(runName);
 
-        if (panel.isLocked()) {
-            // Show unlock condition for locked commanders
-            view.getLblCommanderName().setText("???");
-            view.getLblDescriptionLabel().setText("Unlock:");
-            String unlockDesc = deck.getUnlockDescription();
-            if (unlockDesc != null && !unlockDesc.isEmpty()) {
-                view.getTxtDescription().setText(unlockDesc);
-            } else {
-                view.getTxtDescription().setText("Locked");
-            }
-            // Hide theme row for locked commanders
-            view.getLblThemeLabel().setVisible(false);
-            view.getScrollTheme().setVisible(false);
-        } else {
-            // Show normal details for unlocked commanders
-            view.getLblCommanderName().setText(deck.getCommanderCardName());
-            view.getLblDescriptionLabel().setText("Description:");
-            view.getTxtDescription().setText(deck.getDescription());
-            view.getTxtTheme().setText(deck.getThemeDescription());
-            // Show theme row for unlocked commanders
-            view.getLblThemeLabel().setVisible(true);
-            view.getScrollTheme().setVisible(true);
-        }
+    // Track meta progress
+    progress.onRunStarted(selectedDeck.getCommanderCardName());
 
-        // Force UI refresh for text areas
-        view.getLblDescriptionLabel().revalidate();
-        view.getLblDescriptionLabel().repaint();
-        view.getTxtDescription().revalidate();
-        view.getTxtDescription().repaint();
-        view.getTxtTheme().revalidate();
-        view.getTxtTheme().repaint();
-    }
+    // Save the run
+    RogueIO.saveRun(newRun);
 
-    private void beginNewRun() {
-        if (selectedDeck == null) {
-            System.err.println("Error: No commander selected");
-            return;
-        }
+    // Set as current run in the map controller
+    CSubmenuRogueMap.SINGLETON_INSTANCE.setCurrentRun(newRun);
 
-        // Generate path for the run
-        RoguePath path = RogueConfig.getDefaultPath();
-
-        // Create new run
-        RogueRun newRun = new RogueRun(
-            selectedDeck,
-            path
-        );
-
-        // Apply Aether boon effects at run start
-        RogueMetaProgress progress = RogueMetaProgress.getInstance();
-
-        // Vital Infusion: +starting life
-        int lifeBonus = progress.getStartingLifeBonus();
-        if (lifeBonus > 0) {
-            newRun.setStartingLife(newRun.getStartingLife() + lifeBonus);
-        }
-
-        // Aether Market: +starting gold
-        int goldBonus = progress.getStartingGoldBonus();
-        if (goldBonus > 0) {
-            newRun.setCurrentGold(newRun.getCurrentGold() + goldBonus);
-        }
-
-        // Generate unique name for the run (used as filename)
-        // Format: DeckName_Timestamp (e.g., "MeriaRogueCommander_12-11-25_143022")
-        String runName = selectedDeck.getName() + "_" + System.currentTimeMillis();
-        newRun.setName(runName);
-
-        // Track meta progress
-        progress.onRunStarted(selectedDeck.getCommanderCardName());
-
-        // Save the run
-        RogueIO.saveRun(newRun);
-
-        // Set as current run in the map controller
-        CSubmenuRogueMap.SINGLETON_INSTANCE.setCurrentRun(newRun);
-
-        // Navigate to the Rogue Map
-        CHomeUI.SINGLETON_INSTANCE.itemClick(EDocID.HOME_ROGUEMAP);
-    }
+    // Navigate to the Rogue Map
+    CHomeUI.SINGLETON_INSTANCE.itemClick(EDocID.HOME_ROGUEMAP);
+  }
 }
