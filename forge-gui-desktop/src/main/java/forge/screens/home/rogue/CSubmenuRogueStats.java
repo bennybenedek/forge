@@ -26,6 +26,7 @@ public enum CSubmenuRogueStats implements ICDoc {
     public void initialize() {
         view.getBtnBack().addActionListener(e -> goBack());
         view.getBtnReset().addActionListener(e -> confirmReset());
+        view.getBtnResetTutorials().addActionListener(e -> confirmResetTutorials());
     }
 
     @Override
@@ -75,6 +76,20 @@ public enum CSubmenuRogueStats implements ICDoc {
         if (confirmed) {
             RogueMetaProgress.getInstance().reset();
             loadStatistics();
+        }
+    }
+
+    private void confirmResetTutorials() {
+        boolean confirmed = FOptionPane.showConfirmDialog(
+            "Are you sure you want to reset all tutorials?\nThey will be shown again when you visit each screen.",
+            "Reset Tutorials",
+            "Reset",
+            "Cancel",
+            false
+        );
+
+        if (confirmed) {
+            RogueMetaProgress.getInstance().resetTutorials();
         }
     }
 }

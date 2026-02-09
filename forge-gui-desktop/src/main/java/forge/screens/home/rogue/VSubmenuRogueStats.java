@@ -61,6 +61,7 @@ public enum VSubmenuRogueStats implements IVSubmenu<CSubmenuRogueStats> {
     // Buttons
     private final FButton btnBack;
     private final FButton btnReset;
+    private final FButton btnResetTutorials;
 
     VSubmenuRogueStats() {
         lblTitle.setBackground(FSkin.getColor(FSkin.Colors.CLR_THEME2));
@@ -70,6 +71,9 @@ public enum VSubmenuRogueStats implements IVSubmenu<CSubmenuRogueStats> {
 
         btnReset = new FButton("Reset Progress");
         btnReset.setIcon(FSkin.getImage(FSkinProp.ICO_DELETE).resize(24, 24).getIcon());
+
+        btnResetTutorials = new FButton("Reset Tutorials");
+        btnResetTutorials.setIcon(FSkin.getImage(FSkinProp.ICO_QUEST_BOOK).resize(24, 24).getIcon());
     }
 
     /**
@@ -172,6 +176,7 @@ public enum VSubmenuRogueStats implements IVSubmenu<CSubmenuRogueStats> {
         buttonPanel.setOpaque(false);
         buttonPanel.add(btnBack, "w 180px!, h 40px!");
         buttonPanel.add(btnReset, "w 180px!, h 40px!");
+        buttonPanel.add(btnResetTutorials, "w 180px!, h 40px!");
         VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(buttonPanel, "ax center, gap 0 0 20px 20px");
 
         VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().repaintSelf();
@@ -230,6 +235,10 @@ public enum VSubmenuRogueStats implements IVSubmenu<CSubmenuRogueStats> {
 
     public JButton getBtnReset() {
         return btnReset;
+    }
+
+    public JButton getBtnResetTutorials() {
+        return btnResetTutorials;
     }
 
     @Override

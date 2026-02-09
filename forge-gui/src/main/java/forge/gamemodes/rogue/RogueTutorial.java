@@ -1,0 +1,109 @@
+package forge.gamemodes.rogue;
+
+/**
+ * Defines tutorials shown to new players in Rogue Commander mode.
+ * Each tutorial is shown once and then marked as seen in RogueMetaProgress.
+ */
+public enum RogueTutorial {
+
+    WELCOME(
+        "Welcome to Rogue Commander",
+        "Rogue Commander is a roguelight deckbuilding format. Start with a commander and an open-ended deck, " +
+        "then embark on a Run, battling against 'Planebounds' to earn gold and new cards.\n" +
+        "Win matches to progress until the final Boss, but be careful - lost life is not restored after each battle!"
+    ),
+
+    COMMANDER_SELECTION(
+        "Commander Selection",
+        "Choose your Rogue commander wisely! Each commander comes with a unique starting deck " +
+        "built around their strategy and archetypes, as well as a 'Reward Pool' you choose your card rewards from.\n" +
+        "You can unlock new commanders by winning Runs or through other achievements. "
+    ),
+
+    MAP_NAVIGATION(
+        "Map Navigation",
+        "The map shows your path through the Run (starting from top to bottom). Each Run will be a different path, with different opponents, encounters and locations.\n" +
+        "Choose your route carefully - different nodes offer battles, healing, shops, and other encounters.\n" +
+        "Whenever you complete a node, you unlock the next row of the path. If there is more than 1 accessible node in your current row, you can select your next destination.\n" +
+        "The more rows you complete, the more life your opponents will start with."
+    ),
+
+    PRE_BATTLE(
+        "Planebound Battles",
+        "Battles on Plane-Nodes are played as a match of 'Duel Commander' (you against the Planebound) with added 'Planechase' rules. So don't forget to check your command zone for casting your Commander and rolling the Planar Die. Other than in a normal Planechase Match," +
+            "you will stay on the current Plane throughout the battle. 'Chaos' and 'When you Planeswalk...' effects will be resolved as normal, but no effect will cause a plane change.\n" +
+            "Check 'Forge -> Help -> Getting Started -> 'How to Play' and the Forge Wiki for more details on the rules of Magic The Gathering and how to play in Forge. Good luck, Commander!"
+    ),
+
+    POST_BATTLE(
+        "You won!",
+        "Congrats to your Win, Commander! The gold you earned from the battle can be spent at any Bazaar, but any unspent Gold will be lost at the end of a Run.\n" +
+        "Your won Echoes can be spent on Boons, which are permanent upgrades that apply to all future Runs, and are not lost at the end of a Run.\n" +
+        "The cards you earned were added to your Rogue deck. You can view your deck at any time by clicking 'Edit Rogue Deck'."
+    ),
+
+    ELITE_ENCOUNTER(
+        "Elite Encounter",
+        "An Elite awaits (marked with a star)! Elite enemies are tougher than regular opponents but offer greater rewards: " +
+        "double Echoes, double Gold, and a Mythic card reward."
+    ),
+
+    CARD_REWARDS(
+        "Card Rewards",
+        "After winning a battle, choose cards from your Reward Pool to add to your deck.\n" +
+        "By default, 7 random cards are offered, from which 1 of them is guaranteed to be of mythic rarity.\n" +
+        "For each card added, you will also gain a 'Removal Credit' to remove an unwanted non-basic Land card from your deck."
+    ),
+
+    BAZAAR(
+        "The Bazaar",
+        "Spend your hard-earned gold at the Bazaar to purchase new cards, price depending on Card rarity. " +
+        "Save gold for powerful cards that fit your strategy."
+    ),
+
+    SANCTUM(
+        "The Sanctum",
+        "The Sanctum offers two services: healing and card removal credits. " +
+        "Restore lost life, or get more removal credits to remove unwanted cards " +
+        "to streamline your deck and draw your best cards more consistently."
+    ),
+
+    DECK_EDITOR(
+        "Deck Editor",
+        "Review your current deck at any time. Keep track of your cards, " +
+        "mana curve, and strategy. You can always add and remove as many basic lands as needed, but other cards can only be added as rewards during the Run, and can only be removed with Removal Credits earned by adding cards or by visiting a Sanctum."
+    ),
+
+    RUN_COMPLETE(
+        "Run Complete",
+        "Congratulations on completing a Run! Win or lose, you've earned Echoes " +
+        "based on your progress. Use them in the Aether to unlock Boons to make you stronger in future Runs.\n " +
+        "Visit 'Stats' to view and reset your overall game progress and tutorials."
+    ),
+
+    AETHER(
+        "Welcome to the Aether",
+            "In the Aether, you can spend your hard-earned Echoes on powerful Boons that provide permanent upgrades for all future Runs. " +
+            "Unlock and upgrade boons with Echoes, then activate up to 3 boons at the same time."
+    );
+
+    private final String title;
+    private final String message;
+
+    RogueTutorial(String title, String message) {
+        this.title = title;
+        this.message = message;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public String getId() {
+        return name();
+    }
+}

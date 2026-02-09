@@ -40,7 +40,19 @@ public enum CSubmenuRogueStart implements ICDoc {
     @Override
     public void update() {
         loadAvailableCommanders();
-        SwingUtilities.invokeLater(() -> view.getBtnBeginRun().requestFocusInWindow());
+        SwingUtilities.invokeLater(() -> {
+            view.getBtnBeginRun().requestFocusInWindow();
+            showTutorials();
+        });
+    }
+
+    private void showTutorials() {
+        RogueTutorialHelper.showIfNotSeen(RogueTutorial.WELCOME, RogueTutorial.COMMANDER_SELECTION);
+
+        // Show RUN_COMPLETE tutorial after first completed run
+        if (RogueMetaProgress.getInstance().getTotalRunsCompleted() > 0) {
+            RogueTutorialHelper.showIfNotSeen(RogueTutorial.RUN_COMPLETE);
+        }
     }
 
     private void loadAvailableCommanders() {
@@ -79,6 +91,11 @@ public enum CSubmenuRogueStart implements ICDoc {
         } else {
             view.getBtnBeginRun().setEnabled(false);
         }
+
+        // Update Aether button state - locked until first run completed
+        boolean aetherUnlocked = RogueMetaProgress.getInstance().getTotalRunsCompleted() > 0;
+        view.getBtnAether().setEnabled(aetherUnlocked);
+        view.getBtnAether().setToolTipText(aetherUnlocked ? null : "Unlock the Aether by completing your first Run.");
 
         // Refresh layout
         view.getCommanderGridPanel().revalidate();

@@ -256,7 +256,7 @@ public class RogueWinLoseController {
         // Save run state
         RogueIO.saveRun(currentRun);
 
-        view.showMessage("You were defeated! Your run has ended.", "Defeat", FSkinProp.ICO_QUEST_ZEP);
+        view.showMessage("You were defeated! Your Run has ended.", "Defeat", FSkinProp.ICO_QUEST_ZEP);
     }
 
     public void actionOnQuit() {

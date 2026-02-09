@@ -32,7 +32,7 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
     private final DragTab tab = new DragTab("Rogue Commander");
 
     private final FLabel lblTitle = new FLabel.Builder()
-        .text("Pick your next Location")
+        .text("Rogue Commander - Map")
         .fontAlign(SwingConstants.CENTER)
         .opaque(true)
         .fontSize(16)

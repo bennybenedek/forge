@@ -2,6 +2,7 @@ package forge.screens.home.rogue;
 
 import forge.gamemodes.rogue.BoonType;
 import forge.gamemodes.rogue.RogueMetaProgress;
+import forge.gamemodes.rogue.RogueTutorial;
 import forge.gui.framework.EDocID;
 import forge.gui.framework.ICDoc;
 import forge.screens.home.CHomeUI;
@@ -48,6 +49,7 @@ public enum CSubmenuRogueAether implements ICDoc {
     @Override
     public void update() {
         refreshDisplay();
+        RogueTutorialHelper.showIfNotSeen(RogueTutorial.AETHER);
     }
 
     private void refreshDisplay() {

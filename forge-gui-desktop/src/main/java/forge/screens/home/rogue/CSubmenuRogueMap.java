@@ -54,7 +54,44 @@ public enum CSubmenuRogueMap implements ICDoc {
         }
 
         updateView();
-        SwingUtilities.invokeLater(() -> view.getBtnEnterNode().requestFocusInWindow());
+        SwingUtilities.invokeLater(() -> {
+            view.getBtnEnterNode().requestFocusInWindow();
+            showTutorials();
+        });
+    }
+
+    private void showTutorials() {
+        RogueTutorialHelper.showIfNotSeen(RogueTutorial.MAP_NAVIGATION);
+
+        if (currentRun == null || currentRun.getCurrentNode() == null) {
+            return;
+        }
+
+        // Check if player just won their first battle and show post-battle tutorial if so
+        List<RoguePathNode> completedNodes =  currentRun.getPath().getNodes().stream()
+                .filter(n -> n instanceof NodePlanebound && n.isCompleted())
+                .toList();
+        if (!completedNodes.isEmpty()) {
+            RogueTutorialHelper.showIfNotSeen(RogueTutorial.POST_BATTLE);
+        }
+
+        // Check node types of current row and show tutorials if not seen yet
+        int currentRow = currentRun.getCurrentNode().getRowIndex();
+        for (RoguePathNode node : currentRun.getPath().getNodesInRow(currentRow)) {
+            if (node instanceof NodePlanebound planebound
+                && planebound.getPlaneboundType() == RoguePlaneboundType.ELITE) {
+                    RogueTutorialHelper.showIfNotSeen(RogueTutorial.ELITE_ENCOUNTER);
+            }
+            else if (node instanceof NodePlanebound) {
+                    RogueTutorialHelper.showIfNotSeen(RogueTutorial.PRE_BATTLE);
+            }
+            else if (node instanceof NodeSanctum) {
+                    RogueTutorialHelper.showIfNotSeen(RogueTutorial.SANCTUM);
+            }
+             else if (node instanceof NodeBazaar) {
+                RogueTutorialHelper.showIfNotSeen(RogueTutorial.BAZAAR);
+            }
+        }
     }
 
     /**
@@ -230,12 +267,12 @@ public enum CSubmenuRogueMap implements ICDoc {
         }
 
         // Handle different node types
-        if (node instanceof NodePlanebound) {
-            startMatch((NodePlanebound) node);
-        } else if (node instanceof NodeSanctum) {
-            handleSanctumNode((NodeSanctum) node);
-        } else if (node instanceof NodeBazaar) {
-            handleBazaarNode((NodeBazaar) node);
+        if (node instanceof NodePlanebound nodePlanebound) {
+            startMatch(nodePlanebound);
+        } else if (node instanceof NodeSanctum nodeSanctum) {
+            handleSanctumNode(nodeSanctum);
+        } else if (node instanceof NodeBazaar nodeBazaar) {
+            handleBazaarNode(nodeBazaar);
         } else if (node instanceof NodeEvent || node instanceof NodeChest) {
             // TODO: Implement these node types
             currentRun.nextNode();
@@ -439,9 +476,9 @@ public enum CSubmenuRogueMap implements ICDoc {
         sanctumNode.setCompleted(true);
         currentRun.nextNode();
 
-        // Save run and update view
+        // Save run and update view (use update() to trigger tutorials for next row)
         RogueIO.saveRun(currentRun);
-        updateView();
+        update();
     }
 
     private void handleBazaarNode(NodeBazaar bazaarNode) {
@@ -505,8 +542,8 @@ public enum CSubmenuRogueMap implements ICDoc {
         bazaarNode.setCompleted(true);
         currentRun.nextNode();
 
-        // Save run and update view
+        // Save run and update view (use update() to trigger tutorials for next row)
         RogueIO.saveRun(currentRun);
-        updateView();
+        update();
     }
 }

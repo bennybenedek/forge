@@ -59,7 +59,7 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
         .build();
 
     private final FLabel lblThemeLabel = new FLabel.Builder()
-        .text("Theme:")
+        .text("Themes:")
         .fontSize(14)
         .build();
 

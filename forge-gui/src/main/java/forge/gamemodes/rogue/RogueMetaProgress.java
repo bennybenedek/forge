@@ -51,6 +51,9 @@ public class RogueMetaProgress {
     private Map<String, Integer> boonRanks;       // Boon ID -> current rank (0 = not unlocked)
     private Set<String> activeBoons;              // Currently equipped boon IDs (max 3)
 
+    // Tutorial tracking - which tutorials have been shown
+    private Set<String> seenTutorials;
+
     // Private constructor for singleton
     private RogueMetaProgress() {
         totalRunsStarted = 0;
@@ -71,6 +74,9 @@ public class RogueMetaProgress {
         totalEchoes = 0;
         boonRanks = new HashMap<>();
         activeBoons = new HashSet<>();
+
+        // Initialize tutorial tracking
+        seenTutorials = new HashSet<>();
     }
 
     /**
@@ -112,6 +118,8 @@ public class RogueMetaProgress {
         totalEchoes = 0;
         boonRanks = new HashMap<>();
         activeBoons = new HashSet<>();
+
+        // Note: Tutorials are NOT reset here - use resetTutorials() separately
         save();
     }
 
@@ -514,6 +522,40 @@ public class RogueMetaProgress {
             return 0;
         }
         return BoonType.MYTHIC_COLLECTOR.getEffectValueAtRank(getBoonRank(BoonType.MYTHIC_COLLECTOR));
+    }
+
+    // ==================== Tutorial Tracking ====================
+
+    /**
+     * Check if a tutorial has been seen.
+     */
+    public boolean hasSeenTutorial(RogueTutorial tutorial) {
+        if (seenTutorials == null) {
+            seenTutorials = new HashSet<>();
+        }
+        return seenTutorials.contains(tutorial.getId());
+    }
+
+    /**
+     * Mark a tutorial as seen.
+     */
+    public void markTutorialSeen(RogueTutorial tutorial) {
+        if (seenTutorials == null) {
+            seenTutorials = new HashSet<>();
+        }
+        seenTutorials.add(tutorial.getId());
+        save();
+    }
+
+    /**
+     * Reset all tutorials to unseen state.
+     */
+    public void resetTutorials() {
+        if (seenTutorials == null) {
+            seenTutorials = new HashSet<>();
+        }
+        seenTutorials.clear();
+        save();
     }
 
     // ==================== Persistence ====================

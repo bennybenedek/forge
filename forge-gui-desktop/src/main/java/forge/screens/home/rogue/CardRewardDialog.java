@@ -2,19 +2,14 @@ package forge.screens.home.rogue;
 
 import com.google.common.collect.ImmutableList;
 import forge.deckchooser.FDeckViewer;
+import forge.gamemodes.rogue.RogueTutorial;
 import forge.item.PaperCard;
 import forge.toolbox.FLabel;
 import forge.toolbox.FOptionPane;
 import forge.toolbox.FSkin.SkinnedPanel;
 import forge.util.Localizer;
 import forge.view.arcane.CardPanel;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.GraphicsConfiguration;
-import java.awt.GraphicsEnvironment;
-import java.awt.Insets;
-import java.awt.Rectangle;
-import java.awt.Toolkit;
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -129,6 +124,8 @@ public class CardRewardDialog {
         }
         panel.revalidate();
         panel.repaint();
+
+        RogueTutorialHelper.showIfNotSeen(RogueTutorial.CARD_REWARDS);
     }
 
     private String getRewardsText() {
