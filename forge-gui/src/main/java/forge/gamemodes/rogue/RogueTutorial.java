@@ -24,7 +24,7 @@ public enum RogueTutorial {
         "Map Navigation",
         "The map shows your path through the Run (starting from top to bottom). Each Run will be a different path, with different opponents, encounters and locations.\n" +
         "Choose your route carefully - different nodes offer battles, healing, shops, and other encounters.\n" +
-        "Whenever you complete a node, you unlock the next row of the path. If there is more than 1 accessible node in your current row, you can select your next destination.\n" +
+        "Whenever you complete a node, you unlock the next row of your path. If there is more than 1 accessible node in your current row, you can select your next destination.\n" +
         "The more rows you complete, the more life your opponents will start with."
     ),
 
