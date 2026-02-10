@@ -16,6 +16,7 @@ import javax.swing.KeyStroke;
 
 //import static forge.localinstance.properties.ForgeConstants.GITHUB_FORGE_URL;
 
+
 public final class HelpMenu {
     private HelpMenu() { }
 

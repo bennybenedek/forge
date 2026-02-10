@@ -30,6 +30,8 @@ public class CardRewardDialog {
   private static final int MAX_CARDS_PER_ROW = 4;
   private static final int MAX_ROWS = 2;
   private static final int HEADER_HEIGHT = 65;  // Space for labels (compact)
+  private static final int MIN_DIALOG_WIDTH = 900;  // Minimum width for better zoom
+  private static final int MIN_DIALOG_HEIGHT = 700; // Minimum height for better zoom
 
   private final String title;
   private final int maxSelections;
@@ -107,9 +109,9 @@ public class CardRewardDialog {
     int desiredHeight =
         numRows * (baseCardHeight + CARD_SPACING) - CARD_SPACING + HEADER_HEIGHT + PADDING;
 
-    // Dialog size is desired size capped to screen bounds
-    int dialogWidth = Math.min(desiredWidth, maxDialogWidth);
-    int dialogHeight = Math.min(desiredHeight, maxDialogHeight);
+    // Dialog size: apply minimum, then cap to screen bounds
+    int dialogWidth = Math.min(Math.max(desiredWidth, MIN_DIALOG_WIDTH), maxDialogWidth);
+    int dialogHeight = Math.min(Math.max(desiredHeight, MIN_DIALOG_HEIGHT), maxDialogHeight);
 
     // Initialize card dimensions (doLayout will recalculate based on actual size)
     cardWidth = BASE_CARD_WIDTH;
