@@ -1450,12 +1450,24 @@ public class ComputerUtil {
                 }
 
                 final String valid = params.get("ValidCard");
-                if (valid.contains("Creature.YouCtrl") || valid.contains("Other+YouCtrl") ) {
+                // Check if trigger applies to AI's creatures:
+                // - "Creature.YouCtrl" or "Other+YouCtrl" explicitly include AI's creatures
+                // - "Creature" (no restriction) means all creatures, including AI's
+                if (valid.contains("Creature.YouCtrl") || valid.contains("Other+YouCtrl")
+                        || valid.equals("Creature")) {
 
-                    final SpellAbility sa = t.getOverridingAbility();
+                    // Check getOverridingAbility first, then resolve Execute$ SVar if needed
+                    SpellAbility sa = t.getOverridingAbility();
                     if (sa != null && sa.getApi() == ApiType.Pump && sa.hasParam("KW")
                             && sa.getParam("KW").contains("Haste")) {
                         return true;
+                    }
+                    // For triggers using Execute$ SVar (like Bloodhill Bastion), check the SVar text
+                    if (sa == null && params.containsKey("Execute")) {
+                        String svarText = c.getSVar(params.get("Execute"));
+                        if (svarText != null && svarText.contains("Haste")) {
+                            return true;
+                        }
                     }
                 }
             }

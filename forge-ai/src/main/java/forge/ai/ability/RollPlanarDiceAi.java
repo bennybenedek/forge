@@ -99,6 +99,18 @@ public class RollPlanarDiceAi extends SpellAbilityAi {
                             return false;
                         }
                         break;
+                    case "anyplayercreaturesingraveyardge":
+                        boolean anyPlayerHasCreatures = false;
+                        for (Player p : ai.getGame().getPlayers()) {
+                            if (detectCreatureInZone(p, ZoneType.Graveyard)) {
+                                anyPlayerHasCreatures = true;
+                                break;
+                            }
+                        }
+                        if (!anyPlayerHasCreatures) {
+                            return false;
+                        }
+                        break;
                     case "hascreatureinplay": // TODO: All abilities below only test the presence of the option. The value (true/false) is not yet tested.
                         if (!detectCreatureInZone(ai, ZoneType.Battlefield)) {
                             return false;
@@ -217,14 +229,12 @@ public class RollPlanarDiceAi extends SpellAbilityAi {
     }
 
     private boolean detectCreatureInZone(Player p, ZoneType zone) {
-        boolean hasCreatureInPlay = false;
         for (Card c : p.getCardsIn(zone)) {
             if (c.isCreature()) {
-                hasCreatureInPlay = true;
-                break;
+                return true;
             }
         }
-        return hasCreatureInPlay;
+        return false;
     }
 
     private boolean detectAttackableCreature(Player p) {
