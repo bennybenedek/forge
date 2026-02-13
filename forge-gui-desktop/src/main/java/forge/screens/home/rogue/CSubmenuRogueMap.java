@@ -305,13 +305,11 @@ public enum CSubmenuRogueMap implements ICDoc {
         }
       }
 
-      // Create shared plane deck with multiple copies of the designated plane
+      // Create shared plane deck with the designated plane
+      // In Rogue Commander, planeswalk triggers fire but we stay on the same plane
       List<PaperCard> sharedPlaneDeck = new java.util.ArrayList<>();
       if (designatedPlane != null) {
-        // Add 10 copies of the same plane to satisfy Planechase mechanics
-        for (int i = 0; i < 10; i++) {
-          sharedPlaneDeck.add(designatedPlane);
-        }
+        sharedPlaneDeck.add(designatedPlane);
       } else {
         System.err.println("Warning: Could not find plane card: " + cardPlaneName);
       }
