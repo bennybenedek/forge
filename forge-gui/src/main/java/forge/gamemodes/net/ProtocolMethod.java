@@ -71,6 +71,7 @@ public enum ProtocolMethod {
     manipulateCardList   (Mode.SERVER, List.class, String.class, Iterable.class, Iterable.class, Boolean.TYPE, Boolean.TYPE, Boolean.TYPE),
     setCard             (Mode.SERVER, Void.TYPE, CardView.class),
     setSelectables      (Mode.SERVER, Void.TYPE, Iterable/*CardView*/.class),
+    setSelectablePlayers(Mode.SERVER, Void.TYPE, Iterable/*PlayerView*/.class),
     clearSelectables    (Mode.SERVER, Void.TYPE),
     refreshField        (Mode.SERVER, Void.TYPE),
     // TODO case "setPlayerAvatar":

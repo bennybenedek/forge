@@ -233,6 +233,8 @@ public interface IGuiGame {
 
     void setSelectables(final Iterable<CardView> cards);
 
+    void setSelectablePlayers(final Iterable<PlayerView> players);
+
     void clearSelectables();
 
     boolean isSelecting();

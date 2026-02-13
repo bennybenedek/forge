@@ -288,6 +288,12 @@ public class NetGuiGame extends AbstractGuiGame {
     }
 
     @Override
+    public void setSelectablePlayers(final Iterable<PlayerView> players) {
+        updateGameView();
+        send(ProtocolMethod.setSelectablePlayers, players);
+    }
+
+    @Override
     public void clearSelectables() {
         updateGameView();
         send(ProtocolMethod.clearSelectables);

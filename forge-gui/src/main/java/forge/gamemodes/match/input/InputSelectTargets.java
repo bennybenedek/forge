@@ -64,6 +64,30 @@ public final class InputSelectTargets extends InputSyncronizedBase {
         }
 
         controller.getGui().setSelectables(CardView.getCollection(choices));
+
+        // Set selectable players if the spell can target players
+        if (tgt.canTgtPlayer() && !mustTargetFiltered) {
+            List<PlayerView> validPlayers = new ArrayList<>();
+            for (Player p : controller.getGame().getPlayers()) {
+                if (p.hasLost()) {
+                    continue;
+                }
+                if (sa.isSpell() && sa.getHostCard().isAura() && !p.canBeAttached(sa.getHostCard(), sa)) {
+                    continue;
+                }
+                if (!sa.canTarget(p)) {
+                    continue;
+                }
+                if (filter != null && !filter.test(p)) {
+                    continue;
+                }
+                validPlayers.add(p.getView());
+            }
+            if (!validPlayers.isEmpty()) {
+                controller.getGui().setSelectablePlayers(validPlayers);
+            }
+        }
+
         final PlayerZoneUpdates zonesToUpdate = new PlayerZoneUpdates();
         for (final Card c : choices) {
             zonesToUpdate.add(new PlayerZoneUpdate(c.getZone().getPlayer().getView(), c.getZone().getZoneType()));

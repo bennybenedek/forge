@@ -306,6 +306,7 @@ public abstract class AbstractGuiGame implements IGuiGame, IMayViewCards {
     }
 
     private final Set<CardView> selectableCards = Sets.newHashSet();
+    private final Set<PlayerView> selectablePlayers = Sets.newHashSet();
 
     public void setSelectables(final Iterable<CardView> cards) {
         for (CardView cv : cards) {
@@ -313,16 +314,32 @@ public abstract class AbstractGuiGame implements IGuiGame, IMayViewCards {
         }
     }
 
+    public void setSelectablePlayers(final Iterable<PlayerView> players) {
+        for (PlayerView pv : players) {
+            if (selectablePlayers.add(pv)) {
+                updateLives(Collections.singleton(pv));
+            }
+        }
+    }
+
     public void clearSelectables() {
         selectableCards.clear();
+        for (PlayerView pv : selectablePlayers) {
+            updateLives(Collections.singleton(pv));
+        }
+        selectablePlayers.clear();
     }
 
     public boolean isSelectable(final CardView card) {
         return selectableCards.contains(card);
     }
 
+    public boolean isSelectablePlayer(final PlayerView player) {
+        return selectablePlayers.contains(player);
+    }
+
     public boolean isSelecting() {
-        return !selectableCards.isEmpty();
+        return !selectableCards.isEmpty() || !selectablePlayers.isEmpty();
     }
 
     public boolean isGamePaused() {
