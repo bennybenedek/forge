@@ -18,7 +18,6 @@
     "Magus of the Moon",
     "Harbinger of the Seas",
     "Ruination",
-    "Iona Shield of Emeria",
     "Limited Resources",
     "Constant Mists",
     "Karakas",
@@ -33,7 +32,7 @@
     "Humility",
     "Stasis",
     "Presence of the Master",
-    "Arena of Legends",
+    "Arena of the Ancients",
     "Cursed Totem",
     "Null Rod",
     "Ensnaring Bridge",
@@ -42,7 +41,7 @@
     "Constant Mists",
     "Land Equilibrium",
     "Storage Matrix",
-    "Lutri the Spellchaser",
+    "Lutri, the Spellchaser",
     "Gleemox",
     "Drake Stone",
     "Wrenn and One",
@@ -119,7 +118,7 @@
     "Vampiric Tutor",
     "Wishclaw Talisman",
     "The One Ring",
-    "Emrakul the Aeons Torn",
+    "Emrakul, the Aeons Torn",
     "Ad Nauseum",
     "Bazaar of Baghdad",
     "Library of Alexandria",
@@ -225,12 +224,16 @@
       "startItems": [
         "Challenge Coin",
         "Challenge Coin",
-        "Challenge Coin"      
+        "Challenge Coin",
+        "Steel Boots",
+        "Lotus Petal",
+        "Echo Shield",
+        "Steel Armor"    
       ]
     }
     ,{
       "name": "Normal",
-      "startingLife": 20,
+      "startingLife": 25,
       "startingShards": 20,
       "startingMoney": 2000,
       "startingDifficulty": true,
@@ -250,11 +253,13 @@
       },
    "startItems": [
         "Challenge Coin",
-        "Challenge Coin"
+        "Challenge Coin",
+        "Steel Boots",
+        "Lotus Petal"
       ]
     },{
       "name": "Hard",
-      "startingLife": 15,
+      "startingLife": 20,
       "startingShards": 10,
       "startingMoney": 500,
       "enemyLifeFactor": 1.5,
@@ -276,7 +281,7 @@
       ]
     },{
       "name": "Insane",
-      "startingLife": 10,
+      "startingLife": 15,
       "startingShards": 10,
       "startingMoney": 0,
       "enemyLifeFactor": 2.0,
