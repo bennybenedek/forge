@@ -1,9 +1,11 @@
 [metadata]
 Name=Kaalia Rewards
 [Main]
+1 Abyssal Harvester|FDN|1
 1 Akroma's Will|M3C|1
 1 Angel of Despair|UMA|1
 1 Angel of Vitality|J25|1
+1 Angelic Skirmisher|GTC|1
 1 Animate Dead|MKC|1
 1 Arcane Signet|M3C|1
 1 Archfiend of Depravity|SCD|1
@@ -32,30 +34,32 @@ Name=Kaalia Rewards
 1 Demon of Loathing|THB|1
 1 Demonic Counsel|DSK|1
 1 Demonic Covenant|DSC|1
+1 Demonlord Belzenlok|CMM|1
 1 Diabolic Tutor|CMA|1
 1 Dragon Mage|FDN|1
 1 Dragon Tempest|TDC|1
 1 Dragonspeaker Shaman|SCD|1
 1 Drakuseth, Maw of Flames|GN3|1
-1 Drana and Linvala|PMOM|1
+1 Drana and Linvala|MOM|1
 1 Earthquake|CM2|1
 1 Exemplar of Light|FDN|1
 1 Farewell|NEO|1
-1 Firja's Retribution|PKHM|1
+1 Firja's Retribution|CLB|1
+1 Flameblast Dragon|C18|1
 1 Flare of Fortitude|MH3|1
 1 Flawless Maneuver|CMM|1
 1 Giada, Font of Hope|J25|1
 1 Gisela, Blade of Goldnight|CMM|1
-1 Godless Shrine|PEOE|1
+1 Godless Shrine|EOE|1
 1 Hellkite Charger|CMM|1
+1 Hellkite Igniter|C21|1
 1 Hellkite Tyrant|PLST|1
 1 Helm of the Host|PLST|1
 1 Herald of Slaanesh|40K|1
 1 Herald's Horn|CMM|1
 1 Hidetsugu, Devouring Chaos|NEO|1
-1 Immersturm Predator|KHM|1
 1 Inevitable Defeat|TDM|1
-1 Isshin, Two Heavens as One|PNEO|1
+1 Isshin, Two Heavens as One|NEO|1
 1 Kindred Dominance|CMM|1
 1 Kokusho, the Evening Star|IMA|1
 1 Kolaghan, the Storm's Fury|C17|1
@@ -71,9 +75,12 @@ Name=Kaalia Rewards
 1 Ob Nixilis, Unshackled|2X2|1
 1 Overseer of the Damned|MKC|1
 1 Path to Exile|CMM|1
+1 Patron of the Arts|CLB|1
+1 Piru, the Volatile|MH2|1
+1 Plague Drone|40K|1
 1 Platinum Angel|SLD|1
 1 Rakdos Charm|DSC|1
-1 Rakdos Joins Up|POTJ|1
+1 Rakdos Joins Up|OTJ|1
 1 Rakdos the Defiler|GK2|1
 1 Rampage of the Valkyries|KHM|1
 1 Raphael, Fiendish Savior|CLB|1
@@ -81,26 +88,28 @@ Name=Kaalia Rewards
 1 Rogue's Passage|CMM|1
 1 Ruinous Ultimatum|IKO|1
 1 Rune-Scarred Demon|FDN|1
-1 Sacred Foundry|PEOE|1
+1 Sacred Foundry|EOE|1
 1 Sarkhan the Masterless|CMM|1
 1 Sarkhan's Triumph|DTK|1
-1 Savai Triome|PIKO|1
+1 Savai Triome|IKO|1
+1 Scalelord Reckoner|C17|1
 1 Scourge of the Throne|MKC|1
 1 Sephara, Sky's Blade|CMM|1
 1 Seraph Sanctuary|SLD|2
 1 Shadowgrange Archfiend|VOC|1
 1 Shattered Angel|MOC|1
 1 Shilgengar, Sire of Famine|MH3|1
-1 Skyline Despot|CMM|1
 1 Sol Ring|M3C|1
 1 Sower of Discord|CMM|1
 1 Spit Flame|AFC|1
 1 Starnheim Aspirant|KHM|1
 1 Strionic Resonator|MOC|1
+1 Swashbuckler Extraordinaire|CLB|1
 1 Swiftfoot Boots|LCC|1
 1 Terror of Mount Velus|FDN|1
 1 The Balrog of Moria|LTC|1
 1 Thunderbreak Regent|TDC|1
+1 Thunder Dragon|CLB|1
 1 Thundermane Dragon|TDC|1
 1 Unholy Annex|DSK|1
 1 Urza's Incubator|MH3|1
@@ -109,7 +118,7 @@ Name=Kaalia Rewards
 1 Vilis, Broker of Blood|J25|1
 1 Whip of Erebos|DSC|1
 1 Whispersilk Cloak|DSC|1
-1 Windcrag Siege|PTDM|1
+1 Windcrag Siege|TDM|1
 1 Wrath of God|CMM|1
 1 Wrathful Red Dragon|CLB|1
 1 Youthful Valkyrie|FDN|1
@@ -123,11 +132,13 @@ Name=Kaalia Rewards
 1 Archangel of Thune|2XM|1
 1 Archfiend of Despair|CMM|1
 1 Aurelia, the Warleader|FDN|1
+1 Atsushi, the Blazing Sky|TDC|1
 1 Avacyn, Angel of Hope|CMM|1
 1 Balefire Dragon|CMM|1
 1 Baneslayer Angel|M21|1
 1 Battle Angels of Tyr|CLB|1
-1 Bloodletter of Aclazotz|PLCI|1
+1 Bloodletter of Aclazotz|LCI|1
+1 Bonehoard Dracosaur|LCI|1
 1 Burning-Rune Demon|KHM|1
 1 Gisela, the Broken Blade|INR|1
 1 Goldspan Dragon|KHM|1
@@ -138,14 +149,14 @@ Name=Kaalia Rewards
 1 Master of Cruelties|GK2|1
 1 Neriv, Heart of the Storm|TDM|1
 1 Ob Nixilis, the Adversary|SNC|1
-1 Rakdos, Patron of Chaos|PMKM|1
+1 Rakdos, Patron of Chaos|MKM|1
 1 Rakdos, the Muscle|OTJ|1
 1 Rakdos, the Showstopper|RNA|1
 1 Razaketh, the Foulblooded|CMM|1
 1 Reaper from the Abyss|J25|1
 1 Resplendent Angel|LCI|1
+1 Scourge of Valkas|AFC|1
 1 Serra the Benevolent|MH1|1
-1 Summon: Bahamut|FIN|1
 1 Terror of the Peaks|OTJ|1
 1 The Book of Exalted Deeds|AFR|1
 1 Twinflame Tyrant|FDN|1
