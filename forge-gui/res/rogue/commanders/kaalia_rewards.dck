@@ -23,6 +23,7 @@ Name=Kaalia Rewards
 1 Blasphemous Act|CMM|1
 1 Blast-Furnace Hellkite|BRC|2
 1 Blood Crypt|ECL|1
+1 Bloodgift Demon|J25|1
 1 Bloodstained Mire|MH3|1
 1 Bloodthirster|40K|1
 1 Boros Charm|CMR|1
@@ -58,12 +59,11 @@ Name=Kaalia Rewards
 1 Helm of the Host|PLST|1
 1 Herald of Slaanesh|40K|1
 1 Herald's Horn|CMM|1
-1 Hidetsugu, Devouring Chaos|NEO|1
 1 Inevitable Defeat|TDM|1
 1 Isshin, Two Heavens as One|NEO|1
 1 Kindred Dominance|CMM|1
-1 Kokusho, the Evening Star|IMA|1
 1 Kolaghan, the Storm's Fury|C17|1
+1 Kolaghan Warmonger|MAT|1
 1 Lathliss, Dragon Queen|TDC|1
 1 Liesa, Forgotten Archangel|INR|1
 1 Lightning Greaves|TDC|1
@@ -113,7 +113,6 @@ Name=Kaalia Rewards
 1 The Balrog of Moria|LTC|1
 1 Thunderbreak Regent|TDC|1
 1 Thunder Dragon|CLB|1
-1 Thundermane Dragon|TDC|1
 1 Timeless Dragon|MH2|1
 1 Unholy Annex|DSK|1
 1 Urza's Incubator|MH3|1
@@ -124,6 +123,7 @@ Name=Kaalia Rewards
 1 Whispersilk Cloak|DSC|1
 1 Windcrag Siege|TDM|1
 1 Wrath of God|CMM|1
+1 Wrathful Red Dragon|CLB|1
 1 Youthful Valkyrie|FDN|1
 1 Akroma, Angel of Wrath|C20|1
 1 Akroma, Vision of Ixidor|CMR|1
