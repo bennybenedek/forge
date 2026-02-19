@@ -19,7 +19,11 @@
       "Bash(mvn checkstyle:check:*)",
       "Bash(mvn checkstyle:checkstyle:*)",
       "Bash(git show-ref:*)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(git ls-tree:*)",
+      "Bash(gh workflow run:*)",
+      "Bash(where:*)",
+      "Bash(git config:*)"
     ],
     "deny": [],
     "ask": []

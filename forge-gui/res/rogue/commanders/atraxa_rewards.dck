@@ -2,10 +2,8 @@
 Name=Aragorn Rewards
 [Main]
 1 Abzan Falconer|MOC|1
-1 Ajani Goldmane|LRW|1
 1 Ajani, the Greathearted|WAR|1
 1 Arcane Signet|ONC|1
-1 Arlinn, Voice of the Pack|PLST|1
 1 Ashiok, Dream Render|WAR|1
 1 Astral Cornucopia|EOC|1
 1 Bilious Skulldweller|ONE|1
@@ -69,6 +67,7 @@ Name=Aragorn Rewards
 1 Innkeeper's Talent|PBLB|1
 1 Inspiring Call|LCC|1
 1 Interplanar Beacon|CMM|1
+1 Jace, Wielder of Mysteries|WAR|1
 1 Juniper Order Ranger|MOC|1
 1 Kaito, Dancing Shadow|ONE|1
 1 Kami of Whispered Hopes|MOM|1
@@ -132,13 +131,13 @@ Name=Aragorn Rewards
 1 Slaughter Singer|ONE|1
 1 Sol Ring|ONC|1
 1 Solidarity of Heroes|CM2|1
+1 Sorin, Vengeful Bloodlord|WAR|1
 1 Spark Double|CMM|1
 1 Sunscorch Regent|MOC|1
 1 Swiftfoot Boots|LCC|1
 1 Tainted Observer|ONE|1
 1 Tainted Strike|SOM|1
 1 Tamiyo, Collector of Tales|WAR|1
-1 Teferi, Temporal Archmage|CMM|1
 1 Teferi, Time Raveler|WAR|1
 1 Teferi's Talent|MOC|1
 1 Temple Garden|ECL|1
@@ -147,7 +146,6 @@ Name=Aragorn Rewards
 1 The Ozolith|IKO|1
 1 The Seedcore|ONE|1
 1 Triumph of the Hordes|NPH|1
-1 Tyvar, Jubilant Brawler|ONE|1
 1 Unnatural Restoration|ONE|1
 1 Urza Assembles the Titans|DMU|1
 1 Venerated Rotpriest|ONE|1
@@ -155,11 +153,11 @@ Name=Aragorn Rewards
 1 Verdant Catacombs|MH2|1
 1 Viral Drake|NPH|1
 1 Viridian Corrupter|ONC|1
-1 Vivien, Champion of the Wilds|CLB|1
 1 Voidwing Hybrid|ONE|1
 1 Vorel of the Hull Clade|LCC|1
 1 Vraska, Swarm's Eminence|WAR|1
 1 Vraska's Fall|ONE|1
+1 Vronos, Masked Inquisitor|CMM|1
 1 Walking Ballista|J22|1
 1 Warden of the Grove|TDM|1
 1 Watery Grave|EOE|1
@@ -170,8 +168,6 @@ Name=Aragorn Rewards
 1 Wurmquake|ONC|1
 1 Zegana, Utopian Speaker|LCC|1
 1 Ajani Steadfast|CMM|1
-1 Ajani Unyielding|NCC|1
-1 Ajani, Mentor of Heroes|JOU|1
 1 Ajani, Sleeper Agent|DMU|1
 1 Arena Rector|BBD|1
 1 Atraxa, Grand Unifier|ONE|1
@@ -183,24 +179,23 @@ Name=Aragorn Rewards
 1 Elesh Norn|MOM|1
 1 Elesh Norn, Grand Cenobite|IMA|1
 1 Elspeth, Sun's Champion|MKC|1
-1 Garruk, Cursed Huntsman|ELD|1
 1 Ghave, Guru of Spores|2X2|1
 1 Ichormoon Gauntlet|ONE|1
 1 Ixhel, Scion of Atraxa|ONC|1
+1 Jace, Architect of Thought|CMM|1
 1 Jace, the Mind Sculptor|2XM|1
 1 Jace, Unraveler of Secrets|INR|1
 1 Kalonian Hydra|MOC|1
+1 Kasmina, Enigma Sage|STX|2
 1 Kaya the Inexorable|KHM|1
-1 Kiora, the Crashing Wave|BNG|1
 1 Kodama of the West Tree|J25|1
-1 Liliana Vess|M15|1
+1 Kiora, the Crashing Wave|BNG|1
 1 Liliana, Dreadhorde General|RVR|1
 1 Luxior, Giada's Gift|SNC|1
 1 Mikaeus, the Lunarch|CLB|1
 1 Narset Transcendent|DTK|1
 1 Nissa, Ascended Animist|ONE|1
 1 Nissa, Voice of Zendikar|OGW|1
-1 Ob Nixilis Reignited|C19|1
 1 Oko, Thief of Crowns|ELD|1
 1 Ouroboroid|EOE|1
 1 Prime Speaker Zegana|LCC|1
@@ -215,7 +210,6 @@ Name=Aragorn Rewards
 1 Teferi, Temporal Pilgrim|BRO|1
 1 Teferi, Who Slows the Sunset|MID|1
 1 Tekuthal, Inquiry Dominus|EOC|1
-1 Tevesh Szat, Doom of Fools|CMR|1
 1 The Chain Veil|CMM|1
 1 The Great Henge|CMM|1
 1 Tomik, Wielder of Law|MKM|1
@@ -223,8 +217,6 @@ Name=Aragorn Rewards
 1 Ugin, the Spirit Dragon|M21|1
 1 Vishgraz, the Doomhive|ONC|1
 1 Vorinclex, Monstrous Raider|KHM|1
-1 Vraska the Unseen|C19|1
 1 Vraska, Betrayal's Sting|ONE|1
-1 Vraska, Relic Seeker|XLN|1
 1 Wrenn and Realmbreaker|MOM|1
 1 Zimone, Paradox Sculptor|FDN|1
