@@ -20,11 +20,11 @@ import forge.player.PlayerControllerHuman;
 import forge.player.PlayerZoneUpdate;
 import forge.player.PlayerZoneUpdates;
 import forge.util.*;
-import org.apache.commons.lang3.ObjectUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.function.Predicate;
 
@@ -64,6 +64,30 @@ public final class InputSelectTargets extends InputSyncronizedBase {
         }
 
         controller.getGui().setSelectables(CardView.getCollection(choices));
+
+        // Set selectable players if the spell can target players
+        if (tgt.canTgtPlayer() && !mustTargetFiltered) {
+            List<PlayerView> validPlayers = new ArrayList<>();
+            for (Player p : controller.getGame().getPlayers()) {
+                if (p.hasLost()) {
+                    continue;
+                }
+                if (sa.isSpell() && sa.getHostCard().isAura() && !p.canBeAttached(sa.getHostCard(), sa)) {
+                    continue;
+                }
+                if (!sa.canTarget(p)) {
+                    continue;
+                }
+                if (filter != null && !filter.test(p)) {
+                    continue;
+                }
+                validPlayers.add(p.getView());
+            }
+            if (!validPlayers.isEmpty()) {
+                controller.getGui().setSelectablePlayers(validPlayers);
+            }
+        }
+
         final PlayerZoneUpdates zonesToUpdate = new PlayerZoneUpdates();
         for (final Card c : choices) {
             zonesToUpdate.add(new PlayerZoneUpdate(c.getZone().getPlayer().getView(), c.getZone().getZoneType()));
@@ -114,7 +138,7 @@ public final class InputSelectTargets extends InputSyncronizedBase {
             sb.append(sa.getUniqueTargets());
         }
 
-        final int maxTargets = ObjectUtils.firstNonNull(numTargets, sa.getMaxTargets());
+        final int maxTargets = Objects.requireNonNullElse(numTargets, sa.getMaxTargets());
         final int targeted = sa.getTargets().size();
         if (maxTargets > 1) {
             sb.append(TextUtil.concatNoSpace("\n(", String.valueOf(maxTargets - targeted), " more can be targeted)"));

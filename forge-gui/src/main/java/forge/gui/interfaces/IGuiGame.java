@@ -233,6 +233,8 @@ public interface IGuiGame {
 
     void setSelectables(final Iterable<CardView> cards);
 
+    void setSelectablePlayers(final Iterable<PlayerView> players);
+
     void clearSelectables();
 
     boolean isSelecting();
@@ -278,4 +280,11 @@ public interface IGuiGame {
     void clearAutoYields();
 
     void setCurrentPlayer(PlayerView player);
+
+    /** Signal to start a client-side elapsed timer for waiting display. */
+    void showWaitingTimer(PlayerView forPlayer, String waitingForPlayerName);
+
+    /** Returns true if this game instance is a network game. */
+    boolean isNetGame();
+    void setNetGame();
 }

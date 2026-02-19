@@ -1,0 +1,357 @@
+package forge.screens.home.rogue;
+
+import forge.ImageCache;
+import forge.ImageKeys;
+import forge.gui.CardPicturePanel;
+import forge.gui.GuiBase;
+import forge.item.PaperCard;
+import forge.localinstance.skin.FSkinProp;
+import forge.toolbox.FSkin;
+import forge.toolbox.FSkin.SkinnedPanel;
+import forge.util.ImageFetcher;
+import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
+import java.util.function.Supplier;
+import javax.swing.Timer;
+import org.apache.commons.lang3.tuple.Pair;
+
+/**
+ * Base class for selectable card panels with flip animation. Provides common functionality for card
+ * selection dialogs.
+ */
+public abstract class SelectableCardPanelBase extends SkinnedPanel implements
+    ImageFetcher.Callback {
+
+  // Flip icon dimensions (2:3 aspect ratio matching FSkinProp)
+  private static final int FLIP_ICON_WIDTH = 44;
+  private static final int FLIP_ICON_HEIGHT = 66;
+
+  protected final PaperCard card;
+  protected final CardPicturePanel cardPicture;
+  protected boolean selected;
+  protected boolean hovered;
+  protected boolean faceDown;
+  protected boolean animating;
+  protected double scaleX;
+  private Timer animationTimer;
+  private final Supplier<CardZoomUtil> zoomUtilSupplier;
+
+  // Double-faced card support
+  protected final boolean hasBackFace;
+  protected boolean showingAltFace;
+
+  /**
+   * Create a selectable card panel.
+   *
+   * @param card             The card to display
+   * @param zoomUtilSupplier Supplier for zoom utility (accessed at runtime, can return null)
+   */
+  public SelectableCardPanelBase(PaperCard card, Supplier<CardZoomUtil> zoomUtilSupplier) {
+    super(null);
+    this.card = card;
+    this.selected = false;
+    this.faceDown = true; // Start face-down
+    this.animating = false;
+    this.scaleX = 1.0;
+    this.cardPicture = new CardPicturePanel();
+    this.zoomUtilSupplier = zoomUtilSupplier;
+
+    // Check if card has a back face (transform, flip, meld, modal)
+    this.hasBackFace = card.hasBackFace();
+    this.showingAltFace = false;
+
+    setOpaque(false);
+    setLayout(null); // Manual layout
+
+    // Set the card to display (start with card back)
+    updateCardDisplay();
+    cardPicture.setOpaque(false);
+    add(cardPicture);
+
+    // Add mouse listener for selection and flip button clicks
+    addMouseListener(new MouseAdapter() {
+      @Override
+      public void mouseClicked(MouseEvent e) {
+        if (!faceDown) {
+          // Check if click is on flip icon area
+          if (hasBackFace && isClickOnFlipIcon(e)) {
+            if (!animating) {
+              flipToOtherFace();
+            }
+          } else {
+            toggleSelection();
+          }
+        }
+      }
+
+      @Override
+      public void mouseEntered(MouseEvent e) {
+        hovered = true;
+        setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        repaint();
+      }
+
+      @Override
+      public void mouseExited(MouseEvent e) {
+        hovered = false;
+        setCursor(Cursor.getDefaultCursor());
+        repaint();
+      }
+    });
+
+    // Add mouse wheel listener for card zoom (only when revealed)
+    addMouseWheelListener(e -> {
+      if (!faceDown && e.getWheelRotation() < 0) {
+        CardZoomUtil zoomUtil = zoomUtilSupplier != null ? zoomUtilSupplier.get() : null;
+        if (zoomUtil != null) {
+          // Zoom the currently displayed face
+          zoomUtil.showZoom(card, showingAltFace);
+        }
+      }
+    });
+  }
+
+  /**
+   * Check if the click was on the flip icon area. Icon is positioned in upper third, right side.
+   */
+  private boolean isClickOnFlipIcon(MouseEvent e) {
+    int iconX = (int) (getWidth() * 0.72) - FLIP_ICON_WIDTH / 2;
+    int iconY = (int) (getHeight() * 0.18);
+    int padding = 4;
+    int x = e.getX();
+    int y = e.getY();
+    return x >= iconX - padding && x <= iconX + FLIP_ICON_WIDTH + padding
+        && y >= iconY - padding && y <= iconY + FLIP_ICON_HEIGHT + padding;
+  }
+
+  /**
+   * Update the card display (face-up or face-down, front or back face).
+   */
+  protected void updateCardDisplay() {
+    if (faceDown) {
+      // Show card back
+      BufferedImage cardBack = ImageCache.getOriginalImage(
+          ImageKeys.getTokenKey(ImageKeys.HIDDEN_CARD), true, null);
+      cardPicture.setItem(cardBack);
+    } else if (showingAltFace && hasBackFace) {
+      // Show alternate face - check if we need to fetch the image
+      String altImageKey = card.getImageKey(true);
+      Pair<BufferedImage, Boolean> imageInfo = ImageCache.getCardOriginalImageInfo(altImageKey,
+          true);
+      BufferedImage altImage = imageInfo.getLeft();
+      boolean isPlaceholder = imageInfo.getRight();
+
+      // Trigger fetch if image is missing or placeholder
+      if (ImageCache.isDefaultImage(altImage) || isPlaceholder) {
+        GuiBase.getInterface().getImageFetcher().fetchImage(altImageKey, this);
+      }
+
+      if (altImage != null) {
+        cardPicture.setItem(altImage);
+      } else {
+        cardPicture.setItem(card);
+      }
+    } else {
+      // Show front face
+      cardPicture.setItem(card);
+    }
+  }
+
+  /**
+   * Callback from ImageFetcher when a card image has been downloaded.
+   */
+  @Override
+  public void onImageFetched() {
+    // Refresh display with newly downloaded image
+    updateCardDisplay();
+    repaint();
+  }
+
+  /**
+   * Start the flip animation to reveal the card.
+   */
+  public void flip() {
+    if (animating || !faceDown) {
+      return; // Already revealed or animating
+    }
+    runFlipAnimation(() -> faceDown = false);
+  }
+
+  /**
+   * Start the flip animation to show the other face of a double-faced card.
+   */
+  public void flipToOtherFace() {
+    if (animating || faceDown || !hasBackFace) {
+      return; // Can't flip if animating, face-down, or no back face
+    }
+    runFlipAnimation(() -> showingAltFace = !showingAltFace);
+  }
+
+  /**
+   * Run the flip animation with a custom action at the midpoint.
+   *
+   * @param midpointAction Action to run when the card is "edge-on" (scale = 0)
+   */
+  private void runFlipAnimation(Runnable midpointAction) {
+    animating = true;
+    final int animationDuration = 300; // milliseconds
+    final int framesPerSecond = 60;
+    final int frameDelay = 1000 / framesPerSecond;
+    final int totalFrames = animationDuration / frameDelay;
+    final double scaleStep = 2.0 / totalFrames;
+
+    final int[] currentFrame = {0};
+    final boolean[] actionExecuted = {false};
+
+    animationTimer = new Timer(frameDelay, e -> {
+      currentFrame[0]++;
+
+      // Calculate scale (1.0 -> 0.0 -> 1.0)
+      if (currentFrame[0] <= totalFrames / 2) {
+        scaleX = 1.0 - (currentFrame[0] * scaleStep);
+      } else {
+        scaleX = (currentFrame[0] - totalFrames / 2) * scaleStep;
+      }
+
+      // Execute midpoint action and update display
+      if (!actionExecuted[0] && currentFrame[0] >= totalFrames / 2) {
+        midpointAction.run();
+        updateCardDisplay();
+        actionExecuted[0] = true;
+      }
+
+      repaint();
+
+      // End animation
+      if (currentFrame[0] >= totalFrames) {
+        animationTimer.stop();
+        animating = false;
+        scaleX = 1.0;
+        repaint();
+      }
+    });
+
+    animationTimer.start();
+  }
+
+  /**
+   * Set the selection state.
+   */
+  public void setSelected(boolean selected) {
+    this.selected = selected;
+    repaint();
+  }
+
+  /**
+   * Toggle the selection state. Subclasses can override to add custom logic (e.g., budget
+   * checking).
+   */
+  protected abstract void toggleSelection();
+
+  @Override
+  public void doLayout() {
+    // Make card picture fill the panel
+    cardPicture.setBounds(0, 0, getWidth(), getHeight());
+  }
+
+  @Override
+  public void paint(Graphics g) {
+    final Graphics2D g2d = (Graphics2D) g;
+    final int width = getWidth();
+    final int height = getHeight();
+
+    // Apply horizontal scale transformation if animating
+    if (animating && scaleX != 1.0) {
+      // Save the original transform
+      AffineTransform originalTransform = g2d.getTransform();
+
+      // Create scale transform centered on the card
+      AffineTransform scaleTransform = new AffineTransform();
+      scaleTransform.translate(width / 2.0, 0); // Move origin to center
+      scaleTransform.scale(Math.max(0.01, scaleX),
+          1.0); // Scale horizontally (min 0.01 to avoid zero)
+      scaleTransform.translate(-width / 2.0, 0); // Move origin back
+
+      g2d.transform(scaleTransform);
+      super.paint(g);
+      g2d.setTransform(originalTransform);
+    } else {
+      super.paint(g);
+    }
+
+    // Draw hover/selection indicators ON TOP of everything (only if not animating)
+    if (!animating) {
+      if (selected) {
+        drawSelectionHighlight(g2d, width, height);
+      } else if (hovered && !faceDown) {
+        // Draw yellow/gold hover border when not selected and card is revealed
+        drawHoverHighlight(g2d, width, height);
+      }
+
+      // Draw flip icon for double-faced cards (when revealed)
+      if (hasBackFace && !faceDown) {
+        drawFlipIcon(g2d);
+      }
+    }
+  }
+
+  /**
+   * Draw the flip icon in upper third, right side (Moxfield style).
+   */
+  private void drawFlipIcon(Graphics2D g2d) {
+    // Position: upper third vertically, right side horizontally
+    int iconX = (int) (getWidth() * 0.72) - FLIP_ICON_WIDTH / 2;
+    int iconY = (int) (getHeight() * 0.18);
+
+    // Draw nearly opaque black background with oval/pill shape for visibility
+    int padding = 5;
+    int bgWidth = FLIP_ICON_WIDTH + padding * 2;
+    int bgHeight = FLIP_ICON_HEIGHT + padding * 2;
+    int cornerRadius = bgWidth; // Full width = oval/pill shape
+    g2d.setColor(new Color(0, 0, 0, 230)); // Tiny bit of transparency
+    g2d.fillRoundRect(iconX - padding, iconY - padding, bgWidth, bgHeight, cornerRadius,
+        cornerRadius);
+
+    // Draw the icon
+    FSkin.drawImage(g2d, FSkin.getIcon(FSkinProp.ICO_FLIPCARD),
+        iconX, iconY, FLIP_ICON_WIDTH, FLIP_ICON_HEIGHT);
+  }
+
+  /**
+   * Draw the hover highlight (yellow/gold border).
+   */
+  protected void drawHoverHighlight(Graphics2D g2d, int width, int height) {
+    g2d.setColor(new Color(255, 215, 0));  // Gold color
+    g2d.setStroke(new BasicStroke(4));
+    g2d.drawRect(3, 3, width - 6, height - 6);
+  }
+
+  /**
+   * Draw the selection highlight (green border + checkmark).
+   */
+  protected void drawSelectionHighlight(Graphics2D g2d, int width, int height) {
+    // Draw thick border
+    g2d.setColor(new Color(0, 255, 0, 200)); // Green with transparency
+    g2d.setStroke(new BasicStroke(6)); // Thicker border
+    g2d.drawRect(3, 3, width - 6, height - 6);
+
+    // Draw checkmark in top-right corner
+    int checkSize = 30;
+    int checkX = width - checkSize - 8;
+    int checkY = 8;
+
+    // Draw circle background
+    g2d.setColor(new Color(0, 200, 0, 230));
+    g2d.fillOval(checkX, checkY, checkSize, checkSize);
+
+    // Draw checkmark
+    g2d.setColor(Color.WHITE);
+    g2d.setStroke(new BasicStroke(3));
+    int[] xPoints = {checkX + 7, checkX + 12, checkX + 23};
+    int[] yPoints = {checkY + 15, checkY + 20, checkY + 10};
+    g2d.drawPolyline(xPoints, yPoints, 3);
+  }
+}

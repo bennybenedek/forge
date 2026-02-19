@@ -1,14 +1,10 @@
 package forge.screens.deckeditor.views;
 
-import java.awt.Font;
-
-import javax.swing.JPanel;
-
+import forge.gui.GuiBase;
 import forge.gui.framework.DragCell;
 import forge.gui.framework.DragTab;
 import forge.gui.framework.EDocID;
 import forge.gui.framework.IVDoc;
-import forge.gui.GuiBase;
 import forge.itemmanager.SItemManagerUtil.StatTypes;
 import forge.screens.deckeditor.controllers.CStatistics;
 import forge.toolbox.FLabel;
@@ -16,6 +12,8 @@ import forge.toolbox.FScrollPane;
 import forge.toolbox.FSkin;
 import forge.toolbox.FSkin.SkinImage;
 import forge.util.Localizer;
+import java.awt.Font;
+import javax.swing.JPanel;
 import net.miginfocom.swing.MigLayout;
 
 /**
@@ -43,6 +41,14 @@ public enum VStatistics implements IVDoc<CStatistics> {
     private FLabel lblAMC = new FLabel.Builder()
             .text(String.format("%s: 0.00", Localizer.getInstance().getMessage("lblAverageManaCost").toUpperCase()))
             .tooltip(Localizer.getInstance().getMessage("lblAverageManaCost"))
+            .fontStyle(Font.BOLD).fontSize(11).fontStyle(Font.BOLD).build();
+    private FLabel lblAMCWithoutLands = new FLabel.Builder()
+        .text(String.format("%s: 0.00", Localizer.getInstance().getMessage("lblAverageManaCost").toUpperCase()))
+        .tooltip(Localizer.getInstance().getMessage("lblAverageManaCost"))
+        .fontStyle(Font.BOLD).fontSize(11).fontStyle(Font.BOLD).build();
+    private FLabel lblExpectedLands = new FLabel.Builder()
+            .text(String.format("%s: 0.00", Localizer.getInstance().getMessage("lblExpectedLands").toUpperCase()))
+            .tooltip(Localizer.getInstance().getMessage("lblExpectedLands"))
             .fontStyle(Font.BOLD).fontSize(11).fontStyle(Font.BOLD).build();
     private FLabel lblCardCountHeader = new FLabel.Builder()
             .text(Localizer.getInstance().getMessage("lblCardByColorTypeCMC")).tooltip(Localizer.getInstance().getMessage("lblBreakdownOfColorTypeCMC"))
@@ -135,6 +141,8 @@ public enum VStatistics implements IVDoc<CStatistics> {
         pnlStats.add(lblTotal, "w 96%!, h 20px!, span 3 1, gap 2% 0 0 0");
         pnlStats.add(lblTMC, "w 96%!, h 20px!, span 3 1, gap 2% 0 0 0");
         pnlStats.add(lblAMC, "w 96%!, h 20px!, span 3 1, gap 2% 0 0 0");
+        pnlStats.add(lblAMCWithoutLands, "w 96%!, h 20px!, span 3 1, gap 2% 0 0 0");
+        pnlStats.add(lblExpectedLands, "w 96%!, h 20px!, span 3 1, gap 2% 0 0 0");
 
         // Add labels to container
         final String constraints = "w 32%!, h 35px!";
@@ -293,6 +301,10 @@ public enum VStatistics implements IVDoc<CStatistics> {
     public FLabel getLblTMC() { return lblTMC; }
     /** @return {@link forge.toolbox.FLabel} */
     public FLabel getLblAMC() { return lblAMC; }
+    /** @return {@link forge.toolbox.FLabel} */
+    public FLabel getLblAMCWithoutLands() { return lblAMCWithoutLands; }
+    /** @return {@link forge.toolbox.FLabel} */
+    public FLabel getLblExpectedLands() { return lblExpectedLands; }
 
     //========== Other methods
 

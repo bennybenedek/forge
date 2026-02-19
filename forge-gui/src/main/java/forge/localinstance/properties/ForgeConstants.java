@@ -27,10 +27,10 @@ import java.util.Map;
 
 public final class ForgeConstants {
     private static final Localizer localizer = Localizer.getInstance();
-    public static final String GITHUB_FORGE_URL                 = "https://github.com/Card-Forge/forge/";
+    public static final String GITHUB_FORGE_URL                 = "https://github.com/bennybenedek/forge/";
     public static final String GITHUB_RELEASES_ATOM             = GITHUB_FORGE_URL + "releases.atom";
-    public static final String GITHUB_COMMITS_ATOM              = GITHUB_FORGE_URL + "commits/master.atom";
-    public static final String GITHUB_SNAPSHOT_URL              = GITHUB_FORGE_URL + "releases/download/daily-snapshots/";
+    public static final String GITHUB_COMMITS_ATOM              = GITHUB_FORGE_URL + "commits/rogueCommander.atom";
+    public static final String GITHUB_SNAPSHOT_URL              = GITHUB_FORGE_URL + "releases/download/rogue-commander-latest/";
     public static final String RELEASE_URL                      = "https://releases.cardforge.org/";
     public static final String PATH_SEPARATOR                   = File.separator;
     public static final String ASSETS_DIR                       = GuiBase.getInterface().getAssetsDir();
@@ -93,6 +93,7 @@ public final class ForgeConstants {
     public static final String AI_PROFILE_DIR               = RES_DIR + "ai" + PATH_SEPARATOR;
     public static final String SOUND_DIR                    = "sound" + PATH_SEPARATOR;
     public static final String MUSIC_DIR                    = "music" + PATH_SEPARATOR;
+    public static final String SKIN_DIR                     = "skin" + PATH_SEPARATOR;
     public static final String ADVENTURE_COMMON_MUSIC_DIR   = ADVENTURE_COMMON_DIR + "music" + PATH_SEPARATOR;
     public static final String LANG_DIR                     = RES_DIR + "languages" + PATH_SEPARATOR;
     public static final String EFFECTS_DIR                  = RES_DIR + "effects" + PATH_SEPARATOR;
@@ -271,6 +272,7 @@ public final class ForgeConstants {
     public static final String ITEM_VIEW_PREFS_FILE       = USER_PREFS_DIR + "item_view.preferences";
     public static final String CLOSE_CONN_COMMAND         = "<<_EM_ESOLC_<<";
     public static final String INVALID_HOST_COMMAND       = "<<_TSOH_DILAVNI_<<";
+    public static final String CONN_ERROR_PREFIX          = "<<_CONN_ERROR_>>:";
 
     // data that has defaults in the program dir but overrides/additions in the user dir
     private static final String _DEFAULTS_DIR = RES_DIR + "defaults" + PATH_SEPARATOR;

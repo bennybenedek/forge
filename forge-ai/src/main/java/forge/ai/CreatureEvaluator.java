@@ -13,7 +13,6 @@ import forge.game.staticability.StaticAbilityCantAttackBlock;
 import forge.game.staticability.StaticAbilityMustAttack;
 import forge.game.trigger.Trigger;
 import forge.game.trigger.TriggerType;
-
 import java.util.List;
 import java.util.function.Function;
 
@@ -33,6 +32,9 @@ public class CreatureEvaluator implements Function<Card, Integer> {
         int value = 80;
         if (!c.isToken()) {
             value += addValue(20, "non-token"); // tokens should be worth less than actual cards
+        }
+        if (c.isCommander()) {
+            value += addValue(100, "commander"); // Commanders are central to strategy
         }
         int power = c.getNetCombatDamage();
         final int toughness = c.getNetToughness();
@@ -179,13 +181,16 @@ public class CreatureEvaluator implements Function<Card, Integer> {
         } else if (c.getSVar("SacrificeEndCombat").equals("True")) {
             value -= subValue(40, "sac-end");
         }
-        if (c.hasKeyword("CARDNAME can't attack or block.")) {
+        if (c.isDetained()) {
+            value = addValue(50 + (c.getCMC() * 5), "detained"); // reset everything - useless
+        } else if (c.hasKeyword("CARDNAME can't attack or block.")) {
             value = addValue(50 + (c.getCMC() * 5), "useless"); // reset everything - useless
         } else if (c.hasKeyword("CARDNAME can't block.")) {
             value -= subValue(10, "cant-block");
         } else if (c.isGoaded()) {
             value -= subValue(5, "goaded");
         } else {
+            // TODO lower the values slightly if they're only temporary
             List<GameEntity> mAEnt = StaticAbilityMustAttack.entitiesMustAttack(c);
             if (mAEnt.contains(c)) {
                 value -= subValue(10, "must-attack");

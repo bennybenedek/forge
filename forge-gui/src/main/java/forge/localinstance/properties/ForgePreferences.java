@@ -80,6 +80,7 @@ public class ForgePreferences extends PreferencesStore<ForgePreferences.FPref> {
         UI_OVERLAY_CARD_NAME ("true"),
         UI_OVERLAY_CARD_POWER ("true"),
         UI_OVERLAY_CARD_MANA_COST ("true"),
+        UI_OVERLAY_CARD_PERPETUAL_MANA_COST ("true"),
         UI_OVERLAY_CARD_ID ("true"),
         UI_OVERLAY_ABILITY_ICONS("true"),
         UI_OVERLAY_DRAFT_RANKING("true"),
@@ -175,6 +176,7 @@ public class ForgePreferences extends PreferencesStore<ForgePreferences.FPref> {
         UI_FOR_TOUCHSCREN("false"),
         UI_SWITCH_STATES_DECKVIEW("Switch back on hover"),
         UI_ORDER_HAND("false"),
+        UI_ENABLE_AI_PICKER("false"),
 
         UI_VIBRATE_ON_LIFE_LOSS("true"),
         UI_VIBRATE_ON_LONG_PRESS("true"),
@@ -195,6 +197,7 @@ public class ForgePreferences extends PreferencesStore<ForgePreferences.FPref> {
         SUBMENU_SANCTIONED ("true"),
         SUBMENU_ONLINE ("false"),
         SUBMENU_GAUNTLET ("false"),
+        SUBMENU_ROGUE ("false"),
         SUBMENU_QUEST ("false"),
         SUBMENU_PUZZLE("false"),
         SUBMENU_SETTINGS ("false"),

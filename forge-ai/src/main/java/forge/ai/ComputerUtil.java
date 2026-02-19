@@ -751,7 +751,8 @@ public class ComputerUtil {
     public static CardCollection chooseUntapType(final Player ai, final String type, final Card activate, final boolean untap, final int amount, SpellAbility sa) {
         CardCollection typeList = CardLists.getValidCards(ai.getCardsIn(ZoneType.Battlefield), type.split(";"), activate.getController(), activate, sa);
 
-        typeList = CardLists.filter(typeList, CardPredicates.TAPPED, c -> c.getCounters(CounterEnumType.STUN) == 0 || c.canRemoveCounters(CounterEnumType.STUN));
+        typeList = CardLists.filter(typeList, c -> c.canUntap(null, false) &&
+                (c.getCounters(CounterEnumType.STUN) == 0 || c.canRemoveCounters(CounterEnumType.STUN)));
 
         if (untap) {
             typeList.remove(activate);
@@ -827,13 +828,30 @@ public class ComputerUtil {
                 System.err.println("Warning: AILogic Lethal could not meaningfully select enough cards for the AF Sacrifice on " + source.getHostCard());
             }
         } else if (isOptional && source.getActivatingPlayer().isOpponentOf(ai)) {
-            if ("Pillar Tombs of Aku".equals(host.getName())) {
-                if (!ai.canLoseLife() || ai.cantLoseForZeroOrLessLife()) {
-                    return sacrificed; // sacrifice none
+            // Check if not sacrificing would result in lethal life loss
+            boolean wouldDieFromNotSacrificing = false;
+            if (ai.canLoseLife() && !ai.cantLoseForZeroOrLessLife()) {
+                // Look for a SubAbility that causes life loss to players who don't sacrifice
+                SpellAbility sub = source.getSubAbility();
+                while (sub != null) {
+                    if (sub.getApi() == ApiType.LoseLife) {
+                        String defined = sub.getParamOrDefault("Defined", "");
+                        // Check if this targets the AI (e.g., OppNonRememberedController, TriggeredPlayer)
+                        if (defined.contains("OppNon") || defined.contains("Opponent") || defined.contains("TriggeredPlayer")) {
+                            int lifeAmount = AbilityUtils.calculateAmount(host, sub.getParamOrDefault("LifeAmount", "0"), sub);
+                            if (lifeAmount >= ai.getLife()) {
+                                wouldDieFromNotSacrificing = true;
+                            }
+                        }
+                        break;
+                    }
+                    sub = sub.getSubAbility();
                 }
-            } else {
-                return sacrificed; // sacrifice none
             }
+            if (!wouldDieFromNotSacrificing) {
+                return sacrificed; // sacrifice none since we won't die from it
+            }
+            // Otherwise, continue to choose permanents to sacrifice to avoid dying
         }
         boolean exceptSelf = "ExceptSelf".equals(source.getParam("AILogic"));
         boolean removedSelf = false;
@@ -1432,12 +1450,24 @@ public class ComputerUtil {
                 }
 
                 final String valid = params.get("ValidCard");
-                if (valid.contains("Creature.YouCtrl") || valid.contains("Other+YouCtrl") ) {
+                // Check if trigger applies to AI's creatures:
+                // - "Creature.YouCtrl" or "Other+YouCtrl" explicitly include AI's creatures
+                // - "Creature" (no restriction) means all creatures, including AI's
+                if (valid.contains("Creature.YouCtrl") || valid.contains("Other+YouCtrl")
+                        || valid.equals("Creature")) {
 
-                    final SpellAbility sa = t.getOverridingAbility();
+                    // Check getOverridingAbility first, then resolve Execute$ SVar if needed
+                    SpellAbility sa = t.getOverridingAbility();
                     if (sa != null && sa.getApi() == ApiType.Pump && sa.hasParam("KW")
                             && sa.getParam("KW").contains("Haste")) {
                         return true;
+                    }
+                    // For triggers using Execute$ SVar (like Bloodhill Bastion), check the SVar text
+                    if (sa == null && params.containsKey("Execute")) {
+                        String svarText = c.getSVar(params.get("Execute"));
+                        if (svarText != null && svarText.contains("Haste")) {
+                            return true;
+                        }
                     }
                 }
             }
@@ -2404,7 +2434,7 @@ public class ComputerUtil {
                     chosen = ComputerUtilCard.getMostProminentType(list, validTypes);
                 } else  if (logic.equals("MostNeededType")) {
                     // Choose a type that is in the deck, but not in hand or on the battlefield
-                    final List<String> basics = new ArrayList<>(CardType.Constant.BASIC_TYPES);
+                    final Collection<String> basics = CardType.getBasicTypes();
                     CardCollectionView presentCards = CardCollection.combine(ai.getCardsIn(ZoneType.Battlefield), ai.getCardsIn(ZoneType.Hand));
                     CardCollectionView possibleCards = ai.getAllCards();
 
@@ -2423,7 +2453,7 @@ public class ComputerUtil {
                 }
                 else if (logic.equals("ChosenLandwalk")) {
                     for (Card c : AiAttackController.choosePreferredDefenderPlayer(ai).getLandsInPlay()) {
-                        for (String t : c.getType()) {
+                        for (String t : c.getType().getLandTypes()) {
                             if (CardType.isABasicLandType(t)) {
                                 chosen = t;
                                 break;
@@ -2665,7 +2695,7 @@ public class ComputerUtil {
         return safeCards;
     }
 
-    public static Card getKilledByTargeting(final SpellAbility sa, CardCollectionView validCards) {
+    public static Card getKilledByTargeting(final SpellAbility sa, Iterable<Card> validCards) {
         CardCollection killables = CardLists.filter(validCards, c -> c.getController() != sa.getActivatingPlayer() && c.getSVar("Targeting").equals("Dies"));
         return ComputerUtilCard.getBestCreatureAI(killables);
     }
@@ -3161,11 +3191,12 @@ public class ComputerUtil {
         }
         Combat combat = ai.getGame().getCombat();
         boolean isThreatened = (c.isCreature() && ComputerUtil.predictCreatureWillDieThisTurn(ai, c, sa, false)
-                && (!ComputerUtilCombat.willOpposingCreatureDieInCombat(ai, c, combat) && !ComputerUtilCombat.isDangerousToSacInCombat(ai, c, combat)))
+                && !ComputerUtilCombat.willOpposingCreatureDieInCombat(ai, c, combat) && !ComputerUtilCombat.isDangerousToSacInCombat(ai, c, combat))
                 || (!c.isCreature() && ComputerUtil.predictThreatenedObjects(ai, sa).contains(c));
         return isThreatened;
     }
 
+    // some AI checks can lead to loops depending on the boardstate
     public static <T> T protectRecursion(SpellAbility sa, Supplier<T> loopableMethod, T fallback) {
         boolean unskip = false;
         if (sa != null) {

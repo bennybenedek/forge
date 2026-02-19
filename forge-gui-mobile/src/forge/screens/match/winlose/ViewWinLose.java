@@ -1,12 +1,7 @@
 package forge.screens.match.winlose;
 
-import java.util.List;
-
-import org.apache.commons.lang3.StringUtils;
-
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.utils.Align;
-
 import forge.Forge;
 import forge.assets.FSkinColor;
 import forge.assets.FSkinColor.Colors;
@@ -22,13 +17,10 @@ import forge.item.PaperCard;
 import forge.localinstance.skin.FSkinProp;
 import forge.menu.FMagnifyView;
 import forge.model.FModel;
-import forge.toolbox.FButton;
-import forge.toolbox.FContainer;
-import forge.toolbox.FDisplayObject;
-import forge.toolbox.FLabel;
-import forge.toolbox.FOverlay;
-import forge.toolbox.FTextArea;
+import forge.toolbox.*;
 import forge.util.Utils;
+import java.util.List;
+import org.apache.commons.lang3.StringUtils;
 
 public class ViewWinLose extends FOverlay implements IWinLoseView<FButton> {
     private static final float INSETS_FACTOR = 0.025f;
@@ -62,7 +54,7 @@ public class ViewWinLose extends FOverlay implements IWinLoseView<FButton> {
         btnContinue.setEnabled(!game0.isMatchOver());
 
         lblLog = add(new FLabel.Builder().text(Forge.getLocalizer().getMessage("lblGameLog")).align(Align.center).font(FSkinFont.get(18)).build());
-        txtLog = add(new FTextArea(true, StringUtils.join(game.getGameLog().getLogEntries(null), "\r\n").replace("[COMPUTER]", "[AI]")) {
+        txtLog = add(new FTextArea(true, StringUtils.join(game.getGameLog().getLogEntries(null), "\r\n")) {
             @Override
             public boolean tap(float x, float y, int count) {
                 if (txtLog.getMaxScrollTop() > 0) {
@@ -82,8 +74,7 @@ public class ViewWinLose extends FOverlay implements IWinLoseView<FButton> {
         );
         lblTitle.setText(composeTitle(game0));
 
-        // Control of the win/lose is handled differently for various game
-        // modes.
+        // Control of the win/lose is handled differently for various game modes
         ControlWinLose control = null;
         switch (game0.getGameType()) {
         case Quest:
@@ -279,5 +270,10 @@ public class ViewWinLose extends FOverlay implements IWinLoseView<FButton> {
     @Override
     public void showMessage(String message, String title, FSkinProp icon) {
         SOptionPane.showMessageDialog(message, title, icon);
+    }
+
+    @Override
+    public List<PaperCard> showCardRewardDialog(String title, List<PaperCard> cards, int maxSelections) {
+        return List.of();
     }
 }

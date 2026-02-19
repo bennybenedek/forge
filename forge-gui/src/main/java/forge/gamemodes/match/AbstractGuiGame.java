@@ -38,6 +38,19 @@ public abstract class AbstractGuiGame implements IGuiGame, IMayViewCards {
     private PlaybackSpeed playbackSpeed = PlaybackSpeed.NORMAL;
     private String daytime = null;
     private boolean ignoreConcedeChain = false;
+    private boolean networkGame = false;
+
+    private java.util.Timer waitingTimer;
+    private long waitingStartTime;
+
+    @Override
+    public boolean isNetGame() {
+        return networkGame;
+    }
+    @Override
+    public void setNetGame() {
+        networkGame = true;
+    }
 
     public final boolean hasLocalPlayers() {
         return !gameControllers.isEmpty();
@@ -293,6 +306,7 @@ public abstract class AbstractGuiGame implements IGuiGame, IMayViewCards {
     }
 
     private final Set<CardView> selectableCards = Sets.newHashSet();
+    private final Set<PlayerView> selectablePlayers = Sets.newHashSet();
 
     public void setSelectables(final Iterable<CardView> cards) {
         for (CardView cv : cards) {
@@ -300,16 +314,32 @@ public abstract class AbstractGuiGame implements IGuiGame, IMayViewCards {
         }
     }
 
+    public void setSelectablePlayers(final Iterable<PlayerView> players) {
+        for (PlayerView pv : players) {
+            if (selectablePlayers.add(pv)) {
+                updateLives(Collections.singleton(pv));
+            }
+        }
+    }
+
     public void clearSelectables() {
         selectableCards.clear();
+        for (PlayerView pv : selectablePlayers) {
+            updateLives(Collections.singleton(pv));
+        }
+        selectablePlayers.clear();
     }
 
     public boolean isSelectable(final CardView card) {
         return selectableCards.contains(card);
     }
 
+    public boolean isSelectablePlayer(final PlayerView player) {
+        return selectablePlayers.contains(player);
+    }
+
     public boolean isSelecting() {
-        return !selectableCards.isEmpty();
+        return !selectableCards.isEmpty() || !selectablePlayers.isEmpty();
     }
 
     public boolean isGamePaused() {
@@ -459,6 +489,9 @@ public abstract class AbstractGuiGame implements IGuiGame, IMayViewCards {
                     synchronized (awaitNextInputTimer) {
                         if (awaitNextInputTask != null) {
                             updatePromptForAwait(getCurrentPlayer());
+                            if (GuiBase.isNetworkplay(AbstractGuiGame.this)) {
+                                showWaitingTimer(getCurrentPlayer(), findWaitingForPlayerName(getCurrentPlayer()));
+                            }
                             awaitNextInputTask = null;
                         }
                     }
@@ -467,6 +500,7 @@ public abstract class AbstractGuiGame implements IGuiGame, IMayViewCards {
         };
         awaitNextInputTimer.schedule(awaitNextInputTask, 250);
     }
+
     private void checkAwaitNextInputTimer() {
         if (awaitNextInputTimer == null) {
             String name = "?";
@@ -479,6 +513,72 @@ public abstract class AbstractGuiGame implements IGuiGame, IMayViewCards {
     protected final void updatePromptForAwait(final PlayerView playerView) {
         showPromptMessage(playerView, Localizer.getInstance().getMessage("lblWaitingForOpponent"));
         updateButtons(playerView, false, false, false);
+    }
+
+    @Override
+    public void showWaitingTimer(final PlayerView forPlayer, final String waitingForPlayerName) {
+        cancelWaitingTimer();
+        if (waitingForPlayerName == null) {
+            return;
+        }
+        this.waitingStartTime = System.currentTimeMillis();
+        waitingTimer = new java.util.Timer("waitingTimer");
+        waitingTimer.schedule(new java.util.TimerTask() {
+            @Override
+            public void run() {
+                FThreads.invokeInEdtLater(() -> updateWaitingDisplay(forPlayer, waitingForPlayerName));
+            }
+        }, 1000, 1000);
+    }
+
+    private void updateWaitingDisplay(final PlayerView forPlayer, final String waitingForPlayerName) {
+        long elapsedSec = (System.currentTimeMillis() - waitingStartTime) / 1000;
+        if (elapsedSec < 2) {
+            return;
+        }
+        String timeStr;
+        if (elapsedSec < 60) {
+            timeStr = elapsedSec + "s";
+        } else {
+            timeStr = String.format("%d:%02d", elapsedSec / 60, elapsedSec % 60);
+        }
+        showPromptMessageNoCancel(forPlayer, Localizer.getInstance().getMessage("lblWaitingForPlayer", waitingForPlayerName) + " (" + timeStr + ")");
+    }
+
+    protected void cancelWaitingTimer() {
+        if (waitingTimer != null) {
+            waitingTimer.cancel();
+            waitingTimer = null;
+        }
+    }
+
+    public void showPromptMessageNoCancel(final PlayerView playerView, final String message) {}
+
+    private String findWaitingForPlayerName(final PlayerView forPlayer) {
+        if (gameView.getPlayers() != null) {
+            for (PlayerView pv : gameView.getPlayers()) {
+                if (pv.getHasPriority() && (forPlayer == null || pv.getId() != forPlayer.getId())) {
+                    return pv.getName();
+                }
+            }
+        }
+        // Fallback to turn player during mulligan/setup
+        PlayerView turnPlayer = gameView.getPlayerTurn();
+        if (turnPlayer != null && (forPlayer == null || turnPlayer.getId() != forPlayer.getId())) {
+            return turnPlayer.getName();
+        }
+        // Fallback to any non-local player
+        if (gameView.getPlayers() != null) {
+            for (PlayerView pv : gameView.getPlayers()) {
+                if (forPlayer != null && pv.getId() == forPlayer.getId()) {
+                    continue;
+                }
+                if (!isLocalPlayer(pv)) {
+                    return pv.getName();
+                }
+            }
+        }
+        return null;
     }
 
     @Override
@@ -495,6 +595,7 @@ public abstract class AbstractGuiGame implements IGuiGame, IMayViewCards {
                 awaitNextInputTask = null;
             }
         }
+        cancelWaitingTimer();
     }
 
     @Override

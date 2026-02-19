@@ -3,6 +3,7 @@ package forge.util;
 import forge.ImageKeys;
 import forge.StaticData;
 import forge.card.CardDb;
+import forge.card.CardEdition;
 import forge.card.CardRules;
 import forge.card.CardSplitType;
 import forge.item.IPaperCard;
@@ -104,7 +105,9 @@ public class ImageUtil {
         StringBuilder s = new StringBuilder();
 
         CardRules card = cp.getRules();
-        String edition = cp.getEdition();
+        String edition = cp.getEdition().equals(CardEdition.UNKNOWN_CODE)
+                ? CardEdition.UNKNOWN_SET_NAME
+                : cp.getEdition();
         s.append(toMWSFilename(nameToUse));
 
         final int cntPictures;
@@ -231,10 +234,10 @@ public class ImageUtil {
         String faceParam = "";
 
         if (cp.getRules().getSplitType() == CardSplitType.Meld) {
+            String collectorNumberSuffix = "";
             if (face.equals("back")) {
                 PaperCard meldBasePc = cp.getMeldBaseCard();
                 cardCollectorNumber = meldBasePc.getCollectorNumber();
-                String collectorNumberSuffix = "";
 
                 if (cardCollectorNumber.endsWith("a")) {
                     cardCollectorNumber = cardCollectorNumber.substring(0, cardCollectorNumber.length() - 1);
@@ -250,6 +253,15 @@ public class ImageUtil {
                 }
 
                 cardCollectorNumber += "b" + collectorNumberSuffix;
+            } else {
+                // Front face - also strip "a" suffix for Scryfall
+                if (cardCollectorNumber.endsWith("as")) {
+                    cardCollectorNumber = cardCollectorNumber.substring(0, cardCollectorNumber.length() - 2) + "s";
+                } else if (cardCollectorNumber.endsWith("ap")) {
+                    cardCollectorNumber = cardCollectorNumber.substring(0, cardCollectorNumber.length() - 2) + "p";
+                } else if (cardCollectorNumber.endsWith("a")) {
+                    cardCollectorNumber = cardCollectorNumber.substring(0, cardCollectorNumber.length() - 1);
+                }
             }
 
             faceParam = "&face=front";

@@ -23,11 +23,11 @@ import forge.assets.TextRenderer;
 import forge.card.CardFaceSymbols;
 import forge.card.CardRenderer;
 import forge.card.CardRenderer.CardStackPosition;
+import forge.card.CardType;
 import forge.card.CardZoom;
 import forge.card.CardZoom.ActivateHandler;
 import forge.card.MagicColor;
 import forge.card.mana.ManaCost;
-import forge.card.mana.ManaCostParser;
 import forge.game.card.CardView;
 import forge.game.card.IHasCardView;
 import forge.game.keyword.Keyword;
@@ -109,6 +109,10 @@ public class FChoiceList<T> extends FList<T> implements ActivateHandler {
             renderer = new PlayerItemRenderer();
         } else if (item instanceof MagicColor.Color) {
             renderer = new MagicColorRenderer();
+        } else if (item instanceof CardType.CoreType) {
+            renderer = new CoreTypeRenderer();
+        } else if (item instanceof CardType.Supertype) {
+            renderer = new SuperTypeRenderer();
         } else if (item instanceof Integer || item == FilterOperator.EQUALS) { //allow numeric operators to be selected horizontally
             renderer = new NumberRenderer();
         } else if (item instanceof IHasSkinProp) {
@@ -407,7 +411,7 @@ public class FChoiceList<T> extends FList<T> implements ActivateHandler {
                 String title = value.toString().substring(0, manaStringindex - 1); //support ability/name with spaces...
                 String cost = TextUtil.fastReplace(value.toString().substring(manaStringindex), "}{", " ");
                 cost = TextUtil.fastReplace(TextUtil.fastReplace(cost, "{", ""), "}", "");
-                ManaCost manaCost = new ManaCost(new ManaCostParser(cost));
+                ManaCost manaCost = new ManaCost(cost);
                 CardFaceSymbols.drawManaCost(g, manaCost, x + font.getBounds(title).width, y + (h - MANA_SYMBOL_SIZE) / 2, MANA_SYMBOL_SIZE);
                 g.drawText(title, font, foreColor, x, y, w, h, allowDefaultItemWrap(), Align.left, true);
             } else {
@@ -689,6 +693,18 @@ public class FChoiceList<T> extends FList<T> implements ActivateHandler {
     protected class MagicColorRenderer extends AbstractIHasSkinPropRenderer {
         public MagicColorRenderer() {
             super(v -> ((MagicColor.Color)v).getTranslatedName(), v -> FSkinProp.iconFromColor((MagicColor.Color)v));
+        }
+    }
+
+    protected class CoreTypeRenderer extends AbstractIHasSkinPropRenderer {
+        public CoreTypeRenderer() {
+            super(v -> ((CardType.CoreType)v).getTranslatedName(), v -> FSkinProp.iconFromCoreType((CardType.CoreType)v));
+        }
+    }
+
+    protected class SuperTypeRenderer extends AbstractIHasSkinPropRenderer {
+        public SuperTypeRenderer() {
+            super(v -> ((CardType.Supertype)v).getTranslatedName(), v -> null);
         }
     }
 

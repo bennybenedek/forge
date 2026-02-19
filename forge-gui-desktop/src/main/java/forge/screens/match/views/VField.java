@@ -86,6 +86,7 @@ public class VField implements IVDoc<CField> {
 
     private final Border borderAvatarSimple = new LineBorder(new Color(0, 0, 0, 0), 1);
     private final Border borderAvatarHighlighted = new LineBorder(Color.red, 2);
+    private final Border borderAvatarSelectable = new LineBorder(Color.white, 2);
 
 
     //========= Constructor
@@ -129,15 +130,15 @@ public class VField implements IVDoc<CField> {
             @Override
             public void mouseEntered(final MouseEvent e) {
                 avatarArea.setOpaque(true);
-                if (!isHighlighted()) {
+                if (!isHighlighted() && !isSelectable()) {
                     avatarArea.setBorder(new FSkin.LineSkinBorder(FSkin.getColor(FSkin.Colors.CLR_BORDERS)));
                 }
             }
 
             @Override
             public void mouseExited(final MouseEvent e) {
-                avatarArea.setOpaque(false);
-                if (!isHighlighted()) {
+                if (!isHighlighted() && !isSelectable()) {
+                    avatarArea.setOpaque(false);
                     avatarArea.setBorder(borderAvatarSimple);
                 }
             }
@@ -205,6 +206,10 @@ public class VField implements IVDoc<CField> {
 
     private boolean isHighlighted() {
         return control.getMatchUI().isHighlighted(player);
+    }
+
+    private boolean isSelectable() {
+        return control.getMatchUI().isSelectablePlayer(player);
     }
 
     public void setAvatar(final SkinImage avatar) {
@@ -389,8 +394,10 @@ public class VField implements IVDoc<CField> {
         }
 
         final boolean highlighted = isHighlighted();
-        this.avatarArea.setBorder(highlighted ? borderAvatarHighlighted : borderAvatarSimple );
-        this.avatarArea.setOpaque(highlighted);
+        final boolean selectable = isSelectable();
+        this.avatarArea.setBorder(highlighted ? borderAvatarHighlighted :
+                                  (selectable ? borderAvatarSelectable : borderAvatarSimple));
+        this.avatarArea.setOpaque(highlighted || selectable);
         this.avatarArea.setToolTipText(player.getDetailsHtml());
     }
 }

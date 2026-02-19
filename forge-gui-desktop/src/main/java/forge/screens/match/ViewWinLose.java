@@ -1,20 +1,5 @@
 package forge.screens.match;
 
-import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.Point;
-import java.awt.Toolkit;
-import java.awt.datatransfer.StringSelection;
-import java.util.Collections;
-import java.util.List;
-
-import javax.swing.JPanel;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
-
-import org.apache.commons.lang3.StringUtils;
-
 import forge.game.GameLogEntry;
 import forge.game.GameLogEntryType;
 import forge.game.GameView;
@@ -25,19 +10,18 @@ import forge.item.PaperCard;
 import forge.localinstance.properties.ForgePreferences.FPref;
 import forge.localinstance.skin.FSkinProp;
 import forge.model.FModel;
-import forge.toolbox.FButton;
-import forge.toolbox.FLabel;
-import forge.toolbox.FOverlay;
-import forge.toolbox.FScrollPane;
-import forge.toolbox.FSkin;
-import forge.toolbox.FSkin.Colors;
-import forge.toolbox.FSkin.SkinColor;
-import forge.toolbox.FSkin.SkinIcon;
-import forge.toolbox.FSkin.SkinnedLabel;
-import forge.toolbox.FSkin.SkinnedPanel;
-import forge.toolbox.FTextArea;
+import forge.screens.home.rogue.CardRewardDialog;
+import forge.toolbox.*;
+import forge.toolbox.FSkin.*;
 import forge.util.Localizer;
+import java.awt.*;
+import java.awt.datatransfer.StringSelection;
+import java.util.List;
+import javax.swing.JPanel;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import net.miginfocom.swing.MigLayout;
+import org.apache.commons.lang3.StringUtils;
 
 public class ViewWinLose implements IWinLoseView<FButton> {
     private final ControlWinLose control;
@@ -98,10 +82,19 @@ public class ViewWinLose implements IWinLoseView<FButton> {
             case Gauntlet:
                 control = new GauntletWinLose(this, game0, matchUI);
                 break;
+            case RogueCommander:
+                try {
+                    control = new RogueWinLose(this, game0, matchUI);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    // control remains null, will fall back to default
+                }
+                break;
             default: // will catch it after switch
                 break;
         }
         if (null == control) {
+            System.out.println("DEBUG: Using default ControlWinLose handler (control was null)");
             control = new ControlWinLose(this, game0, matchUI);
         }
         this.control = control;
@@ -130,9 +123,7 @@ public class ViewWinLose implements IWinLoseView<FButton> {
 
         // Assemble game log scroller.
         final FTextArea txtLog = new FTextArea();
-        List<GameLogEntry> entries = game.getGameLog().getLogEntries(null);
-        Collections.reverse(entries);
-        txtLog.setText(StringUtils.join(entries, "\r\n").replace("[COMPUTER]", "[AI]"));
+        txtLog.setText(StringUtils.join(game.getGameLog().getLogEntries(null), "\r\n"));
         txtLog.setFont(FSkin.getRelativeFont(14));
         txtLog.setFocusable(true); // allow highlighting and copying of log
 
@@ -308,6 +299,12 @@ public class ViewWinLose implements IWinLoseView<FButton> {
 
         getPnlCustom().add(new TitleLabel(title), CONSTRAINTS_TITLE);
         getPnlCustom().add(lblMessage, CONSTRAINTS_TEXT);
+    }
+
+    @Override
+    public List<PaperCard> showCardRewardDialog(String title, List<PaperCard> cards, int maxSelections) {
+        CardRewardDialog dialog = new CardRewardDialog(title, cards, maxSelections);
+        return dialog.show();
     }
 
     /**

@@ -3,6 +3,7 @@ package forge.ai.ability;
 
 import forge.ai.*;
 import forge.game.card.Card;
+import forge.game.combat.CombatUtil;
 import forge.game.phase.PhaseType;
 import forge.game.player.Player;
 import forge.game.spellability.SpellAbility;
@@ -85,8 +86,38 @@ public class RollPlanarDiceAi extends SpellAbilityAi {
                             return false;
                         }
                         break;
+                    case "anyplayercardsingraveyardge":
+                        boolean anyPlayerHasCards = false;
+                        int threshold = Integer.parseInt(paramValue);
+                        for (Player p : ai.getGame().getPlayers()) {
+                            if (p.getCardsIn(ZoneType.Graveyard).size() >= threshold) {
+                                anyPlayerHasCards = true;
+                                break;
+                            }
+                        }
+                        if (!anyPlayerHasCards) {
+                            return false;
+                        }
+                        break;
+                    case "anyplayercreaturesingraveyardge":
+                        boolean anyPlayerHasCreatures = false;
+                        for (Player p : ai.getGame().getPlayers()) {
+                            if (detectCreatureInZone(p, ZoneType.Graveyard)) {
+                                anyPlayerHasCreatures = true;
+                                break;
+                            }
+                        }
+                        if (!anyPlayerHasCreatures) {
+                            return false;
+                        }
+                        break;
                     case "hascreatureinplay": // TODO: All abilities below only test the presence of the option. The value (true/false) is not yet tested.
                         if (!detectCreatureInZone(ai, ZoneType.Battlefield)) {
+                            return false;
+                        }
+                        break;
+                    case "hasattackablecreature":
+                        if (!detectAttackableCreature(ai)) {
                             return false;
                         }
                         break;
@@ -111,6 +142,11 @@ public class RollPlanarDiceAi extends SpellAbilityAi {
                         break;
                     case "hascoloringraveyard":
                         if (!detectColorInZone(ai, paramValue, ZoneType.Graveyard, false)) {
+                            return false;
+                        }
+                        break;
+                    case "stopifunlimitedhandsize":
+                        if (ai.isUnlimitedHandSize()) {
                             return false;
                         }
                         break;
@@ -193,13 +229,20 @@ public class RollPlanarDiceAi extends SpellAbilityAi {
     }
 
     private boolean detectCreatureInZone(Player p, ZoneType zone) {
-        boolean hasCreatureInPlay = false;
         for (Card c : p.getCardsIn(zone)) {
             if (c.isCreature()) {
-                hasCreatureInPlay = true;
-                break;
+                return true;
             }
         }
-        return hasCreatureInPlay;
+        return false;
+    }
+
+    private boolean detectAttackableCreature(Player p) {
+        for (Card c : p.getCreaturesInPlay()) {
+            if (CombatUtil.canAttack(c)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

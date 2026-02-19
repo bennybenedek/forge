@@ -963,16 +963,22 @@ public final class CMatchUI
 
     @Override
     public void showPromptMessage(final PlayerView playerView, final String message) {
+        cancelWaitingTimer();
+        cPrompt.setMessage(message);
+    }
+    public void showPromptMessageNoCancel(final PlayerView playerView, final String message) {
         cPrompt.setMessage(message);
     }
 
     @Override
     public void showCardPromptMessage(PlayerView playerView, String message, CardView card) {
+        cancelWaitingTimer();
         cPrompt.setMessage(message, card);
     }
 
     //  no override for now
     public void showPromptMessage(final PlayerView playerView, final String message, final CardView card ) {
+        cancelWaitingTimer();
         cPrompt.setMessage(message,card);
     }
 
@@ -1116,7 +1122,7 @@ public final class CMatchUI
 
     @Override
     public List<CardView> manipulateCardList(final String title, final Iterable<CardView> cards, final Iterable<CardView> manipulable, final boolean toTop, final boolean toBottom, final boolean toAnywhere) {
-	return GuiChoose.manipulateCardList(this, title, cards, manipulable, toTop, toBottom, toAnywhere);
+        return GuiChoose.manipulateCardList(this, title, cards, manipulable, toTop, toBottom, toAnywhere);
     }
 
     @Override

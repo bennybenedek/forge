@@ -75,19 +75,9 @@ public class CardProperty {
             }
             return found;
         } else if (property.equals("NamedByRememberedPlayer")) {
-            if (!source.hasRemembered()) {
-                final Card newCard = game.getCardState(source);
-                for (final Object o : newCard.getRemembered()) {
-                    if (o instanceof Player) {
-                        if (!card.sharesNameWith(((Player) o).getNamedCard())) {
-                            return false;
-                        }
-                    }
-                }
-            }
             for (final Object o : source.getRemembered()) {
-                if (o instanceof Player) {
-                    if (!card.sharesNameWith(((Player) o).getNamedCard())) {
+                if (o instanceof Player p) {
+                    if (!card.sharesNameWith(p.getNamedCard())) {
                         return false;
                     }
                 }
@@ -1475,7 +1465,8 @@ public class CardProperty {
                 return false;
             }
         } else if (property.startsWith("ManaCost")) {
-            if (!card.getManaCost().getShortString().equals(property.substring(8))) {
+            String cost = card.getManaCost().getShortString();
+            if (property.contains("Partial") ? !cost.contains(MagicColor.toShortString(property.substring(15))) : !cost.equals(property.substring(8))) {
                 return false;
             }
         } else if (property.equals("HasCounters")) {
@@ -1786,6 +1777,14 @@ public class CardProperty {
                 return false;
             }
             return card.getCastSA().isSpectacle();
+        } else if (property.equals("sneaked")) {
+            if (card.getCastSA() == null) {
+                return false;
+            }
+            if (AbilityUtils.isUnlinkedFromCastSA(spellAbility, card)) {
+                return false;
+            }
+            return card.getCastSA().isSneak();
         } else if (property.equals("foretold")) {
             if (!card.isForetold()) {
                 return false;
@@ -1934,10 +1933,6 @@ public class CardProperty {
                 return false;
             }
             if (property.contains("ByYou") && card.getCastSA() != null && !sourceController.equals(card.getCastSA().getActivatingPlayer())) {
-                return false;
-            }
-        } else if (property.equals("wasNotCast")) {
-            if (card.wasCast()) {
                 return false;
             }
         } else if (property.startsWith("set")) {

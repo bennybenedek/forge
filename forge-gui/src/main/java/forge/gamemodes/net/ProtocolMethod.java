@@ -15,15 +15,14 @@ import forge.interfaces.IGameController;
 import forge.localinstance.skin.FSkinProp;
 import forge.player.PlayerZoneUpdates;
 import forge.trackable.TrackableCollection;
+import forge.util.FSerializableFunction;
 import forge.util.ITriggerEvent;
 import forge.util.ReflectionUtil;
-
 
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
 /**
  * The methods that can be sent through this protocol.
@@ -64,7 +63,7 @@ public enum ProtocolMethod {
     showOptionDialog    (Mode.SERVER, Integer.TYPE, String.class, String.class, FSkinProp.class, List/*String*/.class, Integer.TYPE),
     showInputDialog     (Mode.SERVER, String.class, String.class, String.class, FSkinProp.class, String.class, List/*String*/.class, Boolean.TYPE),
     confirm             (Mode.SERVER, Boolean.TYPE, CardView.class, String.class, Boolean.TYPE, List/*String*/.class),
-    getChoices          (Mode.SERVER, List.class, String.class, Integer.TYPE, Integer.TYPE, List.class, List.class, Function.class),
+    getChoices          (Mode.SERVER, List.class, String.class, Integer.TYPE, Integer.TYPE, List.class, List.class, FSerializableFunction.class),
     order               (Mode.SERVER, List.class, String.class, String.class, Integer.TYPE, Integer.TYPE, List.class, List.class, CardView.class, Boolean.TYPE),
     sideboard           (Mode.SERVER, List.class, CardPool.class, CardPool.class, String.class),
     chooseSingleEntityForEffect(Mode.SERVER, GameEntityView.class, String.class, List.class, DelayedReveal.class, Boolean.TYPE),
@@ -72,6 +71,7 @@ public enum ProtocolMethod {
     manipulateCardList   (Mode.SERVER, List.class, String.class, Iterable.class, Iterable.class, Boolean.TYPE, Boolean.TYPE, Boolean.TYPE),
     setCard             (Mode.SERVER, Void.TYPE, CardView.class),
     setSelectables      (Mode.SERVER, Void.TYPE, Iterable/*CardView*/.class),
+    setSelectablePlayers(Mode.SERVER, Void.TYPE, Iterable/*PlayerView*/.class),
     clearSelectables    (Mode.SERVER, Void.TYPE),
     refreshField        (Mode.SERVER, Void.TYPE),
     // TODO case "setPlayerAvatar":
@@ -80,6 +80,7 @@ public enum ProtocolMethod {
     isUiSetToSkipPhase  (Mode.SERVER, Boolean.TYPE, PlayerView.class, PhaseType.class),
     setRememberedActions(Mode.SERVER, Void.TYPE),
     nextRememberedAction(Mode.SERVER, Void.TYPE),
+    showWaitingTimer    (Mode.SERVER, Void.TYPE, PlayerView.class, String.class),
 
     // Client -> Server
     // Note: these should all return void, to avoid awkward situations in

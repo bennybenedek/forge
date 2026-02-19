@@ -53,6 +53,27 @@
   </object>
   <object id="150" template="../../../../../../common/maps/obj/enemy.tx" x="141.842" y="91.272">
    <properties>
+    <property name="dialog">[
+    {
+        "condition": [
+            { "checkQuestFlag": "mainQuest" },
+            { "checkCharacterFlag": "dungeonMasterQuestGiven", "not": true }
+        ],
+        "text": "You sense this creature is one of many powerful beings lurking in the hidden lairs of Shandalar. Perhaps you should track your progress in clearing them.",
+        "options": [
+            {
+                "name": "(Accept the challenge)",
+                "action": [
+                    {
+                        "issueQuest": "54",
+                        "setCharacterFlag": { "key": "dungeonMasterQuestGiven", "val": 1 }
+                    }
+                ],
+                "text": "[Quest Added: Dungeon Master]"
+            }
+        ]
+    }
+]</property>
     <property name="effect">{ "startBattleWithCard": [ "Anvil of Bogardan|VIS", "Charcoal Diamond|MIR", "Fire Diamond|MIR", "Megrim|STH" ] }</property>
     <property name="enemy" value="Tibalt" />
     <property name="reward">[
@@ -60,7 +81,7 @@
     "type": "item",
     "probability": 1,
     "count": 1,
-    "itemName": "Tibalt's Key"
+    "itemName": "Specter's Key"
   }
 ]
 </property>
@@ -101,10 +122,10 @@
     "options":[
     { "name":"go away" },
     {      
-        "name":"unlock with Tibalt's Key",     
-        "condition":[{"item":"Tibalt's Key"}],    
+        "name":"unlock with Specter's Key",     
+        "condition":[{"item":"Specter's Key"}],    
         "text":"The gate is unlocked",
-        "options":[{"name":"continue", "action":[ {"deleteMapObject":-1},{"removeItem":"Tibalt's Key"}]} ]
+        "options":[{"name":"continue", "action":[ {"deleteMapObject":-1},{"removeItem":"Specter's Key"}]} ]
     }
     ]
 }]</property>

@@ -53,7 +53,7 @@
     "type": "item",
     "count": 1,
     "probability": 0.1,
-    "itemName": "Dark Boots"
+    "itemName": "Drudge Spellbook"
   },
   {
     "type": "item",
@@ -65,7 +65,7 @@
     "type": "item",
     "count": 1,
     "probability": 0.1,
-    "itemName": "Dark Armor"
+    "itemName": "Spine Staff"
   },
   {
     "type": "item",
@@ -177,7 +177,7 @@
     <property name="enemy" value="Swamp Queen Tojira" />
     <property name="speedModifier" type="float" value="10" />
     <property name="threatRange" type="int" value="50" />
-   <property name="effect">{"startBattleWithCard": ["Lake of the Dead|ALL", "Everglades|VIS", "Nightstalker Engine|PO2", "Feral Shadow|MIR", "Breathstealer|MIR"]}</property>
+   <property name="effect">{"startBattleWithCard": ["Everglades|VIS", "Nightstalker Engine|PO2", "Feral Shadow|MIR", "Breathstealer|MIR"]}</property>
     </properties>
   </object>
  </objectgroup>

@@ -22,6 +22,7 @@ import java.util.Map;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 
+import forge.card.CardType;
 import forge.card.MagicColor;
 import forge.card.mana.ManaCostShard;
 import forge.deck.DeckSection;
@@ -719,6 +720,20 @@ public enum FSkinProp {
         };
     }
 
+    public static FSkinProp iconFromCoreType(CardType.CoreType core) {
+        return switch (core) {
+            case Artifact -> IMG_ARTIFACT;
+            case Creature -> IMG_CREATURE;
+            case Enchantment -> IMG_ENCHANTMENT;
+            case Instant -> IMG_INSTANT;
+            case Land -> IMG_LAND;
+            case Planeswalker -> IMG_PLANESWALKER;
+            case Sorcery -> IMG_SORCERY;
+            case Battle -> IMG_BATTLE;
+            default -> null;
+        };
+    }
+
     public static FSkinProp iconFromZone(ZoneType zoneType, boolean hdbuttons) {
         return switch (zoneType) {
             case Hand -> hdbuttons ? IMG_HDZONE_HAND : IMG_ZONE_HAND;
@@ -750,6 +765,17 @@ public enum FSkinProp {
             case Attractions -> IMG_ZONE_ATTRACTION;
             case Contraptions -> IMG_ZONE_CONTRAPTION;
             default -> IMG_HDZONE_SIDEBOARD;
+        };
+    }
+
+    public static FSkinProp watermarkFromColor(MagicColor.Color color) {
+        return switch (color) {
+            case WHITE -> IMG_WATERMARK_W;
+            case BLUE -> IMG_WATERMARK_U;
+            case BLACK -> IMG_WATERMARK_B;
+            case RED -> IMG_WATERMARK_R;
+            case GREEN -> IMG_WATERMARK_G;
+            case COLORLESS -> IMG_WATERMARK_C;
         };
     }
 

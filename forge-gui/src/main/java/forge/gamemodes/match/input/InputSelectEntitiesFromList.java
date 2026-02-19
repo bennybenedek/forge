@@ -10,6 +10,7 @@ import forge.game.cost.CostExile;
 import forge.game.cost.CostTapType;
 import forge.game.keyword.Keyword;
 import forge.game.player.Player;
+import forge.game.player.PlayerView;
 import forge.game.spellability.SpellAbility;
 import forge.game.zone.Zone;
 import forge.gui.FThreads;
@@ -49,15 +50,21 @@ public class InputSelectEntitiesFromList<T extends GameEntity> extends InputSele
             System.out.printf("Trying to choose at least %d things from a list with only %d things!%n", min, validChoices.size());
         }
         ArrayList<CardView> vCards = new ArrayList<>();
-        for (T c : validChoices0) {
-            if (c instanceof Card) {
-                vCards.add(((Card) c).getView());
+        ArrayList<PlayerView> vPlayers = new ArrayList<>();
+        for (T v : validChoices0) {
+            if (v instanceof Card c) {
+                vCards.add(c.getView());
+            } else if (v instanceof Player p) {
+                vPlayers.add(p.getView());
             }
         }
         getController().getGui().setSelectables(vCards);
+        if (!vPlayers.isEmpty()) {
+            getController().getGui().setSelectablePlayers(vPlayers);
+        }
         final PlayerZoneUpdates zonesToUpdate = new PlayerZoneUpdates();
-        for (final GameEntity c : validChoices) {
-            final Zone cz = (c instanceof Card) ? ((Card) c).getLastKnownZone() : null;
+        for (final GameEntity ge : validChoices) {
+            final Zone cz = ge instanceof Card c ? c.getLastKnownZone() : null;
             if (cz != null) {
                 zonesToUpdate.add(new PlayerZoneUpdate(cz.getPlayer().getView(), cz.getZoneType()));
             }
@@ -134,12 +141,11 @@ public class InputSelectEntitiesFromList<T extends GameEntity> extends InputSele
         if (sa != null) {
             if (sa.getPayCosts().hasSpecificCostType(CostTapType.class) &&
                 (sa.isCrew() || sa.isKeyword(Keyword.SADDLE))) {
-                msg.append((sa.isCrew())  ? "\nCrewing: " : "\nSaddling: ");
+                msg.append(sa.isCrew() ? "\nCrewing: " : "\nSaddling: ");
                 msg.append(CardLists.getTotalPower((FCollection<Card>)getSelected(), sa));
                 msg.append(" / ").append(TextUtil.fastReplace(sa.getPayCosts().
                     getCostPartByType(CostTapType.class).getType(), 
                     "Creature.Other+withTotalPowerGE", ""));
-    
             }
             else if (sa.getPayCosts().hasSpecificCostType(CostExile.class) && tally > 0) {
                 msg.append("\n");
@@ -177,7 +183,7 @@ public class InputSelectEntitiesFromList<T extends GameEntity> extends InputSele
         super.showMessage();
         // Use mass select mode for proliferate. If you wanted to add it to a different effect
         // the effect must allow you to select any number of targets between "none" and "all valid targets"
-        if (sa != null && ApiType.Proliferate == sa.getApi()) {
+        if (sa != null && ApiType.Proliferate == sa.getApi() && min == 0) {
             massSelectMode = MassSelectMode.NONE;
             updateMassSelectButton();
         }
@@ -210,16 +216,22 @@ public class InputSelectEntitiesFromList<T extends GameEntity> extends InputSele
             });
             this.getSelected().clear();
             if (massSelectMode == MassSelectMode.MINE) { // Select all valid targets owned by player
-                for (T c : validChoices) {
-                    if (c instanceof Card) {
-                        if (((Card) c).getController().equals(getController().getPlayer())) {
-                            selected.add(c);
-                            onSelectStateChanged(c, true);
+                for (T v : validChoices) {
+                    if (selected.size() == max) {
+                        break;
+                    }
+                    if (v instanceof Card c) {
+                        if (c.getController().equals(getController().getPlayer())) {
+                            selected.add(v);
+                            onSelectStateChanged(v, true);
                         }
                     }
                 }
             } else if (massSelectMode == MassSelectMode.ALL) { // Select all valid targets
                 for (T c : validChoices) {
+                    if (selected.size() == max) {
+                        break;
+                    }
                     selected.add(c);
                     onSelectStateChanged(c, true);
                 }
