@@ -1,6 +1,7 @@
 package forge.screens.home.rogue;
 
 import forge.ImageCache;
+import forge.card.CardSplitType;
 import forge.game.card.Card;
 import forge.game.card.CardView;
 import forge.item.PaperCard;
@@ -150,8 +151,9 @@ public class CardZoomUtil {
     }
 
     if (cardImage != null) {
+      int rotation = getCardRotation(card);
       FImagePanel imagePanel = new FImagePanel();
-      imagePanel.setImage(cardImage, 0, AutoSizeImageMode.SOURCE);
+      imagePanel.setImage(cardImage, rotation, AutoSizeImageMode.SOURCE);
       zoomOverlay.add(imagePanel, "w 80%!, h 80%!");
     }
 
@@ -159,6 +161,19 @@ public class CardZoomUtil {
     zoomOverlay.requestFocusInWindow();
     zoomOverlay.revalidate();
     zoomOverlay.repaint();
+  }
+
+  /**
+   * Get the rotation needed for a card (split cards and planes display at 90 degrees).
+   */
+  private int getCardRotation(PaperCard card) {
+    if (card.getRules().getSplitType() == CardSplitType.Split) {
+      return 90;
+    }
+    if (card.getRules().getType().isPlane() || card.getRules().getType().isPhenomenon()) {
+      return 90;
+    }
+    return 0;
   }
 
   /**
