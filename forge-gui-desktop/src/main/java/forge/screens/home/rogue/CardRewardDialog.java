@@ -41,7 +41,7 @@ public class CardRewardDialog {
   private final FLabel lblInfo;
   private final FLabel lblRewards;
   private FOptionPane optionPane;
-  private CardZoomUtil zoomUtil;
+  private CardUtil zoomUtil;
 
   // Computed card dimensions (may be scaled down)
   private int cardWidth;
@@ -124,13 +124,17 @@ public class CardRewardDialog {
   }
 
   private void revealAllCards() {
-    for (SelectableCardPanel cardPanel : cardPanels) {
-      cardPanel.flip();
-    }
-    panel.revalidate();
-    panel.repaint();
-
-    RogueTutorialHelper.showIfNotSeen(RogueTutorial.CARD_REWARDS);
+    final int[] revealIndex = {0};
+    Timer revealTimer = new Timer(100, e -> {
+      if (revealIndex[0] < cardPanels.size()) {
+        cardPanels.get(revealIndex[0]).flip();
+        revealIndex[0]++;
+      } else {
+        ((Timer) e.getSource()).stop();
+        RogueTutorialHelper.showIfNotSeen(RogueTutorial.CARD_REWARDS);
+      }
+    });
+    revealTimer.start();
   }
 
   private String getRewardsText() {
@@ -159,7 +163,7 @@ public class CardRewardDialog {
       );
 
       // Setup zoom utility
-      zoomUtil = new CardZoomUtil(optionPane);
+      zoomUtil = new CardUtil(optionPane);
       zoomUtil.setupZoomOverlay();
 
       panel.revalidate();

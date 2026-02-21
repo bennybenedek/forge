@@ -15,7 +15,9 @@ import forge.toolbox.FSkin;
 import forge.toolbox.imaging.FImageUtil;
 import forge.util.ImageFetcher;
 import java.awt.Dimension;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.Window;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
@@ -41,8 +43,12 @@ public class NodePlaneboundPanel extends NodePanel implements ImageFetcher.Callb
   private final boolean isFaceDown;
 
   // Zoom utility
-  private CardZoomUtil zoomUtil; // Lazily initialized on first zoom
+  private CardUtil zoomUtil; // Lazily initialized on first zoom
   private BufferedImage cachedRotatedImage; // Cache rotated image to avoid recreating
+
+  // Flip animation
+  private final CardUtil.FlipAnimation flipAnimation;
+  private BufferedImage revealImage; // The face-up image to show after flip
 
   /**
    * Create a panel for displaying a planebound node.
@@ -50,10 +56,13 @@ public class NodePlaneboundPanel extends NodePanel implements ImageFetcher.Callb
    * @param node               Node data to display
    * @param isFaceDown         Whether to display the card face-down
    * @param planeboundRowCount Number of Planebound rows up to this node (for life calculation)
+   * @param animateReveal      Whether to start face-down and animate to face-up
    */
-  public NodePlaneboundPanel(NodePlanebound node, boolean isFaceDown, int planeboundRowCount) {
+  public NodePlaneboundPanel(NodePlanebound node, boolean isFaceDown, int planeboundRowCount,
+      boolean animateReveal) {
     super(node);
     this.isFaceDown = isFaceDown;
+    this.flipAnimation = new CardUtil.FlipAnimation(this);
 
     // Card image (plane card) - rotated 90 degrees clockwise for horizontal display
     cardImage = new CardPicturePanel();
@@ -62,41 +71,35 @@ public class NodePlaneboundPanel extends NodePanel implements ImageFetcher.Callb
 
     String planeName = node.getRoguePlanebound().planeName();
     PaperCard planeCard = getPlaneCard(planeName);
+    boolean showFaceDown = isFaceDown || animateReveal;
 
-    if (isFaceDown) {
-      // Show card back for face-down planes
+    if (showFaceDown) {
+      // Show card back
       BufferedImage cardBack = ImageCache.getOriginalImage(
           ImageKeys.getTokenKey(ImageKeys.HIDDEN_CARD), true, null);
       if (cardBack != null) {
-        BufferedImage rotatedCardBack = rotateImage90Clockwise(cardBack);
-        cardImage.setItem(rotatedCardBack);
+        cardImage.setItem(rotateImage90Clockwise(cardBack));
       }
-    } else if (planeCard != null) {
-      // Check if we need to fetch the image
+    }
+
+    if (!isFaceDown && planeCard != null) {
+      // Load the face-up image
       Pair<BufferedImage, Boolean> imageInfo = ImageCache.getCardOriginalImageInfo(
           planeCard.getImageKey(false), true);
       BufferedImage originalImage = imageInfo.getLeft();
       boolean isPlaceholder = imageInfo.getRight();
 
-      // If image is missing or placeholder, trigger download
       if (ImageCache.isDefaultImage(originalImage) || isPlaceholder) {
-        System.out.println("Triggering image fetch for: " + planeCard.getName());
         GuiBase.getInterface().getImageFetcher().fetchImage(planeCard.getImageKey(false), this);
       }
 
-      // Display current image (even if placeholder) while real image downloads
       if (originalImage != null) {
-        BufferedImage rotatedImage = rotateImage90Clockwise(originalImage);
-        cardImage.setItem(rotatedImage);
-      } else {
-        // Fallback to original if image not available
-        System.out.println("Using fallback rendering for: " + planeCard.getName());
-        cardImage.setItem(planeCard);
+        revealImage = rotateImage90Clockwise(originalImage);
+        if (!animateReveal) {
+          cardImage.setItem(revealImage);
+        }
       }
-
-      cardImage.revalidate();
-      cardImage.repaint();
-    } else {
+    } else if (!isFaceDown) {
       System.out.println("ERROR: Plane card not found in database!");
     }
 
@@ -114,7 +117,7 @@ public class NodePlaneboundPanel extends NodePanel implements ImageFetcher.Callb
     });
 
     // Planebound name label with icon for Elite/Boss
-    String planeboundName = isFaceDown ? "???" : node.getRoguePlanebound().planeboundName();
+    String planeboundName = showFaceDown ? "???" : node.getRoguePlanebound().planeboundName();
     lblPlaneboundName = new JLabel(planeboundName);
     lblPlaneboundName.setFont(FSkin.getRelativeFont(12).getBaseFont());
     lblPlaneboundName.setForeground(FSkin.getColor(FSkin.Colors.CLR_TEXT).getColor());
@@ -142,6 +145,41 @@ public class NodePlaneboundPanel extends NodePanel implements ImageFetcher.Callb
     lblLifeTotal.setForeground(FSkin.getColor(FSkin.Colors.CLR_TEXT).getColor());
     lblLifeTotal.setHorizontalAlignment(SwingConstants.CENTER);
     add(lblLifeTotal);
+  }
+
+  /**
+   * Animate flipping from face-down to face-up.
+   */
+  public void flipToReveal() {
+    if (flipAnimation.isAnimating() || revealImage == null) {
+      return;
+    }
+    flipAnimation.start(() -> {
+      cardImage.setItem(revealImage);
+      lblPlaneboundName.setText(((NodePlanebound) node).getRoguePlanebound().planeboundName());
+    });
+  }
+
+  @Override
+  public void paint(Graphics g) {
+    if (flipAnimation.isAnimating() && flipAnimation.getScaleX() != 1.0) {
+      Graphics2D g2d = (Graphics2D) g;
+      AffineTransform originalTransform = g2d.getTransform();
+
+      g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+          RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+
+      AffineTransform scaleTransform = new AffineTransform();
+      scaleTransform.translate(getWidth() / 2.0, 0);
+      scaleTransform.scale(Math.max(0.01, flipAnimation.getScaleX()), 1.0);
+      scaleTransform.translate(-getWidth() / 2.0, 0);
+
+      g2d.transform(scaleTransform);
+      super.paint(g);
+      g2d.setTransform(originalTransform);
+    } else {
+      super.paint(g);
+    }
   }
 
   @Override
@@ -251,7 +289,7 @@ public class NodePlaneboundPanel extends NodePanel implements ImageFetcher.Callb
     if (zoomUtil == null) {
       Window window = SwingUtilities.getWindowAncestor(this);
       if (window != null) {
-        zoomUtil = new CardZoomUtil(window);
+        zoomUtil = new CardUtil(window);
         zoomUtil.setupZoomOverlay();
       }
     }

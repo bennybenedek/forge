@@ -15,7 +15,6 @@ import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.util.function.Supplier;
-import javax.swing.Timer;
 import org.apache.commons.lang3.tuple.Pair;
 
 /**
@@ -34,10 +33,8 @@ public abstract class SelectableCardPanelBase extends SkinnedPanel implements
   protected boolean selected;
   protected boolean hovered;
   protected boolean faceDown;
-  protected boolean animating;
-  protected double scaleX;
-  private Timer animationTimer;
-  private final Supplier<CardZoomUtil> zoomUtilSupplier;
+  private final CardUtil.FlipAnimation flipAnimation;
+  private final Supplier<CardUtil> zoomUtilSupplier;
 
   // Double-faced card support
   protected final boolean hasBackFace;
@@ -49,13 +46,12 @@ public abstract class SelectableCardPanelBase extends SkinnedPanel implements
    * @param card             The card to display
    * @param zoomUtilSupplier Supplier for zoom utility (accessed at runtime, can return null)
    */
-  public SelectableCardPanelBase(PaperCard card, Supplier<CardZoomUtil> zoomUtilSupplier) {
+  public SelectableCardPanelBase(PaperCard card, Supplier<CardUtil> zoomUtilSupplier) {
     super(null);
     this.card = card;
     this.selected = false;
     this.faceDown = true; // Start face-down
-    this.animating = false;
-    this.scaleX = 1.0;
+    this.flipAnimation = new CardUtil.FlipAnimation(this);
     this.cardPicture = new CardPicturePanel();
     this.zoomUtilSupplier = zoomUtilSupplier;
 
@@ -78,7 +74,7 @@ public abstract class SelectableCardPanelBase extends SkinnedPanel implements
         if (!faceDown) {
           // Check if click is on flip icon area
           if (hasBackFace && isClickOnFlipIcon(e)) {
-            if (!animating) {
+            if (!flipAnimation.isAnimating()) {
               flipToOtherFace();
             }
           } else {
@@ -105,7 +101,7 @@ public abstract class SelectableCardPanelBase extends SkinnedPanel implements
     // Add mouse wheel listener for card zoom (only when revealed)
     addMouseWheelListener(e -> {
       if (!faceDown && e.getWheelRotation() < 0) {
-        CardZoomUtil zoomUtil = zoomUtilSupplier != null ? zoomUtilSupplier.get() : null;
+        CardUtil zoomUtil = zoomUtilSupplier != null ? zoomUtilSupplier.get() : null;
         if (zoomUtil != null) {
           // Zoom the currently displayed face
           zoomUtil.showZoom(card, showingAltFace);
@@ -174,67 +170,26 @@ public abstract class SelectableCardPanelBase extends SkinnedPanel implements
    * Start the flip animation to reveal the card.
    */
   public void flip() {
-    if (animating || !faceDown) {
+    if (flipAnimation.isAnimating() || !faceDown) {
       return; // Already revealed or animating
     }
-    runFlipAnimation(() -> faceDown = false);
+    flipAnimation.start(() -> {
+      faceDown = false;
+      updateCardDisplay();
+    });
   }
 
   /**
    * Start the flip animation to show the other face of a double-faced card.
    */
   public void flipToOtherFace() {
-    if (animating || faceDown || !hasBackFace) {
+    if (flipAnimation.isAnimating() || faceDown || !hasBackFace) {
       return; // Can't flip if animating, face-down, or no back face
     }
-    runFlipAnimation(() -> showingAltFace = !showingAltFace);
-  }
-
-  /**
-   * Run the flip animation with a custom action at the midpoint.
-   *
-   * @param midpointAction Action to run when the card is "edge-on" (scale = 0)
-   */
-  private void runFlipAnimation(Runnable midpointAction) {
-    animating = true;
-    final int animationDuration = 300; // milliseconds
-    final int framesPerSecond = 60;
-    final int frameDelay = 1000 / framesPerSecond;
-    final int totalFrames = animationDuration / frameDelay;
-    final double scaleStep = 2.0 / totalFrames;
-
-    final int[] currentFrame = {0};
-    final boolean[] actionExecuted = {false};
-
-    animationTimer = new Timer(frameDelay, e -> {
-      currentFrame[0]++;
-
-      // Calculate scale (1.0 -> 0.0 -> 1.0)
-      if (currentFrame[0] <= totalFrames / 2) {
-        scaleX = 1.0 - (currentFrame[0] * scaleStep);
-      } else {
-        scaleX = (currentFrame[0] - totalFrames / 2) * scaleStep;
-      }
-
-      // Execute midpoint action and update display
-      if (!actionExecuted[0] && currentFrame[0] >= totalFrames / 2) {
-        midpointAction.run();
-        updateCardDisplay();
-        actionExecuted[0] = true;
-      }
-
-      repaint();
-
-      // End animation
-      if (currentFrame[0] >= totalFrames) {
-        animationTimer.stop();
-        animating = false;
-        scaleX = 1.0;
-        repaint();
-      }
+    flipAnimation.start(() -> {
+      showingAltFace = !showingAltFace;
+      updateCardDisplay();
     });
-
-    animationTimer.start();
   }
 
   /**
@@ -264,14 +219,18 @@ public abstract class SelectableCardPanelBase extends SkinnedPanel implements
     final int height = getHeight();
 
     // Apply horizontal scale transformation if animating
-    if (animating && scaleX != 1.0) {
+    if (flipAnimation.isAnimating() && flipAnimation.getScaleX() != 1.0) {
       // Save the original transform
       AffineTransform originalTransform = g2d.getTransform();
+
+      // Smoother scaling during animation
+      g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
+          RenderingHints.VALUE_INTERPOLATION_BILINEAR);
 
       // Create scale transform centered on the card
       AffineTransform scaleTransform = new AffineTransform();
       scaleTransform.translate(width / 2.0, 0); // Move origin to center
-      scaleTransform.scale(Math.max(0.01, scaleX),
+      scaleTransform.scale(Math.max(0.01, flipAnimation.getScaleX()),
           1.0); // Scale horizontally (min 0.01 to avoid zero)
       scaleTransform.translate(-width / 2.0, 0); // Move origin back
 
@@ -283,7 +242,7 @@ public abstract class SelectableCardPanelBase extends SkinnedPanel implements
     }
 
     // Draw hover/selection indicators ON TOP of everything (only if not animating)
-    if (!animating) {
+    if (!flipAnimation.isAnimating()) {
       if (selected) {
         drawSelectionHighlight(g2d, width, height);
       } else if (hovered && !faceDown) {

@@ -33,7 +33,7 @@ public class BazaarDialog {
   private static final int HEADER_HEIGHT = 95;  // Space for title, gold status, description (compact)
 
   private final MainPanel panel;
-  private CardZoomUtil zoomUtil;
+  private CardUtil zoomUtil;
   private final List<PaperCard> availableCards;
   private final int availableGold;
   private final Set<PaperCard> selectedCards = new HashSet<>();
@@ -144,7 +144,7 @@ public class BazaarDialog {
       );
 
       // Setup zoom utility
-      zoomUtil = new CardZoomUtil(optionPane);
+      zoomUtil = new CardUtil(optionPane);
       zoomUtil.setupZoomOverlay();
 
       // Start the card reveal animation

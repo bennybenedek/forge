@@ -8,6 +8,7 @@ import forge.toolbox.FSkin.SkinnedPanel;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.Timer;
 
 /**
  * Displays the entire path for a Rogue Commander run. Shows all nodes in a vertical linear
@@ -67,6 +68,7 @@ public class PathVisualizerPanel extends SkinnedPanel {
 
     // Create panels for each node
     List<RoguePathNode> nodes = path.getNodes();
+    List<NodePlaneboundPanel> toReveal = new ArrayList<>();
     for (int i = 0; i < nodes.size(); i++) {
       RoguePathNode node = nodes.get(i);
 
@@ -84,18 +86,42 @@ public class PathVisualizerPanel extends SkinnedPanel {
         isFaceDown = true;
       }
 
+      // Animate reveal for visible planes in current row
+      boolean animateReveal = !isFaceDown && node.getRowIndex() == currentRow
+          && visibleInCurrentRow.contains(i);
+
       // Calculate planebound row count for life display
       int planeboundRowCount = path.countPlaneboundRowsUpTo(node.getRowIndex());
 
-      NodePanel nodePanel = NodePanelFactory.createPanel(node, isFaceDown, planeboundRowCount);
+      NodePanel nodePanel = NodePanelFactory.createPanel(node, isFaceDown, planeboundRowCount,
+          animateReveal);
       nodePanel.setClickHandler(this::handleNodeClick);
       nodePanels.add(nodePanel);
       add(nodePanel);
+
+      if (animateReveal && nodePanel instanceof NodePlaneboundPanel) {
+        toReveal.add((NodePlaneboundPanel) nodePanel);
+      }
     }
 
     calculatePreferredSize();
     revalidate();
     repaint();
+
+    // Trigger staggered flip animations
+    if (!toReveal.isEmpty()) {
+      final int[] revealIndex = {0};
+      Timer revealTimer = new Timer(150, e -> {
+        if (revealIndex[0] < toReveal.size()) {
+          toReveal.get(revealIndex[0]).flipToReveal();
+          revealIndex[0]++;
+        } else {
+          ((Timer) e.getSource()).stop();
+        }
+      });
+      revealTimer.setInitialDelay(300); // Brief pause before first flip
+      revealTimer.start();
+    }
   }
 
   /**

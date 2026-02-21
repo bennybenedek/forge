@@ -10,33 +10,37 @@ import forge.toolbox.imaging.FImagePanel.AutoSizeImageMode;
 import forge.toolbox.imaging.FImageUtil;
 import java.awt.Color;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Window;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.Timer;
 import net.miginfocom.swing.MigLayout;
 
 /**
- * Utility class for card zoom functionality. Provides shared zoom overlay logic for dialogs and
- * panels that display cards.
+ * Utility class for card display functionality in Rogue Commander. Provides zoom overlay logic and
+ * reusable flip animation for card panels.
  */
-public class CardZoomUtil {
+public class CardUtil {
 
   private JPanel zoomOverlay;
   private PaperCard currentZoomedCard;
   private final Window parentWindow;
 
   /**
-   * Create a CardZoomUtil for the given parent window.
+   * Create a CardUtil for the given parent window.
    *
    * @param parentWindow The window (JDialog or JFrame) that will host the zoom overlay
    */
-  public CardZoomUtil(Window parentWindow) {
+  public CardUtil(Window parentWindow) {
     this.parentWindow = parentWindow;
   }
 
@@ -246,5 +250,75 @@ public class CardZoomUtil {
    */
   public boolean isZooming() {
     return zoomOverlay != null && zoomOverlay.isVisible();
+  }
+
+  /**
+   * Reusable flip animation state manager. Handles the Timer and frame counting for a horizontal
+   * card flip (scale 1->0->1). Panels query {@link #isAnimating()} and {@link #getScaleX()} in
+   * their own paint() method to apply the transform directly — no lambda indirection.
+   */
+  public static class FlipAnimation {
+
+    private static final int ANIMATION_DURATION = 300; // milliseconds
+    private static final int FRAMES_PER_SECOND = 60;
+    private static final int FRAME_DELAY = 1000 / FRAMES_PER_SECOND;
+
+    private final JComponent target;
+    private boolean animating;
+    private double scaleX = 1.0;
+    private Timer animationTimer;
+
+    public FlipAnimation(JComponent target) {
+      this.target = target;
+    }
+
+    /**
+     * Start the flip animation with a custom action at the midpoint.
+     *
+     * @param midpointAction Action to run when the card is "edge-on" (scale = 0), e.g., swap image
+     */
+    public void start(Runnable midpointAction) {
+      if (animating) {
+        return;
+      }
+      animating = true;
+      final int totalFrames = ANIMATION_DURATION / FRAME_DELAY;
+      final int[] currentFrame = {0};
+      final boolean[] actionExecuted = {false};
+
+      animationTimer = new Timer(FRAME_DELAY, e -> {
+        currentFrame[0]++;
+
+        // Cosine easing: smooth ease-in-out (1.0 -> 0.0 -> 1.0)
+        double progress = (double) currentFrame[0] / totalFrames;
+        scaleX = Math.abs(Math.cos(progress * Math.PI));
+
+        // Execute midpoint action and update display
+        if (!actionExecuted[0] && currentFrame[0] >= totalFrames / 2) {
+          midpointAction.run();
+          actionExecuted[0] = true;
+        }
+
+        target.repaint();
+
+        // End animation
+        if (currentFrame[0] >= totalFrames) {
+          animationTimer.stop();
+          animating = false;
+          scaleX = 1.0;
+          target.repaint();
+        }
+      });
+
+      animationTimer.start();
+    }
+
+    public boolean isAnimating() {
+      return animating;
+    }
+
+    public double getScaleX() {
+      return scaleX;
+    }
   }
 }

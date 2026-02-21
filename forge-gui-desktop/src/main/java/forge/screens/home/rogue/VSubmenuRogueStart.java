@@ -44,7 +44,7 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
   // Commander card grid
   private final CommanderGridPanel pnlCommanderGrid = new CommanderGridPanel();
   private final List<CommanderCardPanel> commanderPanels = new ArrayList<>();
-  private CardZoomUtil zoomUtil; // Lazily initialized on first use
+  private CardUtil zoomUtil; // Lazily initialized on first use
 
   // Commander details
   private final FLabel lblCommanderName = new FLabel.Builder()
@@ -247,11 +247,11 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
    * Get the zoom utility, creating it lazily if needed. This ensures the window hierarchy is ready
    * when zoom is first used.
    */
-  public CardZoomUtil getZoomUtil() {
+  public CardUtil getZoomUtil() {
     if (zoomUtil == null) {
       Window window = SwingUtilities.getWindowAncestor(pnlCommanderGrid);
       if (window != null) {
-        zoomUtil = new CardZoomUtil(window);
+        zoomUtil = new CardUtil(window);
         zoomUtil.setupZoomOverlay();
       }
     }
