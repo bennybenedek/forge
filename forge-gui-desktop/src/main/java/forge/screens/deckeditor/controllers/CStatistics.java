@@ -2,8 +2,13 @@ package forge.screens.deckeditor.controllers;
 
 import forge.card.CardRules;
 import forge.card.CardRulesPredicates;
+import forge.card.CardType;
+import forge.card.ICardFace;
+import forge.card.ColorSet;
 import forge.card.MagicColor;
+import forge.deck.Deck;
 import forge.deck.DeckBase;
+import forge.game.GameType;
 import forge.gui.framework.ICDoc;
 import forge.item.InventoryItem;
 import forge.item.PaperCard;
@@ -69,7 +74,8 @@ public enum CStatistics implements ICDoc {
         final ItemPool<PaperCard> deck = ItemPool.createFrom(ed.getDeckManager().getPool(), PaperCard.class);
 
         int total = deck.countAll();
-        int totalWithoutLands = total - deck.countAll(PaperCardPredicates.fromRules(CardRulesPredicates.IS_LAND));
+        final int landCount = deck.countAll(PaperCardPredicates.fromRules(CStatistics::isOrHasLandFace));
+        int totalWithoutLands = total - landCount;
         final int[] shardCount = calculateShards(deck);
 
         // Hack-ish: avoid /0 cases, but still populate labels :)
@@ -108,6 +114,27 @@ public enum CStatistics implements ICDoc {
         setLabelValue(VStatistics.SINGLETON_INSTANCE.getLblGreenShard(), "Shards:", shardCount[4], totShards);
         setLabelValue(VStatistics.SINGLETON_INSTANCE.getLblColorlessShard(), "Shards:", shardCount[5], totShards);
 
+        ColorSet deckColors = ColorSet.fromMask(0);
+        GameType gameType = ed.getGameType();
+        if (gameType != null && gameType.getDeckFormat().hasCommander()) {
+            Deck humanDeck = ed.getHumanDeck();
+            if (humanDeck != null) {
+                byte cmdCI = 0;
+                for (PaperCard commander : humanDeck.getCommanders()) {
+                    cmdCI |= commander.getRules().getColorIdentity().getColor();
+                }
+                deckColors = ColorSet.fromMask(cmdCI);
+            }
+        }
+        final int[] landMana = calculateLandManaProduction(deck, deckColors);
+        int totalLandMana = landCount > 0 ? landCount : 1;
+        setLabelValue(VStatistics.SINGLETON_INSTANCE.getLblWhiteLand(), "Lands:", landMana[0], totalLandMana);
+        setLabelValue(VStatistics.SINGLETON_INSTANCE.getLblBlueLand(), "Lands:", landMana[1], totalLandMana);
+        setLabelValue(VStatistics.SINGLETON_INSTANCE.getLblBlackLand(), "Lands:", landMana[2], totalLandMana);
+        setLabelValue(VStatistics.SINGLETON_INSTANCE.getLblRedLand(), "Lands:", landMana[3], totalLandMana);
+        setLabelValue(VStatistics.SINGLETON_INSTANCE.getLblGreenLand(), "Lands:", landMana[4], totalLandMana);
+        setLabelValue(VStatistics.SINGLETON_INSTANCE.getLblColorlessLand(), "Lands:", landMana[5], totalLandMana);
+
         int tmc = 0;
         for (final Entry<PaperCard, Integer> e : deck) {
             tmc += e.getKey().getRules().getManaCost().getCMC() * e.getValue();
@@ -115,9 +142,7 @@ public enum CStatistics implements ICDoc {
         final double amc = Math.round((double) tmc / (double) total * 100) / 100.0d;
         final double amcNoLands = Math.round((double) tmc / (double) totalWithoutLands * 100) / 100.0d;
 
-        final int landCount = deck.countAll(PaperCardPredicates.fromRules(CardRulesPredicates.IS_LAND));
-        final int deckSize = deck.countAll();
-        final double expectedLands = expectedLandsInOpeningHand(deckSize, landCount);
+        final double expectedLands = expectedLandsInOpeningHand(deck.countAll(), landCount);
 
         VStatistics.SINGLETON_INSTANCE.getLblTotal().setText(
                 String.format("%s: %d", Localizer.getInstance().getMessage("lblTotalCards").toUpperCase(), deck.countAll()));
@@ -170,4 +195,96 @@ public enum CStatistics implements ICDoc {
         }
         return total;
     }
+
+    private static boolean isOrHasLandFace(final CardRules rules) {
+        if (rules.getType().isLand()) return true;
+        return rules.getOtherPart() != null && rules.getOtherPart().getType().isLand();
+    }
+
+    public static int[] calculateLandManaProduction(final ItemPool<PaperCard> deck, final ColorSet deckColors) {
+        final int[] counts = new int[6]; // WUBRGC order
+        for (final PaperCard c : deck.toFlatList()) {
+            CardRules rules = c.getRules();
+            if (!isOrHasLandFace(rules)) {
+                continue;
+            }
+            boolean[] produces = getLandManaColors(rules, deckColors);
+            for (int i = 0; i < 6; i++) {
+                if (produces[i]) { counts[i]++; }
+            }
+        }
+        return counts;
+    }
+
+    private static boolean[] getLandManaColors(final CardRules rules, final ColorSet deckColors) {
+        boolean[] produces = new boolean[6]; // WUBRGC
+
+        // Check both faces for land subtypes and mana abilities
+        ICardFace[] faces = rules.getOtherPart() != null
+                ? new ICardFace[]{rules.getMainPart(), rules.getOtherPart()}
+                : new ICardFace[]{rules.getMainPart()};
+
+        for (ICardFace face : faces) {
+            if (!face.getType().isLand()) {
+                continue;
+            }
+            applySubtypes(produces, face.getType());
+            parseManaAbilities(produces, face, deckColors);
+        }
+        return produces;
+    }
+
+    private static void applySubtypes(boolean[] produces, CardType type) {
+        if (type.hasSubtype("Plains"))   produces[0] = true;
+        if (type.hasSubtype("Island"))   produces[1] = true;
+        if (type.hasSubtype("Swamp"))    produces[2] = true;
+        if (type.hasSubtype("Mountain")) produces[3] = true;
+        if (type.hasSubtype("Forest"))   produces[4] = true;
+    }
+
+    private static void parseManaAbilities(boolean[] produces, ICardFace face, ColorSet deckColors) {
+        for (String ability : face.getAbilities()) {
+            // Mana abilities with Produced$
+            int idx = ability.indexOf("Produced$ ");
+            if (idx >= 0) {
+                String produced = ability.substring(idx + 10);
+                int pipe = produced.indexOf('|');
+                if (pipe >= 0) produced = produced.substring(0, pipe).trim();
+
+                if (produced.startsWith("Combo ColorIdentity")) {
+                    applyColorSet(produces, deckColors);
+                } else if (produced.startsWith("Combo Any") || produced.equals("Any")) {
+                    for (int i = 0; i < 5; i++) produces[i] = true;
+                } else if (produced.startsWith("Combo ")) {
+                    applyColorLetters(produces, produced.substring(6));
+                } else {
+                    applyColorLetters(produces, produced);
+                }
+                continue;
+            }
+
+            // ManaReflected abilities
+            if (ability.contains("ManaReflected")) {
+                applyColorSet(produces, deckColors);
+            }
+        }
+    }
+
+    private static void applyColorSet(boolean[] produces, ColorSet colors) {
+        if (colors.hasWhite()) produces[0] = true;
+        if (colors.hasBlue())  produces[1] = true;
+        if (colors.hasBlack()) produces[2] = true;
+        if (colors.hasRed())   produces[3] = true;
+        if (colors.hasGreen()) produces[4] = true;
+    }
+
+    private static void applyColorLetters(boolean[] produces, String letters) {
+        if (letters.contains("W")) produces[0] = true;
+        if (letters.contains("U")) produces[1] = true;
+        if (letters.contains("B")) produces[2] = true;
+        if (letters.contains("R")) produces[3] = true;
+        if (letters.contains("G")) produces[4] = true;
+        if (letters.contains("C")) produces[5] = true;
+    }
+
 }

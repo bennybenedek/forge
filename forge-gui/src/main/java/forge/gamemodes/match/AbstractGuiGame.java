@@ -326,10 +326,11 @@ public abstract class AbstractGuiGame implements IGuiGame, IMayViewCards {
 
     public void clearSelectables() {
         selectableCards.clear();
-        for (PlayerView pv : selectablePlayers) {
+        List<PlayerView> playersToUpdate = Lists.newArrayList(selectablePlayers);
+        selectablePlayers.clear();
+        for (PlayerView pv : playersToUpdate) {
             updateLives(Collections.singleton(pv));
         }
-        selectablePlayers.clear();
     }
 
     public boolean isSelectable(final CardView card) {

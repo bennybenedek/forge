@@ -75,6 +75,17 @@ public enum VStatistics implements IVDoc<CStatistics> {
     private final FLabel lblGreenShard = buildLabel(StatTypes.GREEN, false);
     private final FLabel lblColorlessShard = buildLabel(StatTypes.COLORLESS, false);
 
+    // Mana production from lands
+    private FLabel lblManaProductionHeader = new FLabel.Builder()
+            .text("MANA PRODUCTION FROM LANDS:")
+            .fontStyle(Font.BOLD).fontSize(11).fontStyle(Font.BOLD).build();
+    private final FLabel lblWhiteLand = buildLabel(StatTypes.WHITE, true);
+    private final FLabel lblBlueLand = buildLabel(StatTypes.BLUE, true);
+    private final FLabel lblBlackLand = buildLabel(StatTypes.BLACK, true);
+    private final FLabel lblRedLand = buildLabel(StatTypes.RED, false);
+    private final FLabel lblGreenLand = buildLabel(StatTypes.GREEN, false);
+    private final FLabel lblColorlessLand = buildLabel(StatTypes.COLORLESS, false);
+
     // Card type labels
     private final FLabel lblArtifact = buildLabel(StatTypes.ARTIFACT, true);
     private final FLabel lblCreature = buildLabel(StatTypes.CREATURE, false);
@@ -184,6 +195,15 @@ public enum VStatistics implements IVDoc<CStatistics> {
         pnlStats.add(lblRedShard, constraints);
         pnlStats.add(lblGreenShard, constraints);
         pnlStats.add(lblColorlessShard, constraints);
+
+        // Mana production from lands
+        pnlStats.add(lblManaProductionHeader, "w 96%!, h 40px!, span 3 1, gap 2% 0 0 0");
+        pnlStats.add(lblWhiteLand, constraints);
+        pnlStats.add(lblBlueLand, constraints);
+        pnlStats.add(lblBlackLand, constraints);
+        pnlStats.add(lblRedLand, constraints);
+        pnlStats.add(lblGreenLand, constraints);
+        pnlStats.add(lblColorlessLand, constraints);
     }
 
     //========== Overridden methods
@@ -265,6 +285,13 @@ public enum VStatistics implements IVDoc<CStatistics> {
     /** @return {@link forge.toolbox.FLabel} */
     public FLabel getLblWhiteShard() { return lblWhiteShard; }
     public FLabel getLblColorlessShard() { return lblColorlessShard; }
+
+    public FLabel getLblWhiteLand() { return lblWhiteLand; }
+    public FLabel getLblBlueLand() { return lblBlueLand; }
+    public FLabel getLblBlackLand() { return lblBlackLand; }
+    public FLabel getLblRedLand() { return lblRedLand; }
+    public FLabel getLblGreenLand() { return lblGreenLand; }
+    public FLabel getLblColorlessLand() { return lblColorlessLand; }
 
     /** @return {@link forge.toolbox.FLabel} */
     public FLabel getLblArtifact() { return lblArtifact; }

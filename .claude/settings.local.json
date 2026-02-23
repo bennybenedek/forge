@@ -23,7 +23,9 @@
       "Bash(git ls-tree:*)",
       "Bash(gh workflow run:*)",
       "Bash(where:*)",
-      "Bash(git config:*)"
+      "Bash(git config:*)",
+      "Bash(dir:*)",
+      "Bash(xargs cat:*)"
     ],
     "deny": [],
     "ask": []
