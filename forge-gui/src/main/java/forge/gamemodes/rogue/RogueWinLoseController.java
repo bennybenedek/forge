@@ -6,6 +6,7 @@ import forge.game.player.PlayerView;
 import forge.gui.interfaces.IButton;
 import forge.gui.interfaces.IWinLoseView;
 import forge.item.PaperCard;
+import forge.localinstance.achievements.RogueCommanderAchievements;
 import forge.localinstance.skin.FSkinProp;
 import forge.player.GamePlayerUtil;
 import forge.util.Localizer;
@@ -121,6 +122,8 @@ public class RogueWinLoseController {
             // Run is complete - mark as won
             currentRun.setRunWon(true);
             progress.onRunCompleted(currentRun, true);
+            RogueCommanderAchievements.instance.recordRunWon(
+                currentRun.getSelectedRogueDeck().getCommanderCardName());
             RogueIO.saveRun(currentRun);
             view.showMessage("Congratulations! You have completed the run!", "Victory", FSkinProp.ICO_QUEST_CHARM);
             return; // Skip card rewards and navigation

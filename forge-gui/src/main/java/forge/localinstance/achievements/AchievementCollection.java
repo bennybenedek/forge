@@ -77,6 +77,7 @@ public abstract class AchievementCollection implements Iterable<Achievement> {
         cb.addItem(PlaneswalkerAchievements.instance);
         cb.addItem(CardActivationAchievements.instance);
         cb.addItem(ChallengeAchievements.instance);
+        cb.addItem(RogueCommanderAchievements.instance);
     }
 
     protected AchievementCollection(String name0, String filename0, boolean isLimitedFormat0) {
