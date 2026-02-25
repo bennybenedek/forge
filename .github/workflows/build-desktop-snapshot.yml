@@ -117,9 +117,26 @@ jobs:
             Commit: ${{ github.sha }}
 
             **Download Instructions:**
-            1. Download the `forge-installer-*.tar.bz2` file
-            2. Extract to a folder
-            3. Run `forge.exe` (Windows) or `forge.sh` (Linux/Mac)
-            4. Select "Rogue Commander" from the main menu
+            1. Java Requirement: Ensure you have Java 17 or later installed. You can download it from [Adoptium](https://adoptium.net/de/temurin/releases?version=17&os=any&arch=any).
+            2. Download the `forge-installer-*.tar.bz2` file (usually saved in your Downloads folder).
+            3. Extract the archive to a normal folder (for example, your Documents folder).
+               Do not run Forge directly from inside the archive preview.
+            
+              - Windows:
+                - Recommended: Right-click the file and extract it using 7-Zip ([Download](https://www.7-zip.org/))
+                - Alternatively, open PowerShell in the folder containing the downloaded file (hold Shift + Right Click → “Open PowerShell window here”),
+                  then run:
+                  `tar -xjf forge-installer-*.tar.bz2`
+            
+              - macOS/Linux:
+                - Double-click the file (it will extract automatically) or 
+                - Open Terminal in the folder containing the downloaded file (Right-click the folder → “New Terminal at Folder”),
+                  then run:
+                  `tar -xjf forge-installer-*.tar.bz2`
+            4. Open the extracted folder and run:
+              - `forge.exe` (Windows)
+              - `forge.sh` (Linux/macOS)
+            5. In the main menu (left side), select "Rogue Commander" and click "Start New Run" to begin the game mode.
 
-            This is a development build for playtesting the new Rogue Commander game mode.
+            This is a development build for playtesting the new Rogue Commander game mode, which is still a work in progress.   
+            For general information on how to use the Forge app and gameplay basics, see the [official Forge User Guide](https://github.com/Card-Forge/forge/wiki/User-Guide#gameplay).
