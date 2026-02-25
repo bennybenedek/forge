@@ -1,20 +1,22 @@
 package forge.menus;
 
-import forge.localinstance.properties.ForgeConstants;
-import forge.toolbox.FOptionPane;
-import forge.util.BuildInfo;
-import forge.util.FileUtil;
-import forge.util.Localizer;
 import java.awt.Desktop;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.File;
 import java.io.IOException;
+
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 
 //import static forge.localinstance.properties.ForgeConstants.GITHUB_FORGE_URL;
+import forge.localinstance.properties.ForgeConstants;
+import forge.toolbox.FOptionPane;
+import forge.util.BuildInfo;
+import forge.util.FileUtil;
+import forge.util.Localizer;
+import forge.view.KeyboardShortcutsDialog;
 
 
 public final class HelpMenu {
@@ -26,6 +28,7 @@ public final class HelpMenu {
         menu.setMnemonic(KeyEvent.VK_H);
         menu.add(getMenu_GettingStarted());
         menu.add(getMenu_Troubleshooting());
+        menu.add(getMenuItem_KeyboardShortcuts());
         menu.addSeparator();
         menu.add(getMenuItem_ReleaseNotes());
         menu.add(getMenuItem_License());
@@ -64,6 +67,13 @@ public final class HelpMenu {
         mnu.addSeparator();
         mnu.add(getMenuItem_UrlLink("Forge Wiki", "https://github.com/Card-Forge/forge/wiki/User-Guide#gameplay", KeyStroke.getKeyStroke(KeyEvent.VK_F1, 0)));
         return mnu;
+    }
+
+    private static JMenuItem getMenuItem_KeyboardShortcuts() {
+        final Localizer localizer = Localizer.getInstance();
+        JMenuItem menuItem = new JMenuItem(localizer.getMessage("lblKeyboardShortcuts"));
+        menuItem.addActionListener(e -> new KeyboardShortcutsDialog().setVisible(true));
+        return menuItem;
     }
 
     private static JMenuItem getMenuItem_HowToPlayFile() {
