@@ -28,6 +28,7 @@ import forge.gamemodes.rogue.RogueTutorial;
 import forge.gui.UiCommand;
 import forge.gui.framework.EDocID;
 import forge.gui.framework.FScreen;
+import forge.localinstance.achievements.RogueCommanderAchievements;
 import forge.item.PaperCard;
 import forge.itemmanager.CardManager;
 import forge.itemmanager.ItemManagerConfig;
@@ -341,6 +342,7 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
         // Save the RogueRun to persist deck changes
         if (rogueRun != null) {
             RogueIO.saveRun(rogueRun);
+            RogueCommanderAchievements.instance.evaluateRunAchievements(rogueRun);
             // Reload to ensure we're working with the saved version
             // This prevents stale data if the editor is opened again
             resetTables();

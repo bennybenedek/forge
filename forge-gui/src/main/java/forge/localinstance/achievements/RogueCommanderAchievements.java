@@ -1,7 +1,9 @@
 package forge.localinstance.achievements;
 
 import forge.game.Game;
+import forge.game.GameType;
 import forge.game.player.Player;
+import forge.gamemodes.rogue.RogueRun;
 import forge.gui.GuiBase;
 import forge.item.IPaperCard;
 import forge.localinstance.properties.ForgeConstants;
@@ -29,7 +31,63 @@ public class RogueCommanderAchievements extends AchievementCollection {
     }
 
     @Override
-    public void updateAll(Player player) { }
+    protected void addAchievements() {
+        super.addAchievements(); // Load commander achievements from file
+        add(new LifeAbundance());
+        add(new GoldHoarder());
+    }
+
+    @Override
+    public void updateAll(Player player) {
+        if (player.getGame().getRules().getGameType() != GameType.RogueCommander) {
+            return;
+        }
+        for (Achievement achievement : achievements.values()) {
+            achievement.update(player);
+        }
+        save();
+    }
+
+    /**
+     * Evaluate run-level and deck-level achievements using RogueRun state.
+     * Called from: handleVictory(), handleDefeat(), CEditorRogue.canSwitchAway()
+     */
+    public void evaluateRunAchievements(RogueRun run) {
+        if (run == null) return;
+
+        // Life Abundant: have 50+ life
+        if (run.getCurrentLife() >= 50) {
+            updateAchievement("LifeAbundance");
+        }
+
+        // Gold Hoarder: have 15+ gold
+        if (run.getCurrentGold() >= 15) {
+            updateAchievement("GoldHoarder");
+        }
+    }
+
+    /** Update a non-tiered (special) achievement to earned state using loadFromXml. */
+    private void updateAchievement(String key) {
+        Achievement a = achievements.get(key);
+        if (a == null || a.getBest() > 0) return; // already earned or not found
+
+        try {
+            Element el = DocumentBuilderFactory.newInstance().newDocumentBuilder()
+                .newDocument().createElement("a");
+            el.setAttribute("best", "1");
+            el.setAttribute("time", String.valueOf(new Date().getTime()));
+            a.loadFromXml(el);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
+
+        a.updateTrophyImage();
+        GuiBase.getInterface().showImageDialog(a.getImage(),
+            a.getDisplayName() + "\n" + a.getSharedDesc() + "\n" + a.getMythicDesc(),
+            Localizer.getInstance().getMessage("lblAchievementEarned"));
+        save();
+    }
 
     public void recordRunWon(String commanderName) {
         Achievement a = achievements.get(commanderName);
@@ -66,7 +124,7 @@ public class RogueCommanderAchievements extends AchievementCollection {
 
         @Override
         protected boolean eval(Player player, Game game) {
-            return true;
+            return false; // Not used; commander wins are tracked via recordRunWon()
         }
 
         @Override

@@ -124,6 +124,7 @@ public class RogueWinLoseController {
             progress.onRunCompleted(currentRun, true);
             RogueCommanderAchievements.instance.recordRunWon(
                 currentRun.getSelectedRogueDeck().getCommanderCardName());
+            RogueCommanderAchievements.instance.evaluateRunAchievements(currentRun);
             RogueIO.saveRun(currentRun);
             view.showMessage("Congratulations! You have completed the run!", "Victory", FSkinProp.ICO_QUEST_CHARM);
             return; // Skip card rewards and navigation
@@ -136,6 +137,9 @@ public class RogueWinLoseController {
             boolean isElite = planeboundNode.getPlaneboundType() == RoguePlaneboundType.ELITE;
             awardCardRewards(isElite, goldReward, echoReward);
         }
+
+        // Evaluate run-level achievements after rewards
+        RogueCommanderAchievements.instance.evaluateRunAchievements(currentRun);
 
         // Move to next node
         currentRun.nextNode();
@@ -255,6 +259,7 @@ public class RogueWinLoseController {
         RogueMetaProgress progress = RogueMetaProgress.getInstance();
         progress.onMatchCompleted(currentRun, false);
         progress.onRunCompleted(currentRun, false);
+        RogueCommanderAchievements.instance.evaluateRunAchievements(currentRun);
 
         // Save run state
         RogueIO.saveRun(currentRun);

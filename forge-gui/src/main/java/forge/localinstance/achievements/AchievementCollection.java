@@ -63,6 +63,7 @@ public abstract class AchievementCollection implements Iterable<Achievement> {
         PlaneswalkerAchievements.instance.updateAll(player);
         ChallengeAchievements.instance.updateAll(player);
         CardActivationAchievements.instance.updateAll(player);
+        RogueCommanderAchievements.instance.updateAll(player);
     }
     
     public static void buildComboBox(IComboBox<AchievementCollection> cb) {
