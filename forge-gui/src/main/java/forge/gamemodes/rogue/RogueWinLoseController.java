@@ -68,11 +68,11 @@ public class RogueWinLoseController {
         // Record the victory (this also marks the node as completed)
         currentRun.recordMatchResult(true);
 
+        // Persist life total from match (before meta progress so milestones see current life)
+        persistLifeTotal();
+
         // Track meta progress for match
         RogueMetaProgress.getInstance().onMatchCompleted(currentRun, true);
-
-        // Persist life total from match
-        persistLifeTotal();
 
         // Check if this was the last node (run completed)
         boolean isLastNode = currentRun.getCurrentNodeIndex() >= currentRun.getPath().getNodeCount() - 1;
@@ -125,6 +125,7 @@ public class RogueWinLoseController {
             RogueCommanderAchievements.instance.recordRunWon(
                 currentRun.getSelectedRogueDeck().getCommanderCardName());
             RogueCommanderAchievements.instance.evaluateRunAchievements(currentRun);
+            progress.checkForNewUnlocks();
             RogueIO.saveRun(currentRun);
             view.showMessage("Congratulations! You have completed the run!", "Victory", FSkinProp.ICO_QUEST_CHARM);
             return; // Skip card rewards and navigation
@@ -140,6 +141,9 @@ public class RogueWinLoseController {
 
         // Evaluate run-level achievements after rewards
         RogueCommanderAchievements.instance.evaluateRunAchievements(currentRun);
+
+        // Check for newly unlocked commanders
+        progress.checkForNewUnlocks();
 
         // Move to next node
         currentRun.nextNode();
@@ -260,6 +264,7 @@ public class RogueWinLoseController {
         progress.onMatchCompleted(currentRun, false);
         progress.onRunCompleted(currentRun, false);
         RogueCommanderAchievements.instance.evaluateRunAchievements(currentRun);
+        progress.checkForNewUnlocks();
 
         // Save run state
         RogueIO.saveRun(currentRun);

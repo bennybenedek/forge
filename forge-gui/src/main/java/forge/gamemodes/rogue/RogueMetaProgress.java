@@ -51,6 +51,9 @@ public class RogueMetaProgress {
     private Map<String, Integer> boonRanks;       // Boon ID -> current rank (0 = not unlocked)
     private Set<String> activeBoons;              // Currently equipped boon IDs (max 3)
 
+    // Unlock notification tracking - which unlocks have been shown to the player
+    private Set<String> notifiedUnlocks;
+
     // Tutorial tracking - which tutorials have been shown
     private Set<String> seenTutorials;
 
@@ -74,6 +77,9 @@ public class RogueMetaProgress {
         totalEchoes = 0;
         boonRanks = new HashMap<>();
         activeBoons = new HashSet<>();
+
+        // Initialize unlock notification tracking
+        notifiedUnlocks = new HashSet<>();
 
         // Initialize tutorial tracking
         seenTutorials = new HashSet<>();
@@ -118,6 +124,7 @@ public class RogueMetaProgress {
         totalEchoes = 0;
         boonRanks = new HashMap<>();
         activeBoons = new HashSet<>();
+        notifiedUnlocks = new HashSet<>();
 
         // Note: Tutorials are NOT reset here - use resetTutorials() separately
         save();
@@ -227,6 +234,47 @@ public class RogueMetaProgress {
             }
         }
         return count;
+    }
+
+    /**
+     * Check all commanders for new unlocks and show a popup for each.
+     * Called after meta progress updates (onMatchCompleted, onRunCompleted).
+     */
+    public void checkForNewUnlocks() {
+        if (notifiedUnlocks == null) {
+            notifiedUnlocks = new HashSet<>();
+        }
+
+        boolean changed = false;
+        for (RogueDeck deck : RogueConfig.loadRogueDecks()) {
+            String name = deck.getCommanderCardName();
+
+            // Skip commanders that are always available (no unlock condition)
+            if (deck.getUnlockCondition() == null || deck.getUnlockCondition().isDefault()) {
+                continue;
+            }
+
+            if (deck.isUnlocked() && !notifiedUnlocks.contains(name)) {
+                notifiedUnlocks.add(name);
+                changed = true;
+
+                // Show unlock popup with commander card image
+                forge.item.PaperCard card = forge.model.FModel.getMagicDb()
+                    .getCommonCards().getCard(name);
+                forge.localinstance.skin.ISkinImage image = forge.gui.GuiBase.getInterface()
+                    .createLayeredImage(card, forge.localinstance.skin.FSkinProp.IMG_SPECIAL_TROPHY,
+                        forge.localinstance.properties.ForgeConstants.CACHE_ACHIEVEMENTS_DIR
+                            + "/unlock_" + name.replace(" ", "_") + ".png", 1f);
+                String unlockDesc = deck.getUnlockCondition() != null
+                    ? deck.getUnlockCondition().getDescription() : "";
+                forge.gui.GuiBase.getInterface().showImageDialog(image,
+                    name + "\n" + unlockDesc,
+                    "Commander Unlocked!");
+            }
+        }
+        if (changed) {
+            save();
+        }
     }
 
     /**
