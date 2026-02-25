@@ -15,6 +15,7 @@ import forge.gui.framework.EDocID;
 import forge.gui.framework.FScreen;
 import forge.gui.framework.ICDoc;
 import forge.item.PaperCard;
+import forge.localinstance.achievements.RogueCommanderAchievements;
 import forge.localinstance.properties.ForgeConstants;
 import forge.player.GamePlayerUtil;
 import forge.screens.deckeditor.CDeckEditorUI;
@@ -542,6 +543,9 @@ public enum CSubmenuRogueMap implements ICDoc {
     // Mark node as completed and move to next
     bazaarNode.setCompleted(true);
     currentRun.nextNode();
+
+    // Evaluate achievements after Bazaar (deck/gold may have changed)
+    RogueCommanderAchievements.instance.evaluateRunAchievements(currentRun);
 
     // Save run and update view (use update() to trigger tutorials for next row)
     RogueIO.saveRun(currentRun);

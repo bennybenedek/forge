@@ -3,7 +3,9 @@ package forge.localinstance.achievements;
 import forge.game.Game;
 import forge.game.GameType;
 import forge.game.player.Player;
+import forge.deck.Deck;
 import forge.gamemodes.rogue.RogueRun;
+import forge.item.PaperCard;
 import forge.gui.GuiBase;
 import forge.item.IPaperCard;
 import forge.localinstance.properties.ForgeConstants;
@@ -35,6 +37,7 @@ public class RogueCommanderAchievements extends AchievementCollection {
         super.addAchievements(); // Load commander achievements from file
         add(new LifeAbundance());
         add(new GoldHoarder());
+        add(new LegendaryArmy());
     }
 
     @Override
@@ -63,6 +66,20 @@ public class RogueCommanderAchievements extends AchievementCollection {
         // Gold Hoarder: have 15+ gold
         if (run.getCurrentGold() >= 15) {
             updateAchievement("GoldHoarder");
+        }
+
+        // Legendary Army: 20+ legendary permanents in deck
+        Deck deck = run.getCurrentDeck();
+        if (deck != null && deck.getMain() != null) {
+            int legendaryCount = 0;
+            for (PaperCard card : deck.getMain().toFlatList()) {
+                if (card.getRules().getType().isLegendary() && card.getRules().getType().isPermanent()) {
+                    legendaryCount++;
+                }
+            }
+            if (legendaryCount > 20) {
+                updateAchievement("LegendaryArmy");
+            }
         }
     }
 
