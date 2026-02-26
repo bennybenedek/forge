@@ -77,7 +77,7 @@ public enum VStatistics implements IVDoc<CStatistics> {
 
     // Mana production from lands
     private FLabel lblManaProductionHeader = new FLabel.Builder()
-            .text("MANA PRODUCTION FROM LANDS:")
+            .text(Localizer.getInstance().getMessage("lblManaProductionFromLands")).tooltip(Localizer.getInstance().getMessage("lblLandsProducingManaByColor"))
             .fontStyle(Font.BOLD).fontSize(11).fontStyle(Font.BOLD).build();
     private final FLabel lblWhiteLand = buildLabel(StatTypes.WHITE, true);
     private final FLabel lblBlueLand = buildLabel(StatTypes.BLUE, true);
@@ -126,6 +126,14 @@ public enum VStatistics implements IVDoc<CStatistics> {
         lblGreenShard.setToolTipText(Localizer.getInstance().getMessage("lblGreenManaSymbolCount"));
         lblRedShard.setToolTipText(Localizer.getInstance().getMessage("lblRedManaSymbolCount"));
         lblWhiteShard.setToolTipText(Localizer.getInstance().getMessage("lblWhiteManaSymbolCount"));
+
+        // Mana production from lands stats
+        lblWhiteLand.setToolTipText(Localizer.getInstance().getMessage("lblLandsProducingWhiteMana"));
+        lblBlueLand.setToolTipText(Localizer.getInstance().getMessage("lblLandsProducingBlueMana"));
+        lblBlackLand.setToolTipText(Localizer.getInstance().getMessage("lblLandsProducingBlackMana"));
+        lblRedLand.setToolTipText(Localizer.getInstance().getMessage("lblLandsProducingRedMana"));
+        lblGreenLand.setToolTipText(Localizer.getInstance().getMessage("lblLandsProducingGreenMana"));
+        lblColorlessLand.setToolTipText(Localizer.getInstance().getMessage("lblLandsProducingColorlessMana"));
 
         // Type stats
         lblArtifact.setToolTipText(Localizer.getInstance().getMessage("lblArtifactCardCount"));

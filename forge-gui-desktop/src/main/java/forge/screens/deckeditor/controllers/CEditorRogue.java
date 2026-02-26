@@ -304,6 +304,7 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
         // These will automatically be isolated to this editor instance (not shared)
         lblRemovalCredits = new forge.toolbox.FLabel.Builder()
             .text(REMOVAL_CREDITS + ": " + rogueRun.getRemovalCredits())
+            .tooltip(rogueRun.getRemovalCredits() + " Removal Credits left for removing non-basic land cards from current deck")
             .fontSize(14)
             .build();
         this.getDeckManager().getPnlButtons().add(lblRemovalCredits, "w 22%!, h 30px!, gapx 5");
@@ -416,6 +417,7 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
     private void updateRemovalCreditsLabel() {
         if (lblRemovalCredits != null) {
             lblRemovalCredits.setText(REMOVAL_CREDITS + ": " + rogueRun.getRemovalCredits());
+            lblRemovalCredits.setToolTipText(rogueRun.getRemovalCredits() + " Removal Credits left for removing non-basic land cards from current deck");
 
             // Update undo button state
             if (btnUndo != null) {
