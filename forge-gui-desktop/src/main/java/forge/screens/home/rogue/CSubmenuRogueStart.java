@@ -27,6 +27,7 @@ public enum CSubmenuRogueStart implements ICDoc {
     view.getBtnBeginRun().addActionListener(e -> beginNewRun());
     view.getBtnStats().addActionListener(e -> openStats());
     view.getBtnAether().addActionListener(e -> openAether());
+    view.getBtnHistory().addActionListener(e -> openHistory());
   }
 
   private void openStats() {
@@ -35,6 +36,10 @@ public enum CSubmenuRogueStart implements ICDoc {
 
   private void openAether() {
     CHomeUI.SINGLETON_INSTANCE.itemClick(EDocID.HOME_ROGUEAETHER);
+  }
+
+  private void openHistory() {
+    CHomeUI.SINGLETON_INSTANCE.itemClick(EDocID.HOME_ROGUEHISTORY);
   }
 
   @Override
@@ -97,6 +102,12 @@ public enum CSubmenuRogueStart implements ICDoc {
     view.getBtnAether().setEnabled(aetherUnlocked);
     view.getBtnAether()
         .setToolTipText(aetherUnlocked ? null : "Unlock the Aether by completing your first Run.");
+
+    // Update History button state - locked until at least one run history entry exists
+    boolean historyUnlocked = !RogueMetaProgress.getInstance().getRunHistory().isEmpty();
+    view.getBtnHistory().setEnabled(historyUnlocked);
+    view.getBtnHistory()
+        .setToolTipText(historyUnlocked ? null : "Unlock the Run History by completing your first Run.");
 
     // Refresh layout
     view.getCommanderGridPanel().revalidate();
@@ -185,6 +196,13 @@ public enum CSubmenuRogueStart implements ICDoc {
     if (selectedDeck == null) {
       System.err.println("Error: No commander selected");
       return;
+    }
+
+    // Record abandoned run history if there's an active run
+    RogueRun existingRun = CSubmenuRogueMap.SINGLETON_INSTANCE.getCurrentRun();
+    if (existingRun != null && existingRun.getRunState() == RogueRunState.STARTED) {
+      RogueMetaProgress.getInstance().addRunHistoryEntry(
+          RogueRunHistoryEntry.fromRun(existingRun, "ABANDONED", ""));
     }
 
     // Generate path for the run

@@ -121,6 +121,19 @@ public class RogueWinLoseController {
 
             // Run is complete - mark as won
             currentRun.setRunWon(true);
+
+            // Record run history - find boss name from last NodePlanebound (BOSS type)
+            String bossName = "";
+            for (RoguePathNode node : currentRun.getPath().getNodes()) {
+                if (node instanceof NodePlanebound) {
+                    NodePlanebound pb = (NodePlanebound) node;
+                    if (pb.getPlaneboundType() == RoguePlaneboundType.BOSS) {
+                        bossName = pb.getRoguePlanebound().planeboundName();
+                    }
+                }
+            }
+            progress.addRunHistoryEntry(RogueRunHistoryEntry.fromRun(currentRun, "VICTORY", bossName));
+
             progress.onRunCompleted(currentRun, true);
             RogueCommanderAchievements.instance.recordRunWon(
                 currentRun.getSelectedRogueDeck().getCommanderCardName());
@@ -257,10 +270,19 @@ public class RogueWinLoseController {
         currentRun.recordMatchResult(false);
         currentRun.setRunFailed(true);
 
-        // Echoes are already added to meta progress after each match win, no transfer needed
-
-        // Track meta progress
+        // Record run history - defeated by current node's planebound
         RogueMetaProgress progress = RogueMetaProgress.getInstance();
+        String defeatedBy = "";
+        RoguePathNode curNode = currentRun.getCurrentNode();
+        if (curNode instanceof NodePlanebound) {
+            NodePlanebound pb = (NodePlanebound) curNode;
+            if (pb.getRoguePlanebound() != null) {
+                defeatedBy = pb.getRoguePlanebound().planeboundName();
+            }
+        }
+        progress.addRunHistoryEntry(RogueRunHistoryEntry.fromRun(currentRun, "DEFEAT", defeatedBy));
+
+        // Echoes are already added to meta progress after each match win, no transfer needed
         progress.onMatchCompleted(currentRun, false);
         progress.onRunCompleted(currentRun, false);
         RogueCommanderAchievements.instance.evaluateRunAchievements(currentRun);

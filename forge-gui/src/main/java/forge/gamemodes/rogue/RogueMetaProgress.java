@@ -9,8 +9,10 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.zip.GZIPInputStream;
@@ -56,6 +58,9 @@ public class RogueMetaProgress {
 
     // Tutorial tracking - which tutorials have been shown
     private Set<String> seenTutorials;
+
+    // Run history
+    private List<RogueRunHistoryEntry> runHistory;
 
     // Private constructor for singleton
     private RogueMetaProgress() {
@@ -125,6 +130,9 @@ public class RogueMetaProgress {
         boonRanks = new HashMap<>();
         activeBoons = new HashSet<>();
         notifiedUnlocks = new HashSet<>();
+
+        // Reset run history
+        runHistory = new ArrayList<>();
 
         // Note: Tutorials are NOT reset here - use resetTutorials() separately
         save();
@@ -572,6 +580,23 @@ public class RogueMetaProgress {
         return BoonType.MYTHIC_COLLECTOR.getEffectValueAtRank(getBoonRank(BoonType.MYTHIC_COLLECTOR));
     }
 
+    // ==================== Run History ====================
+
+    public List<RogueRunHistoryEntry> getRunHistory() {
+        if (runHistory == null) {
+            runHistory = new ArrayList<>();
+        }
+        return runHistory;
+    }
+
+    public void addRunHistoryEntry(RogueRunHistoryEntry entry) {
+        if (runHistory == null) {
+            runHistory = new ArrayList<>();
+        }
+        runHistory.add(entry);
+        save();
+    }
+
     // ==================== Tutorial Tracking ====================
 
     /**
@@ -620,11 +645,16 @@ public class RogueMetaProgress {
         xStream.allowTypeHierarchy(String.class);
         xStream.allowTypeHierarchy(HashMap.class);
         xStream.allowTypeHierarchy(HashSet.class);
+        xStream.allowTypeHierarchy(ArrayList.class);
         xStream.allowTypeHierarchy(Map.class);
         xStream.allowTypeHierarchy(Set.class);
+        xStream.allowTypeHierarchy(List.class);
         xStream.allowTypeHierarchy(RogueMetaProgress.class);
         xStream.allowTypesByWildcard(new String[] {
             RogueMetaProgress.class.getPackage().getName() + ".*",
+            "forge.deck.*",
+            "forge.item.*",
+            "forge.card.*",
             "java.util.*",
             "java.lang.*"
         });
