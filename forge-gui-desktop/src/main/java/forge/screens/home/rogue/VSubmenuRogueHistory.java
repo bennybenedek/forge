@@ -13,7 +13,6 @@ import forge.toolbox.FLabel;
 import forge.toolbox.FScrollPane;
 import forge.toolbox.FSkin;
 import java.awt.*;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import javax.swing.*;
