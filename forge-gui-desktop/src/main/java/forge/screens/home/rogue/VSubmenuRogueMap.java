@@ -38,6 +38,15 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
       .fontSize(16)
       .build();
 
+  private final FLabel lblCommanderAvatar = new FLabel.Builder()
+      .iconScaleFactor(0.99f).iconInBackground(true).build();
+
+  private final FLabel lblCommanderName = new FLabel.Builder()
+      .text("")
+      .fontSize(14)
+      .fontStyle(Font.BOLD)
+      .build();
+
   private final FLabel lblLife = new FLabel.Builder()
       .text("♥ Life: 20")
       .fontSize(14)
@@ -97,11 +106,15 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
     lblEchoes.setText("Echoes: " + totalEchoes);
 
     if (run != null) {
+      lblCommanderName.setText(run.getSelectedRogueDeck().getCommanderCardName());
+      lblCommanderAvatar.setIcon(FSkin.getAvatars().get(run.getSelectedRogueDeck().getAvatarIndex()));
       lblLife.setText("♥ Life: " + run.getCurrentLife());
       lblGold.setText("Gold: " + run.getCurrentGold());
       lblRemovalCredits.setText("Removal Credits: " + run.getRemovalCredits());
       pathVisualizer.updatePath(run);
     } else {
+      lblCommanderName.setText("");
+      lblCommanderAvatar.setIcon(FSkin.getIcon(FSkinProp.ICO_MINUS));
       lblLife.setText("♥ Life: 20");
       lblGold.setText("Gold: 0");
       lblRemovalCredits.setText("Removal Credits: 0");
@@ -131,7 +144,9 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
 
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(lblTitle, "w 98%!, h 30px!, gap 1% 0 15px 15px");
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay()
-        .add(lblLife, "ax center, gap 0 0 10px 10px, split 4");
+        .add(lblCommanderAvatar, "w 45px!, h 45px!, ax center, gap 0 0 10px 10px, split 6");
+    VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(lblCommanderName, "gapleft 5px");
+    VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(lblLife, "gapleft 20px");
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(lblGold, "gapleft 20px");
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(lblEchoes, "gapleft 20px");
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(lblRemovalCredits, "gapleft 20px");
