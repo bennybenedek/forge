@@ -3652,6 +3652,14 @@ public class AbilityUtils {
         if (def.startsWith("Valid")) {
             final String[] splitString = def.split("/", 2);
             String valid = splitString[0].substring(6);
+            // Check for $Property suffix to sum a property instead of counting
+            int propIdx = valid.indexOf('$');
+            if (propIdx > 0) {
+                String restriction = valid.substring(0, propIdx);
+                String property = valid.substring(propIdx + 1);
+                CardCollection filtered = CardLists.getValidCards(paidList, restriction, source.getController(), source, ctb);
+                return doXMath(handlePaid(filtered, property, source, ctb), splitString.length > 1 ? splitString[1] : null, source, ctb);
+            }
             final int num = CardLists.getValidCardCount(paidList, valid, source.getController(), source, ctb);
             return doXMath(num, splitString.length > 1 ? splitString[1] : null, source, ctb);
         }
