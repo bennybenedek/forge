@@ -8,11 +8,7 @@ import forge.localinstance.skin.FSkinProp;
 import forge.screens.home.EMenuGroup;
 import forge.screens.home.IVSubmenu;
 import forge.screens.home.VHomeUI;
-import forge.toolbox.FButton;
-import forge.toolbox.FLabel;
-import forge.toolbox.FScrollPane;
-import forge.toolbox.FTextArea;
-import forge.toolbox.FSkin;
+import forge.toolbox.*;
 import java.awt.*;
 import java.util.List;
 import java.util.function.Consumer;
@@ -99,7 +95,7 @@ public enum VSubmenuRogueHistory implements IVSubmenu<CSubmenuRogueHistory> {
     } else {
       // Display in reverse order (newest first)
       for (int i = entries.size() - 1; i >= 0; i--) {
-        pnlContent.add(new RunHistoryCard(entries.get(i), onViewDeck), "w 98%!, gapbottom 8px");
+        pnlContent.add(new RunHistoryCard(entries.get(i), onViewDeck), "growx, pushx, gapbottom 8");
       }
     }
 
@@ -117,14 +113,28 @@ public enum VSubmenuRogueHistory implements IVSubmenu<CSubmenuRogueHistory> {
 
   /**
    * Panel displaying a single run history entry.
-   * Layout: avatar on left, info rows on right, all left-aligned.
+   * Layout: avatar on left, info rows on right, all left aligned.
    */
   static class RunHistoryCard extends FSkin.SkinnedPanel {
+    private static final int INSET = 10;
+    private static final int AVATAR_SIZE = 60;
+    private static final int AVATAR_GAP = 5;
+    private static final int ROW_GAP = 2;
+    private static final int BTN_WIDTH = 100;
+    private static final int BTN_HEIGHT = 26;
 
     private boolean isHovered = false;
+    private final FLabel lblAvatar;
+    private final FLabel lblName;
+    private final FLabel lblOutcome;
+    private final FLabel lblDetail;
+    private final FLabel lblTimestamp;
+    private final FTextArea txtPath;
+    private final FLabel lblStats;
+    private final FButton btnViewDeck;
 
     RunHistoryCard(RogueRunHistoryEntry entry, Consumer<RogueRunHistoryEntry> onViewDeck) {
-      super(new MigLayout("insets 10 12 10 12, gap 0", "[65px][grow]", ""));
+      super(null); // No layout manager — manual positioning
       setOpaque(true);
       setBackground(FSkin.getColor(FSkin.Colors.CLR_THEME2));
 
@@ -141,81 +151,146 @@ public enum VSubmenuRogueHistory implements IVSubmenu<CSubmenuRogueHistory> {
         }
       });
 
-      // Left column: Avatar (vertically centered)
-      FLabel lblAvatar = new FLabel.Builder().build();
+      // Avatar
+      lblAvatar = new FLabel.Builder().build();
       lblAvatar.setIcon(FSkin.getAvatars().get(entry.getAvatarIndex()));
-      lblAvatar.setPreferredSize(new Dimension(60, 60));
-      add(lblAvatar, "cell 0 0, spany, w 60px!, h 60px!, ay top, gaptop 2px");
+      add(lblAvatar);
 
-      // Right column: Info panel with all text rows left-aligned
-      JPanel infoPanel = new JPanel(new MigLayout("insets 0, gap 0, wrap", "[grow][right]", "[]2[]2[]2[]"));
-      infoPanel.setOpaque(false);
-
-      // Row 0: Commander name (left) + Outcome (right)
-      FLabel lblName = new FLabel.Builder()
+      // Commander name
+      lblName = new FLabel.Builder()
           .text(entry.getCommanderName())
           .fontSize(15)
           .fontStyle(Font.BOLD)
           .fontAlign(SwingConstants.LEFT)
           .build();
+      add(lblName);
 
+      // Outcome
       Color outcomeColor;
       switch (entry.getOutcome()) {
         case "VICTORY": outcomeColor = new Color(0, 200, 0); break;
         case "DEFEAT": outcomeColor = new Color(220, 50, 50); break;
         default: outcomeColor = Color.GRAY; break;
       }
-      FLabel lblOutcome = new FLabel.Builder()
+      lblOutcome = new FLabel.Builder()
           .text(entry.getOutcome())
           .fontSize(13)
           .fontStyle(Font.BOLD)
+          .fontAlign(SwingConstants.RIGHT)
           .build();
       lblOutcome.setForeground(outcomeColor);
+      add(lblOutcome);
 
-      infoPanel.add(lblName, "growx");
-      infoPanel.add(lblOutcome);
-
-      // Row 1: Detail (boss/defeated by) + timestamp
+      // Detail (boss/defeated by)
       String detail = "";
       if ("VICTORY".equals(entry.getOutcome()) && !entry.getBossOrDefeatedBy().isEmpty()) {
         detail = "Boss slain: " + entry.getBossOrDefeatedBy();
       } else if ("DEFEAT".equals(entry.getOutcome()) && !entry.getBossOrDefeatedBy().isEmpty()) {
         detail = "Defeated by: " + entry.getBossOrDefeatedBy();
       }
-      if (!detail.isEmpty()) {
-        infoPanel.add(new FLabel.Builder().text(detail).fontSize(12)
-            .fontAlign(SwingConstants.LEFT).build(), "growx");
-      } else {
-        infoPanel.add(new JPanel() {{ setOpaque(false); }}, "growx");
-      }
-      infoPanel.add(new FLabel.Builder().text(entry.getTimestamp()).fontSize(11).build());
+      lblDetail = new FLabel.Builder().text(detail).fontSize(12)
+          .fontAlign(SwingConstants.LEFT).build();
+      add(lblDetail);
 
-      // Row 2: Path (planes and extra nodes combined) - FTextArea for word wrapping
+      // Timestamp
+      lblTimestamp = new FLabel.Builder()
+          .text(entry.getTimestamp())
+          .fontSize(11)
+          .fontAlign(SwingConstants.RIGHT)
+          .build();
+      add(lblTimestamp);
+
+      // Path
       if (!entry.getPath().isEmpty()) {
-        FTextArea txtPath = new FTextArea("Path: " + String.join(", ", entry.getPath()));
+        txtPath = new FTextArea("Path: " + String.join(", ", entry.getPath()));
         txtPath.setEditable(false);
         txtPath.setLineWrap(true);
         txtPath.setWrapStyleWord(true);
         txtPath.setFocusable(false);
         txtPath.setOpaque(false);
-        txtPath.setColumns(1);
         txtPath.setFont(FSkin.getFont(12));
         txtPath.setForeground(FSkin.getColor(FSkin.Colors.CLR_TEXT).brighter());
-        infoPanel.add(txtPath, "span 2, growx");
+        add(txtPath);
+      } else {
+        txtPath = null;
       }
 
-      // Row 3: Life/Gold (left) + View Deck button (right)
+      // Stats
       String stats = "Life: " + entry.getFinalLife() + "  |  Gold: " + entry.getFinalGold();
-      infoPanel.add(new FLabel.Builder().text(stats).fontSize(12)
-          .fontAlign(SwingConstants.LEFT).build(), "growx");
+      lblStats = new FLabel.Builder().text(stats).fontSize(12)
+          .fontAlign(SwingConstants.LEFT).build();
+      add(lblStats);
 
+      // View Deck button
       if (entry.getDeckSnapshot() != null) {
-        FButton btnViewDeck = new FButton("View Deck");
+        btnViewDeck = new FButton("View Deck");
         btnViewDeck.addActionListener(e -> onViewDeck.accept(entry));
-        infoPanel.add(btnViewDeck, "w 100px!, h 26px!");
+        add(btnViewDeck);
+      } else {
+        btnViewDeck = null;
+      }
+    }
+
+    @Override
+    public void doLayout() {
+      int w = getWidth();
+      int contentX = INSET + AVATAR_SIZE + AVATAR_GAP;
+      int contentW = w - contentX - INSET;
+      int rightW = btnViewDeck != null ? BTN_WIDTH + 5 : 0;
+      int leftW = contentW - rightW;
+      int y = INSET;
+      int rowH = 20;
+
+      // Avatar
+      lblAvatar.setBounds(INSET, INSET, AVATAR_SIZE, AVATAR_SIZE);
+
+      // Row 0: Name (left) + Outcome (right)
+      lblName.setBounds(contentX, y, leftW, rowH);
+      lblOutcome.setBounds(contentX + leftW, y, rightW, rowH);
+      y += rowH + ROW_GAP;
+
+      // Row 1: Detail (left) + Timestamp (right)
+      lblDetail.setBounds(contentX, y, leftW, rowH);
+      lblTimestamp.setBounds(contentX + leftW, y, rightW, rowH);
+      y += rowH + ROW_GAP;
+
+      // Row 2: Path (left column only, variable height)
+      if (txtPath != null) {
+        txtPath.setSize(leftW, Short.MAX_VALUE);
+        int pathH = txtPath.getPreferredSize().height;
+        txtPath.setBounds(contentX, y, leftW, pathH);
+        y += pathH + ROW_GAP;
       }
 
-      add(infoPanel, "cell 1 0, growx");
+      // Row 3: Stats (left) + View Deck button (right)
+      if (btnViewDeck != null) {
+        lblStats.setBounds(contentX, y, leftW, BTN_HEIGHT);
+        btnViewDeck.setBounds(contentX + contentW - BTN_WIDTH, y, BTN_WIDTH, BTN_HEIGHT);
+        y += BTN_HEIGHT + INSET + 4;
+      } else {
+        lblStats.setBounds(contentX, y, contentW, rowH);
+        y += rowH + INSET;
+      }
+
+      // Update preferred size to match actual layout so parent allocates correct height
+      setPreferredSize(new Dimension(w, y));
+    }
+
+    @Override
+    public Dimension getPreferredSize() {
+      int w = getParent() != null ? getParent().getWidth() : 500;
+      int contentW = w - INSET - AVATAR_SIZE - AVATAR_GAP - INSET;
+      int rightW = btnViewDeck != null ? BTN_WIDTH + 5 : 0;
+      int leftW = contentW - rightW;
+      int y = INSET;
+      y += 20 + ROW_GAP; // row 0
+      y += 20 + ROW_GAP; // row 1
+      if (txtPath != null) {
+        txtPath.setSize(Math.max(leftW, 100), Short.MAX_VALUE);
+        y += txtPath.getPreferredSize().height + ROW_GAP;
+      }
+      y += (btnViewDeck != null ? BTN_HEIGHT + 4 : 20) + INSET;
+      return new Dimension(w, y);
     }
 
     @Override
