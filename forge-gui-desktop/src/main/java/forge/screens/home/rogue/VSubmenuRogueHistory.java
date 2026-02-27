@@ -35,7 +35,7 @@ public enum VSubmenuRogueHistory implements IVSubmenu<CSubmenuRogueHistory> {
       .fontSize(16)
       .build();
 
-  private final JPanel pnlContent = new JPanel(new MigLayout("insets 10, gap 0, wrap, fillx"));
+  private final ScrollablePanel pnlContent = new ScrollablePanel(new MigLayout("insets 10, gap 0, wrap, fillx"));
   private final FScrollPane scrollContent;
   private final FButton btnBack;
 
@@ -99,7 +99,7 @@ public enum VSubmenuRogueHistory implements IVSubmenu<CSubmenuRogueHistory> {
     } else {
       // Display in reverse order (newest first)
       for (int i = entries.size() - 1; i >= 0; i--) {
-        pnlContent.add(new RunHistoryCard(entries.get(i), onViewDeck), "growx, gapbottom 8px");
+        pnlContent.add(new RunHistoryCard(entries.get(i), onViewDeck), "w 98%!, gapbottom 8px");
       }
     }
 
@@ -147,8 +147,8 @@ public enum VSubmenuRogueHistory implements IVSubmenu<CSubmenuRogueHistory> {
       lblAvatar.setPreferredSize(new Dimension(60, 60));
       add(lblAvatar, "cell 0 0, spany, w 60px!, h 60px!, ay top, gaptop 2px");
 
-      // Right column: Info panel - fixed right column ensures button is always visible
-      JPanel infoPanel = new JPanel(new MigLayout("insets 0, gap 0, wrap", "[grow, fill][110!]", "[]2[]2[]2[]"));
+      // Right column: Info panel with all text rows left-aligned
+      JPanel infoPanel = new JPanel(new MigLayout("insets 0, gap 0, wrap", "[grow][right]", "[]2[]2[]2[]"));
       infoPanel.setOpaque(false);
 
       // Row 0: Commander name (left) + Outcome (right)
@@ -172,7 +172,7 @@ public enum VSubmenuRogueHistory implements IVSubmenu<CSubmenuRogueHistory> {
           .build();
       lblOutcome.setForeground(outcomeColor);
 
-      infoPanel.add(lblName);
+      infoPanel.add(lblName, "growx");
       infoPanel.add(lblOutcome);
 
       // Row 1: Detail (boss/defeated by) + timestamp
@@ -184,9 +184,9 @@ public enum VSubmenuRogueHistory implements IVSubmenu<CSubmenuRogueHistory> {
       }
       if (!detail.isEmpty()) {
         infoPanel.add(new FLabel.Builder().text(detail).fontSize(12)
-            .fontAlign(SwingConstants.LEFT).build());
+            .fontAlign(SwingConstants.LEFT).build(), "growx");
       } else {
-        infoPanel.add(new JPanel() {{ setOpaque(false); }});
+        infoPanel.add(new JPanel() {{ setOpaque(false); }}, "growx");
       }
       infoPanel.add(new FLabel.Builder().text(entry.getTimestamp()).fontSize(11).build());
 
@@ -198,15 +198,16 @@ public enum VSubmenuRogueHistory implements IVSubmenu<CSubmenuRogueHistory> {
         txtPath.setWrapStyleWord(true);
         txtPath.setFocusable(false);
         txtPath.setOpaque(false);
+        txtPath.setColumns(1);
         txtPath.setFont(FSkin.getFont(12));
         txtPath.setForeground(FSkin.getColor(FSkin.Colors.CLR_TEXT).brighter());
-        infoPanel.add(txtPath, "span 2");
+        infoPanel.add(txtPath, "span 2, growx");
       }
 
       // Row 3: Life/Gold (left) + View Deck button (right)
       String stats = "Life: " + entry.getFinalLife() + "  |  Gold: " + entry.getFinalGold();
       infoPanel.add(new FLabel.Builder().text(stats).fontSize(12)
-          .fontAlign(SwingConstants.LEFT).build());
+          .fontAlign(SwingConstants.LEFT).build(), "growx");
 
       if (entry.getDeckSnapshot() != null) {
         FButton btnViewDeck = new FButton("View Deck");
@@ -230,6 +231,38 @@ public enum VSubmenuRogueHistory implements IVSubmenu<CSubmenuRogueHistory> {
         g2d.setStroke(new BasicStroke(1));
       }
       g2d.drawRoundRect(2, 2, getWidth() - 4, getHeight() - 4, 10, 10);
+    }
+  }
+
+  /** JPanel that implements Scrollable to track viewport width, preventing horizontal scrolling. */
+  private static class ScrollablePanel extends JPanel implements Scrollable {
+    ScrollablePanel(LayoutManager layout) {
+      super(layout);
+    }
+
+    @Override
+    public Dimension getPreferredScrollableViewportSize() {
+      return getPreferredSize();
+    }
+
+    @Override
+    public int getScrollableUnitIncrement(Rectangle visibleRect, int orientation, int direction) {
+      return 16;
+    }
+
+    @Override
+    public int getScrollableBlockIncrement(Rectangle visibleRect, int orientation, int direction) {
+      return 64;
+    }
+
+    @Override
+    public boolean getScrollableTracksViewportWidth() {
+      return true;
+    }
+
+    @Override
+    public boolean getScrollableTracksViewportHeight() {
+      return false;
     }
   }
 }
