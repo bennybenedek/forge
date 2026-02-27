@@ -15,8 +15,7 @@ public class RogueRunHistoryEntry {
     private int avatarIndex;
     private String outcome; // "VICTORY", "DEFEAT", "ABANDONED"
     private String bossOrDefeatedBy;
-    private List<String> visitedPlanes;
-    private List<String> extraNodes;
+    private List<String> path;
     private int finalLife;
     private int finalGold;
     private String timestamp;
@@ -36,8 +35,7 @@ public class RogueRunHistoryEntry {
         entry.timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date());
         entry.deckSnapshot = run.getCurrentDeck() != null ? new Deck(run.getCurrentDeck()) : null;
 
-        entry.visitedPlanes = new ArrayList<>();
-        entry.extraNodes = new ArrayList<>();
+        entry.path = new ArrayList<>();
 
         if (run.getPath() != null) {
             RoguePathNode currentNode = run.getCurrentNode();
@@ -48,17 +46,17 @@ public class RogueRunHistoryEntry {
                 if (node instanceof NodePlanebound) {
                     NodePlanebound pb = (NodePlanebound) node;
                     if (pb.getRoguePlanebound() != null) {
-                        entry.visitedPlanes.add(pb.getRoguePlanebound().planeName()
+                        entry.path.add(pb.getRoguePlanebound().planeName()
                                 + " (" + pb.getRoguePlanebound().planeboundName() + ")");
                     }
                 } else if (node instanceof NodeSanctum) {
-                    entry.extraNodes.add("Sanctum");
+                    entry.path.add("Sanctum");
                 } else if (node instanceof NodeBazaar) {
-                    entry.extraNodes.add("Bazaar");
+                    entry.path.add("Bazaar");
                 } else if (node instanceof NodeChest) {
-                    entry.extraNodes.add("Loot");
+                    entry.path.add("Loot");
                 } else if (node instanceof NodeEvent) {
-                    entry.extraNodes.add("Event");
+                    entry.path.add("Event");
                 }
             }
         }
@@ -71,8 +69,7 @@ public class RogueRunHistoryEntry {
     public int getAvatarIndex() { return avatarIndex; }
     public String getOutcome() { return outcome; }
     public String getBossOrDefeatedBy() { return bossOrDefeatedBy; }
-    public List<String> getVisitedPlanes() { return visitedPlanes != null ? visitedPlanes : new ArrayList<>(); }
-    public List<String> getExtraNodes() { return extraNodes != null ? extraNodes : new ArrayList<>(); }
+    public List<String> getPath() { return path != null ? path : new ArrayList<>(); }
     public int getFinalLife() { return finalLife; }
     public int getFinalGold() { return finalGold; }
     public String getTimestamp() { return timestamp; }

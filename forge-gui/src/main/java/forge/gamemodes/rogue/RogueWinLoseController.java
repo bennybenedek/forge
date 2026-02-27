@@ -270,6 +270,9 @@ public class RogueWinLoseController {
         currentRun.recordMatchResult(false);
         currentRun.setRunFailed(true);
 
+        // Persist life total from the lost match
+        persistLifeTotal();
+
         // Record run history - defeated by current node's planebound
         RogueMetaProgress progress = RogueMetaProgress.getInstance();
         String defeatedBy = "";

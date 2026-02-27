@@ -11,6 +11,7 @@ import forge.screens.home.VHomeUI;
 import forge.toolbox.FButton;
 import forge.toolbox.FLabel;
 import forge.toolbox.FScrollPane;
+import forge.toolbox.FTextArea;
 import forge.toolbox.FSkin;
 import java.awt.*;
 import java.util.List;
@@ -146,8 +147,8 @@ public enum VSubmenuRogueHistory implements IVSubmenu<CSubmenuRogueHistory> {
       lblAvatar.setPreferredSize(new Dimension(60, 60));
       add(lblAvatar, "cell 0 0, spany, w 60px!, h 60px!, ay top, gaptop 2px");
 
-      // Right column: Info panel with all text rows left-aligned
-      JPanel infoPanel = new JPanel(new MigLayout("insets 0, gap 0, wrap", "[grow][right]", "[]2[]2[]2[]2[]"));
+      // Right column: Info panel - fixed right column ensures button is always visible
+      JPanel infoPanel = new JPanel(new MigLayout("insets 0, gap 0, wrap", "[grow, fill][110!]", "[]2[]2[]2[]"));
       infoPanel.setOpaque(false);
 
       // Row 0: Commander name (left) + Outcome (right)
@@ -171,7 +172,7 @@ public enum VSubmenuRogueHistory implements IVSubmenu<CSubmenuRogueHistory> {
           .build();
       lblOutcome.setForeground(outcomeColor);
 
-      infoPanel.add(lblName, "growx");
+      infoPanel.add(lblName);
       infoPanel.add(lblOutcome);
 
       // Row 1: Detail (boss/defeated by) + timestamp
@@ -183,34 +184,29 @@ public enum VSubmenuRogueHistory implements IVSubmenu<CSubmenuRogueHistory> {
       }
       if (!detail.isEmpty()) {
         infoPanel.add(new FLabel.Builder().text(detail).fontSize(12)
-            .fontAlign(SwingConstants.LEFT).build(), "growx");
+            .fontAlign(SwingConstants.LEFT).build());
       } else {
-        infoPanel.add(new JPanel() {{ setOpaque(false); }}, "growx");
+        infoPanel.add(new JPanel() {{ setOpaque(false); }});
       }
       infoPanel.add(new FLabel.Builder().text(entry.getTimestamp()).fontSize(11).build());
 
-      // Row 2: Visited planes
-      if (!entry.getVisitedPlanes().isEmpty()) {
-        String planes = "Planes: " + String.join(", ", entry.getVisitedPlanes());
-        FLabel lblPlanes = new FLabel.Builder().text(planes).fontSize(11)
-            .fontAlign(SwingConstants.LEFT).build();
-        lblPlanes.setForeground(FSkin.getColor(FSkin.Colors.CLR_TEXT).brighter());
-        infoPanel.add(lblPlanes, "span 2, growx");
+      // Row 2: Path (planes and extra nodes combined) - FTextArea for word wrapping
+      if (!entry.getPath().isEmpty()) {
+        FTextArea txtPath = new FTextArea("Path: " + String.join(", ", entry.getPath()));
+        txtPath.setEditable(false);
+        txtPath.setLineWrap(true);
+        txtPath.setWrapStyleWord(true);
+        txtPath.setFocusable(false);
+        txtPath.setOpaque(false);
+        txtPath.setFont(FSkin.getFont(12));
+        txtPath.setForeground(FSkin.getColor(FSkin.Colors.CLR_TEXT).brighter());
+        infoPanel.add(txtPath, "span 2");
       }
 
-      // Row 3: Extra nodes
-      if (!entry.getExtraNodes().isEmpty()) {
-        String extras = "Stops: " + String.join(", ", entry.getExtraNodes());
-        FLabel lblExtras = new FLabel.Builder().text(extras).fontSize(11)
-            .fontAlign(SwingConstants.LEFT).build();
-        lblExtras.setForeground(FSkin.getColor(FSkin.Colors.CLR_TEXT).brighter());
-        infoPanel.add(lblExtras, "span 2, growx");
-      }
-
-      // Row 4: Life/Gold (left) + View Deck button (right)
+      // Row 3: Life/Gold (left) + View Deck button (right)
       String stats = "Life: " + entry.getFinalLife() + "  |  Gold: " + entry.getFinalGold();
       infoPanel.add(new FLabel.Builder().text(stats).fontSize(12)
-          .fontAlign(SwingConstants.LEFT).build(), "growx");
+          .fontAlign(SwingConstants.LEFT).build());
 
       if (entry.getDeckSnapshot() != null) {
         FButton btnViewDeck = new FButton("View Deck");
