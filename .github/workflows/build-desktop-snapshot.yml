@@ -118,7 +118,7 @@ jobs:
 
             **Download Instructions:**
             1. Java Requirement: Ensure you have Java 17 or later installed. You can download it from [Adoptium](https://adoptium.net/de/temurin/releases?version=17&os=any&arch=any).
-            2. Download the `forge-installer-*.tar.bz2` file (usually saved in your Downloads folder).
+            2. Download the `forge-installer-*.tar.bz2` file below (usually saved in your Downloads folder).
             3. Extract the archive to a normal folder (for example, your Documents folder).
                Do not run Forge directly from inside the archive preview.
             
@@ -133,9 +133,13 @@ jobs:
                 - Open Terminal in the folder containing the downloaded file (Right-click the folder → “New Terminal at Folder”),
                   then run:
                   `tar -xjf forge-installer-*.tar.bz2`
-            4. Open the extracted folder and run:
-              - `forge.exe` (Windows)
-              - `forge.sh` (Linux/macOS)
+            4. Open the extracted folder and run Forge:
+              - Windows:
+                Double-click `forge.exe`.
+          
+              - macOS/Linux:
+                Open Terminal in the extracted folder and run:
+                `./forge.sh`
             5. In the main menu (left side), select "Rogue Commander" and click "Start New Run" to begin the game mode.
 
             This is a development build for playtesting the new Rogue Commander game mode, which is still a work in progress.   
