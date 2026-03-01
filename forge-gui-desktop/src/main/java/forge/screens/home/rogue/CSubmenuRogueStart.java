@@ -97,17 +97,17 @@ public enum CSubmenuRogueStart implements ICDoc {
       view.getBtnBeginRun().setEnabled(false);
     }
 
-    // Update Aether button state - locked until first run completed
-    boolean aetherUnlocked = RogueMetaProgress.getInstance().getTotalRunsCompleted() > 0;
-    view.getBtnAether().setEnabled(aetherUnlocked);
+    // Update button states - locked until first run completed
+    boolean hasCompletedRuns = RogueMetaProgress.getInstance().getTotalRunsCompleted() > 0;
+    view.getBtnAether().setEnabled(hasCompletedRuns);
     view.getBtnAether()
-        .setToolTipText(aetherUnlocked ? null : "Unlock the Aether by completing your first Run.");
-
-    // Update History button state - locked until at least one run history entry exists
-    boolean historyUnlocked = !RogueMetaProgress.getInstance().getRunHistory().isEmpty();
-    view.getBtnHistory().setEnabled(historyUnlocked);
+        .setToolTipText(hasCompletedRuns ? null : "Unlock the Aether by completing your first Run.");
+    view.getBtnHistory().setEnabled(hasCompletedRuns);
     view.getBtnHistory()
-        .setToolTipText(historyUnlocked ? null : "Unlock the Run History by completing your first Run.");
+        .setToolTipText(hasCompletedRuns ? null : "Unlock the Run History by completing your first Run.");
+    view.getBtnStats().setEnabled(hasCompletedRuns);
+    view.getBtnStats()
+        .setToolTipText(hasCompletedRuns ? null : "Unlock Stats by completing your first Run.");
 
     // Refresh layout
     view.getCommanderGridPanel().revalidate();

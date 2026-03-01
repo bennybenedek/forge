@@ -34,6 +34,7 @@ public enum VSubmenuRogueHistory implements IVSubmenu<CSubmenuRogueHistory> {
   private final ScrollablePanel pnlContent = new ScrollablePanel(new MigLayout("insets 10, gap 0, wrap, fillx"));
   private final FScrollPane scrollContent;
   private final FButton btnBack;
+  private final FButton btnResetHistory;
 
   VSubmenuRogueHistory() {
     lblTitle.setBackground(FSkin.getColor(FSkin.Colors.CLR_THEME2));
@@ -45,6 +46,9 @@ public enum VSubmenuRogueHistory implements IVSubmenu<CSubmenuRogueHistory> {
 
     btnBack = new FButton("Back");
     btnBack.setIcon(FSkin.getImage(FSkinProp.ICO_OPEN).resize(24, 24).getIcon());
+
+    btnResetHistory = new FButton("Reset History");
+    btnResetHistory.setIcon(FSkin.getImage(FSkinProp.ICO_DELETE).resize(24, 24).getIcon());
   }
 
   @Override
@@ -76,6 +80,7 @@ public enum VSubmenuRogueHistory implements IVSubmenu<CSubmenuRogueHistory> {
     JPanel buttonPanel = new JPanel(new MigLayout("insets 0, gap 10"));
     buttonPanel.setOpaque(false);
     buttonPanel.add(btnBack, "w 180px!, h 40px!");
+    buttonPanel.add(btnResetHistory, "w 180px!, h 40px!");
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(buttonPanel, "ax center, gap 0 0 10px 10px");
 
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().repaintSelf();
@@ -104,6 +109,7 @@ public enum VSubmenuRogueHistory implements IVSubmenu<CSubmenuRogueHistory> {
   }
 
   public JButton getBtnBack() { return btnBack; }
+  public JButton getBtnResetHistory() { return btnResetHistory; }
 
   @Override
   public void setParentCell(DragCell cell0) { this.parentCell = cell0; }

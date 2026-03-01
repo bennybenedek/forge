@@ -137,6 +137,7 @@ public class RogueCommanderAchievements extends AchievementCollection {
             super(cardName, displayName,
                   "Win a Rogue Commander run with " + CardTranslation.getTranslatedName(cardName),
                   flavorText);
+            setHidden(true);
         }
 
         @Override

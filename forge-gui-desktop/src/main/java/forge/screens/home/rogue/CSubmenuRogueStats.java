@@ -66,7 +66,7 @@ public enum CSubmenuRogueStats implements ICDoc {
 
   private void confirmReset() {
     boolean confirmed = FOptionPane.showConfirmDialog(
-        "Are you sure you want to reset all Game progression?\nThis action cannot be undone.",
+        "Are you sure you want to reset all Game progression?\nThis will delete all progress, history and stats.\nThis action cannot be undone.",
         "Reset Game Progression",
         "Reset",
         "Cancel",

@@ -597,6 +597,11 @@ public class RogueMetaProgress {
         save();
     }
 
+    public void clearRunHistory() {
+        runHistory = new ArrayList<>();
+        save();
+    }
+
     // ==================== Tutorial Tracking ====================
 
     /**
