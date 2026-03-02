@@ -1,5 +1,6 @@
 package forge.screens.home.rogue;
 
+import forge.gamemodes.rogue.AetherUpgrade;
 import forge.gamemodes.rogue.BoonType;
 import forge.gamemodes.rogue.RogueMetaProgress;
 import forge.gamemodes.rogue.RogueTutorial;
@@ -34,6 +35,7 @@ public enum CSubmenuRogueAether implements ICDoc {
 
     view.getBtnBack().addActionListener(e -> goBack());
     view.getBtnResetBoons().addActionListener(e -> confirmResetBoons());
+    view.getUpgradeCard().getBtnUpgrade().addActionListener(e -> purchaseNextUpgrade());
 
     // Setup listeners for each boon panel
     for (Map.Entry<BoonType, VSubmenuRogueAether.BoonPanel> entry : view.getBoonPanels()
@@ -68,9 +70,24 @@ public enum CSubmenuRogueAether implements ICDoc {
         progress.getTotalSparks(),
         progress.isDescensionModeUnlocked(),
         progress.getActiveBoonCount(),
+        progress.getAetherUpgradeLevel(),
         boonRanks,
         activeBoons
     );
+  }
+
+  private void purchaseNextUpgrade() {
+    RogueMetaProgress progress = RogueMetaProgress.getInstance();
+    int nextLevel = progress.getAetherUpgradeLevel() + 1;
+    if (progress.purchaseAetherUpgrade(nextLevel)) {
+      // Re-populate to show newly unlocked boons (boon grid rebuilds on populate)
+      view.populate();
+      refreshDisplay();
+      AetherUpgrade u = AetherUpgrade.forLevel(nextLevel);
+      if (u != null) {
+        FOptionPane.showMessageDialog(u.name + " unlocked!\n" + u.description, "Aether Upgrade Unlocked");
+      }
+    }
   }
 
   private void upgradeBoon(BoonType type) {

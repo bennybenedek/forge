@@ -1,6 +1,8 @@
 package forge.screens.home.rogue;
 
+import forge.gamemodes.rogue.AetherUpgrade;
 import forge.gamemodes.rogue.BoonType;
+import forge.gamemodes.rogue.RogueMetaProgress;
 import forge.gui.framework.DragCell;
 import forge.gui.framework.DragTab;
 import forge.gui.framework.EDocID;
@@ -10,16 +12,21 @@ import forge.screens.home.IVSubmenu;
 import forge.screens.home.VHomeUI;
 import forge.toolbox.FButton;
 import forge.toolbox.FLabel;
+import forge.toolbox.FScrollPane;
 import forge.toolbox.FSkin;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Consumer;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import javax.swing.ScrollPaneConstants;
+import javax.swing.Scrollable;
 import javax.swing.SwingConstants;
 import net.miginfocom.swing.MigLayout;
 
@@ -59,6 +66,9 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
 
   // Boon panels - one for each boon type
   private final Map<BoonType, BoonPanel> boonPanels = new EnumMap<>(BoonType.class);
+
+  // Aether Upgrade card (persistent so listener can be wired once in initialize)
+  private final AetherUpgradeCard upgradeCard = new AetherUpgradeCard();
 
   private final FButton btnBack;
   private final FButton btnResetBoons;
@@ -124,50 +134,68 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
     headerPanel.add(lblActiveBoons);
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(headerPanel, "w 98%!, gap 1% 0 10px 10px");
 
-    // Boon grid
-    JPanel boonGrid = createBoonGrid();
-    VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(boonGrid, "w 98%!, gap 1% 0 20px 20px");
+    // Boon grid in a scroll pane — takes all remaining vertical space
+    RogueMetaProgress progress = RogueMetaProgress.getInstance();
+    int upgradeLevel = progress.getAetherUpgradeLevel();
+    AetherUpgrade next = AetherUpgrade.forLevel(upgradeLevel + 1);
+    AetherUpgradeCard cardToShow = (next != null && progress.isDescensionModeUnlocked()) ? upgradeCard : null;
+    BoonGridPanel boonGrid = createBoonGrid(upgradeLevel, cardToShow);
+    FScrollPane scrollBoons = new FScrollPane(boonGrid, true,
+        ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+        ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+    VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(scrollBoons, "w 98%!, gap 1% 0 10px 10px, pushy, growy");
 
-    // Buttons
+    // Buttons always below the scroll area — always visible
     JPanel buttonPanel = new JPanel(new MigLayout("insets 0, gap 10"));
     buttonPanel.setOpaque(false);
     buttonPanel.add(btnBack, "w 180px!, h 40px!");
     buttonPanel.add(btnResetBoons, "w 180px!, h 40px!");
-    VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(buttonPanel, "ax center, gap 0 0 20px 20px");
+    VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(buttonPanel, "ax center, gap 0 0 10px 10px");
 
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().repaintSelf();
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().revalidate();
   }
 
-  private JPanel createBoonGrid() {
-    JPanel panel = new JPanel(new MigLayout("insets 20, gap 15, wrap 2"));
-    panel.setOpaque(false);
-
-    // Reuse existing panels (created in constructor)
+  private BoonGridPanel createBoonGrid(int upgradeLevel, AetherUpgradeCard card) {
+    List<BoonPanel> visible = new ArrayList<>();
     for (BoonType type : BoonType.values()) {
-      panel.add(boonPanels.get(type), "w 400px!, h 150px!");
+      if (type.isAccessibleAt(upgradeLevel)) {
+        visible.add(boonPanels.get(type));
+      }
     }
-
-    return panel;
+    return new BoonGridPanel(visible, card);
   }
 
   /**
    * Update the display with current meta progress data.
    */
   public void updateDisplay(int echoes, int sparks, boolean descensionUnlocked, int activeBoonCount,
-      Map<BoonType, Integer> boonRanks,
-      Set<BoonType> activeBoons) {
+      int upgradeLevel, Map<BoonType, Integer> boonRanks, Set<BoonType> activeBoons) {
     lblEchoes.setText("Echoes: " + echoes);
     lblSparks.setText("Sparks: " + sparks);
     lblSparks.setVisible(descensionUnlocked);
-    lblActiveBoons.setText("Active Boons: " + activeBoonCount + "/3 (click to toggle)");
 
+    // Compute actual slot count for label
+    int boonSlots = 3;
+    for (int l = 1; l <= upgradeLevel; l++) {
+      AetherUpgrade u = AetherUpgrade.forLevel(l);
+      if (u != null) boonSlots += u.extraBoonSlots;
+    }
+    lblActiveBoons.setText("Active Boons: " + activeBoonCount + "/" + boonSlots + " (click to toggle)");
+
+    // Update upgrade card if visible
+    AetherUpgrade next = AetherUpgrade.forLevel(upgradeLevel + 1);
+    if (next != null && descensionUnlocked) {
+      upgradeCard.update(next, sparks);
+    }
+
+    // Update boon panels
     for (Map.Entry<BoonType, BoonPanel> entry : boonPanels.entrySet()) {
       BoonType type = entry.getKey();
       BoonPanel panel = entry.getValue();
       int rank = boonRanks.getOrDefault(type, 0);
       boolean isActive = activeBoons.contains(type);
-      panel.update(rank, isActive, echoes, activeBoonCount);
+      panel.update(rank, isActive, echoes, activeBoonCount, upgradeLevel);
     }
   }
 
@@ -177,6 +205,10 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
 
   public JButton getBtnResetBoons() {
     return btnResetBoons;
+  }
+
+  public AetherUpgradeCard getUpgradeCard() {
+    return upgradeCard;
   }
 
   public Map<BoonType, BoonPanel> getBoonPanels() {
@@ -191,6 +223,151 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
   @Override
   public DragCell getParentCell() {
     return parentCell;
+  }
+
+  /**
+   * Card displayed in the first row of the boon grid when an Aether Upgrade is available.
+   * Same visual structure as BoonPanel: name (top), description (middle), button (bottom).
+   */
+  static class AetherUpgradeCard extends FSkin.SkinnedPanel {
+    private final FLabel lblName;
+    private final FLabel lblDescription;
+    private final FButton btnUpgrade;
+    private final javax.swing.Icon sparkIcon;
+    private boolean isHovered = false;
+
+    AetherUpgradeCard() {
+      super(new MigLayout("insets 15 15 15 15, gap 5, wrap, fill"));
+      setOpaque(true);
+      setBackground(FSkin.getColor(FSkin.Colors.CLR_THEME2));
+      addMouseListener(new MouseAdapter() {
+        @Override public void mouseEntered(MouseEvent e) { isHovered = true;  repaint(); }
+        @Override public void mouseExited(MouseEvent e)  { isHovered = false; repaint(); }
+      });
+
+      sparkIcon = FSkin.getImage(FSkinProp.ICO_QUEST_ELIXIR).resize(16, 16).getIcon();
+
+      lblName = new FLabel.Builder()
+          .text("")
+          .fontSize(16).fontStyle(Font.BOLD).fontAlign(SwingConstants.CENTER).build();
+
+      lblDescription = new FLabel.Builder()
+          .text("")
+          .fontSize(14).fontAlign(SwingConstants.CENTER).build();
+
+      btnUpgrade = new FButton("Upgrade");
+      btnUpgrade.setIcon(sparkIcon);
+
+      add(lblName, "growx, ax center");
+      add(lblDescription, "growx, ax center, wmax 370px");
+      add(new JPanel() {{ setOpaque(false); }}, "growy, pushy");
+      add(btnUpgrade, "ax center, w 160px!, h 30px!");
+    }
+
+    void update(AetherUpgrade upgrade, int sparks) {
+      lblName.setText(upgrade.name);
+      lblDescription.setText(upgrade.description);
+      btnUpgrade.setText("Upgrade (" + upgrade.sparkCost + ")");
+      btnUpgrade.setIcon(sparkIcon);
+      btnUpgrade.setEnabled(sparks >= upgrade.sparkCost);
+    }
+
+    FButton getBtnUpgrade() { return btnUpgrade; }
+
+    @Override
+    public void paint(Graphics g) {
+      super.paint(g);
+      Graphics2D g2d = (Graphics2D) g;
+      g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+      if (isHovered) {
+        g2d.setColor(new Color(140, 140, 140, 180));
+        g2d.setStroke(new BasicStroke(2));
+        g2d.drawRoundRect(2, 2, getWidth() - 4, getHeight() - 4, 10, 10);
+      } else {
+        g2d.setColor(new Color(80, 80, 80, 120));
+        g2d.setStroke(new BasicStroke(1));
+        g2d.drawRoundRect(1, 1, getWidth() - 2, getHeight() - 2, 10, 10);
+      }
+    }
+  }
+
+  /**
+   * Responsive grid of BoonPanels. Fixed card size (400×150); breaks from 3 → 2 → 1 columns
+   * as the viewport narrows. An optional AetherUpgradeCard occupies its own first row, centred.
+   * Implements Scrollable so the enclosing FScrollPane tracks width and enables vertical
+   * scrolling only — matching the pattern in VSubmenuRogueHistory.
+   */
+  private static class BoonGridPanel extends JPanel implements Scrollable {
+    private static final int CARD_W = 400;
+    private static final int CARD_H = 150;
+    private static final int GAP    = 15;
+    private static final int INSET  = 20;
+
+    private final List<BoonPanel> panels;
+    private final AetherUpgradeCard upgradeCard; // null = no upgrade row
+
+    BoonGridPanel(List<BoonPanel> panels, AetherUpgradeCard upgradeCard) {
+      super(null);
+      this.panels = panels;
+      this.upgradeCard = upgradeCard;
+      setOpaque(false);
+      if (upgradeCard != null) add(upgradeCard);
+      for (BoonPanel p : panels) add(p);
+    }
+
+    private int cols() {
+      int avail = getWidth() - 2 * INSET;
+      if (avail >= 3 * CARD_W + 2 * GAP) return 3;
+      if (avail >= 2 * CARD_W +     GAP) return 2;
+      return 1;
+    }
+
+    @Override
+    public void doLayout() {
+      int startY = INSET;
+
+      // Row 0: upgrade card centred on its own row
+      if (upgradeCard != null) {
+        int cardX = Math.max(INSET, (getWidth() - CARD_W) / 2);
+        upgradeCard.setBounds(cardX, startY, CARD_W, CARD_H);
+        startY += CARD_H + GAP;
+      }
+
+      if (!panels.isEmpty()) {
+        int cols = cols();
+        int gridW = cols * CARD_W + (cols - 1) * GAP;
+        int startX = Math.max(INSET, (getWidth() - gridW) / 2);
+        for (int i = 0; i < panels.size(); i++) {
+          int col = i % cols;
+          int row = i / cols;
+          panels.get(i).setBounds(startX + col * (CARD_W + GAP), startY + row * (CARD_H + GAP), CARD_W, CARD_H);
+        }
+        int rows = (int) Math.ceil(panels.size() / (double) cols);
+        startY += rows * CARD_H + (rows - 1) * GAP;
+      }
+
+      setPreferredSize(new Dimension(getWidth(), startY + INSET));
+    }
+
+    @Override
+    public Dimension getPreferredSize() {
+      int w = getWidth() > 0 ? getWidth() : (getParent() != null ? getParent().getWidth() : 1300);
+      int startY = INSET;
+      if (upgradeCard != null) startY += CARD_H + GAP;
+      if (!panels.isEmpty()) {
+        int avail = w - 2 * INSET;
+        int cols = avail >= 3 * CARD_W + 2 * GAP ? 3 : avail >= 2 * CARD_W + GAP ? 2 : 1;
+        int rows = (int) Math.ceil(panels.size() / (double) cols);
+        startY += rows * CARD_H + (rows - 1) * GAP;
+      }
+      return new Dimension(w, startY + INSET);
+    }
+
+    @Override public Dimension getPreferredScrollableViewportSize() { return getPreferredSize(); }
+    @Override public int getScrollableUnitIncrement(Rectangle r, int o, int d) { return 16; }
+    @Override public int getScrollableBlockIncrement(Rectangle r, int o, int d) { return 64; }
+    @Override public boolean getScrollableTracksViewportWidth()  { return true;  }
+    @Override public boolean getScrollableTracksViewportHeight() { return false; }
   }
 
   /**
@@ -299,18 +476,25 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
     /**
      * Update the panel display based on current boon state.
      */
-    public void update(int rank, boolean active, int echoes, int activeBoonCount) {
+    public void update(int rank, boolean active, int echoes, int activeBoonCount, int upgradeLevel) {
       this.currentRank = rank;
       this.isActive = active;
-      this.canToggle = rank > 0 && (active || activeBoonCount < 3);
+      int effectiveMax = type.getEffectiveMaxRank(upgradeLevel);
+      // Compute actual slot count
+      int boonSlots = 3;
+      for (int l = 1; l <= upgradeLevel; l++) {
+        AetherUpgrade u = AetherUpgrade.forLevel(l);
+        if (u != null) boonSlots += u.extraBoonSlots;
+      }
+      this.canToggle = rank > 0 && (active || activeBoonCount < boonSlots);
 
-      lblRank.setText("Rank: " + rank + "/" + type.getMaxRank());
+      lblRank.setText("Rank: " + rank + "/" + effectiveMax);
 
       // Update description to show all rank values with current rank highlighted
-      lblDescription.setText(type.getDescriptionWithAllRanks(rank));
+      lblDescription.setText(type.getDescriptionWithAllRanks(rank, upgradeLevel));
 
       // Update upgrade button using cached icon instance
-      if (rank >= type.getMaxRank()) {
+      if (rank >= effectiveMax) {
         btnUpgrade.setText("Max Rank");
         btnUpgrade.setEnabled(false);
       } else {
@@ -356,6 +540,16 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
         g2d.setColor(new Color(100, 100, 100, 150));
         g2d.setStroke(new BasicStroke(2));
         g2d.drawRoundRect(2, 2, width - 4, height - 4, 10, 10);
+      } else if (isHovered) {
+        // Locked + hovered: slightly brighter grey border
+        g2d.setColor(new Color(140, 140, 140, 180));
+        g2d.setStroke(new BasicStroke(2));
+        g2d.drawRoundRect(2, 2, width - 4, height - 4, 10, 10);
+      } else {
+        // Locked: thin grey border
+        g2d.setColor(new Color(80, 80, 80, 120));
+        g2d.setStroke(new BasicStroke(1));
+        g2d.drawRoundRect(1, 1, width - 2, height - 2, 10, 10);
       }
 
       // Draw "ACTIVE" badge in top-right corner (always shown when active)

@@ -197,50 +197,58 @@ public class RogueWinLoseController {
             return;
         }
 
-        // Draw 7 cards from reward pool (base: 6 non-mythic + 1 mythic, adjusted by Mythic Collector boon)
-        int extraMythics = RogueMetaProgress.getInstance().getExtraMythicCards();
+        RogueMetaProgress progress = RogueMetaProgress.getInstance();
+        int maxPicks = 3 + progress.getExtraCardChoices();
+        int rerollsRemaining = progress.getRerollsPerNode(); // Fresh per node
+
+        // Draw cards from reward pool (base: 6 non-mythic + 1 mythic, adjusted by Mythic Collector boon)
+        int extraMythics = progress.getExtraMythicCards();
         int baseNonMythics = 6;
         int baseMythics = 1;
         int totalNonMythics = Math.max(0, baseNonMythics - extraMythics);
         int totalMythics = baseMythics + extraMythics;
 
-        List<PaperCard> nonMythicCards = rogueDeck.drawRewardOptions(totalNonMythics, forge.item.PaperCardPredicates.IS_MYTHIC_RARE.negate());
-        List<PaperCard> mythicCards = rogueDeck.drawRewardOptions(totalMythics, forge.item.PaperCardPredicates.IS_MYTHIC_RARE);
+        List<PaperCard> rewardOptions;
+        List<PaperCard> chosenCards;
+        do {
+            List<PaperCard> nonMythicCards = rogueDeck.drawRewardOptions(totalNonMythics, forge.item.PaperCardPredicates.IS_MYTHIC_RARE.negate());
+            List<PaperCard> mythicCards = rogueDeck.drawRewardOptions(totalMythics, forge.item.PaperCardPredicates.IS_MYTHIC_RARE);
 
-        // Combine to single card reward list
-        List<PaperCard> rewardOptions = new ArrayList<>();
-        rewardOptions.addAll(nonMythicCards);
-        rewardOptions.addAll(mythicCards);
+            rewardOptions = new ArrayList<>();
+            rewardOptions.addAll(nonMythicCards);
+            rewardOptions.addAll(mythicCards);
 
-        if (rewardOptions.isEmpty()) {
-            view.showMessage("No more cards available in reward pool.", "No Rewards", FSkinProp.ADV_CLR_ACTIVE);
-            return;
-        }
+            if (rewardOptions.isEmpty()) {
+                view.showMessage("No more cards available in reward pool.", "No Rewards", FSkinProp.ADV_CLR_ACTIVE);
+                return;
+            }
 
-        // Show visual card selection dialog
-        List<PaperCard> chosenCards = view.showCardRewardDialog(
-            "Choose Your Rewards",
-            rewardOptions,
-            3
-        );
+            // Show dialog with optional Reroll button (null returned when Reroll is clicked)
+            String rerollLabel = rerollsRemaining > 0 ? "Reroll" : null;
+            chosenCards = view.showCardRewardDialog("Choose Your Rewards", rewardOptions, maxPicks, rerollLabel);
 
-        // Remove normal reward options from pool
+            if (chosenCards == null) {
+                rerollsRemaining--; // Reroll clicked — don't remove current options from pool
+            }
+        } while (chosenCards == null && rerollsRemaining >= 0);
+
+        // Remove only the final draw's options from pool
         rogueDeck.removeFromRewardPool(rewardOptions);
+
+        if (chosenCards == null) {
+            chosenCards = new ArrayList<>();
+        }
 
         // If Elite opponent, show second reward screen with mythic cards
         if (isElite) {
             List<PaperCard> mythicOptions = rogueDeck.drawRewardOptions(3, forge.item.PaperCardPredicates.IS_MYTHIC_RARE);
 
             if (!mythicOptions.isEmpty()) {
-                // Show mythic card selection dialog
+                // Show mythic card selection dialog (no reroll for elite bonus)
                 List<PaperCard> chosenMythics = view.showCardRewardDialog(
-                    "Choose Your Mythic Reward",
-                    mythicOptions,
-                    1
-                );
+                    "Choose Your Mythic Reward", mythicOptions, 1, null);
 
                 if (chosenMythics != null && !chosenMythics.isEmpty()) {
-                    // Add chosen mythic to deck
                     chosenCards.addAll(chosenMythics);
                 }
 
@@ -249,7 +257,7 @@ public class RogueWinLoseController {
             }
         }
 
-        if (chosenCards != null && !chosenCards.isEmpty()) {
+        if (!chosenCards.isEmpty()) {
             // Add chosen cards to the run's current deck and update counter
             currentRun.addCardsToRun(chosenCards);
 
@@ -272,15 +280,29 @@ public class RogueWinLoseController {
             return;
         }
 
-        // Record the loss and mark run as failed
+        // Record the match loss (node stays incomplete for retry)
         currentRun.recordMatchResult(false);
-        currentRun.setRunFailed(true);
 
         // Persist life total from the lost match
         persistLifeTotal();
 
-        // Record run history - defeated by current node's planebound
+        // Check Last Spark BEFORE marking run as failed
         RogueMetaProgress progress = RogueMetaProgress.getInstance();
+        int reviveLife = progress.getLastSparkReviveLife();
+        if (reviveLife > 0 && currentRun.canRevive()) {
+            currentRun.useRevive();
+            currentRun.setCurrentLife(reviveLife);
+            progress.onMatchCompleted(currentRun, false);
+            RogueIO.saveRun(currentRun);
+            view.getBtnQuit().setText("Continue Run");
+            view.showMessage("Last Spark activated! You survived with " + reviveLife + " life!", "Last Spark!", FSkinProp.ICO_QUEST_ELIXIR);
+            return;
+        }
+
+        // Normal defeat: mark run as failed
+        currentRun.setRunFailed(true);
+
+        // Record run history - defeated by current node's planebound
         String defeatedBy = "";
         RoguePathNode curNode = currentRun.getCurrentNode();
         if (curNode instanceof NodePlanebound) {

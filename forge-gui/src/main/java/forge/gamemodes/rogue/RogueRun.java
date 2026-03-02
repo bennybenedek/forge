@@ -35,6 +35,9 @@ public class RogueRun {
     // Descension
     private int descensionLevel;                // 0 = no descension; XStream defaults int to 0 for old saves
 
+    // Last Spark tracking
+    private boolean hasUsedRevive = false;      // True once Last Spark has been used; XStream defaults boolean to false
+
     // Match History
     private int matchesWon;                     // Win counter
     private int matchesLost;                    // Loss counter
@@ -310,6 +313,14 @@ public class RogueRun {
 
     public void setDescensionLevel(int level) {
         this.descensionLevel = level;
+    }
+
+    public boolean canRevive() {
+        return !hasUsedRevive;
+    }
+
+    public void useRevive() {
+        hasUsedRevive = true;
     }
 
     @Override

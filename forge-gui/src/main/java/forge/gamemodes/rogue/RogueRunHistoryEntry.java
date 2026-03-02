@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Lightweight snapshot of a completed/abandoned Rogue Commander run for history display.
@@ -20,6 +21,8 @@ public class RogueRunHistoryEntry {
     private int finalGold;
     private String timestamp;
     private Deck deckSnapshot;
+    private int descensionLevel;          // 0 = not used; XStream defaults to 0 for old saves
+    private List<String> activeBoonNames; // null for old saves
 
     public RogueRunHistoryEntry() {
     }
@@ -34,6 +37,17 @@ public class RogueRunHistoryEntry {
         entry.finalGold = run.getCurrentGold();
         entry.timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date());
         entry.deckSnapshot = run.getCurrentDeck() != null ? new Deck(run.getCurrentDeck()) : null;
+
+        entry.descensionLevel = run.getDescensionLevel();
+
+        // Capture active boons in enum order for consistent display
+        Set<BoonType> active = RogueMetaProgress.getInstance().getActiveBoons();
+        entry.activeBoonNames = new ArrayList<>();
+        for (BoonType boon : BoonType.values()) {
+            if (active.contains(boon)) {
+                entry.activeBoonNames.add(boon.getDisplayName());
+            }
+        }
 
         entry.path = new ArrayList<>();
 
@@ -74,4 +88,6 @@ public class RogueRunHistoryEntry {
     public int getFinalGold() { return finalGold; }
     public String getTimestamp() { return timestamp; }
     public Deck getDeckSnapshot() { return deckSnapshot; }
+    public int getDescensionLevel() { return descensionLevel; }
+    public List<String> getActiveBoonNames() { return activeBoonNames != null ? activeBoonNames : new ArrayList<>(); }
 }

@@ -46,8 +46,9 @@ public class RogueMetaProgress {
     // Aether system - persistent echoes, sparks, and boons
     private int totalEchoes;                      // Persistent echo currency
     private int totalSparks;                      // Earned from Descension wins
+    private int aetherUpgradeLevel = 0;           // XStream defaults int to 0 for old saves
     private Map<String, Integer> boonRanks;       // Boon ID -> current rank (0 = not unlocked)
-    private Set<String> activeBoons;              // Currently equipped boon IDs (max 3)
+    private Set<String> activeBoons;              // Currently equipped boon IDs (max slots via getActiveBoonSlots())
 
     // Unlock notification tracking - which unlocks have been shown to the player
     private Set<String> notifiedUnlocks;
@@ -123,6 +124,7 @@ public class RogueMetaProgress {
         // Reset Aether system
         totalEchoes = 0;
         totalSparks = 0;
+        aetherUpgradeLevel = 0;
         boonRanks = new HashMap<>();
         activeBoons = new HashSet<>();
         notifiedUnlocks = new HashSet<>();
@@ -421,6 +423,37 @@ public class RogueMetaProgress {
         return totalSparks;
     }
 
+    public int getAetherUpgradeLevel() {
+        return aetherUpgradeLevel;
+    }
+
+    /**
+     * Purchase the next Aether Upgrade in sequence (must be purchased in order).
+     * @param level The level to purchase (must equal current level + 1)
+     * @return true if purchase succeeded
+     */
+    public boolean purchaseAetherUpgrade(int level) {
+        AetherUpgrade upgrade = AetherUpgrade.forLevel(level);
+        if (upgrade == null || aetherUpgradeLevel >= level || level != aetherUpgradeLevel + 1) return false;
+        if (totalSparks < upgrade.sparkCost) return false;
+        totalSparks -= upgrade.sparkCost;
+        aetherUpgradeLevel = level;
+        save();
+        return true;
+    }
+
+    /**
+     * Get the number of active Boon slots (base 3, +1 from Aether Upgrade 2).
+     */
+    public int getActiveBoonSlots() {
+        int slots = 3;
+        for (int l = 1; l <= aetherUpgradeLevel; l++) {
+            AetherUpgrade u = AetherUpgrade.forLevel(l);
+            if (u != null) slots += u.extraBoonSlots;
+        }
+        return slots;
+    }
+
     public void addEchoes(int amount) {
         if (amount > 0) {
             totalEchoes += amount;
@@ -458,8 +491,12 @@ public class RogueMetaProgress {
             boonRanks = new HashMap<>();
         }
 
+        if (!type.isAccessibleAt(aetherUpgradeLevel)) {
+            return false;
+        }
+
         int currentRank = getBoonRank(type);
-        if (currentRank >= type.getMaxRank()) {
+        if (currentRank >= type.getEffectiveMaxRank(aetherUpgradeLevel)) {
             return false; // Already max rank
         }
 
@@ -513,11 +550,16 @@ public class RogueMetaProgress {
     }
 
     /**
-     * Activate a boon (max 3 can be active per default).
+     * Activate a boon (max slots determined by getActiveBoonSlots()).
      */
     public void activateBoon(BoonType type) {
         if (activeBoons == null) {
             activeBoons = new HashSet<>();
+        }
+
+        // Must be accessible at current upgrade level
+        if (!type.isAccessibleAt(aetherUpgradeLevel)) {
+            return;
         }
 
         // Must be unlocked (rank > 0)
@@ -530,8 +572,8 @@ public class RogueMetaProgress {
             return;
         }
 
-        // Check max 3 active limit
-        if (activeBoons.size() >= 3) {
+        // Check active boon slot limit
+        if (activeBoons.size() >= getActiveBoonSlots()) {
             return;
         }
 
@@ -633,6 +675,46 @@ public class RogueMetaProgress {
             return 0;
         }
         return BoonType.MYTHIC_COLLECTOR.getEffectValueAtRank(getBoonRank(BoonType.MYTHIC_COLLECTOR));
+    }
+
+    /**
+     * Get the life amount to revive with when Last Spark triggers (0 if not active).
+     */
+    public int getLastSparkReviveLife() {
+        if (!isBoonActive(BoonType.LAST_SPARK)) return 0;
+        return BoonType.LAST_SPARK.getEffectValueAtRank(getBoonRank(BoonType.LAST_SPARK));
+    }
+
+    /**
+     * Get the extra card picks from Expanded Mind.
+     */
+    public int getExtraCardChoices() {
+        if (!isBoonActive(BoonType.EXPANDED_MIND)) return 0;
+        return BoonType.EXPANDED_MIND.getEffectValueAtRank(getBoonRank(BoonType.EXPANDED_MIND));
+    }
+
+    /**
+     * Get the number of tapped basic lands to start with from Spark Kindle.
+     */
+    public int getSparkKindleLands() {
+        if (!isBoonActive(BoonType.SPARK_KINDLE)) return 0;
+        return BoonType.SPARK_KINDLE.getEffectValueAtRank(getBoonRank(BoonType.SPARK_KINDLE));
+    }
+
+    /**
+     * Get the commander cast cost reduction from Fractured Binding.
+     */
+    public int getCommanderTaxReduction() {
+        if (!isBoonActive(BoonType.FRACTURED_BINDING)) return 0;
+        return BoonType.FRACTURED_BINDING.getEffectValueAtRank(getBoonRank(BoonType.FRACTURED_BINDING));
+    }
+
+    /**
+     * Get the rerolls per node from Spectral Recalibration.
+     */
+    public int getRerollsPerNode() {
+        if (!isBoonActive(BoonType.SPECTRAL_RECALIBRATION)) return 0;
+        return BoonType.SPECTRAL_RECALIBRATION.getEffectValueAtRank(getBoonRank(BoonType.SPECTRAL_RECALIBRATION));
     }
 
     // ==================== Run History ====================

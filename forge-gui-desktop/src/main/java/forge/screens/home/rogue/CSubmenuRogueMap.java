@@ -335,8 +335,11 @@ public enum CSubmenuRogueMap implements ICDoc {
       // Override starting life with persistent life from run
       human.setStartingLife(currentRun.getCurrentLife());
 
-      // Apply Foresight boon: +1 starting hand card
-      int extraCards = RogueMetaProgress.getInstance().getExtraStartingCards();
+      // Apply boon effects
+      RogueMetaProgress progress = RogueMetaProgress.getInstance();
+
+      // Foresight: +1 starting hand card
+      int extraCards = progress.getExtraStartingCards();
       if (extraCards > 0) {
         human.setStartingHand(human.getStartingHand() + extraCards);
       }
@@ -365,6 +368,24 @@ public enum CSubmenuRogueMap implements ICDoc {
         if (!descCards.isEmpty()) {
           human.addExtraCardsInCommandZone(descCards);
         }
+      }
+
+      // Add Spark Kindle and Fractured Binding command zone cards from boons
+      List<IPaperCard> boonCmdCards = new ArrayList<>();
+      int kindleLands = progress.getSparkKindleLands();
+      if (kindleLands > 0) {
+        PaperCard kindle = FModel.getMagicDb().getCommonCards()
+            .getCard("Rogue - Spark Kindle " + kindleLands);
+        if (kindle != null) boonCmdCards.add(kindle);
+      }
+      int taxReduction = progress.getCommanderTaxReduction();
+      if (taxReduction > 0) {
+        PaperCard binding = FModel.getMagicDb().getCommonCards()
+            .getCard("Rogue - Fractured Binding " + taxReduction);
+        if (binding != null) boonCmdCards.add(binding);
+      }
+      if (!boonCmdCards.isEmpty()) {
+        human.addExtraCardsInCommandZone(boonCmdCards);
       }
 
       // Load Planebound deck
@@ -441,6 +462,7 @@ public enum CSubmenuRogueMap implements ICDoc {
     String commanderName = currentRun.getSelectedRogueDeck().getCommanderCardName();
     currentRun.setRunWon(true);
     RogueMetaProgress progress = RogueMetaProgress.getInstance();
+    progress.addEchoes(20);
     progress.addRunHistoryEntry(RogueRunHistoryEntry.fromRun(currentRun, "VICTORY", "[DEV]"));
     progress.onRunCompleted(currentRun, true);
     RogueCommanderAchievements.instance.recordRunWon(commanderName);
@@ -537,35 +559,45 @@ public enum CSubmenuRogueMap implements ICDoc {
     }
 
     // Generate Bazaar inventory: Draw 8 non-mythic + 2 mythic (base, adjusted by Mythic Collector boon)
-    int extraMythics = RogueMetaProgress.getInstance().getExtraMythicCards();
+    RogueMetaProgress bazaarProgress = RogueMetaProgress.getInstance();
+    int extraMythics = bazaarProgress.getExtraMythicCards();
     int baseNonMythics = 8;
     int baseMythics = 2;
     int totalNonMythics = Math.max(0, baseNonMythics - extraMythics);
     int totalMythics = baseMythics + extraMythics;
 
-    List<PaperCard> nonMythicCards = rogueDeck.drawRewardOptions(totalNonMythics,
-        forge.item.PaperCardPredicates.IS_MYTHIC_RARE.negate());
-    List<PaperCard> mythicCards = rogueDeck.drawRewardOptions(totalMythics,
-        forge.item.PaperCardPredicates.IS_MYTHIC_RARE);
-
-    // Combine into single inventory
-    List<PaperCard> inventory = new ArrayList<>();
-    inventory.addAll(nonMythicCards);
-    inventory.addAll(mythicCards);
-
-    if (inventory.isEmpty()) {
-      System.err.println("ERROR: No cards available in reward pool for Bazaar.");
-      currentRun.nextNode();
-      updateView();
-      return;
-    }
-
-    // Get current gold
+    int rerollsRemaining = bazaarProgress.getRerollsPerNode(); // Fresh per node
     int currentGold = currentRun.getCurrentGold();
+    Set<PaperCard> selectedCards;
+    do {
+      List<PaperCard> nonMythicCards = rogueDeck.drawRewardOptions(totalNonMythics,
+          forge.item.PaperCardPredicates.IS_MYTHIC_RARE.negate());
+      List<PaperCard> mythicCards = rogueDeck.drawRewardOptions(totalMythics,
+          forge.item.PaperCardPredicates.IS_MYTHIC_RARE);
 
-    // Show Bazaar dialog
-    BazaarDialog dialog = new BazaarDialog(inventory, currentGold);
-    Set<PaperCard> selectedCards = dialog.show();
+      List<PaperCard> inventory = new ArrayList<>();
+      inventory.addAll(nonMythicCards);
+      inventory.addAll(mythicCards);
+
+      if (inventory.isEmpty()) {
+        System.err.println("ERROR: No cards available in reward pool for Bazaar.");
+        currentRun.nextNode();
+        updateView();
+        return;
+      }
+
+      String rerollLabel = rerollsRemaining > 0 ? "Reroll" : null;
+      BazaarDialog dialog = new BazaarDialog(inventory, currentGold, rerollLabel);
+      selectedCards = dialog.show();
+
+      if (selectedCards == null) {
+        rerollsRemaining--; // Reroll clicked — unchosen cards stay in pool
+      }
+    } while (selectedCards == null && rerollsRemaining >= 0);
+
+    if (selectedCards == null) {
+      selectedCards = new HashSet<>();
+    }
 
     // If player bought cards, add them to deck and deduct gold
     if (!selectedCards.isEmpty()) {

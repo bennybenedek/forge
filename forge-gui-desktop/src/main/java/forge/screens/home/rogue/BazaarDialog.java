@@ -36,6 +36,7 @@ public class BazaarDialog {
   private CardUtil zoomUtil;
   private final List<PaperCard> availableCards;
   private final int availableGold;
+  private final String rerollButtonLabel; // null = no reroll button
   private final Set<PaperCard> selectedCards = new HashSet<>();
   private final FLabel lblGoldStatus;
 
@@ -48,12 +49,24 @@ public class BazaarDialog {
   /**
    * Create a Bazaar dialog.
    *
-   * @param cards List of cards available for purchase (9 non-mythic + 1 mythic)
+   * @param cards List of cards available for purchase
    * @param gold  Player's available gold
    */
   public BazaarDialog(List<PaperCard> cards, int gold) {
+    this(cards, gold, null);
+  }
+
+  /**
+   * Create a Bazaar dialog with optional reroll button.
+   *
+   * @param cards            List of cards available for purchase
+   * @param gold             Player's available gold
+   * @param rerollButtonLabel Label for the reroll button, or null for no reroll
+   */
+  public BazaarDialog(List<PaperCard> cards, int gold, String rerollButtonLabel) {
     this.availableCards = new ArrayList<>(cards);
     this.availableGold = gold;
+    this.rerollButtonLabel = rerollButtonLabel;
 
     // Create main panel
     panel = new MainPanel();
@@ -125,12 +138,22 @@ public class BazaarDialog {
 
   /**
    * Show the dialog and return the selected cards.
+   * Returns null if the reroll button was clicked (only when constructed with a rerollButtonLabel).
    *
-   * @return Set of purchased cards (empty if skipped)
+   * @return Set of purchased cards, null if reroll was clicked, or empty set if skipped
    */
   public Set<PaperCard> show() {
     final Localizer localizer = Localizer.getInstance();
+
+    // Build button list: [Buy, Skip/Reroll, View Deck]
+    final List<String> buttons;
+    final int SECONDARY_OPTION = 1; // Skip or Reroll
     final int VIEW_DECK_OPTION = 2;
+    if (rerollButtonLabel != null) {
+      buttons = List.of("Buy Selected Cards", rerollButtonLabel, "View Deck");
+    } else {
+      buttons = List.of("Buy Selected Cards", localizer.getMessage("lblSkip"), "View Deck");
+    }
 
     int result;
     do {
@@ -139,8 +162,8 @@ public class BazaarDialog {
           "Bazaar",
           null,
           panel,
-          List.of("Buy Selected Cards", localizer.getMessage("lblSkip"), "View Deck"),
-          1  // Default to Skip button
+          buttons,
+          1  // Default to second button (Skip/Reroll)
       );
 
       // Setup zoom utility
@@ -163,10 +186,15 @@ public class BazaarDialog {
       }
     } while (result == VIEW_DECK_OPTION);
 
-    // Return selected cards if Buy was clicked (result == 0), otherwise empty set
+    // Buy clicked
     if (result == 0) {
       return selectedCards;
     }
+    // Reroll clicked
+    if (rerollButtonLabel != null && result == SECONDARY_OPTION) {
+      return null;
+    }
+    // Skip clicked
     return new HashSet<>();
   }
 

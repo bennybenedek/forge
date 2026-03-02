@@ -35,6 +35,7 @@ public class CardRewardDialog {
 
   private final String title;
   private final int maxSelections;
+  private final String rerollButtonLabel; // null = no reroll button (shows Cancel instead)
   private final Set<PaperCard> selectedCards;
   private final List<SelectableCardPanel> cardPanels;
   private final MainPanel panel;
@@ -48,15 +49,17 @@ public class CardRewardDialog {
   private int cardHeight;
 
   /**
-   * Create a card reward selection dialog.
+   * Create a card reward selection dialog with optional reroll button.
    *
-   * @param title         Dialog title
-   * @param cards         List of cards to choose from
-   * @param maxSelections Maximum number of cards to select
+   * @param title            Dialog title
+   * @param cards            List of cards to choose from
+   * @param maxSelections    Maximum number of cards to select
+   * @param rerollButtonLabel Label for the reroll button, or null for Cancel button
    */
-  public CardRewardDialog(String title, List<PaperCard> cards, int maxSelections) {
+  public CardRewardDialog(String title, List<PaperCard> cards, int maxSelections, String rerollButtonLabel) {
     this.title = title;
     this.maxSelections = maxSelections;
+    this.rerollButtonLabel = rerollButtonLabel;
     this.selectedCards = new HashSet<>();
     this.cardPanels = new ArrayList<>();
 
@@ -143,12 +146,22 @@ public class CardRewardDialog {
 
   /**
    * Show the dialog and return the selected cards.
+   * Returns null if the reroll button was clicked (only when constructed with a rerollButtonLabel).
    *
-   * @return List of selected cards, or empty list if canceled
+   * @return List of selected cards, null if reroll was clicked, or empty list if canceled
    */
   public List<PaperCard> show() {
     final Localizer localizer = Localizer.getInstance();
+
+    // Build button list: [OK, Reroll/Cancel, View Deck]
+    final int SECONDARY_OPTION = 1; // Either Reroll or Cancel
     final int VIEW_DECK_OPTION = 2;
+    final ImmutableList<String> buttons;
+    if (rerollButtonLabel != null) {
+      buttons = ImmutableList.of(localizer.getMessage("lblOK"), rerollButtonLabel, "View Deck");
+    } else {
+      buttons = ImmutableList.of(localizer.getMessage("lblOK"), localizer.getMessage("lblCancel"), "View Deck");
+    }
 
     int result;
     do {
@@ -157,8 +170,7 @@ public class CardRewardDialog {
           "Card Rewards",
           null,
           panel,
-          ImmutableList.of(localizer.getMessage("lblOK"), localizer.getMessage("lblCancel"),
-              "View Deck"),
+          buttons,
           0
       );
 
@@ -193,7 +205,10 @@ public class CardRewardDialog {
     if (result == 0) {
       return new ArrayList<>(selectedCards);
     }
-    return new ArrayList<>();
+    if (rerollButtonLabel != null && result == SECONDARY_OPTION) {
+      return null; // Reroll signal
+    }
+    return new ArrayList<>(); // Cancel
   }
 
 

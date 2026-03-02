@@ -128,6 +128,8 @@ public enum VSubmenuRogueHistory implements IVSubmenu<CSubmenuRogueHistory> {
     private static final int ROW_GAP = 2;
     private static final int BTN_WIDTH = 100;
     private static final int BTN_HEIGHT = 26;
+    private static final int INFO_COL_W = 220;   // Width of Descension / Boons column
+    private static final int INFO_COL_GAP = 15;  // Gap between main content and info column
 
     private boolean isHovered = false;
     private final FLabel lblAvatar;
@@ -137,6 +139,8 @@ public enum VSubmenuRogueHistory implements IVSubmenu<CSubmenuRogueHistory> {
     private final FLabel lblTimestamp;
     private final FTextArea txtPath;
     private final FLabel lblStats;
+    private final FLabel lblDescension; // null if descensionLevel == 0
+    private final FLabel lblBoons;      // null if no active boons
     private final FButton btnViewDeck;
 
     RunHistoryCard(RogueRunHistoryEntry entry, Consumer<RogueRunHistoryEntry> onViewDeck) {
@@ -227,6 +231,27 @@ public enum VSubmenuRogueHistory implements IVSubmenu<CSubmenuRogueHistory> {
           .fontAlign(SwingConstants.LEFT).build();
       add(lblStats);
 
+      // Descension level (optional)
+      if (entry.getDescensionLevel() > 0) {
+        lblDescension = new FLabel.Builder()
+            .text("Descension: Level " + entry.getDescensionLevel())
+            .fontSize(12).fontAlign(SwingConstants.LEFT).build();
+        add(lblDescension);
+      } else {
+        lblDescension = null;
+      }
+
+      // Active boons (optional)
+      List<String> boonNames = entry.getActiveBoonNames();
+      if (!boonNames.isEmpty()) {
+        lblBoons = new FLabel.Builder()
+            .text("Aether Boons: " + String.join(", ", boonNames))
+            .fontSize(12).fontAlign(SwingConstants.LEFT).build();
+        add(lblBoons);
+      } else {
+        lblBoons = null;
+      }
+
       // View Deck button
       if (entry.getDeckSnapshot() != null) {
         btnViewDeck = new FButton("View Deck");
@@ -242,25 +267,36 @@ public enum VSubmenuRogueHistory implements IVSubmenu<CSubmenuRogueHistory> {
       int w = getWidth();
       int contentX = INSET + AVATAR_SIZE + AVATAR_GAP;
       int contentW = w - contentX - INSET;
-      int rightW = btnViewDeck != null ? BTN_WIDTH + 5 : 0;
-      int leftW = contentW - rightW;
-      int y = INSET;
       int rowH = 20;
+
+      // Right side: Outcome / Timestamp / View Deck — anchored to far right
+      int rightSideW = btnViewDeck != null ? BTN_WIDTH + 5 : 0;
+      int rightSideX = contentX + contentW - rightSideW;
+
+      // Info column (Descension / Boons): starts right after the left content,
+      // not anchored to the right side. Cap leftW so the column appears near the text.
+      boolean hasInfoCol = (lblDescension != null || lblBoons != null);
+      int avail = contentW - rightSideW - INFO_COL_W - INFO_COL_GAP;
+      if (hasInfoCol && avail < 100) hasInfoCol = false; // not enough room
+      int leftW = hasInfoCol ? Math.min(420, avail) : contentW - rightSideW;
+      int infoColX = hasInfoCol ? contentX + leftW + INFO_COL_GAP : 0;
+      int infoColW = hasInfoCol ? rightSideX - infoColX : 0;
+      int y = INSET;
 
       // Avatar
       lblAvatar.setBounds(INSET, INSET, AVATAR_SIZE, AVATAR_SIZE);
 
-      // Row 0: Name (left) + Outcome (right)
+      // Row 0: Name (left) + Outcome (far right)
       lblName.setBounds(contentX, y, leftW, rowH);
-      lblOutcome.setBounds(contentX + leftW, y, rightW, rowH);
+      lblOutcome.setBounds(rightSideX, y, rightSideW, rowH);
       y += rowH + ROW_GAP;
 
-      // Row 1: Detail (left) + Timestamp (right)
+      // Row 1: Detail (left) + Timestamp (far right)
       lblDetail.setBounds(contentX, y, leftW, rowH);
-      lblTimestamp.setBounds(contentX + leftW, y, rightW, rowH);
+      lblTimestamp.setBounds(rightSideX, y, rightSideW, rowH);
       y += rowH + ROW_GAP;
 
-      // Row 2: Path (left column only, variable height)
+      // Row 2: Path (left width only)
       if (txtPath != null) {
         txtPath.setSize(leftW, Short.MAX_VALUE);
         int pathH = txtPath.getPreferredSize().height;
@@ -268,26 +304,42 @@ public enum VSubmenuRogueHistory implements IVSubmenu<CSubmenuRogueHistory> {
         y += pathH + ROW_GAP;
       }
 
-      // Row 3: Stats (left) + View Deck button (right)
+      // Row 3: Stats (left) + View Deck button (far right)
       if (btnViewDeck != null) {
         lblStats.setBounds(contentX, y, leftW, BTN_HEIGHT);
-        btnViewDeck.setBounds(contentX + contentW - BTN_WIDTH, y, BTN_WIDTH, BTN_HEIGHT);
-        y += BTN_HEIGHT + INSET + 4;
+        btnViewDeck.setBounds(rightSideX, y, BTN_WIDTH, BTN_HEIGHT);
+        y += BTN_HEIGHT + ROW_GAP;
       } else {
-        lblStats.setBounds(contentX, y, contentW, rowH);
-        y += rowH + INSET;
+        lblStats.setBounds(contentX, y, leftW, rowH);
+        y += rowH + ROW_GAP;
       }
 
-      // Update preferred size to match actual layout so parent allocates correct height
+      y += INSET; // bottom padding
       setPreferredSize(new Dimension(w, y));
+
+      // Info column: Descension + Boons — start at row 1 (below Commander name)
+      if (hasInfoCol) {
+        int infoY = INSET + rowH + ROW_GAP;
+        if (lblDescension != null) {
+          lblDescension.setBounds(infoColX, infoY, infoColW, rowH);
+          infoY += rowH + ROW_GAP;
+        }
+        if (lblBoons != null) {
+          lblBoons.setBounds(infoColX, infoY, infoColW, rowH);
+        }
+      }
     }
 
     @Override
     public Dimension getPreferredSize() {
       int w = getParent() != null ? getParent().getWidth() : 500;
       int contentW = w - INSET - AVATAR_SIZE - AVATAR_GAP - INSET;
-      int rightW = btnViewDeck != null ? BTN_WIDTH + 5 : 0;
-      int leftW = contentW - rightW;
+      int rightSideW = btnViewDeck != null ? BTN_WIDTH + 5 : 0;
+      boolean hasInfoCol = (lblDescension != null || lblBoons != null)
+          && contentW - rightSideW - INFO_COL_W - INFO_COL_GAP >= 100;
+      int leftW = hasInfoCol
+          ? Math.min(420, contentW - rightSideW - INFO_COL_W - INFO_COL_GAP)
+          : contentW - rightSideW;
       int y = INSET;
       y += 20 + ROW_GAP; // row 0
       y += 20 + ROW_GAP; // row 1
@@ -295,7 +347,8 @@ public enum VSubmenuRogueHistory implements IVSubmenu<CSubmenuRogueHistory> {
         txtPath.setSize(Math.max(leftW, 100), Short.MAX_VALUE);
         y += txtPath.getPreferredSize().height + ROW_GAP;
       }
-      y += (btnViewDeck != null ? BTN_HEIGHT + 4 : 20) + INSET;
+      y += (btnViewDeck != null ? BTN_HEIGHT : 20) + ROW_GAP;
+      y += INSET;
       return new Dimension(w, y);
     }
 

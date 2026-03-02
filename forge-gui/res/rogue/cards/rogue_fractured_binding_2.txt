@@ -1,0 +1,5 @@
+Name:Rogue - Fractured Binding 2
+ManaCost:no cost
+Types:Rogue Modifier
+S:Mode$ ReduceCost | ValidCard$ Card.YouCtrl+Commander | Amount$ 2 | Activator$ You | EffectZone$ Command | Description$ Your commander costs {2} less to cast.
+Oracle:Your commander costs {2} less to cast.
