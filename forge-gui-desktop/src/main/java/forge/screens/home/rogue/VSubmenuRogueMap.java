@@ -2,6 +2,7 @@ package forge.screens.home.rogue;
 
 import forge.gamemodes.rogue.RogueMetaProgress;
 import forge.gamemodes.rogue.RogueRun;
+import forge.localinstance.properties.ForgePreferences;
 import forge.gui.framework.DragCell;
 import forge.gui.framework.DragTab;
 import forge.gui.framework.EDocID;
@@ -76,6 +77,7 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
 
   private final FButton btnEnterNode;
   private final FButton btnEditDeck;
+  private final FButton btnDevWinRun = new FButton("[DEV] Win Run");
 
   VSubmenuRogueMap() {
     lblTitle.setBackground(FSkin.getColor(FSkin.Colors.CLR_THEME2));
@@ -152,9 +154,13 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(lblRemovalCredits, "gapleft 20px");
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay()
         .add(scrollPathDisplay, "w 96%!, gap 2% 2% 0 0, pushy, growy");
+    int split = ForgePreferences.DEV_MODE ? 3 : 2;
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay()
-        .add(btnEnterNode, "w 30%!, h 40px!, ax center, gap 0 2% 10px 20px, split 2");
+        .add(btnEnterNode, "w 30%!, h 40px!, ax center, gap 0 2% 10px 20px, split " + split);
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(btnEditDeck, "w 30%!, h 40px!");
+    if (ForgePreferences.DEV_MODE) {
+      VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(btnDevWinRun, "w 30%!, h 40px!");
+    }
 
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().repaintSelf();
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().revalidate();
@@ -166,6 +172,10 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
 
   public JButton getBtnEditDeck() {
     return btnEditDeck;
+  }
+
+  public JButton getBtnDevWinRun() {
+    return btnDevWinRun;
   }
 
   public PathVisualizerPanel getPathVisualizer() {

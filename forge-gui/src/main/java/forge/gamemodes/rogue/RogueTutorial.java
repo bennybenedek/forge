@@ -107,7 +107,7 @@ public enum RogueTutorial {
       "Descension Mode Unlocked",
       "You have won Runs with 3 different Commanders - Descension Mode is now unlocked!\n" +
           "Descension Mode adds stacking difficulty modifiers to your Runs. Select a Commander you have already won with to enable it.\n" +
-          "Winning at a Descension Level unlocks the next level for that Commander."
+          "Winning at a Descension Level unlocks the next level for that Commander, and earns you a Spark. Sparks can be used to unlock special upgrades in the Aether."
   );
 
   private final String title;

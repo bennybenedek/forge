@@ -43,8 +43,9 @@ public class RogueMetaProgress {
     // Per-commander descension tracking
     private Map<String, Integer> maxDescensionWonPerCommander = new HashMap<>();
 
-    // Aether system - persistent echoes and boons
+    // Aether system - persistent echoes, sparks, and boons
     private int totalEchoes;                      // Persistent echo currency
+    private int totalSparks;                      // Earned from Descension wins
     private Map<String, Integer> boonRanks;       // Boon ID -> current rank (0 = not unlocked)
     private Set<String> activeBoons;              // Currently equipped boon IDs (max 3)
 
@@ -121,6 +122,7 @@ public class RogueMetaProgress {
 
         // Reset Aether system
         totalEchoes = 0;
+        totalSparks = 0;
         boonRanks = new HashMap<>();
         activeBoons = new HashSet<>();
         notifiedUnlocks = new HashSet<>();
@@ -369,13 +371,26 @@ public class RogueMetaProgress {
         return 1 + getMaxDescensionWon(commanderName);
     }
 
-    public void recordDescensionWin(String commanderName, int level) {
+    public void notifyDescensionL1IfFirstWin(String commanderName) {
+        if (!isDescensionModeUnlocked() || getRunsWonWithCommander(commanderName) != 1) return;
+        forge.item.PaperCard card = forge.model.FModel.getMagicDb().getCommonCards().getCard(commanderName);
+        forge.localinstance.skin.ISkinImage image = forge.gui.GuiBase.getInterface()
+            .createLayeredImage(card, forge.localinstance.skin.FSkinProp.IMG_SPECIAL_TROPHY,
+                forge.localinstance.properties.ForgeConstants.CACHE_ACHIEVEMENTS_DIR
+                    + "/descension_" + commanderName.replace(" ", "_") + "_1.png", 1f);
+        forge.gui.GuiBase.getInterface().showImageDialog(image,
+            "You unlocked Descension Mode for " + commanderName + "!",
+            "Descension Level 1 Unlocked!");
+    }
+
+    public boolean recordDescensionWin(String commanderName, int level) {
         if (maxDescensionWonPerCommander == null) maxDescensionWonPerCommander = new HashMap<>();
         if (level > getMaxDescensionWon(commanderName)) {
             maxDescensionWonPerCommander.put(commanderName, level);
+            totalSparks++;
             int unlockedLevel = level + 1;
             if (unlockedLevel <= DescensionLevel.getMaxLevel()) {
-                DescensionLevel dl = DescensionLevel.forLevel(unlockedLevel);
+                DescensionLevel descensionLevel = DescensionLevel.forLevel(unlockedLevel);
                 forge.item.PaperCard card = forge.model.FModel.getMagicDb()
                     .getCommonCards().getCard(commanderName);
                 forge.localinstance.skin.ISkinImage image = forge.gui.GuiBase.getInterface()
@@ -383,11 +398,13 @@ public class RogueMetaProgress {
                         forge.localinstance.properties.ForgeConstants.CACHE_ACHIEVEMENTS_DIR
                             + "/descension_" + commanderName.replace(" ", "_") + "_" + unlockedLevel + ".png", 1f);
                 forge.gui.GuiBase.getInterface().showImageDialog(image,
-                    commanderName + "\nDescension Level " + unlockedLevel + ": " + dl.name + "\n" + dl.description,
-                    "Descension Level " + unlockedLevel + " Unlocked!");
+                    "You unlocked Descension Level" + unlockedLevel + ": " + descensionLevel.name + " for " + commanderName + "!",
+                    "Descension Level" + unlockedLevel + "Unlocked!");
             }
             save();
+            return true;
         }
+        return false;
     }
 
     public boolean isDescensionModeUnlocked() {
@@ -398,6 +415,10 @@ public class RogueMetaProgress {
 
     public int getTotalEchoes() {
         return totalEchoes;
+    }
+
+    public int getTotalSparks() {
+        return totalSparks;
     }
 
     public void addEchoes(int amount) {

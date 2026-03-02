@@ -158,6 +158,7 @@ public enum CSubmenuRogueMap implements ICDoc {
   public void initialize() {
     view.getBtnEnterNode().addActionListener(actEnterNode);
     view.getBtnEditDeck().addActionListener(actEditDeck);
+    view.getBtnDevWinRun().addActionListener(e -> devWinRun());
     view.getPathVisualizer().setNodeClickHandler(this::handleNodeClick);
   }
 
@@ -433,6 +434,26 @@ public enum CSubmenuRogueMap implements ICDoc {
 
   public void setCurrentRun(RogueRun run) {
     this.currentRun = run;
+  }
+
+  private void devWinRun() {
+    if (currentRun == null) return;
+    String commanderName = currentRun.getSelectedRogueDeck().getCommanderCardName();
+    currentRun.setRunWon(true);
+    RogueMetaProgress progress = RogueMetaProgress.getInstance();
+    progress.addRunHistoryEntry(RogueRunHistoryEntry.fromRun(currentRun, "VICTORY", "[DEV]"));
+    progress.onRunCompleted(currentRun, true);
+    RogueCommanderAchievements.instance.recordRunWon(commanderName);
+    int descLevel = currentRun.getDescensionLevel();
+    if (descLevel > 0) {
+      progress.recordDescensionWin(commanderName, descLevel);
+    }
+    RogueCommanderAchievements.instance.evaluateRunAchievements(currentRun);
+    progress.checkForNewUnlocks();
+    progress.notifyDescensionL1IfFirstWin(commanderName);
+    RogueIO.saveRun(currentRun);
+    currentRun = null;
+    CHomeUI.SINGLETON_INSTANCE.itemClick(EDocID.HOME_ROGUESTART);
   }
 
   private void editDeck() {

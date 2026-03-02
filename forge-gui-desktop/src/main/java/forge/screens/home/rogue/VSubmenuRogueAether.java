@@ -46,6 +46,12 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
       .fontStyle(Font.BOLD)
       .build();
 
+  private final FLabel lblSparks = new FLabel.Builder()
+      .text("Sparks: 0")
+      .fontSize(16)
+      .fontStyle(Font.BOLD)
+      .build();
+
   private final FLabel lblActiveBoons = new FLabel.Builder()
       .text("Active Boons: 0/3 (click to toggle)")
       .fontSize(14)
@@ -60,6 +66,8 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
   VSubmenuRogueAether() {
     lblTitle.setBackground(FSkin.getColor(FSkin.Colors.CLR_THEME2));
     lblEchoes.setIcon(FSkin.getIcon(FSkinProp.ICO_QUEST_GOLD));
+    lblSparks.setIcon(FSkin.getIcon(FSkinProp.ICO_QUEST_ELIXIR));
+    lblSparks.setVisible(false);
     btnBack = new FButton("Back");
     btnBack.setIcon(FSkin.getImage(FSkinProp.ICO_OPEN).resize(24, 24).getIcon());
     btnResetBoons = new FButton("Reset Boons");
@@ -112,6 +120,7 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
     JPanel headerPanel = new JPanel(new MigLayout("insets 10, gap 20"));
     headerPanel.setOpaque(false);
     headerPanel.add(lblEchoes);
+    headerPanel.add(lblSparks, "hidemode 3");
     headerPanel.add(lblActiveBoons);
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(headerPanel, "w 98%!, gap 1% 0 10px 10px");
 
@@ -145,10 +154,12 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
   /**
    * Update the display with current meta progress data.
    */
-  public void updateDisplay(int echoes, int activeBoonCount,
+  public void updateDisplay(int echoes, int sparks, int activeBoonCount,
       Map<BoonType, Integer> boonRanks,
       Set<BoonType> activeBoons) {
     lblEchoes.setText("Echoes: " + echoes);
+    lblSparks.setText("Sparks: " + sparks);
+    lblSparks.setVisible(sparks > 0);
     lblActiveBoons.setText("Active Boons: " + activeBoonCount + "/3 (click to toggle)");
 
     for (Map.Entry<BoonType, BoonPanel> entry : boonPanels.entrySet()) {
