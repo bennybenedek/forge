@@ -9,8 +9,8 @@ public enum BoonType {
     // Base boons (requiredUpgradeLevel=0) — always visible
     VITAL_INFUSION("vital_infusion", "Vital Infusion",
         "Begin each Run with additional Max Life.",
-        new int[]{2, 4, 6, 9},     // Echo costs per rank (rank 1-4)
-        new int[]{2, 4, 6, 9},     // Effect values: +2/+4/+6/+9 life
+        new int[]{3, 6, 9, 12},     // Echo costs per rank (rank 1-4)
+        new int[]{3, 6, 9, 12},     // Effect values: +2/+4/+6/+9 life
         3, 0),
 
     AETHER_MARKET("aether_market", "Aether Market",
@@ -21,7 +21,7 @@ public enum BoonType {
 
     LINGERING_AURA("lingering_aura", "Lingering Aura",
         "Heal Life after each Plane match victory.",
-        new int[]{3, 5, 7, 9},     // Echo costs per rank
+        new int[]{2, 4, 8, 16},     // Echo costs per rank
         new int[]{2, 4, 6, 8},     // Effect values: heal 2/4/6/8
         3, 0),
 
@@ -40,24 +40,24 @@ public enum BoonType {
     // New boons (requiredUpgradeLevel=1) — require Aether Upgrade 1
     LAST_SPARK("last_spark", "Last Spark",
         "Revive when you would lose the run.",
-        new int[]{10, 15},         // Echo costs (rank 1-2)
+        new int[]{10, 20},         // Echo costs (rank 1-2)
         new int[]{5, 10},          // Effect values: survive with 5/10 life
         1, 1),
 
     EXPANDED_MIND("expanded_mind", "Expanded Mind",
         "Keep additional cards from Card Rewards.",
-        new int[]{4, 8, 12},       // Echo costs (rank 1-3)
-        new int[]{1, 2, 3},        // Effect values: +1/+2/+3 extra picks
-        2, 1),
+        new int[]{8, 12},       // Echo costs (rank 1-3)
+        new int[]{1, 2},        // Effect values: +1/+2/+3 extra picks
+        1, 1),
 
     SPARK_KINDLE("spark_kindle", "Spark Kindle",
         "Begin each match with tapped basic lands from your deck on the battlefield.",
-        new int[]{5, 10, 15},      // Echo costs (rank 1-3)
+        new int[]{5, 10, 20},      // Echo costs (rank 1-3)
         new int[]{1, 2, 3},        // Effect values: 1/2/3 tapped lands
         2, 1),
 
     FRACTURED_BINDING("fractured_binding", "Fractured Binding",
-        "Your Commander costs less to cast.",
+        "Reduce the Commander Tax you pay for recasting from the Command Zone.",
         new int[]{4, 8, 12, 16},   // Echo costs (rank 1-4)
         new int[]{1, 2, 3, 4},     // Effect values: {1}/{2}/{3}/{4} less
         3, 1),

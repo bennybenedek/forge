@@ -5,10 +5,10 @@ package forge.gamemodes.rogue;
  * Game effects are implemented via card scripts (Levels 2/3) or path generation logic (Level 1).
  */
 public enum DescensionLevel {
-    LEVEL_1(1, "Elite Paths",
-        "2 random Normal Planes of the Path are replaced by Elite Planes."),
-    LEVEL_2(2, "Bloodthirsty",
+    LEVEL_1(1, "Bloodthirsty",
         "Whenever a creature an opponent controls deals damage to you, it deals 1 additional damage."),
+    LEVEL_2(2, "Elite Paths",
+        "2 random Normal Planes of the Path are replaced by Elite Planes."),
     LEVEL_3(3, "Taxing Mana",
         "Every spell you cast costs {1} more to cast.");
 
