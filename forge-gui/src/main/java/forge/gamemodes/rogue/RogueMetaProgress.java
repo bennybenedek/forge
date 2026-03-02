@@ -399,7 +399,7 @@ public class RogueMetaProgress {
                             + "/descension_" + commanderName.replace(" ", "_") + "_" + unlockedLevel + ".png", 1f);
                 forge.gui.GuiBase.getInterface().showImageDialog(image,
                     "You unlocked Descension Level" + unlockedLevel + ": " + descensionLevel.name + " for " + commanderName + "!",
-                    "Descension Level" + unlockedLevel + "Unlocked!");
+                    "Descension Level " + unlockedLevel + " Unlocked!");
             }
             save();
             return true;

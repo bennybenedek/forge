@@ -166,7 +166,7 @@ public class RogueUnlockCondition {
             case "UseCommander":
                 return "Use " + value + " in a run.";
             case "MaxLife":
-                return "Have " + value + "+ life after any Match.";
+                return "Have " + value + "+ life after any match.";
             case "MaxGold":
                 return "Earn " + value + " gold in a run.";
             case "CreatureTypes":

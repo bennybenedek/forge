@@ -164,6 +164,7 @@ public enum CSubmenuRogueStart implements ICDoc {
       view.getBtnBeginRun().setEnabled(false);
       view.getLblCommanderName().setText("");
       view.getLblDescriptionLabel().setText("Description:");
+      view.getLblDescriptionLock().setVisible(false);
       view.getTxtDescription().setText("");
       view.getTxtTheme().setText("");
       view.getChkDescension().setVisible(false);
@@ -179,6 +180,7 @@ public enum CSubmenuRogueStart implements ICDoc {
       // Show unlock condition for locked commanders
       view.getLblCommanderName().setText("???");
       view.getLblDescriptionLabel().setText("Unlock:");
+      view.getLblDescriptionLock().setVisible(true);
       String unlockDesc = deck.getUnlockDescription();
       if (unlockDesc != null && !unlockDesc.isEmpty()) {
         view.getTxtDescription().setText(unlockDesc);
@@ -192,6 +194,7 @@ public enum CSubmenuRogueStart implements ICDoc {
       // Show normal details for unlocked commanders
       view.getLblCommanderName().setText(deck.getCommanderCardName());
       view.getLblDescriptionLabel().setText("Description:");
+      view.getLblDescriptionLock().setVisible(false);
       view.getTxtDescription().setText(deck.getDescription());
       view.getTxtTheme().setText(deck.getThemeDescription());
       // Show theme row for unlocked commanders

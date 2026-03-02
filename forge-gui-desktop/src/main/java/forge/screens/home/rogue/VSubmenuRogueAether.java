@@ -154,12 +154,12 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
   /**
    * Update the display with current meta progress data.
    */
-  public void updateDisplay(int echoes, int sparks, int activeBoonCount,
+  public void updateDisplay(int echoes, int sparks, boolean descensionUnlocked, int activeBoonCount,
       Map<BoonType, Integer> boonRanks,
       Set<BoonType> activeBoons) {
     lblEchoes.setText("Echoes: " + echoes);
     lblSparks.setText("Sparks: " + sparks);
-    lblSparks.setVisible(sparks > 0);
+    lblSparks.setVisible(descensionUnlocked);
     lblActiveBoons.setText("Active Boons: " + activeBoonCount + "/3 (click to toggle)");
 
     for (Map.Entry<BoonType, BoonPanel> entry : boonPanels.entrySet()) {

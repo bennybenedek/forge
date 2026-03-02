@@ -83,7 +83,8 @@ public enum RogueTutorial {
   DECK_EDITOR(
       "Deck Editor",
       "Review your current deck at any time. Keep track of your cards, " +
-          "mana curve, and strategy. You can always add and remove as many basic lands as needed, but other cards can only be added as rewards during the Run, and can only be removed with Removal Credits earned by adding cards or by visiting a Sanctum."
+          "mana curve, and strategy. You can always add and remove as many basic lands as needed, but other cards can only be added as rewards during the Run, and can only be removed with Removal Credits earned by adding cards or by visiting a Sanctum.\n" +
+          "Changes to your deck will be saved automatically and persist for the rest of the Run, but will be reset at the end of the Run regardless of win or loss."
   ),
 
   RUN_COMPLETE(

@@ -58,6 +58,9 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
       .fontSize(14)
       .build();
 
+  private final FLabel lblDescriptionLock = new FLabel.Builder()
+      .icon(FSkin.getImage(FSkinProp.ICO_LOCK).resize(14, 14)).build();
+
   private final FLabel lblThemeLabel = new FLabel.Builder()
       .text("Themes:")
       .fontSize(14)
@@ -180,6 +183,8 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
     panel.add(lblCommanderName, "cell 1 0, alignx left, growx");
 
     // Row 1: Description (label can change to "Unlock:" for locked commanders)
+    lblDescriptionLock.setVisible(false);
+    panel.add(lblDescriptionLock, "cell 0 1, w 14px!, h 14px!, aligny top, hidemode 3, split 2");
     panel.add(lblDescriptionLabel, "cell 0 1, alignx left, aligny top");
     panel.add(new FScrollPane(txtDescription, false,
             ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
@@ -249,6 +254,10 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
 
   public FLabel getLblDescriptionLabel() {
     return lblDescriptionLabel;
+  }
+
+  public FLabel getLblDescriptionLock() {
+    return lblDescriptionLock;
   }
 
   public FTextArea getTxtDescription() {

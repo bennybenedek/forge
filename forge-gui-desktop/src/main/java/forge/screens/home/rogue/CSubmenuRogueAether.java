@@ -66,6 +66,7 @@ public enum CSubmenuRogueAether implements ICDoc {
     view.updateDisplay(
         progress.getTotalEchoes(),
         progress.getTotalSparks(),
+        progress.isDescensionModeUnlocked(),
         progress.getActiveBoonCount(),
         boonRanks,
         activeBoons
