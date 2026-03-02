@@ -32,6 +32,9 @@ public class RogueRun {
     private int currentNodeIndex;               // Current position on path
     private RogueRunState runState;             // Current state of the run
 
+    // Descension
+    private int descensionLevel;                // 0 = no descension; XStream defaults int to 0 for old saves
+
     // Match History
     private int matchesWon;                     // Win counter
     private int matchesLost;                    // Loss counter
@@ -299,6 +302,14 @@ public class RogueRun {
 
     public void setRemovalCredits(int removalCredits) {
         this.removalCredits = removalCredits;
+    }
+
+    public int getDescensionLevel() {
+        return descensionLevel;
+    }
+
+    public void setDescensionLevel(int level) {
+        this.descensionLevel = level;
     }
 
     @Override

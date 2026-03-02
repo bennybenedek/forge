@@ -73,6 +73,18 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
   private final FButton btnAether;
   private final FButton btnHistory;
 
+  // Descension UI
+  private final FCheckBox chkDescension = new FCheckBox("Descension Mode");
+  private final FButton btnDescensionDown = new FButton("<");
+  private final FLabel lblDescensionLock = new FLabel.Builder()
+      .icon(FSkin.getImage(FSkinProp.ICO_LOCK).resize(20, 20)).build();
+  private final FLabel lblDescensionLevel = new FLabel.Builder().text("").fontSize(14).build();
+  private final FButton btnDescensionUp = new FButton(">");
+  private final FLabel lblDescensionDesc = new FLabel.Builder().text("").fontSize(12).build();
+  private JPanel pnlDescensionLevel;
+  private JPanel pnlDescensionLock;
+  private final FLabel lblDescensionLockText = new FLabel.Builder().text("").fontSize(12).build();
+
   VSubmenuRogueStart() {
     // Setup buttons with icons (matching Path View style)
     btnBeginRun = new FButton("Start Run");
@@ -160,35 +172,62 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
     JPanel panel = new JPanel();
     panel.setOpaque(false);
     panel.setLayout(
-        new MigLayout("insets 0, gap 0, wrap 2", "[150px][grow]", "[]10px[]10px[]20px[]"));
+        new MigLayout("insets 0, gap 0, wrap 2", "[150px][grow]", "[]10px[]10px[]10px[]10px[]20px[]"));
 
-    // Row 1: Commander name
+    // Row 0: Commander name
     panel.add(new FLabel.Builder().text("Commander:").fontSize(14).build(),
         "cell 0 0, alignx left, aligny top");
     panel.add(lblCommanderName, "cell 1 0, alignx left, growx");
 
-    // Row 2: Description (label can change to "Unlock:" for locked commanders)
+    // Row 1: Description (label can change to "Unlock:" for locked commanders)
     panel.add(lblDescriptionLabel, "cell 0 1, alignx left, aligny top");
     panel.add(new FScrollPane(txtDescription, false,
             ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
             ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER),
         "cell 1 1, growx, h 60px!");
 
-    // Row 3: Theme (hidden for locked commanders)
+    // Row 2: Theme (hidden for locked commanders)
     panel.add(lblThemeLabel, "cell 0 2, alignx left, aligny top");
     scrollTheme = new FScrollPane(txtTheme, false,
         ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
         ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
     panel.add(scrollTheme, "cell 1 2, growx, h 40px!");
 
-    // Row 4: Buttons
+    // Row 3: Descension checkbox (unlocked) OR global lock indicator (locked)
+    chkDescension.setVisible(false);
+    panel.add(chkDescension, "cell 0 3, span 2, alignx left, hidemode 3");
+
+    pnlDescensionLock = new JPanel(new MigLayout("insets 0, gap 5"));
+    pnlDescensionLock.setOpaque(false);
+    pnlDescensionLock.add(
+        new FLabel.Builder().icon(FSkin.getImage(FSkinProp.ICO_LOCK).resize(20, 20)).build(),
+        "w 20px!, h 20px!");
+    pnlDescensionLock.add(lblDescensionLockText, "growx");
+    pnlDescensionLock.setVisible(false);
+    panel.add(pnlDescensionLock, "cell 0 3, span 2, growx, hidemode 3");
+
+    // Row 4: Descension level selector (hidden by default)
+    pnlDescensionLevel = new JPanel(new MigLayout("insets 0, gap 5, wrap 1"));
+    pnlDescensionLevel.setOpaque(false);
+    JPanel arrowRow = new JPanel(new MigLayout("insets 0, gap 5"));
+    arrowRow.setOpaque(false);
+    arrowRow.add(btnDescensionDown, "w 50px!, h 30px!");
+    arrowRow.add(lblDescensionLock, "w 20px!, h 20px!, hidemode 3");
+    arrowRow.add(lblDescensionLevel, "growx");
+    arrowRow.add(btnDescensionUp, "w 50px!, h 30px!");
+    pnlDescensionLevel.add(arrowRow, "growx");
+    pnlDescensionLevel.add(lblDescensionDesc, "growx");
+    pnlDescensionLevel.setVisible(false);
+    panel.add(pnlDescensionLevel, "cell 0 4, span 2, growx");
+
+    // Row 5: Buttons
     JPanel buttonPanel = new JPanel(new MigLayout("insets 0, gap 10"));
     buttonPanel.setOpaque(false);
     buttonPanel.add(btnBeginRun, "w 150px!, h 40px!");
     buttonPanel.add(btnAether, "w 150px!, h 40px!");
     buttonPanel.add(btnHistory, "w 150px!, h 40px!");
     buttonPanel.add(btnStats, "w 150px!, h 40px!");
-    panel.add(buttonPanel, "cell 0 3, span 2, alignx center");
+    panel.add(buttonPanel, "cell 0 5, span 2, alignx center");
 
     return panel;
   }
@@ -242,6 +281,42 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
 
   public JButton getBtnHistory() {
     return btnHistory;
+  }
+
+  public JCheckBox getChkDescension() {
+    return chkDescension;
+  }
+
+  public FButton getBtnDescensionDown() {
+    return btnDescensionDown;
+  }
+
+  public FLabel getLblDescensionLevel() {
+    return lblDescensionLevel;
+  }
+
+  public FButton getBtnDescensionUp() {
+    return btnDescensionUp;
+  }
+
+  public FLabel getLblDescensionLock() {
+    return lblDescensionLock;
+  }
+
+  public FLabel getLblDescensionDesc() {
+    return lblDescensionDesc;
+  }
+
+  public JPanel getPnlDescensionLevel() {
+    return pnlDescensionLevel;
+  }
+
+  public JPanel getPnlDescensionLock() {
+    return pnlDescensionLock;
+  }
+
+  public FLabel getLblDescensionLockText() {
+    return lblDescensionLockText;
   }
 
   public List<CommanderCardPanel> getCommanderPanels() {

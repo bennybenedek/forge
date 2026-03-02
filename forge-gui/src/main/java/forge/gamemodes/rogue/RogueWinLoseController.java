@@ -137,6 +137,11 @@ public class RogueWinLoseController {
             progress.onRunCompleted(currentRun, true);
             RogueCommanderAchievements.instance.recordRunWon(
                 currentRun.getSelectedRogueDeck().getCommanderCardName());
+            int descLevel = currentRun.getDescensionLevel();
+            if (descLevel > 0) {
+                progress.recordDescensionWin(
+                    currentRun.getSelectedRogueDeck().getCommanderCardName(), descLevel);
+            }
             RogueCommanderAchievements.instance.evaluateRunAchievements(currentRun);
             progress.checkForNewUnlocks();
             RogueIO.saveRun(currentRun);

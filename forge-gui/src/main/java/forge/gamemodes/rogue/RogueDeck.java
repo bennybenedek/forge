@@ -22,7 +22,7 @@ public class RogueDeck {
     private int avatarIndex;                // Avatar image index
     private int sleeveIndex;                // Sleeve image index
     private String landEdition;             // Land edition code for basic lands in Deck Editor (optional)
-    private transient RogueUnlockCondition rogueUnlockCondition;  // Unlock condition
+    private RogueUnlockCondition rogueUnlockCondition;  // Unlock condition
 
     // Constructors
     public RogueDeck() {
@@ -91,10 +91,6 @@ public class RogueDeck {
         this.startDeck = startDeck;
     }
 
-    public CardPool getRewardPool() {
-        return rewardPool;
-    }
-
     public void setRewardPool(CardPool rewardPool) {
         this.rewardPool = rewardPool;
     }
@@ -152,14 +148,9 @@ public class RogueDeck {
      * A commander is unlocked if:
      * - It has no unlock condition (always available)
      * - Its unlock condition evaluates to true
-     * - It has been manually unlocked via meta progress
      * @return true if the commander can be selected
      */
     public boolean isUnlocked() {
-        // Check if manually unlocked first
-        if (RogueMetaProgress.getInstance().isCommanderManuallyUnlocked(commanderCardName)) {
-            return true;
-        }
         // No condition means always unlocked
         if (rogueUnlockCondition == null) {
             return true;

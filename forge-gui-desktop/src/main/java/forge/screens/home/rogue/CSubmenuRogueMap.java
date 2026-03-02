@@ -14,8 +14,10 @@ import forge.gui.SOverlayUtils;
 import forge.gui.framework.EDocID;
 import forge.gui.framework.FScreen;
 import forge.gui.framework.ICDoc;
+import forge.item.IPaperCard;
 import forge.item.PaperCard;
 import forge.localinstance.achievements.RogueCommanderAchievements;
+import forge.model.FModel;
 import forge.localinstance.properties.ForgeConstants;
 import forge.player.GamePlayerUtil;
 import forge.screens.deckeditor.CDeckEditorUI;
@@ -345,6 +347,24 @@ public enum CSubmenuRogueMap implements ICDoc {
       lobbyPlayer.setAvatarIndex(currentRun.getSelectedRogueDeck().getAvatarIndex());
       lobbyPlayer.setSleeveIndex(currentRun.getSelectedRogueDeck().getSleeveIndex());
       human.setPlayer(lobbyPlayer);
+
+      // Add descension command zone cards for active levels
+      RogueConfig.loadRogueCards();
+      int descLevel = currentRun.getDescensionLevel();
+      if (descLevel >= 2) {
+        List<IPaperCard> descCards = new ArrayList<>();
+        PaperCard bloodthirst = FModel.getMagicDb().getCommonCards()
+            .getCard("Descension - Bloodthirst");
+        if (bloodthirst != null) descCards.add(bloodthirst);
+        if (descLevel >= 3) {
+          PaperCard taxingMana = FModel.getMagicDb().getCommonCards()
+              .getCard("Descension - Taxing Mana");
+          if (taxingMana != null) descCards.add(taxingMana);
+        }
+        if (!descCards.isEmpty()) {
+          human.addExtraCardsInCommandZone(descCards);
+        }
+      }
 
       // Load Planebound deck
       Deck planeboundDeck = loadPlaneboundDeck(node.getRoguePlanebound().deckPath());

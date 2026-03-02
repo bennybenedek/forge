@@ -140,9 +140,11 @@ public enum VSubmenuRogueStats implements IVSubmenu<CSubmenuRogueStats> {
         int[] stats = commanderStats.get(commander);
         int started = stats[0];
         int won = stats[1];
+        int maxDesc = stats[2];
+        String descText = maxDesc > 0 ? " | Descension: " + maxDesc : "";
 
         FLabel lblCommander = new FLabel.Builder()
-            .text(commander + ": " + won + "/" + started + " runs won")
+            .text(commander + ": " + won + "/" + started + " runs won" + descText)
             .fontSize(14)
             .build();
         commanderStatsPanel.add(lblCommander);

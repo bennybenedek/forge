@@ -55,7 +55,8 @@ public enum CSubmenuRogueStats implements ICDoc {
     for (String commander : commandersUsed) {
       int runsStarted = progress.getRunsStartedWithCommander(commander);
       int runsWon = progress.getRunsWonWithCommander(commander);
-      commanderStats.put(commander, new int[]{runsStarted, runsWon});
+      int maxDescWon = progress.getMaxDescensionWon(commander);
+      commanderStats.put(commander, new int[]{runsStarted, runsWon, maxDescWon});
     }
     view.updateCommanderStats(commanderStats);
   }

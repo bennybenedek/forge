@@ -101,6 +101,13 @@ public enum RogueTutorial {
       "In the Aether, you can spend your hard-earned Echoes on powerful Boons that provide permanent upgrades for all future Runs. "
           +
           "Unlock and upgrade boons with Echoes, then activate up to 3 boons at the same time."
+  ),
+
+  DESCENSION_UNLOCKED(
+      "Descension Mode Unlocked",
+      "You have won Runs with 3 different Commanders - Descension Mode is now unlocked!\n" +
+          "Descension Mode adds stacking difficulty modifiers to your Runs. Select a Commander you have already won with to enable it.\n" +
+          "Winning at a Descension Level unlocks the next level for that Commander."
   );
 
   private final String title;

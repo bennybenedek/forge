@@ -1,6 +1,10 @@
 package forge.gamemodes.rogue;
 
+import forge.CardStorageReader;
 import forge.StaticData;
+import forge.card.CardEdition;
+import forge.card.CardRarity;
+import forge.card.CardRules;
 import forge.deck.CardPool;
 import forge.deck.Deck;
 import forge.deck.DeckSection;
@@ -12,6 +16,8 @@ import forge.util.FileUtil;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +34,40 @@ public class RogueConfig {
 
     // Cache all plane cards to avoid reloading them repeatedly
     private static CardPool cachedPlanarPool = null;
+
+    private static boolean rogueCardsLoaded = false;
+
+    /**
+     * Load Rogue Commander-specific card scripts from res/rogue/cards/ into the live card DB.
+     * Mirrors the pattern used by Adventure mode's custom_cards. Safe to call multiple times.
+     */
+    public static void loadRogueCards() {
+        if (rogueCardsLoaded) return;
+        rogueCardsLoaded = true;
+
+        File cardsDir = new File(ForgeConstants.RES_DIR, "rogue/cards");
+        if (!cardsDir.exists() || !cardsDir.isDirectory()) return;
+
+        File[] cardFiles = cardsDir.listFiles((dir, name) -> name.endsWith(".txt"));
+        if (cardFiles == null) return;
+
+        CardRules.Reader rulesReader = new CardRules.Reader();
+        for (File cardFile : cardFiles) {
+            try (FileInputStream fis = new FileInputStream(cardFile);
+                 InputStreamReader isr = new InputStreamReader(fis, Charset.forName(CardStorageReader.DEFAULT_CHARSET_NAME))) {
+                rulesReader.reset();
+                List<String> lines = FileUtil.readAllLines(isr, true);
+                String name = cardFile.getName();
+                String baseName = name.endsWith(".txt") ? name.substring(0, name.length() - 4) : name;
+                CardRules rules = rulesReader.readCard(lines, baseName);
+                rules.setCustom();
+                PaperCard card = new PaperCard(rules, CardEdition.UNKNOWN_CODE, CardRarity.Special);
+                (rules.isVariant() ? db.getVariantCards() : db.getCommonCards()).addCard(card);
+            } catch (Exception e) {
+                System.err.println("Error loading rogue card " + cardFile.getName() + ": " + e.getMessage());
+            }
+        }
+    }
 
     /**
      * Load all available Rogue Decks from the commanders directory.
@@ -230,8 +270,8 @@ public class RogueConfig {
      * Uses PathGenerator to create a randomized branched path from available planebounds.
      *
      */
-    public static RoguePath getDefaultPath() {
-        return RoguePathGenerator.generateRandomBranchedPath();
+    public static RoguePath getDefaultPath(int descensionLevel) {
+        return RoguePathGenerator.generateRandomBranchedPath(descensionLevel);
     }
 
     // Helper method to get cards from the database

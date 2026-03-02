@@ -9,12 +9,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -45,8 +40,8 @@ public class RogueMetaProgress {
     private int maxLifeInRun;
     private int maxGoldInRun;
 
-    // Explicit unlocks (for manually unlocked commanders)
-    private Set<String> unlockedCommanders;
+    // Per-commander descension tracking
+    private Map<String, Integer> maxDescensionWonPerCommander = new HashMap<>();
 
     // Aether system - persistent echoes and boons
     private int totalEchoes;                      // Persistent echo currency
@@ -76,7 +71,6 @@ public class RogueMetaProgress {
         maxLegendaryPermanentsInDeck = 0;
         maxLifeInRun = 0;
         maxGoldInRun = 0;
-        unlockedCommanders = new HashSet<>();
 
         // Initialize Aether system
         totalEchoes = 0;
@@ -123,7 +117,7 @@ public class RogueMetaProgress {
         maxLegendaryPermanentsInDeck = 0;
         maxLifeInRun = 0;
         maxGoldInRun = 0;
-        unlockedCommanders = new HashSet<>();
+        maxDescensionWonPerCommander = new HashMap<>();
 
         // Reset Aether system
         totalEchoes = 0;
@@ -280,24 +274,20 @@ public class RogueMetaProgress {
                     "Commander Unlocked!");
             }
         }
+        // Check global Descension Mode unlock
+        final String descensionKey = "DESCENSION_MODE";
+        if (isDescensionModeUnlocked() && !notifiedUnlocks.contains(descensionKey)) {
+            notifiedUnlocks.add(descensionKey);
+            changed = true;
+            forge.gui.GuiBase.getInterface().showImageDialog(null,
+                "You have won Runs with 3 different Commanders!\n" +
+                "Descension Mode is now unlocked.",
+                "Descension Mode Unlocked!");
+        }
+
         if (changed) {
             save();
         }
-    }
-
-    /**
-     * Manually unlock a commander (for special unlocks).
-     */
-    public void unlockCommander(String commanderName) {
-        unlockedCommanders.add(commanderName);
-        save();
-    }
-
-    /**
-     * Check if a commander has been manually unlocked.
-     */
-    public boolean isCommanderManuallyUnlocked(String commanderName) {
-        return unlockedCommanders.contains(commanderName);
     }
 
     // ==================== Getters for Unlock Condition Evaluation ====================
@@ -356,6 +346,52 @@ public class RogueMetaProgress {
 
     public int getRunsStartedWithCommander(String commanderName) {
         return runsStartedPerCommander.getOrDefault(commanderName, 0);
+    }
+
+    public int getDistinctCommandersWon() {
+        int count = 0;
+        for (int wins : runsWonPerCommander.values()) {
+            if (wins > 0) count++;
+        }
+        return count;
+    }
+
+    // ==================== Descension Management ====================
+
+    public int getMaxDescensionWon(String commanderName) {
+        if (maxDescensionWonPerCommander == null) maxDescensionWonPerCommander = new HashMap<>();
+        return maxDescensionWonPerCommander.getOrDefault(commanderName, 0);
+    }
+
+    /** Returns max descension level available to START. Normal win = Level 1 unlocked. */
+    public int getMaxDescensionUnlocked(String commanderName) {
+        if (!hasWonWithCommander(commanderName)) return 0;
+        return 1 + getMaxDescensionWon(commanderName);
+    }
+
+    public void recordDescensionWin(String commanderName, int level) {
+        if (maxDescensionWonPerCommander == null) maxDescensionWonPerCommander = new HashMap<>();
+        if (level > getMaxDescensionWon(commanderName)) {
+            maxDescensionWonPerCommander.put(commanderName, level);
+            int unlockedLevel = level + 1;
+            if (unlockedLevel <= DescensionLevel.getMaxLevel()) {
+                DescensionLevel dl = DescensionLevel.forLevel(unlockedLevel);
+                forge.item.PaperCard card = forge.model.FModel.getMagicDb()
+                    .getCommonCards().getCard(commanderName);
+                forge.localinstance.skin.ISkinImage image = forge.gui.GuiBase.getInterface()
+                    .createLayeredImage(card, forge.localinstance.skin.FSkinProp.IMG_SPECIAL_TROPHY,
+                        forge.localinstance.properties.ForgeConstants.CACHE_ACHIEVEMENTS_DIR
+                            + "/descension_" + commanderName.replace(" ", "_") + "_" + unlockedLevel + ".png", 1f);
+                forge.gui.GuiBase.getInterface().showImageDialog(image,
+                    commanderName + "\nDescension Level " + unlockedLevel + ": " + dl.name + "\n" + dl.description,
+                    "Descension Level " + unlockedLevel + " Unlocked!");
+            }
+            save();
+        }
+    }
+
+    public boolean isDescensionModeUnlocked() {
+        return getDistinctCommandersWon() >= 3;
     }
 
     // ==================== Aether System - Echo Management ====================
@@ -456,32 +492,30 @@ public class RogueMetaProgress {
     }
 
     /**
-     * Activate a boon (max 3 can be active).
-     * @return true if activated, false if not unlocked or already 3 active
+     * Activate a boon (max 3 can be active per default).
      */
-    public boolean activateBoon(BoonType type) {
+    public void activateBoon(BoonType type) {
         if (activeBoons == null) {
             activeBoons = new HashSet<>();
         }
 
         // Must be unlocked (rank > 0)
         if (getBoonRank(type) == 0) {
-            return false;
+            return;
         }
 
         // If already active, nothing to do
         if (activeBoons.contains(type.getId())) {
-            return true;
+            return;
         }
 
         // Check max 3 active limit
         if (activeBoons.size() >= 3) {
-            return false;
+            return;
         }
 
         activeBoons.add(type.getId());
         save();
-        return true;
     }
 
     /**
