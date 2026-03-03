@@ -1,13 +1,11 @@
 package forge.gui.download;
 
-import com.esotericsoftware.minlog.Log;
 import com.google.common.io.Files;
 import forge.gui.FThreads;
 import forge.gui.GuiBase;
 import forge.gui.interfaces.IProgressBar;
 import forge.util.BuildInfo;
 import forge.util.FileUtil;
-
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -18,6 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
+import org.tinylog.Logger;
 
 public class GuiDownloadZipService extends GuiDownloadService {
     private final String name, desc, sourceUrl, destFolder, deleteFolder;
@@ -162,7 +161,7 @@ public class GuiDownloadZipService extends GuiDownloadService {
         catch (final Exception ex) {
             System.err.println("ERROR: Exception during download:");
             ex.printStackTrace();
-            Log.error("Downloading " + desc, "Error downloading " + desc, ex);
+            Logger.error(ex, "Error downloading " + desc);
             return null;
         }
         finally {
@@ -237,7 +236,7 @@ public class GuiDownloadZipService extends GuiDownloadService {
             }
 
             if (failedCount > 0) {
-                Log.error("Downloading " + desc, failedCount + " " + desc + " could not be extracted");
+                Logger.error(failedCount + " " + desc + " could not be extracted");
             }
 
             zipFile.close();
