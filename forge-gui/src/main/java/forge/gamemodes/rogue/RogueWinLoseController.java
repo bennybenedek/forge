@@ -223,9 +223,7 @@ public class RogueWinLoseController {
                 return;
             }
 
-            // Show dialog with optional Reroll button (null returned when Reroll is clicked)
-            String rerollLabel = rerollsRemaining > 0 ? "Reroll" : null;
-            chosenCards = view.showCardRewardDialog("Choose Your Rewards", rewardOptions, maxPicks, rerollLabel);
+            chosenCards = view.showCardRewardDialog("Choose Your Rewards", rewardOptions, maxPicks, rerollsRemaining > 0);
 
             if (chosenCards == null) {
                 rerollsRemaining--; // Reroll clicked — don't remove current options from pool
@@ -241,19 +239,24 @@ public class RogueWinLoseController {
 
         // If Elite opponent, show second reward screen with mythic cards
         if (isElite) {
-            List<PaperCard> mythicOptions = rogueDeck.drawRewardOptions(3, forge.item.PaperCardPredicates.IS_MYTHIC_RARE);
+            rerollsRemaining = progress.getRerollsPerNode(); // Fresh rerolls for this selection
+            List<PaperCard> mythicOptions;
+            List<PaperCard> chosenMythics = new ArrayList<>();
+            do {
+                mythicOptions = rogueDeck.drawRewardOptions(3, forge.item.PaperCardPredicates.IS_MYTHIC_RARE);
+                if (mythicOptions.isEmpty()) break;
+
+                chosenMythics = view.showCardRewardDialog(
+                    "Choose Your Mythic Reward", mythicOptions, 1, rerollsRemaining > 0);
+
+                if (chosenMythics == null) rerollsRemaining--;
+            } while (chosenMythics == null && rerollsRemaining >= 0);
 
             if (!mythicOptions.isEmpty()) {
-                // Show mythic card selection dialog (no reroll for elite bonus)
-                List<PaperCard> chosenMythics = view.showCardRewardDialog(
-                    "Choose Your Mythic Reward", mythicOptions, 1, null);
-
+                rogueDeck.removeFromRewardPool(mythicOptions);
                 if (chosenMythics != null && !chosenMythics.isEmpty()) {
                     chosenCards.addAll(chosenMythics);
                 }
-
-                // Remove all mythic options from pool
-                rogueDeck.removeFromRewardPool(mythicOptions);
             }
         }
 

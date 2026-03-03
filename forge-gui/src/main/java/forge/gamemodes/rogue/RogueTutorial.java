@@ -76,7 +76,7 @@ public enum RogueTutorial {
   SANCTUM(
       "The Sanctum",
       "The Sanctum offers two services: healing and card removal credits. " +
-          "Restore lost life, or get more removal credits to remove unwanted cards " +
+          "Gain life, or get more removal credits to remove unwanted cards " +
           "to streamline your deck and draw your best cards more consistently."
   ),
 

@@ -190,6 +190,10 @@ public class RogueRun {
         currentLife = Math.min(currentLife + amount, startingLife);
     }
 
+    public void gainLife(int amount) {
+        currentLife = currentLife + amount;
+    }
+
     // Match hosting (transient)
     public void setHostedMatch(HostedMatch match) {
         this.hostedMatch = match;

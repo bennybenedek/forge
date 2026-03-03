@@ -17,8 +17,8 @@ import forge.gui.framework.ICDoc;
 import forge.item.IPaperCard;
 import forge.item.PaperCard;
 import forge.localinstance.achievements.RogueCommanderAchievements;
-import forge.model.FModel;
 import forge.localinstance.properties.ForgeConstants;
+import forge.model.FModel;
 import forge.player.GamePlayerUtil;
 import forge.screens.deckeditor.CDeckEditorUI;
 import forge.screens.deckeditor.controllers.CEditorRogue;
@@ -370,22 +370,27 @@ public enum CSubmenuRogueMap implements ICDoc {
         }
       }
 
-      // Add Spark Kindle and Fractured Binding command zone cards from boons
-      List<IPaperCard> boonCmdCards = new ArrayList<>();
+      // Spark Kindle: put N random basic lands from deck onto battlefield at match start
       int kindleLands = progress.getSparkKindleLands();
       if (kindleLands > 0) {
-        PaperCard kindle = FModel.getMagicDb().getCommonCards()
-            .getCard("Rogue - Spark Kindle " + kindleLands);
-        if (kindle != null) boonCmdCards.add(kindle);
+        List<PaperCard> basicLands = new ArrayList<>();
+        for (PaperCard c : currentRun.getCurrentDeck().getMain().toFlatList()) {
+          if (c.getRules().getType().isBasicLand()) basicLands.add(c);
+        }
+        if (!basicLands.isEmpty()) {
+          Collections.shuffle(basicLands);
+          List<IPaperCard> toAdd = new ArrayList<>();
+          for (int i = 0; i < Math.min(kindleLands, basicLands.size()); i++) toAdd.add(basicLands.get(i));
+          human.addExtraCardsOnBattlefield(toAdd);
+        }
       }
+
+      // Fractured Binding: add command zone card for commander tax reduction
       int taxReduction = progress.getCommanderTaxReduction();
       if (taxReduction > 0) {
         PaperCard binding = FModel.getMagicDb().getCommonCards()
             .getCard("Rogue - Fractured Binding " + taxReduction);
-        if (binding != null) boonCmdCards.add(binding);
-      }
-      if (!boonCmdCards.isEmpty()) {
-        human.addExtraCardsInCommandZone(boonCmdCards);
+        if (binding != null) human.addExtraCardsInCommandZone(Collections.singletonList(binding));
       }
 
       // Load Planebound deck
@@ -515,14 +520,14 @@ public enum CSubmenuRogueMap implements ICDoc {
     int freeRemoves = sanctumNode.getFreeRemoves();
 
     // Show Sanctum dialog
-    SanctumDialog dialog = new SanctumDialog(currentLife, maxLife, healAmount, freeRemoves);
+    SanctumDialog dialog = new SanctumDialog(healAmount, freeRemoves);
     SanctumDialog.SanctumChoice choice = dialog.show();
 
     // Handle player's choice
     switch (choice) {
       case HEAL:
-        // Heal player by healAmount, capped at maximum life
-        currentRun.healLife(healAmount);
+        // Heal player by healAmount
+        currentRun.gainLife(healAmount);
         break;
 
       case REMOVE_CARDS:

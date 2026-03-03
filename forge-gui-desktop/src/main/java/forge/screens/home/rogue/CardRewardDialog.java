@@ -35,7 +35,7 @@ public class CardRewardDialog {
 
   private final String title;
   private final int maxSelections;
-  private final String rerollButtonLabel; // null = no reroll button (shows Cancel instead)
+  private final boolean showReroll;
   private final Set<PaperCard> selectedCards;
   private final List<SelectableCardPanel> cardPanels;
   private final MainPanel panel;
@@ -54,12 +54,12 @@ public class CardRewardDialog {
    * @param title            Dialog title
    * @param cards            List of cards to choose from
    * @param maxSelections    Maximum number of cards to select
-   * @param rerollButtonLabel Label for the reroll button, or null for Cancel button
+   * @param showReroll Whether to show a Reroll button instead of Cancel
    */
-  public CardRewardDialog(String title, List<PaperCard> cards, int maxSelections, String rerollButtonLabel) {
+  public CardRewardDialog(String title, List<PaperCard> cards, int maxSelections, boolean showReroll) {
     this.title = title;
     this.maxSelections = maxSelections;
-    this.rerollButtonLabel = rerollButtonLabel;
+    this.showReroll = showReroll;
     this.selectedCards = new HashSet<>();
     this.cardPanels = new ArrayList<>();
 
@@ -157,8 +157,8 @@ public class CardRewardDialog {
     final int SECONDARY_OPTION = 1; // Either Reroll or Cancel
     final int VIEW_DECK_OPTION = 2;
     final ImmutableList<String> buttons;
-    if (rerollButtonLabel != null) {
-      buttons = ImmutableList.of(localizer.getMessage("lblOK"), rerollButtonLabel, "View Deck");
+    if (showReroll) {
+      buttons = ImmutableList.of(localizer.getMessage("lblOK"), "Reroll", "View Deck");
     } else {
       buttons = ImmutableList.of(localizer.getMessage("lblOK"), localizer.getMessage("lblCancel"), "View Deck");
     }
@@ -205,7 +205,7 @@ public class CardRewardDialog {
     if (result == 0) {
       return new ArrayList<>(selectedCards);
     }
-    if (rerollButtonLabel != null && result == SECONDARY_OPTION) {
+    if (showReroll && result == SECONDARY_OPTION) {
       return null; // Reroll signal
     }
     return new ArrayList<>(); // Cancel

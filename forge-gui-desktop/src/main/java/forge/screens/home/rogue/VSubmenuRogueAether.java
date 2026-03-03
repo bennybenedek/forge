@@ -17,17 +17,10 @@ import forge.toolbox.FSkin;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.ArrayList;
-import java.util.EnumMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.function.Consumer;
-import javax.swing.JButton;
-import javax.swing.JPanel;
-import javax.swing.ScrollPaneConstants;
-import javax.swing.Scrollable;
-import javax.swing.SwingConstants;
+import javax.swing.*;
 import net.miginfocom.swing.MigLayout;
 
 /**
@@ -138,7 +131,14 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
     RogueMetaProgress progress = RogueMetaProgress.getInstance();
     int upgradeLevel = progress.getAetherUpgradeLevel();
     AetherUpgrade next = AetherUpgrade.forLevel(upgradeLevel + 1);
-    AetherUpgradeCard cardToShow = (next != null && progress.isDescensionModeUnlocked()) ? upgradeCard : null;
+    JComponent cardToShow;
+    if (!progress.isDescensionModeUnlocked()) {
+      cardToShow = createLockedInfoPanel();
+    } else if (next != null) {
+      cardToShow = upgradeCard;
+    } else {
+      cardToShow = null;
+    }
     BoonGridPanel boonGrid = createBoonGrid(upgradeLevel, cardToShow);
     FScrollPane scrollBoons = new FScrollPane(boonGrid, true,
         ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
@@ -156,7 +156,7 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().revalidate();
   }
 
-  private BoonGridPanel createBoonGrid(int upgradeLevel, AetherUpgradeCard card) {
+  private BoonGridPanel createBoonGrid(int upgradeLevel, JComponent card) {
     List<BoonPanel> visible = new ArrayList<>();
     for (BoonType type : BoonType.values()) {
       if (type.isAccessibleAt(upgradeLevel)) {
@@ -164,6 +164,28 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
       }
     }
     return new BoonGridPanel(visible, card);
+  }
+
+  private static JComponent createLockedInfoPanel() {
+    FSkin.SkinnedPanel panel = new FSkin.SkinnedPanel(
+        new MigLayout("insets 20 20 20 20, gap 10, wrap, fill, align center center"));
+    panel.setOpaque(true);
+    panel.setBackground(FSkin.getColor(FSkin.Colors.CLR_THEME2));
+
+    FLabel lblLine1 = new FLabel.Builder()
+        .text("Unlock Descension Mode and earn Sparks")
+        .icon(FSkin.getImage(FSkinProp.ICO_LOCK).resize(20, 20))
+        .fontSize(13)
+        .build();
+    FLabel lblLine2 = new FLabel.Builder()
+        .text("to get more Boons, Active Boon-Slots and other Upgrades for the Aether")
+        .icon(FSkin.getImage(FSkinProp.ICO_QUEST_ELIXIR).resize(16, 16))
+        .fontSize(13)
+        .build();
+
+    panel.add(lblLine1, "growx");
+    panel.add(lblLine2, "growx");
+    return panel;
   }
 
   /**
@@ -245,7 +267,14 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
         @Override public void mouseExited(MouseEvent e)  { isHovered = false; repaint(); }
       });
 
-      sparkIcon = FSkin.getImage(FSkinProp.ICO_QUEST_ELIXIR).resize(16, 16).getIcon();
+      final javax.swing.Icon rawSparkIcon = FSkin.getImage(FSkinProp.ICO_QUEST_ELIXIR).resize(16, 16).getIcon();
+      sparkIcon = new javax.swing.Icon() {
+        public int getIconWidth()  { return rawSparkIcon.getIconWidth(); }
+        public int getIconHeight() { return rawSparkIcon.getIconHeight(); }
+        public void paintIcon(java.awt.Component c, java.awt.Graphics g, int x, int y) {
+          rawSparkIcon.paintIcon(c, g, x, y - 2);
+        }
+      };
 
       lblName = new FLabel.Builder()
           .text("")
@@ -257,6 +286,7 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
 
       btnUpgrade = new FButton("Upgrade");
       btnUpgrade.setIcon(sparkIcon);
+      btnUpgrade.setHorizontalTextPosition(SwingConstants.LEFT);
 
       add(lblName, "growx, ax center");
       add(lblDescription, "growx, ax center, wmax 370px");
@@ -267,7 +297,7 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
     void update(AetherUpgrade upgrade, int sparks) {
       lblName.setText(upgrade.name);
       lblDescription.setText(upgrade.description);
-      btnUpgrade.setText("Upgrade (" + upgrade.sparkCost + ")");
+      btnUpgrade.setText("Upgrade: " + upgrade.sparkCost);
       btnUpgrade.setIcon(sparkIcon);
       btnUpgrade.setEnabled(sparks >= upgrade.sparkCost);
     }
@@ -304,9 +334,9 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
     private static final int INSET  = 20;
 
     private final List<BoonPanel> panels;
-    private final AetherUpgradeCard upgradeCard; // null = no upgrade row
+    private final JComponent upgradeCard; // null = no first row
 
-    BoonGridPanel(List<BoonPanel> panels, AetherUpgradeCard upgradeCard) {
+    BoonGridPanel(List<BoonPanel> panels, JComponent upgradeCard) {
       super(null);
       this.panels = panels;
       this.upgradeCard = upgradeCard;
@@ -399,7 +429,14 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
       this.type = type;
 
       // Create and cache own icon instance at construction time
-      cachedEchoIcon = FSkin.getImage(FSkinProp.ICO_QUEST_GOLD).resize(16, 16).getIcon();
+      final javax.swing.Icon rawEchoIcon = FSkin.getImage(FSkinProp.ICO_QUEST_GOLD).resize(20, 20).getIcon();
+      cachedEchoIcon = new javax.swing.Icon() {
+        public int getIconWidth()  { return rawEchoIcon.getIconWidth(); }
+        public int getIconHeight() { return rawEchoIcon.getIconHeight(); }
+        public void paintIcon(java.awt.Component c, java.awt.Graphics g, int x, int y) {
+          rawEchoIcon.paintIcon(c, g, x, y - 2);
+        }
+      };
 
       setOpaque(true);
       setBackground(FSkin.getColor(FSkin.Colors.CLR_THEME2));
@@ -425,6 +462,7 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
 
       btnUpgrade = new FButton("Unlock");
       btnUpgrade.setIcon(cachedEchoIcon);
+      btnUpgrade.setHorizontalTextPosition(SwingConstants.LEFT);
 
       add(lblName, "growx, ax center");
       add(lblDescription, "growx, ax center, wmax 370px");
@@ -499,7 +537,7 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
         btnUpgrade.setEnabled(false);
       } else {
         int cost = type.getEchoCostForRank(rank + 1);
-        btnUpgrade.setText(rank == 0 ? "Unlock (" + cost + ")" : "Upgrade (" + cost + ")");
+        btnUpgrade.setText(rank == 0 ? "Unlock: " + cost : "Upgrade: " + cost);
         btnUpgrade.setIcon(cachedEchoIcon);
         btnUpgrade.setEnabled(echoes >= cost);
       }

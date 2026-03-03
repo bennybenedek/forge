@@ -6,9 +6,9 @@ package forge.gamemodes.rogue;
  */
 public enum AetherUpgrade {
     //                      lvl  name                                   description                                           spark  extraSlots  extraRanks
-    LEVEL_1(1, "Aether Upgrade 1", "Unlock 5 new Boons in the Aether.", 1, 0, 0),
-    LEVEL_2(2, "Aether Upgrade 2", "Gain +1 active Boon slot (max 4 active Boons).", 1, 1, 0),
-    LEVEL_3(3, "Aether Upgrade 3", "All Boons gain +1 maximum rank.", 2, 0, 1);
+    LEVEL_1(1, "Aether Upgrade 1", "Unlock new Boons in the Aether.", 1, 0, 0),
+    LEVEL_2(2, "Aether Upgrade 2", "Gain +1 active Boon slot.", 1, 1, 0),
+    LEVEL_3(3, "Aether Upgrade 3", "Boons gain +1 maximum rank.", 2, 0, 1);
 
     public final int level;
     public final String name;

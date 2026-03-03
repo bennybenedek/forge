@@ -1,5 +1,6 @@
 package forge.screens.home.rogue;
 
+import forge.gamemodes.rogue.BoonType;
 import forge.gamemodes.rogue.RogueMetaProgress;
 import forge.gamemodes.rogue.RogueRun;
 import forge.localinstance.properties.ForgePreferences;
@@ -15,8 +16,13 @@ import forge.toolbox.FLabel;
 import forge.toolbox.FScrollPane;
 import forge.toolbox.FSkin;
 import forge.util.Localizer;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Font;
+import java.util.ArrayList;
+import java.util.List;
 import javax.swing.JButton;
+import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import net.miginfocom.swing.MigLayout;
 
@@ -72,6 +78,12 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
       .fontStyle(Font.BOLD)
       .build();
 
+  private final FLabel lblDescension = new FLabel.Builder()
+      .text("")
+      .fontSize(14)
+      .fontStyle(Font.BOLD)
+      .build();
+
   private final PathVisualizerPanel pathVisualizer = new PathVisualizerPanel();
   private final FScrollPane scrollPathDisplay;
 
@@ -86,6 +98,8 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
     lblGold.setIcon(FSkin.getIcon(FSkinProp.ICO_QUEST_COIN));
     lblEchoes.setIcon(FSkin.getIcon(FSkinProp.ICO_QUEST_GOLD));
     lblRemovalCredits.setIcon(FSkin.getIcon(FSkinProp.ICO_CARD_IMAGE));
+    lblDescension.setIcon(FSkin.getIcon(FSkinProp.ICO_QUEST_ZEP));
+    lblDescension.setVisible(false);
 
     // Setup buttons with icons
     btnEditDeck = new FButton("Edit Rogue Deck");
@@ -113,6 +127,9 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
       lblLife.setText("♥ Life: " + run.getCurrentLife());
       lblGold.setText("Gold: " + run.getCurrentGold());
       lblRemovalCredits.setText("Removal Credits: " + run.getRemovalCredits());
+      int descLevel = run.getDescensionLevel();
+      lblDescension.setVisible(descLevel > 0);
+      if (descLevel > 0) lblDescension.setText("Descension: " + descLevel);
       pathVisualizer.updatePath(run);
     } else {
       lblCommanderName.setText("");
@@ -120,6 +137,7 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
       lblLife.setText("♥ Life: 20");
       lblGold.setText("Gold: 0");
       lblRemovalCredits.setText("Removal Credits: 0");
+      lblDescension.setVisible(false);
       pathVisualizer.clearPath();
     }
   }
@@ -145,13 +163,39 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().setLayout(new MigLayout("insets 0, gap 0, wrap"));
 
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(lblTitle, "w 98%!, h 30px!, gap 1% 0 15px 15px");
-    VHomeUI.SINGLETON_INSTANCE.getPnlDisplay()
-        .add(lblCommanderAvatar, "w 45px!, h 45px!, ax center, gap 0 0 10px 10px, split 6");
-    VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(lblCommanderName, "gapleft 5px");
-    VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(lblLife, "gapleft 20px");
-    VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(lblGold, "gapleft 20px");
-    VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(lblEchoes, "gapleft 20px");
-    VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(lblRemovalCredits, "gapleft 20px");
+
+    // Info row — responsive: wraps when window narrows
+    JPanel infoRow = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 3));
+    infoRow.setOpaque(false);
+    lblCommanderAvatar.setPreferredSize(new Dimension(45, 45));
+    infoRow.add(lblCommanderAvatar);
+    infoRow.add(lblCommanderName);
+    infoRow.add(lblLife);
+    infoRow.add(lblGold);
+    infoRow.add(lblEchoes);
+    infoRow.add(lblRemovalCredits);
+    infoRow.add(lblDescension);
+
+    // Active Aether Boons: 2 columns x max 3 rows, fill column 1 first
+    RogueMetaProgress progress = RogueMetaProgress.getInstance();
+    List<BoonType> activeBoons = new ArrayList<>();
+    for (BoonType t : BoonType.values()) {
+      if (progress.isBoonActive(t)) activeBoons.add(t);
+    }
+    if (!activeBoons.isEmpty()) {
+      JPanel pnlBoons = new JPanel(new MigLayout("insets 0, gap 8 1"));
+      pnlBoons.setOpaque(false);
+      for (int i = 0; i < activeBoons.size(); i++) {
+        int col = i / 3;
+        int row = i % 3;
+        FLabel boonLbl = new FLabel.Builder().text(activeBoons.get(i).getDisplayName()).fontSize(11).build();
+        boonLbl.setToolTipText(activeBoons.get(i).getDescription());
+        pnlBoons.add(boonLbl, "cell " + col + " " + row);
+      }
+      infoRow.add(pnlBoons);
+    }
+
+    VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(infoRow, "w 98%!, gap 1% 0 10px 10px");
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay()
         .add(scrollPathDisplay, "w 96%!, gap 2% 2% 0 0, pushy, growy");
     int split = ForgePreferences.DEV_MODE ? 3 : 2;
@@ -206,4 +250,5 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
   public DragCell getParentCell() {
     return parentCell;
   }
+
 }

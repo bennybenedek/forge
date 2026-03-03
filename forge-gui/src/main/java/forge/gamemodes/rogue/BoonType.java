@@ -25,11 +25,11 @@ public enum BoonType {
         new int[]{2, 4, 6, 8},     // Effect values: heal 2/4/6/8
         3, 0),
 
-    FORESIGHT("foresight", "Foresight",
-        "Start each match with 1 additional opening hand card.",
-        new int[]{8, 12},          // Echo costs (rank 1-2)
-        new int[]{1, 2},           // Effect values: +1/+2 cards
-        1, 0),
+    SPECTRAL_RECALIBRATION("spectral_recalibration", "Spectral Recalibration",
+        "Gain rerolls per Card Reward or Bazaar selection.",
+        new int[]{6, 12, 18},      // Echo costs (rank 1-3)
+        new int[]{1, 2, 3},        // Effect values: 1/2/3 rerolls per selection
+        2, 0),
 
     MYTHIC_COLLECTOR("mythic_collector", "Mythic Collector",
         "More cards from Card Rewards and Bazaar will be mythic rarity.",
@@ -37,11 +37,18 @@ public enum BoonType {
         new int[]{1, 2, 3, 4},     // Effect values: +1/+2/+3/+4 extra mythics
         3, 0),
 
-    // New boons (requiredUpgradeLevel=1) — require Aether Upgrade 1
     LAST_SPARK("last_spark", "Last Spark",
         "Revive when you would lose the run.",
         new int[]{10, 20},         // Echo costs (rank 1-2)
         new int[]{5, 10},          // Effect values: survive with 5/10 life
+        1, 0),
+
+    //  Aether Upgrade 1
+
+    FORESIGHT("foresight", "Foresight",
+        "Start each match with 1 additional opening hand card.",
+        new int[]{8, 12},          // Echo costs (rank 1-2)
+        new int[]{1, 2},           // Effect values: +1/+2 cards
         1, 1),
 
     EXPANDED_MIND("expanded_mind", "Expanded Mind",
@@ -51,22 +58,16 @@ public enum BoonType {
         1, 1),
 
     SPARK_KINDLE("spark_kindle", "Spark Kindle",
-        "Begin each match with tapped basic lands from your deck on the battlefield.",
+        "Begin each match with basic lands from your deck already on the battlefield.",
         new int[]{5, 10, 20},      // Echo costs (rank 1-3)
         new int[]{1, 2, 3},        // Effect values: 1/2/3 tapped lands
         2, 1),
 
     FRACTURED_BINDING("fractured_binding", "Fractured Binding",
-        "Reduce the Commander Tax you pay for recasting from the Command Zone.",
+        "Reduce the Mana Cost for casting your Commander.",
         new int[]{4, 8, 12, 16},   // Echo costs (rank 1-4)
         new int[]{1, 2, 3, 4},     // Effect values: {1}/{2}/{3}/{4} less
-        3, 1),
-
-    SPECTRAL_RECALIBRATION("spectral_recalibration", "Spectral Recalibration",
-        "Gain rerolls per node usable on Card Rewards or Bazaar.",
-        new int[]{6, 12, 18},      // Echo costs (rank 1-3)
-        new int[]{1, 2, 3},        // Effect values: 1/2/3 rerolls per node
-        2, 1);
+        3, 1);
 
     private final String id;
     private final String displayName;
@@ -150,40 +151,6 @@ public enum BoonType {
     }
 
     /**
-     * Get the description with current effect value for a given rank.
-     */
-    public String getDescriptionAtRank(int rank) {
-        if (rank < 1) {
-            return description;
-        }
-        int value = getEffectValueAtRank(rank);
-        switch (this) {
-            case VITAL_INFUSION:
-                return "Begin each Run with +" + value + " Max Life.";
-            case AETHER_MARKET:
-                return "Gain +" + value + " starting Gold at the beginning of each Run.";
-            case LINGERING_AURA:
-                return "Heal " + value + " Life after each Plane match victory.";
-            case FORESIGHT:
-                return "Start each match with +" + value + " opening hand card.";
-            case MYTHIC_COLLECTOR:
-                return "+" + value + " more mythic cards in Rewards and Bazaar.";
-            case LAST_SPARK:
-                return "Once per run: survive defeat with " + value + " life.";
-            case EXPANDED_MIND:
-                return "Keep +" + value + " extra cards from Card Rewards.";
-            case SPARK_KINDLE:
-                return "Begin each match with " + value + " tapped basic land" + (value > 1 ? "s" : "") + " on battlefield.";
-            case FRACTURED_BINDING:
-                return "Your Commander costs {" + value + "} less to cast.";
-            case SPECTRAL_RECALIBRATION:
-                return "Gain " + value + " reroll" + (value > 1 ? "s" : "") + " per node for Card Rewards or Bazaar.";
-            default:
-                return description;
-        }
-    }
-
-    /**
      * Get the description showing all rank values with the current rank highlighted.
      * Uses HTML formatting. Shows values up to the effective max rank for the given upgrade level.
      * @param currentRank The current rank (0 = not unlocked)
@@ -201,7 +168,7 @@ public enum BoonType {
             case LINGERING_AURA:
                 return "<html>Heal " + allValues + " Life after each match victory.</html>";
             case FORESIGHT:
-                return "<html>Start each match with +" + allValues + " extra card.</html>";
+                return "<html>Start each match with +" + allValues + " opening hand card.</html>";
             case MYTHIC_COLLECTOR:
                 return "<html>+" + allValues + " more mythic cards in Rewards and Bazaar.</html>";
             case LAST_SPARK:
@@ -209,11 +176,11 @@ public enum BoonType {
             case EXPANDED_MIND:
                 return "<html>Keep +" + allValues + " extra cards from Card Rewards.</html>";
             case SPARK_KINDLE:
-                return "<html>Begin each match with " + allValues + " tapped basic land(s) on battlefield.</html>";
+                return "<html>Begin each match with " + allValues + " basic land(s) on battlefield.</html>";
             case FRACTURED_BINDING:
                 return "<html>Your Commander costs " + allValues + " less to cast.</html>";
             case SPECTRAL_RECALIBRATION:
-                return "<html>Gain " + allValues + " reroll(s)/node for Card Rewards or Bazaar.</html>";
+                return "<html>Gain " + allValues + " reroll(s) per Card Reward or Bazaar selection.</html>";
             default:
                 return "<html>" + description + "</html>";
         }

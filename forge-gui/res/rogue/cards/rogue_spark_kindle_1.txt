@@ -1,6 +1,0 @@
-Name:Rogue - Spark Kindle 1
-ManaCost:no cost
-Types:Rogue Modifier
-T:Mode$ Phase | Phase$ Upkeep | ValidPlayer$ You | TriggerZones$ Command | Execute$ svKindle1 | FirstOccurrenceOnly$ True | TriggerDescription$ At the beginning of your first upkeep, put a basic land card from your library onto the battlefield tapped.
-SVar:svKindle1:DB$ Dig | Defined$ You | ChangeNum$ 1 | DigNum$ All | DestinationZone$ Battlefield | ValidCards$ Basic Land | Tapped$ True
-Oracle:At the beginning of your first upkeep, reveal cards from the top of your library until you reveal a basic land card. Put that card onto the battlefield tapped and shuffle the rest into your library.

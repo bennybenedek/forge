@@ -302,8 +302,8 @@ public class ViewWinLose implements IWinLoseView<FButton> {
     }
 
     @Override
-    public List<PaperCard> showCardRewardDialog(String title, List<PaperCard> cards, int maxSelections, String rerollButtonLabel) {
-        return new CardRewardDialog(title, cards, maxSelections, rerollButtonLabel).show();
+    public List<PaperCard> showCardRewardDialog(String title, List<PaperCard> cards, int maxSelections, boolean showReroll) {
+        return new CardRewardDialog(title, cards, maxSelections, showReroll).show();
     }
 
     /**

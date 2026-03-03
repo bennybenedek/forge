@@ -34,12 +34,10 @@ public class SanctumDialog {
   /**
    * Create a Sanctum dialog.
    *
-   * @param currentLife Player's current life total
-   * @param maxLife     Maximum life (starting life)
    * @param healAmount  Amount of life to heal (up to max)
    * @param freeRemoves Number of free card removals offered
    */
-  public SanctumDialog(int currentLife, int maxLife, int healAmount, int freeRemoves) {
+  public SanctumDialog(int healAmount, int freeRemoves) {
 
     // Create main panel
     panel = new MainPanel();
@@ -60,18 +58,12 @@ public class SanctumDialog {
         .build();
 
     // Heal button
-    FButton btnHeal = new FButton("♥ Heal " + healAmount + " Life (max. up to " + maxLife + ")");
+    FButton btnHeal = new FButton("♥ Gain " + healAmount + " Life");
     btnHeal.addActionListener(e -> {
       choice = SanctumChoice.HEAL;
       optionPane.setResult(0);
       optionPane.setVisible(false);
     });
-
-    // Check if healing is possible
-    if (currentLife >= maxLife) {
-      btnHeal.setEnabled(false);
-      btnHeal.setToolTipText("You are already at maximum life");
-    }
 
     // Remove cards button
     FButton btnRemove = new FButton("Gain " + freeRemoves + " Card Removal Credits");
