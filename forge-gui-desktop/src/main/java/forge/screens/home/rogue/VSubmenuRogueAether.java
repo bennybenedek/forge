@@ -1,7 +1,7 @@
 package forge.screens.home.rogue;
 
 import forge.gamemodes.rogue.AetherUpgrade;
-import forge.gamemodes.rogue.BoonType;
+import forge.gamemodes.rogue.EchoBoon;
 import forge.gamemodes.rogue.RogueMetaProgress;
 import forge.gui.framework.DragCell;
 import forge.gui.framework.DragTab;
@@ -58,7 +58,7 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
       .build();
 
   // Boon panels - one for each boon type
-  private final Map<BoonType, BoonPanel> boonPanels = new EnumMap<>(BoonType.class);
+  private final Map<EchoBoon, BoonPanel> boonPanels = new EnumMap<>(EchoBoon.class);
 
   // Aether Upgrade card (persistent so listener can be wired once in initialize)
   private final AetherUpgradeCard upgradeCard = new AetherUpgradeCard();
@@ -77,7 +77,7 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
     btnResetBoons.setIcon(FSkin.getImage(FSkinProp.ICO_DELETE).resize(24, 24).getIcon());
 
     // Create boon panels once at construction time (so listeners can be attached in initialize)
-    for (BoonType type : BoonType.values()) {
+    for (EchoBoon type : EchoBoon.values()) {
       boonPanels.put(type, new BoonPanel(type));
     }
   }
@@ -158,7 +158,7 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
 
   private BoonGridPanel createBoonGrid(int upgradeLevel, JComponent card) {
     List<BoonPanel> visible = new ArrayList<>();
-    for (BoonType type : BoonType.values()) {
+    for (EchoBoon type : EchoBoon.values()) {
       if (type.isAccessibleAt(upgradeLevel)) {
         visible.add(boonPanels.get(type));
       }
@@ -192,7 +192,7 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
    * Update the display with current meta progress data.
    */
   public void updateDisplay(int echoes, int sparks, boolean descensionUnlocked, int activeBoonCount,
-      int upgradeLevel, Map<BoonType, Integer> boonRanks, Set<BoonType> activeBoons) {
+      int upgradeLevel, Map<EchoBoon, Integer> boonRanks, Set<EchoBoon> activeBoons) {
     lblEchoes.setText("Echoes: " + echoes);
     lblSparks.setText("Sparks: " + sparks);
     lblSparks.setVisible(descensionUnlocked);
@@ -212,8 +212,8 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
     }
 
     // Update boon panels
-    for (Map.Entry<BoonType, BoonPanel> entry : boonPanels.entrySet()) {
-      BoonType type = entry.getKey();
+    for (Map.Entry<EchoBoon, BoonPanel> entry : boonPanels.entrySet()) {
+      EchoBoon type = entry.getKey();
       BoonPanel panel = entry.getValue();
       int rank = boonRanks.getOrDefault(type, 0);
       boolean isActive = activeBoons.contains(type);
@@ -233,7 +233,7 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
     return upgradeCard;
   }
 
-  public Map<BoonType, BoonPanel> getBoonPanels() {
+  public Map<EchoBoon, BoonPanel> getBoonPanels() {
     return boonPanels;
   }
 
@@ -407,7 +407,7 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
    */
   public static class BoonPanel extends FSkin.SkinnedPanel {
 
-    private final BoonType type;
+    private final EchoBoon type;
     private final FLabel lblName;
     private final FLabel lblDescription;
     private final FLabel lblRank;
@@ -424,7 +424,7 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
     // Click callback for toggling active state
     private Consumer<BoonPanel> toggleCallback;
 
-    public BoonPanel(BoonType type) {
+    public BoonPanel(EchoBoon type) {
       super(new MigLayout("insets 15 15 15 15, gap 5, wrap, fill"));
       this.type = type;
 
@@ -608,7 +608,7 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
       }
     }
 
-    public BoonType getType() {
+    public EchoBoon getType() {
       return type;
     }
 

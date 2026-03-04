@@ -475,7 +475,7 @@ public class RogueMetaProgress {
     /**
      * Get the current rank of a boon (0 = not unlocked).
      */
-    public int getBoonRank(BoonType type) {
+    public int getBoonRank(EchoBoon type) {
         if (boonRanks == null) {
             boonRanks = new HashMap<>();
         }
@@ -486,7 +486,7 @@ public class RogueMetaProgress {
      * Attempt to upgrade a boon to the next rank.
      * @return true if upgrade was successful, false if not enough echoes or already max rank
      */
-    public boolean upgradeBoon(BoonType type) {
+    public boolean upgradeBoon(EchoBoon type) {
         if (boonRanks == null) {
             boonRanks = new HashMap<>();
         }
@@ -514,7 +514,7 @@ public class RogueMetaProgress {
     /**
      * Check if a boon is currently active.
      */
-    public boolean isBoonActive(BoonType type) {
+    public boolean isBoonActive(EchoBoon type) {
         if (activeBoons == null) {
             activeBoons = new HashSet<>();
         }
@@ -524,14 +524,14 @@ public class RogueMetaProgress {
     /**
      * Get all currently active boons.
      */
-    public Set<BoonType> getActiveBoons() {
-        Set<BoonType> active = new HashSet<>();
+    public Set<EchoBoon> getActiveBoons() {
+        Set<EchoBoon> active = new HashSet<>();
         if (activeBoons == null) {
             activeBoons = new HashSet<>();
             return active;
         }
         for (String id : activeBoons) {
-            BoonType type = BoonType.fromId(id);
+            EchoBoon type = EchoBoon.fromId(id);
             if (type != null) {
                 active.add(type);
             }
@@ -552,7 +552,7 @@ public class RogueMetaProgress {
     /**
      * Activate a boon (max slots determined by getActiveBoonSlots()).
      */
-    public void activateBoon(BoonType type) {
+    public void activateBoon(EchoBoon type) {
         if (activeBoons == null) {
             activeBoons = new HashSet<>();
         }
@@ -584,7 +584,7 @@ public class RogueMetaProgress {
     /**
      * Deactivate a boon.
      */
-    public void deactivateBoon(BoonType type) {
+    public void deactivateBoon(EchoBoon type) {
         if (activeBoons == null) {
             activeBoons = new HashSet<>();
         }
@@ -606,7 +606,7 @@ public class RogueMetaProgress {
 
         // Calculate total echoes spent on all boons
         int refund = 0;
-        for (BoonType type : BoonType.values()) {
+        for (EchoBoon type : EchoBoon.values()) {
             int rank = getBoonRank(type);
             // Sum costs for each rank from 1 to current rank
             for (int r = 1; r <= rank; r++) {
@@ -623,98 +623,6 @@ public class RogueMetaProgress {
 
         save();
         return refund;
-    }
-
-    // ==================== Aether System - Boon Effect Getters ====================
-
-    /**
-     * Get the starting life bonus from Vital Infusion.
-     */
-    public int getStartingLifeBonus() {
-        if (!isBoonActive(BoonType.VITAL_INFUSION)) {
-            return 0;
-        }
-        return BoonType.VITAL_INFUSION.getEffectValueAtRank(getBoonRank(BoonType.VITAL_INFUSION));
-    }
-
-    /**
-     * Get the starting gold bonus from Aether Market.
-     */
-    public int getStartingGoldBonus() {
-        if (!isBoonActive(BoonType.AETHER_MARKET)) {
-            return 0;
-        }
-        return BoonType.AETHER_MARKET.getEffectValueAtRank(getBoonRank(BoonType.AETHER_MARKET));
-    }
-
-    /**
-     * Get the post-match healing amount from Lingering Aura.
-     */
-    public int getPostMatchHealAmount(RogueRun currentRun) {
-        if (!isBoonActive(BoonType.LINGERING_AURA) || currentRun.getCurrentLife() >= currentRun.getStartingLife()) {
-            return 0;
-        }
-        return BoonType.LINGERING_AURA.getEffectValueAtRank(getBoonRank(BoonType.LINGERING_AURA));
-    }
-
-    /**
-     * Get the extra starting hand cards from Foresight.
-     */
-    public int getExtraStartingCards() {
-        if (!isBoonActive(BoonType.FORESIGHT)) {
-            return 0;
-        }
-        return BoonType.FORESIGHT.getEffectValueAtRank(getBoonRank(BoonType.FORESIGHT));
-    }
-
-    /**
-     * Get the extra mythic cards count from Mythic Collector.
-     */
-    public int getExtraMythicCards() {
-        if (!isBoonActive(BoonType.MYTHIC_COLLECTOR)) {
-            return 0;
-        }
-        return BoonType.MYTHIC_COLLECTOR.getEffectValueAtRank(getBoonRank(BoonType.MYTHIC_COLLECTOR));
-    }
-
-    /**
-     * Get the life amount to revive with when Last Spark triggers (0 if not active).
-     */
-    public int getLastSparkReviveLife() {
-        if (!isBoonActive(BoonType.LAST_SPARK)) return 0;
-        return BoonType.LAST_SPARK.getEffectValueAtRank(getBoonRank(BoonType.LAST_SPARK));
-    }
-
-    /**
-     * Get the extra card picks from Expanded Mind.
-     */
-    public int getExtraCardChoices() {
-        if (!isBoonActive(BoonType.EXPANDED_MIND)) return 0;
-        return BoonType.EXPANDED_MIND.getEffectValueAtRank(getBoonRank(BoonType.EXPANDED_MIND));
-    }
-
-    /**
-     * Get the number of tapped basic lands to start with from Spark Kindle.
-     */
-    public int getSparkKindleLands() {
-        if (!isBoonActive(BoonType.SPARK_KINDLE)) return 0;
-        return BoonType.SPARK_KINDLE.getEffectValueAtRank(getBoonRank(BoonType.SPARK_KINDLE));
-    }
-
-    /**
-     * Get the commander cast cost reduction from Fractured Binding.
-     */
-    public int getCommanderTaxReduction() {
-        if (!isBoonActive(BoonType.FRACTURED_BINDING)) return 0;
-        return BoonType.FRACTURED_BINDING.getEffectValueAtRank(getBoonRank(BoonType.FRACTURED_BINDING));
-    }
-
-    /**
-     * Get the rerolls per node from Spectral Recalibration.
-     */
-    public int getRerollsPerNode() {
-        if (!isBoonActive(BoonType.SPECTRAL_RECALIBRATION)) return 0;
-        return BoonType.SPECTRAL_RECALIBRATION.getEffectValueAtRank(getBoonRank(BoonType.SPECTRAL_RECALIBRATION));
     }
 
     // ==================== Run History ====================

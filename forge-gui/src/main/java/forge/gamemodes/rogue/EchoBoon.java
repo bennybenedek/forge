@@ -1,47 +1,98 @@
 package forge.gamemodes.rogue;
 
+import forge.game.player.RegisteredPlayer;
+import forge.item.IPaperCard;
+import forge.item.PaperCard;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Enum defining all available Boons (permanent upgrades) in Rogue Commander mode.
- * Boons can be unlocked and upgraded using Echoes in the Aether.
- * Some Boons are available from the start, while others require unlocking Aether Upgrades.
+ * Each constant implements its own RogueRunEffect trigger methods.
  */
-public enum BoonType {
+public enum EchoBoon implements RogueEffect {
+
     // Base boons (requiredUpgradeLevel=0) — always visible
+
     VITAL_INFUSION("vital_infusion", "Vital Infusion",
         "Begin each Run with additional Max Life.",
         new int[]{3, 6, 9, 12},     // Echo costs per rank (rank 1-4)
-        new int[]{3, 6, 9, 12},     // Effect values: +2/+4/+6/+9 life
-        3, 0),
+        new int[]{3, 6, 9, 12},     // Effect values: +3/+6/+9/+12 life
+        3, 0) {
+        @Override
+        public void onRunStart(RogueRun run, RogueMetaProgress progress) {
+            if (!progress.isBoonActive(this)) return;
+            int bonus = getEffectValueAtRank(progress.getBoonRank(this));
+            if (bonus > 0) run.setStartingLife(run.getStartingLife() + bonus);
+        }
+    },
 
     AETHER_MARKET("aether_market", "Aether Market",
         "Gain additional starting Gold at the beginning of each Run.",
         new int[]{3, 6, 9, 12},    // Echo costs per rank
         new int[]{3, 6, 9, 12},    // Effect values: +3/+6/+9/+12 gold
-        3, 0),
+        3, 0) {
+        @Override
+        public void onRunStart(RogueRun run, RogueMetaProgress progress) {
+            if (!progress.isBoonActive(this)) return;
+            int bonus = getEffectValueAtRank(progress.getBoonRank(this));
+            if (bonus > 0) run.setCurrentGold(run.getCurrentGold() + bonus);
+        }
+    },
 
     LINGERING_AURA("lingering_aura", "Lingering Aura",
         "Heal Life after each Plane match victory.",
         new int[]{2, 4, 8, 16},     // Echo costs per rank
-        new int[]{2, 4, 6, 8},     // Effect values: heal 2/4/6/8
-        3, 0),
+        new int[]{2, 4, 6, 8},      // Effect values: heal 2/4/6/8
+        3, 0) {
+        @Override
+        public void onMatchWin(RogueRun run, RogueMetaProgress progress) {
+            if (!progress.isBoonActive(this) || run.getCurrentLife() >= run.getStartingLife()) return;
+            int heal = getEffectValueAtRank(progress.getBoonRank(this));
+            if (heal > 0) run.healLife(heal);
+        }
+    },
 
     SPECTRAL_RECALIBRATION("spectral_recalibration", "Spectral Recalibration",
         "Gain rerolls per Card Reward or Bazaar selection.",
         new int[]{6, 12, 18},      // Echo costs (rank 1-3)
         new int[]{1, 2, 3},        // Effect values: 1/2/3 rerolls per selection
-        2, 0),
+        2, 0) {
+        @Override
+        public void onCardSelection(CardSelectionContext ctx, RogueRun run, RogueMetaProgress progress) {
+            if (!progress.isBoonActive(this)) return;
+            ctx.rerolls += getEffectValueAtRank(progress.getBoonRank(this));
+        }
+    },
 
     MYTHIC_COLLECTOR("mythic_collector", "Mythic Collector",
         "More cards from Card Rewards and Bazaar will be mythic rarity.",
         new int[]{3, 6, 9, 12},    // Echo costs per rank
         new int[]{1, 2, 3, 4},     // Effect values: +1/+2/+3/+4 extra mythics
-        3, 0),
+        3, 0) {
+        @Override
+        public void onCardSelection(CardSelectionContext ctx, RogueRun run, RogueMetaProgress progress) {
+            if (!progress.isBoonActive(this)) return;
+            ctx.extraMythics += getEffectValueAtRank(progress.getBoonRank(this));
+        }
+    },
 
     LAST_SPARK("last_spark", "Last Spark",
         "Revive when you would lose the run.",
         new int[]{10, 20},         // Echo costs (rank 1-2)
         new int[]{5, 10},          // Effect values: survive with 5/10 life
-        1, 0),
+        1, 0) {
+        @Override
+        public void onDefeat(DefeatContext ctx, RogueRun run, RogueMetaProgress progress) {
+            if (!progress.isBoonActive(this) || !run.canRevive()) return;
+            int reviveLife = getEffectValueAtRank(progress.getBoonRank(this));
+            if (reviveLife > 0) {
+                ctx.revived = true;
+                ctx.reviveLife = reviveLife;
+            }
+        }
+    },
 
     //  Aether Upgrade 1
 
@@ -49,25 +100,61 @@ public enum BoonType {
         "Start each match with 1 additional opening hand card.",
         new int[]{8, 12},          // Echo costs (rank 1-2)
         new int[]{1, 2},           // Effect values: +1/+2 cards
-        1, 1),
+        1, 1) {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RogueRun run, RogueMetaProgress progress) {
+            if (!progress.isBoonActive(this)) return;
+            int extra = getEffectValueAtRank(progress.getBoonRank(this));
+            if (extra > 0) human.setStartingHand(human.getStartingHand() + extra);
+        }
+    },
 
     EXPANDED_MIND("expanded_mind", "Expanded Mind",
         "Keep additional cards from Card Rewards.",
-        new int[]{8, 12},       // Echo costs (rank 1-3)
-        new int[]{1, 2},        // Effect values: +1/+2/+3 extra picks
-        1, 1),
+        new int[]{8, 12},       // Echo costs (rank 1-2)
+        new int[]{1, 2},        // Effect values: +1/+2 extra picks
+        1, 1) {
+        @Override
+        public void onCardReward(CardRewardContext ctx, RogueRun run, RogueMetaProgress progress) {
+            if (!progress.isBoonActive(this)) return;
+            ctx.maxPicks += getEffectValueAtRank(progress.getBoonRank(this));
+        }
+    },
 
     SPARK_KINDLE("spark_kindle", "Spark Kindle",
         "Begin each match with basic lands from your deck already on the battlefield.",
         new int[]{5, 10, 20},      // Echo costs (rank 1-3)
         new int[]{1, 2, 3},        // Effect values: 1/2/3 tapped lands
-        2, 1),
+        2, 1) {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RogueRun run, RogueMetaProgress progress) {
+            if (!progress.isBoonActive(this)) return;
+            int count = getEffectValueAtRank(progress.getBoonRank(this));
+            if (count <= 0) return;
+            List<PaperCard> basicLands = new ArrayList<>();
+            for (PaperCard c : human.getDeck().getMain().toFlatList()) {
+                if (c.getRules().getType().isBasicLand()) basicLands.add(c);
+            }
+            if (basicLands.isEmpty()) return;
+            Collections.shuffle(basicLands);
+            List<IPaperCard> toMove = new ArrayList<>();
+            for (int i = 0; i < Math.min(count, basicLands.size()); i++) toMove.add(basicLands.get(i));
+            RogueEffect.moveCardsFromDeckToBattlefield(toMove, human);
+        }
+    },
 
     FRACTURED_BINDING("fractured_binding", "Fractured Binding",
         "Reduce the Mana Cost for casting your Commander.",
         new int[]{4, 8, 12, 16},   // Echo costs (rank 1-4)
         new int[]{1, 2, 3, 4},     // Effect values: {1}/{2}/{3}/{4} less
-        3, 1);
+        3, 1) {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RogueRun run, RogueMetaProgress progress) {
+            if (!progress.isBoonActive(this)) return;
+            int reduction = getEffectValueAtRank(progress.getBoonRank(this));
+            if (reduction > 0) RogueEffect.addCustomCardToCommandZone("Rogue - Fractured Binding " + reduction, human);
+        }
+    };
 
     private final String id;
     private final String displayName;
@@ -77,7 +164,7 @@ public enum BoonType {
     private final int maxRank;
     private final int requiredUpgradeLevel; // 0 = always accessible; 1 = requires Aether Upgrade 1
 
-    BoonType(String id, String displayName, String description,
+    EchoBoon(String id, String displayName, String description,
              int[] echoCosts, int[] effectValues, int maxRank, int requiredUpgradeLevel) {
         this.id = id;
         this.displayName = displayName;
@@ -210,8 +297,8 @@ public enum BoonType {
     /**
      * Find a BoonType by its ID.
      */
-    public static BoonType fromId(String id) {
-        for (BoonType type : values()) {
+    public static EchoBoon fromId(String id) {
+        for (EchoBoon type : values()) {
             if (type.id.equals(id)) {
                 return type;
             }

@@ -25,7 +25,8 @@
       "Bash(where:*)",
       "Bash(git config:*)",
       "Bash(dir:*)",
-      "Bash(xargs cat:*)"
+      "Bash(xargs cat:*)",
+      "Bash(cd:*)"
     ],
     "deny": [],
     "ask": []

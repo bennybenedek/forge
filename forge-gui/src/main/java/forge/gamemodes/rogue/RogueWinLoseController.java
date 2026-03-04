@@ -18,6 +18,8 @@ import java.util.List;
  * Handles reward logic after matches.
  */
 public class RogueWinLoseController {
+    private static final String BTN_CONTINUE_RUN = "Continue Run";
+
     private final GameView lastGame;
     private final IWinLoseView<? extends IButton> view;
     private final boolean wonMatch;
@@ -44,7 +46,7 @@ public class RogueWinLoseController {
         // Setup buttons - we're in the win/lose screen, so match is effectively over
         view.getBtnContinue().setVisible(false);
         if (wonMatch) {
-            view.getBtnQuit().setText(Localizer.getInstance().getMessage("lblGreat") + "!");
+            view.getBtnQuit().setText(BTN_CONTINUE_RUN);
         } else {
             view.getBtnQuit().setText(Localizer.getInstance().getMessage("lblOK"));
         }
@@ -77,17 +79,14 @@ public class RogueWinLoseController {
         // Check if this was the last node (run completed)
         boolean isLastNode = currentRun.getCurrentNodeIndex() >= currentRun.getPath().getNodeCount() - 1;
 
-        // Apply Lingering Aura healing (after life persistence, but not for Boss/last node)
+        // Apply match win effects (healing, etc.) — not for Boss/last node
         RogueMetaProgress progress = RogueMetaProgress.getInstance();
         if (!isLastNode) {
-            int healAmount = progress.getPostMatchHealAmount(currentRun);
-            if (healAmount > 0) {
-                int lifeBefore = currentRun.getCurrentLife();
-                currentRun.healLife(healAmount);
-                int healedAmount = currentRun.getCurrentLife() - lifeBefore;
-                if (healedAmount > 0) {
-                    view.showMessage("Lingering Aura healed " + healedAmount + " life.", "Boon Effect", FSkinProp.ICO_QUEST_CHARM);
-                }
+            int lifeBefore = currentRun.getCurrentLife();
+            RogueEffectComposite.INSTANCE.onMatchWin(currentRun, progress);
+            int healed = currentRun.getCurrentLife() - lifeBefore;
+            if (healed > 0) {
+                view.showMessage("Healed " + healed + " life.", "Boon Effect", FSkinProp.ICO_QUEST_CHARM);
             }
         }
 
@@ -198,15 +197,18 @@ public class RogueWinLoseController {
         }
 
         RogueMetaProgress progress = RogueMetaProgress.getInstance();
-        int maxPicks = 3 + progress.getExtraCardChoices();
-        int rerollsRemaining = progress.getRerollsPerNode(); // Fresh per node
+        CardRewardContext rewardCtx = new CardRewardContext(3);
+        RogueEffectComposite.INSTANCE.onCardReward(rewardCtx, currentRun, progress);
+        CardSelectionContext selCtx = new CardSelectionContext();
+        RogueEffectComposite.INSTANCE.onCardSelection(selCtx, currentRun, progress);
+        int maxPicks = rewardCtx.maxPicks;
+        int rerollsRemaining = selCtx.rerolls; // Fresh per node
 
-        // Draw cards from reward pool (base: 6 non-mythic + 1 mythic, adjusted by Mythic Collector boon)
-        int extraMythics = progress.getExtraMythicCards();
+        // Draw cards from reward pool (base: 6 non-mythic + 1 mythic, adjusted by active boons)
         int baseNonMythics = 6;
         int baseMythics = 1;
-        int totalNonMythics = Math.max(0, baseNonMythics - extraMythics);
-        int totalMythics = baseMythics + extraMythics;
+        int totalNonMythics = Math.max(0, baseNonMythics - selCtx.extraMythics);
+        int totalMythics = baseMythics + selCtx.extraMythics;
 
         List<PaperCard> rewardOptions;
         List<PaperCard> chosenCards;
@@ -239,8 +241,10 @@ public class RogueWinLoseController {
 
         // If Elite opponent, show second reward screen with mythic cards
         if (isElite) {
-            rerollsRemaining = progress.getRerollsPerNode(); // Fresh rerolls for this selection
-            List<PaperCard> mythicOptions;
+            CardSelectionContext eliteSelCtx = new CardSelectionContext();
+            RogueEffectComposite.INSTANCE.onCardSelection(eliteSelCtx, currentRun, progress);
+            rerollsRemaining = eliteSelCtx.rerolls; // Fresh rerolls for this selection
+            List<PaperCard> mythicOptions = new ArrayList<>();
             List<PaperCard> chosenMythics = new ArrayList<>();
             do {
                 mythicOptions = rogueDeck.drawRewardOptions(3, forge.item.PaperCardPredicates.IS_MYTHIC_RARE);
@@ -289,16 +293,17 @@ public class RogueWinLoseController {
         // Persist life total from the lost match
         persistLifeTotal();
 
-        // Check Last Spark BEFORE marking run as failed
+        // Check revive effects (e.g. Last Spark) BEFORE marking run as failed
         RogueMetaProgress progress = RogueMetaProgress.getInstance();
-        int reviveLife = progress.getLastSparkReviveLife();
-        if (reviveLife > 0 && currentRun.canRevive()) {
+        DefeatContext defeatCtx = new DefeatContext();
+        RogueEffectComposite.INSTANCE.onDefeat(defeatCtx, currentRun, progress);
+        if (defeatCtx.revived) {
             currentRun.useRevive();
-            currentRun.setCurrentLife(reviveLife);
+            currentRun.setCurrentLife(defeatCtx.reviveLife);
             progress.onMatchCompleted(currentRun, false);
             RogueIO.saveRun(currentRun);
-            view.getBtnQuit().setText("Continue Run");
-            view.showMessage("Last Spark activated! You survived with " + reviveLife + " life!", "Last Spark!", FSkinProp.ICO_QUEST_ELIXIR);
+            view.getBtnQuit().setText(BTN_CONTINUE_RUN);
+            view.showMessage("Last Spark activated! You survived with " + defeatCtx.reviveLife + " life!", "Last Spark!", FSkinProp.ICO_QUEST_ELIXIR);
             return;
         }
 

@@ -1,12 +1,12 @@
 package forge.screens.home.rogue;
 
-import forge.gamemodes.rogue.BoonType;
+import forge.gamemodes.rogue.EchoBoon;
 import forge.gamemodes.rogue.RogueMetaProgress;
 import forge.gamemodes.rogue.RogueRun;
-import forge.localinstance.properties.ForgePreferences;
 import forge.gui.framework.DragCell;
 import forge.gui.framework.DragTab;
 import forge.gui.framework.EDocID;
+import forge.localinstance.properties.ForgePreferences;
 import forge.localinstance.skin.FSkinProp;
 import forge.screens.home.EMenuGroup;
 import forge.screens.home.IVSubmenu;
@@ -178,8 +178,8 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
 
     // Active Aether Boons: 2 columns x max 3 rows, fill column 1 first
     RogueMetaProgress progress = RogueMetaProgress.getInstance();
-    List<BoonType> activeBoons = new ArrayList<>();
-    for (BoonType t : BoonType.values()) {
+    List<EchoBoon> activeBoons = new ArrayList<>();
+    for (EchoBoon t : EchoBoon.values()) {
       if (progress.isBoonActive(t)) activeBoons.add(t);
     }
     if (!activeBoons.isEmpty()) {

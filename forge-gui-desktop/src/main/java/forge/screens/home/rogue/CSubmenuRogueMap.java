@@ -14,11 +14,9 @@ import forge.gui.SOverlayUtils;
 import forge.gui.framework.EDocID;
 import forge.gui.framework.FScreen;
 import forge.gui.framework.ICDoc;
-import forge.item.IPaperCard;
 import forge.item.PaperCard;
 import forge.localinstance.achievements.RogueCommanderAchievements;
 import forge.localinstance.properties.ForgeConstants;
-import forge.model.FModel;
 import forge.player.GamePlayerUtil;
 import forge.screens.deckeditor.CDeckEditorUI;
 import forge.screens.deckeditor.controllers.CEditorRogue;
@@ -335,15 +333,6 @@ public enum CSubmenuRogueMap implements ICDoc {
       // Override starting life with persistent life from run
       human.setStartingLife(currentRun.getCurrentLife());
 
-      // Apply boon effects
-      RogueMetaProgress progress = RogueMetaProgress.getInstance();
-
-      // Foresight: +1 starting hand card
-      int extraCards = progress.getExtraStartingCards();
-      if (extraCards > 0) {
-        human.setStartingHand(human.getStartingHand() + extraCards);
-      }
-
       // Use the singleton lobbyPlayer for consistent player identification
       // This ensures isMatchWonBy() works correctly in RogueWinLoseController
       LobbyPlayer lobbyPlayer = GamePlayerUtil.getGuiPlayer();
@@ -352,46 +341,9 @@ public enum CSubmenuRogueMap implements ICDoc {
       lobbyPlayer.setSleeveIndex(currentRun.getSelectedRogueDeck().getSleeveIndex());
       human.setPlayer(lobbyPlayer);
 
-      // Add descension command zone cards for active levels
-      RogueConfig.loadRogueCards();
-      int descLevel = currentRun.getDescensionLevel();
-      if (descLevel >= 2) {
-        List<IPaperCard> descCards = new ArrayList<>();
-        PaperCard bloodthirst = FModel.getMagicDb().getCommonCards()
-            .getCard("Descension - Bloodthirst");
-        if (bloodthirst != null) descCards.add(bloodthirst);
-        if (descLevel >= 3) {
-          PaperCard taxingMana = FModel.getMagicDb().getCommonCards()
-              .getCard("Descension - Taxing Mana");
-          if (taxingMana != null) descCards.add(taxingMana);
-        }
-        if (!descCards.isEmpty()) {
-          human.addExtraCardsInCommandZone(descCards);
-        }
-      }
-
-      // Spark Kindle: put N random basic lands from deck onto battlefield at match start
-      int kindleLands = progress.getSparkKindleLands();
-      if (kindleLands > 0) {
-        List<PaperCard> basicLands = new ArrayList<>();
-        for (PaperCard c : currentRun.getCurrentDeck().getMain().toFlatList()) {
-          if (c.getRules().getType().isBasicLand()) basicLands.add(c);
-        }
-        if (!basicLands.isEmpty()) {
-          Collections.shuffle(basicLands);
-          List<IPaperCard> toAdd = new ArrayList<>();
-          for (int i = 0; i < Math.min(kindleLands, basicLands.size()); i++) toAdd.add(basicLands.get(i));
-          human.addExtraCardsOnBattlefield(toAdd);
-        }
-      }
-
-      // Fractured Binding: add command zone card for commander tax reduction
-      int taxReduction = progress.getCommanderTaxReduction();
-      if (taxReduction > 0) {
-        PaperCard binding = FModel.getMagicDb().getCommonCards()
-            .getCard("Rogue - Fractured Binding " + taxReduction);
-        if (binding != null) human.addExtraCardsInCommandZone(Collections.singletonList(binding));
-      }
+      // Apply all match start effects (boons + descension)
+      RogueMetaProgress progress = RogueMetaProgress.getInstance();
+      RogueEffectComposite.INSTANCE.onMatchStart(human, currentRun, progress);
 
       // Load Planebound deck
       Deck planeboundDeck = loadPlaneboundDeck(node.getRoguePlanebound().deckPath());
@@ -563,15 +515,16 @@ public enum CSubmenuRogueMap implements ICDoc {
       return;
     }
 
-    // Generate Bazaar inventory: Draw 8 non-mythic + 2 mythic (base, adjusted by Mythic Collector boon)
+    // Generate Bazaar inventory: Draw 8 non-mythic + 2 mythic (base, adjusted by active boons)
     RogueMetaProgress bazaarProgress = RogueMetaProgress.getInstance();
-    int extraMythics = bazaarProgress.getExtraMythicCards();
+    CardSelectionContext bazaarCtx = new CardSelectionContext();
+    RogueEffectComposite.INSTANCE.onCardSelection(bazaarCtx, currentRun, bazaarProgress);
     int baseNonMythics = 8;
     int baseMythics = 2;
-    int totalNonMythics = Math.max(0, baseNonMythics - extraMythics);
-    int totalMythics = baseMythics + extraMythics;
+    int totalNonMythics = Math.max(0, baseNonMythics - bazaarCtx.extraMythics);
+    int totalMythics = baseMythics + bazaarCtx.extraMythics;
 
-    int rerollsRemaining = bazaarProgress.getRerollsPerNode(); // Fresh per node
+    int rerollsRemaining = bazaarCtx.rerolls; // Fresh per node
     int currentGold = currentRun.getCurrentGold();
     Set<PaperCard> selectedCards;
     do {

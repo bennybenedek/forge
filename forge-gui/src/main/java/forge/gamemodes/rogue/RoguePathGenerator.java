@@ -106,36 +106,11 @@ public class RoguePathGenerator {
         // Row 7: 1 BOSS plane
         addPlaneboundNode(nodes, bossPlanebounds.get(0), 0);
 
-        // Apply Descension Level 1: swap 2 Normal nodes for Elite nodes
-        if (descensionLevel >= 1) {
-            applyDescensionLevel1(nodes);
-        }
+        // Apply descension path effects (e.g. swap Normal nodes to Elite)
+        RogueEffectComposite.INSTANCE.afterPathGeneration(nodes, descensionLevel);
 
         // Create path from nodes
         return RoguePath.createPath(nodes.toArray(new RoguePathNode[0]));
-    }
-
-    private static void applyDescensionLevel1(List<RoguePathNode> nodes) {
-        if (elitePlanebounds.size() - elitePlaneboundIndex < 2) return;
-
-        List<Integer> normalIndices = new ArrayList<>();
-        for (int i = 0; i < nodes.size(); i++) {
-            if (nodes.get(i) instanceof NodePlanebound np &&
-                    np.getRoguePlanebound().type() == RoguePlaneboundType.NORMAL) {
-                normalIndices.add(i);
-            }
-        }
-        if (normalIndices.size() < 2) return;
-        Collections.shuffle(normalIndices, MyRandom.getRandom());
-
-        for (int i = 0; i < 2; i++) {
-            int idx = normalIndices.get(i);
-            NodePlanebound orig = (NodePlanebound) nodes.get(idx);
-            NodePlanebound replacement = new NodePlanebound(elitePlanebounds.get(elitePlaneboundIndex + i));
-            replacement.setRowIndex(orig.getRowIndex());
-            replacement.setColumnIndex(orig.getColumnIndex());
-            nodes.set(idx, replacement);
-        }
     }
 
     private static void validateSize(int required, int size) {

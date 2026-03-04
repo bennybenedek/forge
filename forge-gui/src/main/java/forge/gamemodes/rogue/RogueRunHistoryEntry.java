@@ -41,9 +41,9 @@ public class RogueRunHistoryEntry {
         entry.descensionLevel = run.getDescensionLevel();
 
         // Capture active boons in enum order for consistent display
-        Set<BoonType> active = RogueMetaProgress.getInstance().getActiveBoons();
+        Set<EchoBoon> active = RogueMetaProgress.getInstance().getActiveBoons();
         entry.activeBoonNames = new ArrayList<>();
-        for (BoonType boon : BoonType.values()) {
+        for (EchoBoon boon : EchoBoon.values()) {
             if (active.contains(boon)) {
                 entry.activeBoonNames.add(boon.getDisplayName());
             }

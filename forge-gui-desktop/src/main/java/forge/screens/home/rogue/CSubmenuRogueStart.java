@@ -313,20 +313,9 @@ public enum CSubmenuRogueStart implements ICDoc {
     );
     newRun.setDescensionLevel(selectedDescensionLevel);
 
-    // Apply Aether boon effects at run start
+    // Apply all run start effects (boons)
     RogueMetaProgress progress = RogueMetaProgress.getInstance();
-
-    // Vital Infusion: +starting life
-    int lifeBonus = progress.getStartingLifeBonus();
-    if (lifeBonus > 0) {
-      newRun.setStartingLife(newRun.getStartingLife() + lifeBonus);
-    }
-
-    // Aether Market: +starting gold
-    int goldBonus = progress.getStartingGoldBonus();
-    if (goldBonus > 0) {
-      newRun.setCurrentGold(newRun.getCurrentGold() + goldBonus);
-    }
+    RogueEffectComposite.INSTANCE.onRunStart(newRun, progress);
 
     // Generate unique name for the run (used as filename)
     // Format: DeckName_Timestamp (e.g., "MeriaRogueCommander_12-11-25_143022")
