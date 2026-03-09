@@ -22,16 +22,16 @@ public interface RogueEffect {
     /** Fired after winning a match (non-final node). Heal life, etc. */
     default void onMatchWin(RogueRun run, RogueMetaProgress progress) {}
 
-    /** Fired when the player would lose the run. Set ctx.revived=true to prevent run failure. */
+    /** Fired when the player would lose the run. */
     default void onDefeat(DefeatContext ctx, RogueRun run, RogueMetaProgress progress) {}
 
-    /** Fired for card reward node selections. Adjust maxPicks. */
+    /** Fired for card reward node selections. */
     default void onCardReward(CardRewardContext ctx, RogueRun run, RogueMetaProgress progress) {}
 
-    /** Fired for both card reward and bazaar selections. Adjust extraMythics, rerolls. */
+    /** Fired for both card reward and bazaar selections. */
     default void onCardSelection(CardSelectionContext ctx, RogueRun run, RogueMetaProgress progress) {}
 
-    /** Fired after path generation. Swap/replace nodes based on descension level. */
+    /** Fired after path generation. */
     default void afterPathGeneration(List<RoguePathNode> nodes, int descensionLevel) {}
 
     /**

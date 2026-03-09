@@ -195,7 +195,7 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
       infoRow.add(pnlBoons);
     }
 
-    VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(infoRow, "w 98%!, gap 1% 0 10px 10px");
+    VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(infoRow, "w 98%!, h pref!, gap 1% 0 10px 10px");
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay()
         .add(scrollPathDisplay, "w 96%!, gap 2% 2% 0 0, pushy, growy");
     int split = ForgePreferences.DEV_MODE ? 3 : 2;

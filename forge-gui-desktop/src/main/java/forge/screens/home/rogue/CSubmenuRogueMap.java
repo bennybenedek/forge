@@ -269,7 +269,7 @@ public enum CSubmenuRogueMap implements ICDoc {
 
     // Handle different node types
     if (node instanceof NodePlanebound nodePlanebound) {
-      startMatch(nodePlanebound);
+      handlePlaneboundNode(nodePlanebound);
     } else if (node instanceof NodeSanctum nodeSanctum) {
       handleSanctumNode(nodeSanctum);
     } else if (node instanceof NodeBazaar nodeBazaar) {
@@ -281,7 +281,7 @@ public enum CSubmenuRogueMap implements ICDoc {
     }
   }
 
-  private void startMatch(NodePlanebound node) {
+  private void handlePlaneboundNode(NodePlanebound node) {
     // Prevent starting a new match if one is already in progress this session
     if (currentRun.getHostedMatch() != null) {
       return;
@@ -392,82 +392,12 @@ public enum CSubmenuRogueMap implements ICDoc {
     SwingUtilities.invokeLater(SOverlayUtils::hideOverlay);
   }
 
-  private Deck loadPlaneboundDeck(String deckPath) {
-    // Load deck from file path
-    // The deckPath is relative to the res directory, e.g., "rogue/planebounds/meria.dck"
-    File deckFile = new File(ForgeConstants.RES_DIR, deckPath);
-
-    if (!deckFile.exists()) {
-      throw new RuntimeException(
-          "Planebound deck not found: " + deckPath + " (full path: " + deckFile.getAbsolutePath()
-              + ")");
-    }
-
-    return DeckSerializer.fromFile(deckFile);
-  }
-
-  public RogueRun getCurrentRun() {
-    return currentRun;
-  }
-
-  public void setCurrentRun(RogueRun run) {
-    this.currentRun = run;
-  }
-
-  private void devWinRun() {
-    if (currentRun == null) return;
-    String commanderName = currentRun.getSelectedRogueDeck().getCommanderCardName();
-    currentRun.setRunWon(true);
-    RogueMetaProgress progress = RogueMetaProgress.getInstance();
-    progress.addEchoes(20);
-    progress.addRunHistoryEntry(RogueRunHistoryEntry.fromRun(currentRun, "VICTORY", "[DEV]"));
-    progress.onRunCompleted(currentRun, true);
-    RogueCommanderAchievements.instance.recordRunWon(commanderName);
-    int descLevel = currentRun.getDescensionLevel();
-    if (descLevel > 0) {
-      progress.recordDescensionWin(commanderName, descLevel);
-    }
-    RogueCommanderAchievements.instance.evaluateRunAchievements(currentRun);
-    progress.checkForNewUnlocks();
-    progress.notifyDescensionL1IfFirstWin(commanderName);
-    RogueIO.saveRun(currentRun);
-    currentRun = null;
-    CHomeUI.SINGLETON_INSTANCE.itemClick(EDocID.HOME_ROGUESTART);
-  }
-
-  private void editDeck() {
-    if (currentRun == null) {
-      return;
-    }
-
-    // Switch to deck editor screen first (this loads saved layout/tab)
-    Singletons.getControl().setCurrentScreen(FScreen.DECK_EDITOR_CONSTRUCTED);
-
-    // Then create and set the Rogue deck editor (this should override whatever tab was loaded)
-    CEditorRogue rogueEditor = new CEditorRogue(
-        currentRun,
-        FScreen.DECK_EDITOR_CONSTRUCTED,
-        CDeckEditorUI.SINGLETON_INSTANCE.getCDetailPicture()
-    );
-    CDeckEditorUI.SINGLETON_INSTANCE.setEditorController(rogueEditor);
-
-    // Now select the Card Catalog tab to show our "Basic Lands Only" catalog
-    javax.swing.SwingUtilities.invokeLater(() -> {
-      forge.screens.deckeditor.views.VCardCatalog catalog = forge.screens.deckeditor.views.VCardCatalog.SINGLETON_INSTANCE;
-      if (catalog.getParentCell() != null) {
-        catalog.getParentCell().setSelected(catalog);
-      }
-    });
-  }
-
   private void handleSanctumNode(NodeSanctum sanctumNode) {
     if (currentRun == null) {
       return;
     }
 
     // Get current and max life
-    int currentLife = currentRun.getCurrentLife();
-    int maxLife = currentRun.getStartingLife();
     int healAmount = sanctumNode.getHealAmount();
     int freeRemoves = sanctumNode.getFreeRemoves();
 
@@ -495,6 +425,9 @@ public enum CSubmenuRogueMap implements ICDoc {
     // Mark node as completed and move to next
     sanctumNode.setCompleted(true);
     currentRun.nextNode();
+
+    // Track milestones and check for unlocks
+    RogueMetaProgress.getInstance().onSideNodeCompleted(currentRun);
 
     // Save run and update view (use update() to trigger tutorials for next row)
     RogueIO.saveRun(currentRun);
@@ -578,8 +511,78 @@ public enum CSubmenuRogueMap implements ICDoc {
     // Evaluate achievements after Bazaar (deck/gold may have changed)
     RogueCommanderAchievements.instance.evaluateRunAchievements(currentRun);
 
+    // Track milestones and check for unlocks
+    RogueMetaProgress.getInstance().onSideNodeCompleted(currentRun);
+
     // Save run and update view (use update() to trigger tutorials for next row)
     RogueIO.saveRun(currentRun);
     update();
+  }
+
+  private Deck loadPlaneboundDeck(String deckPath) {
+    // Load deck from file path
+    // The deckPath is relative to the res directory, e.g., "rogue/planebounds/meria.dck"
+    File deckFile = new File(ForgeConstants.RES_DIR, deckPath);
+
+    if (!deckFile.exists()) {
+      throw new RuntimeException(
+          "Planebound deck not found: " + deckPath + " (full path: " + deckFile.getAbsolutePath()
+              + ")");
+    }
+
+    return DeckSerializer.fromFile(deckFile);
+  }
+
+  public RogueRun getCurrentRun() {
+    return currentRun;
+  }
+
+  public void setCurrentRun(RogueRun run) {
+    this.currentRun = run;
+  }
+
+  private void devWinRun() {
+    if (currentRun == null) return;
+    String commanderName = currentRun.getSelectedRogueDeck().getCommanderCardName();
+    currentRun.setRunWon(true);
+    RogueMetaProgress progress = RogueMetaProgress.getInstance();
+    progress.addEchoes(20);
+    progress.addRunHistoryEntry(RogueRunHistoryEntry.fromRun(currentRun, "VICTORY", "[DEV]"));
+    progress.onRunCompleted(currentRun, true);
+    RogueCommanderAchievements.instance.recordRunWon(commanderName);
+    int descLevel = currentRun.getDescensionLevel();
+    if (descLevel > 0) {
+      progress.recordDescensionWin(commanderName, descLevel);
+    }
+    RogueCommanderAchievements.instance.evaluateRunAchievements(currentRun);
+    progress.notifyDescensionL1IfFirstWin(commanderName);
+    RogueIO.saveRun(currentRun);
+    currentRun = null;
+    CHomeUI.SINGLETON_INSTANCE.itemClick(EDocID.HOME_ROGUESTART);
+  }
+
+  private void editDeck() {
+    if (currentRun == null) {
+      return;
+    }
+
+    // Switch to deck editor screen first (this loads saved layout/tab)
+    Singletons.getControl().setCurrentScreen(FScreen.DECK_EDITOR_CONSTRUCTED);
+
+    // Then create and set the Rogue deck editor (this should override whatever tab was loaded)
+    CEditorRogue rogueEditor = new CEditorRogue(
+        currentRun,
+        FScreen.DECK_EDITOR_CONSTRUCTED,
+        CDeckEditorUI.SINGLETON_INSTANCE.getCDetailPicture()
+    );
+    CDeckEditorUI.SINGLETON_INSTANCE.setEditorController(rogueEditor);
+
+    // Now select the Card Catalog tab to show our "Basic Lands Only" catalog
+    javax.swing.SwingUtilities.invokeLater(() -> {
+      forge.screens.deckeditor.views.VCardCatalog catalog = forge.screens.deckeditor.views.VCardCatalog.SINGLETON_INSTANCE;
+      if (catalog.getParentCell() != null) {
+        catalog.getParentCell().setSelected(catalog);
+      }
+    });
   }
 }

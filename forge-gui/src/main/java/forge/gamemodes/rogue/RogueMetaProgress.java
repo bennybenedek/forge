@@ -164,6 +164,15 @@ public class RogueMetaProgress {
     }
 
     /**
+     * Called after completing a non-match node (Bazaar, Sanctum, etc.).
+     * Updates milestones and checks for new unlocks.
+     */
+    public void onSideNodeCompleted(RogueRun run) {
+        updateMilestones(run);
+        save();
+    }
+
+    /**
      * Called when a run is completed (won or lost).
      */
     public void onRunCompleted(RogueRun run, boolean won) {
@@ -176,8 +185,8 @@ public class RogueMetaProgress {
             runsWonPerCommander.merge(commanderName, 1, Integer::sum);
         }
 
-        // Final milestone update
-        updateMilestones(run);
+        // Final unlock checks after run completion
+        checkForNewUnlocks();
         save();
     }
 
@@ -206,40 +215,8 @@ public class RogueMetaProgress {
         if (legendaryPermanents > maxLegendaryPermanentsInDeck) {
             maxLegendaryPermanentsInDeck = legendaryPermanents;
         }
-    }
 
-    /**
-     * Count unique creature types in a deck.
-     */
-    private int countCreatureTypesInDeck(forge.deck.Deck deck) {
-        if (deck == null || deck.getMain() == null) {
-            return 0;
-        }
-
-        Set<String> creatureTypes = new HashSet<>();
-        for (forge.item.PaperCard card : deck.getMain().toFlatList()) {
-            if (card.getRules().getType().isCreature()) {
-                creatureTypes.addAll(card.getRules().getType().getCreatureTypes());
-            }
-        }
-        return creatureTypes.size();
-    }
-
-    /**
-     * Count legendary permanents in a deck.
-     */
-    private int countLegendaryPermanentsInDeck(forge.deck.Deck deck) {
-        if (deck == null || deck.getMain() == null) {
-            return 0;
-        }
-
-        int count = 0;
-        for (forge.item.PaperCard card : deck.getMain().toFlatList()) {
-            if (card.getRules().getType().isLegendary() && card.getRules().getType().isPermanent()) {
-                count++;
-            }
-        }
-        return count;
+        checkForNewUnlocks();
     }
 
     /**
@@ -285,13 +262,47 @@ public class RogueMetaProgress {
             changed = true;
             forge.gui.GuiBase.getInterface().showImageDialog(null,
                 "You have won Runs with 3 different Commanders!\n" +
-                "Descension Mode is now unlocked.",
+                    "Descension Mode is now unlocked.",
                 "Descension Mode Unlocked!");
         }
 
         if (changed) {
             save();
         }
+    }
+
+    /**
+     * Count unique creature types in a deck.
+     */
+    private int countCreatureTypesInDeck(forge.deck.Deck deck) {
+        if (deck == null || deck.getMain() == null) {
+            return 0;
+        }
+
+        Set<String> creatureTypes = new HashSet<>();
+        for (forge.item.PaperCard card : deck.getMain().toFlatList()) {
+            if (card.getRules().getType().isCreature()) {
+                creatureTypes.addAll(card.getRules().getType().getCreatureTypes());
+            }
+        }
+        return creatureTypes.size();
+    }
+
+    /**
+     * Count legendary permanents in a deck.
+     */
+    private int countLegendaryPermanentsInDeck(forge.deck.Deck deck) {
+        if (deck == null || deck.getMain() == null) {
+            return 0;
+        }
+
+        int count = 0;
+        for (forge.item.PaperCard card : deck.getMain().toFlatList()) {
+            if (card.getRules().getType().isLegendary() && card.getRules().getType().isPermanent()) {
+                count++;
+            }
+        }
+        return count;
     }
 
     // ==================== Getters for Unlock Condition Evaluation ====================

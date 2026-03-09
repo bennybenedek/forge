@@ -19,6 +19,8 @@ import java.util.List;
  */
 public class RogueWinLoseController {
     private static final String BTN_CONTINUE_RUN = "Continue Run";
+    private static final String BTN_WIN_RUN = "Finish Run";
+    private static final String BTN_LOSE_RUN = "End Run";
 
     private final GameView lastGame;
     private final IWinLoseView<? extends IButton> view;
@@ -48,7 +50,7 @@ public class RogueWinLoseController {
         if (wonMatch) {
             view.getBtnQuit().setText(BTN_CONTINUE_RUN);
         } else {
-            view.getBtnQuit().setText(Localizer.getInstance().getMessage("lblOK"));
+            view.getBtnQuit().setText(BTN_LOSE_RUN);
         }
 
         // Show rewards on a separate thread
@@ -72,9 +74,6 @@ public class RogueWinLoseController {
 
         // Persist life total from match (before meta progress so milestones see current life)
         persistLifeTotal();
-
-        // Track meta progress for match
-        RogueMetaProgress.getInstance().onMatchCompleted(currentRun, true);
 
         // Check if this was the last node (run completed)
         boolean isLastNode = currentRun.getCurrentNodeIndex() >= currentRun.getPath().getNodeCount() - 1;
@@ -133,6 +132,7 @@ public class RogueWinLoseController {
             }
             progress.addRunHistoryEntry(RogueRunHistoryEntry.fromRun(currentRun, "VICTORY", bossName));
 
+            progress.onMatchCompleted(currentRun, true);
             progress.onRunCompleted(currentRun, true);
             RogueCommanderAchievements.instance.recordRunWon(
                 currentRun.getSelectedRogueDeck().getCommanderCardName());
@@ -142,9 +142,9 @@ public class RogueWinLoseController {
                 view.showMessage("You won 1 Spark!", "Spark Reward", FSkinProp.ICO_QUEST_ELIXIR);
             }
             RogueCommanderAchievements.instance.evaluateRunAchievements(currentRun);
-            progress.checkForNewUnlocks();
             progress.notifyDescensionL1IfFirstWin(currentRun.getSelectedRogueDeck().getCommanderCardName());
             RogueIO.saveRun(currentRun);
+            view.getBtnQuit().setText(BTN_WIN_RUN);
             view.showMessage("Congratulations! You have completed the run!", "Victory", FSkinProp.ICO_QUEST_CHARM);
             return; // Skip card rewards and navigation
         }
@@ -157,11 +157,11 @@ public class RogueWinLoseController {
             awardCardRewards(isElite, goldReward, echoReward);
         }
 
+        // Track meta progress for match
+        RogueMetaProgress.getInstance().onMatchCompleted(currentRun, true);
+
         // Evaluate run-level achievements after rewards
         RogueCommanderAchievements.instance.evaluateRunAchievements(currentRun);
-
-        // Check for newly unlocked commanders
-        progress.checkForNewUnlocks();
 
         // Move to next node
         currentRun.nextNode();
@@ -325,7 +325,6 @@ public class RogueWinLoseController {
         progress.onMatchCompleted(currentRun, false);
         progress.onRunCompleted(currentRun, false);
         RogueCommanderAchievements.instance.evaluateRunAchievements(currentRun);
-        progress.checkForNewUnlocks();
 
         // Save run state
         RogueIO.saveRun(currentRun);

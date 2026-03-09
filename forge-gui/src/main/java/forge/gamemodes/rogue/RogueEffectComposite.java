@@ -5,7 +5,7 @@ import java.util.List;
 
 /**
  * Composite dispatcher implementing RogueRunEffect.
- * Iterates all active Boons and Descension levels, firing triggers on each.
+ * Iterates active effects from all relevant sources, firing triggers on each.
  */
 public enum RogueEffectComposite implements RogueEffect {
 
