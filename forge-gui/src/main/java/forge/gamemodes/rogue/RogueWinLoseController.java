@@ -9,7 +9,6 @@ import forge.item.PaperCard;
 import forge.localinstance.achievements.RogueCommanderAchievements;
 import forge.localinstance.skin.FSkinProp;
 import forge.player.GamePlayerUtil;
-import forge.util.Localizer;
 import java.util.ArrayList;
 import java.util.List;
 
