@@ -303,19 +303,14 @@ public enum CSubmenuRogueStart implements ICDoc {
           RogueRunHistoryEntry.fromRun(existingRun, "ABANDONED", ""));
     }
 
-    // Generate path for the run
-    RoguePath path = RogueConfig.getDefaultPath(selectedDescensionLevel);
-
-    // Create new run
-    RogueRun newRun = new RogueRun(
-        selectedDeck,
-        path
-    );
+    // Create new run and snapshot active echo boons
+    RogueRun newRun = new RogueRun(selectedDeck);
     newRun.setDescensionLevel(selectedDescensionLevel);
+    newRun.snapshotEchoBoons(RogueMetaProgress.getInstance());
 
-    // Apply all run start effects (boons)
-    RogueMetaProgress progress = RogueMetaProgress.getInstance();
-    RogueEffectComposite.INSTANCE.onRunStart(newRun, progress);
+    // Generate path and apply run start effects
+    RoguePathGenerator.generateRandomPath(newRun);
+    RogueEffectComposite.INSTANCE.onRunStart(newRun);
 
     // Generate unique name for the run (used as filename)
     // Format: DeckName_Timestamp (e.g., "MeriaRogueCommander_12-11-25_143022")

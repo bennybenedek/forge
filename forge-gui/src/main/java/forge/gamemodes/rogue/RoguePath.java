@@ -1,7 +1,6 @@
 package forge.gamemodes.rogue;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 
@@ -15,11 +14,6 @@ public class RoguePath {
 
     public RoguePath(List<RoguePathNode> nodes) {
         this.nodes = nodes != null ? nodes : new ArrayList<>();
-    }
-
-    // Factory method for linear path generation
-    public static RoguePath createPath(RoguePathNode... nodes) {
-        return new RoguePath(Arrays.asList(nodes));
     }
 
     public RoguePathNode getNode(int index) {

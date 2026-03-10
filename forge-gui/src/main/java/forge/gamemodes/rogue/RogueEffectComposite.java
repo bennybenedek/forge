@@ -1,64 +1,70 @@
 package forge.gamemodes.rogue;
 
 import forge.game.player.RegisteredPlayer;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
- * Composite dispatcher implementing RogueRunEffect.
- * Iterates active effects from all relevant sources, firing triggers on each.
+ * Composite dispatcher implementing RogueEffect.
+ * Iterates active effects from all sources (echo boons, descension levels, event boons).
  */
 public enum RogueEffectComposite implements RogueEffect {
 
     INSTANCE;
 
-    @Override
-    public void onMatchStart(RegisteredPlayer human, RogueRun run, RogueMetaProgress progress) {
-        for (EchoBoon boon : progress.getActiveBoons())
-            boon.onMatchStart(human, run, progress);
+    private static List<RogueEffect> getAllEffects(RogueRun run) {
+        List<RogueEffect> effects = new ArrayList<>();
+        effects.addAll(run.getActiveEchoBoons());
         int descLevel = run.getDescensionLevel();
         for (int l = 1; l <= descLevel; l++) {
             DescensionLevel dl = DescensionLevel.forLevel(l);
-            if (dl != null) dl.onMatchStart(human, run, progress);
+            if (dl != null) effects.add(dl);
         }
+        effects.addAll(run.getActiveEventBoons());
+        return effects;
+    }
+
+    private static void forEachEffect(RogueRun run, Consumer<RogueEffect> action) {
+        for (RogueEffect e : getAllEffects(run))
+            action.accept(e);
     }
 
     @Override
-    public void onRunStart(RogueRun run, RogueMetaProgress progress) {
-        for (EchoBoon boon : progress.getActiveBoons())
-            boon.onRunStart(run, progress);
+    public void onMatchStart(RegisteredPlayer human, RogueRun run) {
+        forEachEffect(run, e -> e.onMatchStart(human, run));
     }
 
     @Override
-    public void onMatchWin(RogueRun run, RogueMetaProgress progress) {
-        for (EchoBoon boon : progress.getActiveBoons())
-            boon.onMatchWin(run, progress);
+    public void onRunStart(RogueRun run) {
+        forEachEffect(run, e -> e.onRunStart(run));
     }
 
     @Override
-    public void onDefeat(DefeatContext ctx, RogueRun run, RogueMetaProgress progress) {
-        for (EchoBoon boon : progress.getActiveBoons()) {
-            boon.onDefeat(ctx, run, progress);
+    public void onMatchWin(RogueRun run) {
+        forEachEffect(run, e -> e.onMatchWin(run));
+    }
+
+    @Override
+    public void onDefeat(DefeatContext ctx, RogueRun run) {
+        for (RogueEffect e : getAllEffects(run)) {
+            e.onDefeat(ctx, run);
             if (ctx.revived) return;
         }
     }
 
     @Override
-    public void onCardReward(CardRewardContext ctx, RogueRun run, RogueMetaProgress progress) {
-        for (EchoBoon boon : progress.getActiveBoons())
-            boon.onCardReward(ctx, run, progress);
+    public void onCardReward(CardRewardContext ctx, RogueRun run) {
+        forEachEffect(run, e -> e.onCardReward(ctx, run));
     }
 
     @Override
-    public void onCardSelection(CardSelectionContext ctx, RogueRun run, RogueMetaProgress progress) {
-        for (EchoBoon boon : progress.getActiveBoons())
-            boon.onCardSelection(ctx, run, progress);
+    public void onCardSelection(CardSelectionContext ctx, RogueRun run) {
+        forEachEffect(run, e -> e.onCardSelection(ctx, run));
     }
 
     @Override
-    public void afterPathGeneration(List<RoguePathNode> nodes, int descensionLevel) {
-        for (int l = 1; l <= descensionLevel; l++) {
-            DescensionLevel dl = DescensionLevel.forLevel(l);
-            if (dl != null) dl.afterPathGeneration(nodes, descensionLevel);
-        }
+    public void afterPathGeneration(RogueRun run) {
+        forEachEffect(run, e -> e.afterPathGeneration(run));
     }
 }

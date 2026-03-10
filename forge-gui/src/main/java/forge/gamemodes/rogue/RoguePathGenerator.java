@@ -30,7 +30,7 @@ public class RoguePathGenerator {
      *
      * @return RoguePath with branched structure
      */
-    public static RoguePath generateRandomBranchedPath(int descensionLevel) {
+    public static void generateRandomPath(RogueRun run) {
         List<RoguePlanebound> availablePlanebounds = RogueConfig.loadPlanebounds();
 
         // Split planebounds into normal, elite and boss lists
@@ -106,11 +106,11 @@ public class RoguePathGenerator {
         // Row 7: 1 BOSS plane
         addPlaneboundNode(nodes, bossPlanebounds.get(0), 0);
 
-        // Apply descension path effects (e.g. swap Normal nodes to Elite)
-        RogueEffectComposite.INSTANCE.afterPathGeneration(nodes, descensionLevel);
+        // Create path and set on run
+        run.setPath(new RoguePath(nodes));
 
-        // Create path from nodes
-        return RoguePath.createPath(nodes.toArray(new RoguePathNode[0]));
+        // Apply post-generation effects (e.g. swap Normal nodes to Elite)
+        RogueEffectComposite.INSTANCE.afterPathGeneration(run);
     }
 
     private static void validateSize(int required, int size) {
@@ -165,20 +165,6 @@ public class RoguePathGenerator {
         nodes.add(specialNode);
     }
 
-    private static void addSanctumNode(List<RoguePathNode> nodes, int columnIndex) {
-        NodeSanctum sanctum = new NodeSanctum();
-        sanctum.setRowIndex(currentRowIndex);
-        sanctum.setColumnIndex(columnIndex);
-        nodes.add(sanctum);
-    }
-
-    private static void addBazaarNode(List<RoguePathNode> nodes, int columnIndex) {
-        NodeBazaar bazaar = new NodeBazaar();
-        bazaar.setRowIndex(currentRowIndex);
-        bazaar.setColumnIndex(columnIndex);
-        nodes.add(bazaar);
-    }
-
     private static List<RoguePlanebound> getPlaneboundsOfType(
         List<RoguePlanebound> allPlanebounds, RoguePlaneboundType type) {
         List<RoguePlanebound> filtered = new ArrayList<>();
@@ -192,15 +178,6 @@ public class RoguePathGenerator {
 
     private static int createRandomNodeCount(int min, int max) {
         return MyRandom.getRandom().nextInt(max - min + 1) + min;
-    }
-
-    private static Integer[] createRandomColumnList(int count) {
-        Integer[] columns = new Integer[count];
-        for (int i = 0; i < count; i++) {
-            columns[i] = i;
-        }
-        Collections.shuffle(java.util.Arrays.asList(columns), MyRandom.getRandom());
-        return columns;
     }
 
     private static void shufflePlanebounds(List<RoguePlanebound> planebounds) {

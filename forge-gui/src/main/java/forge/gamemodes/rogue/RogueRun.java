@@ -6,7 +6,9 @@ import forge.gamemodes.match.HostedMatch;
 import forge.item.PaperCard;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -35,8 +37,11 @@ public class RogueRun {
     // Descension
     private int descensionLevel;                // 0 = no descension; XStream defaults int to 0 for old saves
 
-    // Last Spark tracking
-    private boolean hasUsedRevive = false;      // True once Last Spark has been used; XStream defaults boolean to false
+    // Echo boons (snapshotted from RogueMetaProgress at run creation)
+    private List<RunBoon> activeEchoBoons;
+
+    // Event boons (gained from event nodes during the run)
+    private List<RunBoon> activeEventBoons;
 
     // Match History
     private int matchesWon;                     // Win counter
@@ -60,12 +65,11 @@ public class RogueRun {
         stamp();
     }
 
-    public RogueRun(RogueDeck selectedRogueDeck, RoguePath path) {
+    public RogueRun(RogueDeck selectedRogueDeck) {
         this();
         this.selectedRogueDeck = selectedRogueDeck;
         // Create deep copy of start deck
         this.currentDeck = new Deck(selectedRogueDeck.getStartDeck());
-        this.path = path;
     }
 
     // Timestamp management
@@ -319,12 +323,75 @@ public class RogueRun {
         this.descensionLevel = level;
     }
 
-    public boolean canRevive() {
-        return !hasUsedRevive;
+    // Echo boon management
+    public void snapshotEchoBoons(RogueMetaProgress progress) {
+        activeEchoBoons = new ArrayList<>();
+        for (EchoBoon boon : progress.getActiveEchoBoons()) {
+            int rank = progress.getBoonRank(boon);
+            int charges = boon.getChargesForRank(rank);
+            activeEchoBoons.add(new RunBoon(boon.getId(), rank, charges));
+        }
     }
 
-    public void useRevive() {
-        hasUsedRevive = true;
+    public List<RogueEffect> getActiveEchoBoons() {
+        if (activeEchoBoons == null) activeEchoBoons = new ArrayList<>();
+        List<RogueEffect> result = new ArrayList<>();
+        for (RunBoon rb : activeEchoBoons) {
+            EchoBoon eb = EchoBoon.fromId(rb.getId());
+            if (eb != null) result.add(eb);
+        }
+        return result;
+    }
+
+    // Event boon management
+    public List<RogueEffect> getActiveEventBoons() {
+        if (activeEventBoons == null) activeEventBoons = new ArrayList<>();
+        List<RogueEffect> result = new ArrayList<>();
+        for (RunBoon rb : activeEventBoons) {
+            EventBoon eb = EventBoon.fromId(rb.getId());
+            if (eb != null) result.add(eb);
+        }
+        return result;
+    }
+
+    public void addEventBoon(EventBoon boon) {
+        if (activeEventBoons == null) activeEventBoons = new ArrayList<>();
+        int charges = boon.getChargesForRank(0);
+        activeEventBoons.add(new RunBoon(boon.getId(), 0, charges));
+    }
+
+    // Boon queries
+    public int getRunBoonRank(String id) {
+        RunBoon rb = findRunBoon(id);
+        return rb != null ? rb.getRank() : 0;
+    }
+
+    // Effect consumption
+    public void consumeEffect(String id) {
+        consumeFromList(activeEchoBoons, id);
+        consumeFromList(activeEventBoons, id);
+    }
+
+    private void consumeFromList(List<RunBoon> list, String id) {
+        if (list == null) return;
+        Iterator<RunBoon> it = list.iterator();
+        while (it.hasNext()) {
+            RunBoon rb = it.next();
+            if (rb.getId().equals(id) && rb.consumeCharge()) {
+                it.remove();
+                return;
+            }
+        }
+    }
+
+    private RunBoon findRunBoon(String id) {
+        if (activeEchoBoons != null)
+            for (RunBoon rb : activeEchoBoons)
+                if (rb.getId().equals(id)) return rb;
+        if (activeEventBoons != null)
+            for (RunBoon rb : activeEventBoons)
+                if (rb.getId().equals(id)) return rb;
+        return null;
     }
 
     @Override

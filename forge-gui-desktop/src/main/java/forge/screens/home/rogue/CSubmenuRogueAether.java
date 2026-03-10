@@ -63,7 +63,7 @@ public enum CSubmenuRogueAether implements ICDoc {
       boonRanks.put(type, progress.getBoonRank(type));
     }
 
-    Set<EchoBoon> activeBoons = progress.getActiveBoons();
+    Set<EchoBoon> activeBoons = progress.getActiveEchoBoons();
 
     view.updateDisplay(
         progress.getTotalEchoes(),

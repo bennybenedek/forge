@@ -265,15 +265,6 @@ public class RogueConfig {
         return new RoguePlanebound(planeName, planeboundName, deckPath, avatarIndex, type);
     }
 
-    /**
-     * Generate the default branched path for a run.
-     * Uses PathGenerator to create a randomized branched path from available planebounds.
-     *
-     */
-    public static RoguePath getDefaultPath(int descensionLevel) {
-        return RoguePathGenerator.generateRandomBranchedPath(descensionLevel);
-    }
-
     // Helper method to get cards from the database
     public static PaperCard getCard(String cardName, String setCode) {
         PaperCard card;

@@ -342,8 +342,7 @@ public enum CSubmenuRogueMap implements ICDoc {
       human.setPlayer(lobbyPlayer);
 
       // Apply all match start effects (boons + descension)
-      RogueMetaProgress progress = RogueMetaProgress.getInstance();
-      RogueEffectComposite.INSTANCE.onMatchStart(human, currentRun, progress);
+      RogueEffectComposite.INSTANCE.onMatchStart(human, currentRun);
 
       // Load Planebound deck
       Deck planeboundDeck = loadPlaneboundDeck(node.getRoguePlanebound().deckPath());
@@ -449,9 +448,8 @@ public enum CSubmenuRogueMap implements ICDoc {
     }
 
     // Generate Bazaar inventory: Draw 8 non-mythic + 2 mythic (base, adjusted by active boons)
-    RogueMetaProgress bazaarProgress = RogueMetaProgress.getInstance();
     CardSelectionContext bazaarCtx = new CardSelectionContext();
-    RogueEffectComposite.INSTANCE.onCardSelection(bazaarCtx, currentRun, bazaarProgress);
+    RogueEffectComposite.INSTANCE.onCardSelection(bazaarCtx, currentRun);
     int baseNonMythics = 8;
     int baseMythics = 2;
     int totalNonMythics = Math.max(0, baseNonMythics - bazaarCtx.extraMythics);

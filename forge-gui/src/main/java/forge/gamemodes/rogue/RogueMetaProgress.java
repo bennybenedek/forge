@@ -48,7 +48,7 @@ public class RogueMetaProgress {
     private int totalSparks;                      // Earned from Descension wins
     private int aetherUpgradeLevel = 0;           // XStream defaults int to 0 for old saves
     private Map<String, Integer> boonRanks;       // Boon ID -> current rank (0 = not unlocked)
-    private Set<String> activeBoons;              // Currently equipped boon IDs (max slots via getActiveBoonSlots())
+    private Set<String> activeEchoBoons;          // Currently equipped Echo boon IDs (max slots via getActiveBoonSlots())
 
     // Unlock notification tracking - which unlocks have been shown to the player
     private Set<String> notifiedUnlocks;
@@ -77,7 +77,7 @@ public class RogueMetaProgress {
         // Initialize Aether system
         totalEchoes = 0;
         boonRanks = new HashMap<>();
-        activeBoons = new HashSet<>();
+        activeEchoBoons = new HashSet<>();
 
         // Initialize unlock notification tracking
         notifiedUnlocks = new HashSet<>();
@@ -126,7 +126,7 @@ public class RogueMetaProgress {
         totalSparks = 0;
         aetherUpgradeLevel = 0;
         boonRanks = new HashMap<>();
-        activeBoons = new HashSet<>();
+        activeEchoBoons = new HashSet<>();
         notifiedUnlocks = new HashSet<>();
 
         // Reset run history
@@ -526,22 +526,22 @@ public class RogueMetaProgress {
      * Check if a boon is currently active.
      */
     public boolean isBoonActive(EchoBoon type) {
-        if (activeBoons == null) {
-            activeBoons = new HashSet<>();
+        if (activeEchoBoons == null) {
+            activeEchoBoons = new HashSet<>();
         }
-        return activeBoons.contains(type.getId());
+        return activeEchoBoons.contains(type.getId());
     }
 
     /**
      * Get all currently active boons.
      */
-    public Set<EchoBoon> getActiveBoons() {
+    public Set<EchoBoon> getActiveEchoBoons() {
         Set<EchoBoon> active = new HashSet<>();
-        if (activeBoons == null) {
-            activeBoons = new HashSet<>();
+        if (activeEchoBoons == null) {
+            activeEchoBoons = new HashSet<>();
             return active;
         }
-        for (String id : activeBoons) {
+        for (String id : activeEchoBoons) {
             EchoBoon type = EchoBoon.fromId(id);
             if (type != null) {
                 active.add(type);
@@ -554,18 +554,18 @@ public class RogueMetaProgress {
      * Get the count of currently active boons.
      */
     public int getActiveBoonCount() {
-        if (activeBoons == null) {
-            activeBoons = new HashSet<>();
+        if (activeEchoBoons == null) {
+            activeEchoBoons = new HashSet<>();
         }
-        return activeBoons.size();
+        return activeEchoBoons.size();
     }
 
     /**
      * Activate a boon (max slots determined by getActiveBoonSlots()).
      */
     public void activateBoon(EchoBoon type) {
-        if (activeBoons == null) {
-            activeBoons = new HashSet<>();
+        if (activeEchoBoons == null) {
+            activeEchoBoons = new HashSet<>();
         }
 
         // Must be accessible at current upgrade level
@@ -579,16 +579,16 @@ public class RogueMetaProgress {
         }
 
         // If already active, nothing to do
-        if (activeBoons.contains(type.getId())) {
+        if (activeEchoBoons.contains(type.getId())) {
             return;
         }
 
         // Check active boon slot limit
-        if (activeBoons.size() >= getActiveBoonSlots()) {
+        if (activeEchoBoons.size() >= getActiveBoonSlots()) {
             return;
         }
 
-        activeBoons.add(type.getId());
+        activeEchoBoons.add(type.getId());
         save();
     }
 
@@ -596,10 +596,10 @@ public class RogueMetaProgress {
      * Deactivate a boon.
      */
     public void deactivateBoon(EchoBoon type) {
-        if (activeBoons == null) {
-            activeBoons = new HashSet<>();
+        if (activeEchoBoons == null) {
+            activeEchoBoons = new HashSet<>();
         }
-        activeBoons.remove(type.getId());
+        activeEchoBoons.remove(type.getId());
         save();
     }
 
@@ -611,8 +611,8 @@ public class RogueMetaProgress {
         if (boonRanks == null) {
             boonRanks = new HashMap<>();
         }
-        if (activeBoons == null) {
-            activeBoons = new HashSet<>();
+        if (activeEchoBoons == null) {
+            activeEchoBoons = new HashSet<>();
         }
 
         // Calculate total echoes spent on all boons
@@ -630,7 +630,7 @@ public class RogueMetaProgress {
 
         // Clear all boon data
         boonRanks.clear();
-        activeBoons.clear();
+        activeEchoBoons.clear();
 
         save();
         return refund;

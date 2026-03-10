@@ -21,9 +21,8 @@ public enum EchoBoon implements RogueEffect {
         new int[]{3, 6, 9, 12},     // Effect values: +3/+6/+9/+12 life
         3, 0) {
         @Override
-        public void onRunStart(RogueRun run, RogueMetaProgress progress) {
-            if (!progress.isBoonActive(this)) return;
-            int bonus = getEffectValueAtRank(progress.getBoonRank(this));
+        public void onRunStart(RogueRun run) {
+            int bonus = getEffectValueAtRank(run.getRunBoonRank(getId()));
             if (bonus > 0) run.setStartingLife(run.getStartingLife() + bonus);
         }
     },
@@ -34,9 +33,8 @@ public enum EchoBoon implements RogueEffect {
         new int[]{3, 6, 9, 12},    // Effect values: +3/+6/+9/+12 gold
         3, 0) {
         @Override
-        public void onRunStart(RogueRun run, RogueMetaProgress progress) {
-            if (!progress.isBoonActive(this)) return;
-            int bonus = getEffectValueAtRank(progress.getBoonRank(this));
+        public void onRunStart(RogueRun run) {
+            int bonus = getEffectValueAtRank(run.getRunBoonRank(getId()));
             if (bonus > 0) run.setCurrentGold(run.getCurrentGold() + bonus);
         }
     },
@@ -47,9 +45,9 @@ public enum EchoBoon implements RogueEffect {
         new int[]{2, 4, 6, 8},      // Effect values: heal 2/4/6/8
         3, 0) {
         @Override
-        public void onMatchWin(RogueRun run, RogueMetaProgress progress) {
-            if (!progress.isBoonActive(this) || run.getCurrentLife() >= run.getStartingLife()) return;
-            int heal = getEffectValueAtRank(progress.getBoonRank(this));
+        public void onMatchWin(RogueRun run) {
+            if (run.getCurrentLife() >= run.getStartingLife()) return;
+            int heal = getEffectValueAtRank(run.getRunBoonRank(getId()));
             if (heal > 0) run.healLife(heal);
         }
     },
@@ -60,9 +58,8 @@ public enum EchoBoon implements RogueEffect {
         new int[]{1, 2, 3},        // Effect values: 1/2/3 rerolls per selection
         2, 0) {
         @Override
-        public void onCardSelection(CardSelectionContext ctx, RogueRun run, RogueMetaProgress progress) {
-            if (!progress.isBoonActive(this)) return;
-            ctx.rerolls += getEffectValueAtRank(progress.getBoonRank(this));
+        public void onCardSelection(CardSelectionContext ctx, RogueRun run) {
+            ctx.rerolls += getEffectValueAtRank(run.getRunBoonRank(getId()));
         }
     },
 
@@ -72,25 +69,27 @@ public enum EchoBoon implements RogueEffect {
         new int[]{1, 2, 3, 4},     // Effect values: +1/+2/+3/+4 extra mythics
         3, 0) {
         @Override
-        public void onCardSelection(CardSelectionContext ctx, RogueRun run, RogueMetaProgress progress) {
-            if (!progress.isBoonActive(this)) return;
-            ctx.extraMythics += getEffectValueAtRank(progress.getBoonRank(this));
+        public void onCardSelection(CardSelectionContext ctx, RogueRun run) {
+            ctx.extraMythics += getEffectValueAtRank(run.getRunBoonRank(getId()));
         }
     },
 
     LAST_SPARK("last_spark", "Last Spark",
-        "Revive when you would lose the run.",
+        "Survive defeat and revive with 5 life.",
         new int[]{10, 20},         // Echo costs (rank 1-2)
-        new int[]{5, 10},          // Effect values: survive with 5/10 life
+        new int[]{1, 2},           // Effect values: 1/2 revive charges
         1, 0) {
         @Override
-        public void onDefeat(DefeatContext ctx, RogueRun run, RogueMetaProgress progress) {
-            if (!progress.isBoonActive(this) || !run.canRevive()) return;
-            int reviveLife = getEffectValueAtRank(progress.getBoonRank(this));
-            if (reviveLife > 0) {
-                ctx.revived = true;
-                ctx.reviveLife = reviveLife;
-            }
+        public EffectType getEffectType() { return EffectType.CONSUME; }
+
+        @Override
+        public int getChargesForRank(int rank) { return getEffectValueAtRank(rank); }
+
+        @Override
+        public void onDefeat(DefeatContext ctx, RogueRun run) {
+            ctx.revived = true;
+            ctx.reviveLife = 5;
+            run.consumeEffect(getId());
         }
     },
 
@@ -102,9 +101,8 @@ public enum EchoBoon implements RogueEffect {
         new int[]{1, 2},           // Effect values: +1/+2 cards
         1, 1) {
         @Override
-        public void onMatchStart(RegisteredPlayer human, RogueRun run, RogueMetaProgress progress) {
-            if (!progress.isBoonActive(this)) return;
-            int extra = getEffectValueAtRank(progress.getBoonRank(this));
+        public void onMatchStart(RegisteredPlayer human, RogueRun run) {
+            int extra = getEffectValueAtRank(run.getRunBoonRank(getId()));
             if (extra > 0) human.setStartingHand(human.getStartingHand() + extra);
         }
     },
@@ -115,9 +113,8 @@ public enum EchoBoon implements RogueEffect {
         new int[]{1, 2},        // Effect values: +1/+2 extra picks
         1, 1) {
         @Override
-        public void onCardReward(CardRewardContext ctx, RogueRun run, RogueMetaProgress progress) {
-            if (!progress.isBoonActive(this)) return;
-            ctx.maxPicks += getEffectValueAtRank(progress.getBoonRank(this));
+        public void onCardReward(CardRewardContext ctx, RogueRun run) {
+            ctx.maxPicks += getEffectValueAtRank(run.getRunBoonRank(getId()));
         }
     },
 
@@ -127,9 +124,8 @@ public enum EchoBoon implements RogueEffect {
         new int[]{1, 2, 3},        // Effect values: 1/2/3 tapped lands
         2, 1) {
         @Override
-        public void onMatchStart(RegisteredPlayer human, RogueRun run, RogueMetaProgress progress) {
-            if (!progress.isBoonActive(this)) return;
-            int count = getEffectValueAtRank(progress.getBoonRank(this));
+        public void onMatchStart(RegisteredPlayer human, RogueRun run) {
+            int count = getEffectValueAtRank(run.getRunBoonRank(getId()));
             if (count <= 0) return;
             List<PaperCard> basicLands = new ArrayList<>();
             for (PaperCard c : human.getDeck().getMain().toFlatList()) {
@@ -149,9 +145,8 @@ public enum EchoBoon implements RogueEffect {
         new int[]{1, 2, 3, 4},     // Effect values: {1}/{2}/{3}/{4} less
         3, 1) {
         @Override
-        public void onMatchStart(RegisteredPlayer human, RogueRun run, RogueMetaProgress progress) {
-            if (!progress.isBoonActive(this)) return;
-            int reduction = getEffectValueAtRank(progress.getBoonRank(this));
+        public void onMatchStart(RegisteredPlayer human, RogueRun run) {
+            int reduction = getEffectValueAtRank(run.getRunBoonRank(getId()));
             if (reduction > 0) RogueEffect.addCustomCardToCommandZone("Rogue - Fractured Binding " + reduction, human);
         }
     };
@@ -259,7 +254,7 @@ public enum EchoBoon implements RogueEffect {
             case MYTHIC_COLLECTOR:
                 return "<html>+" + allValues + " more mythic cards in Rewards and Bazaar.</html>";
             case LAST_SPARK:
-                return "<html>Once per run: survive defeat with " + allValues + " life.</html>";
+                return "<html>Survive defeat and revive with 5 life, " + allValues + " time(s).</html>";
             case EXPANDED_MIND:
                 return "<html>Keep +" + allValues + " extra cards from Card Rewards.</html>";
             case SPARK_KINDLE:

@@ -18,7 +18,7 @@ public enum DescensionLevel implements RogueEffect {
     LEVEL_1(1, "Bloodthirsty",
         "Whenever a creature an opponent controls deals damage to you, it deals 1 additional damage.") {
         @Override
-        public void onMatchStart(RegisteredPlayer human, RogueRun run, RogueMetaProgress progress) {
+        public void onMatchStart(RegisteredPlayer human, RogueRun run) {
             RogueEffect.addCustomCardToCommandZone("Descension - Bloodthirst", human);
         }
     },
@@ -26,7 +26,8 @@ public enum DescensionLevel implements RogueEffect {
     LEVEL_2(2, "Elite Paths",
         "2 random Normal Planes of the Path are replaced by Elite Planes.") {
         @Override
-        public void afterPathGeneration(List<RoguePathNode> nodes, int descensionLevel) {
+        public void afterPathGeneration(RogueRun run) {
+            List<RoguePathNode> nodes = run.getPath().getNodes();
             Set<String> usedNames = new HashSet<>();
             for (RoguePathNode node : nodes) {
                 if (node instanceof NodePlanebound np && np.getPlaneboundType() == RoguePlaneboundType.ELITE) {
@@ -65,7 +66,7 @@ public enum DescensionLevel implements RogueEffect {
     LEVEL_3(3, "Taxing Mana",
         "Every spell you cast costs {1} more to cast.") {
         @Override
-        public void onMatchStart(RegisteredPlayer human, RogueRun run, RogueMetaProgress progress) {
+        public void onMatchStart(RegisteredPlayer human, RogueRun run) {
             RogueEffect.addCustomCardToCommandZone("Descension - Taxing Mana", human);
         }
     };
