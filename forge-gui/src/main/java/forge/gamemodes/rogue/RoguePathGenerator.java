@@ -13,8 +13,10 @@ public class RoguePathGenerator {
 
     private static int normalPlaneboundIndex;
     private static int elitePlaneboundIndex;
+    private static int eventIndex;
     private static int currentRowIndex;
     private static List<RoguePlanebound> elitePlanebounds;
+    private static List<RogueEvent> shuffledEvents;
 
     /**
      * Generate a random path with multiple planes per row.
@@ -32,7 +34,12 @@ public class RoguePathGenerator {
 
         normalPlaneboundIndex = 0;
         elitePlaneboundIndex = 0;
+        eventIndex = 0;
         currentRowIndex = 0;
+
+        // Shuffle events for unique assignment
+        shuffledEvents = new ArrayList<>(List.of(RogueEvent.values()));
+        Collections.shuffle(shuffledEvents, MyRandom.getRandom());
 
         // Validate we have enough unique planebounds of each type
         validateSize(13, normalPlanebounds.size());
@@ -60,6 +67,9 @@ public class RoguePathGenerator {
         if (MyRandom.getRandom().nextBoolean()) {
             specialNodes.add(new NodeSanctum());
         }
+        if (MyRandom.getRandom().nextBoolean()) {
+            specialNodes.add(new NodeEvent(shuffledEvents.get(eventIndex++)));
+        }
         addSpecialNodesRow(nodes, specialNodes);
 
         // Row 3: 3 planes - NORMAL, NORMAL, ELITE, Chance for second ELITE)
@@ -80,6 +90,9 @@ public class RoguePathGenerator {
         if (MyRandom.getRandom().nextBoolean()) {
             specialNodes.add(new NodeBazaar());
         }
+        if (MyRandom.getRandom().nextBoolean()) {
+            specialNodes.add(new NodeEvent(shuffledEvents.get(eventIndex++)));
+        }
         addSpecialNodesRow(nodes, specialNodes);
 
         // Row 5: 2 - 3 NORMAL planes
@@ -90,6 +103,9 @@ public class RoguePathGenerator {
         specialNodes = new ArrayList<>();
         specialNodes.add(new NodeSanctum());
         specialNodes.add(new NodeBazaar());
+        if (MyRandom.getRandom().nextBoolean()) {
+            specialNodes.add(new NodeEvent(shuffledEvents.get(eventIndex++)));
+        }
         addSpecialNodesRow(nodes, specialNodes);
 
         // Row 7: 1 BOSS plane

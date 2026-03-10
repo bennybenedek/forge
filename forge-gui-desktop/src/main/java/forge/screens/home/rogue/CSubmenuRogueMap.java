@@ -9,6 +9,7 @@ import forge.game.GameType;
 import forge.game.player.RegisteredPlayer;
 import forge.gamemodes.match.HostedMatch;
 import forge.gamemodes.rogue.*;
+import forge.toolbox.FOptionPane;
 import forge.gui.GuiBase;
 import forge.gui.SOverlayUtils;
 import forge.gui.framework.EDocID;
@@ -88,6 +89,8 @@ public enum CSubmenuRogueMap implements ICDoc {
         RogueTutorialHelper.showIfNotSeen(RogueTutorial.SANCTUM);
       } else if (node instanceof NodeBazaar) {
         RogueTutorialHelper.showIfNotSeen(RogueTutorial.BAZAAR);
+      } else if (node instanceof NodeEvent) {
+        RogueTutorialHelper.showIfNotSeen(RogueTutorial.EVENT);
       }
     }
   }
@@ -250,6 +253,8 @@ public enum CSubmenuRogueMap implements ICDoc {
       return "Enter Sanctum";
     } else if (node instanceof NodeBazaar) {
       return "Enter Bazaar";
+    } else if (node instanceof NodeEvent) {
+      return "Enter Event";
     } else {
       return "Enter Node";
     }
@@ -274,8 +279,10 @@ public enum CSubmenuRogueMap implements ICDoc {
       handleSanctumNode(nodeSanctum);
     } else if (node instanceof NodeBazaar nodeBazaar) {
       handleBazaarNode(nodeBazaar);
-    } else if (node instanceof NodeEvent || node instanceof NodeChest) {
-      // TODO: Implement these node types
+    } else if (node instanceof NodeEvent nodeEvent) {
+      handleEventNode(nodeEvent);
+    } else if (node instanceof NodeChest) {
+      // TODO: Implement chest node type
       currentRun.nextNode();
       updateView();
     }
@@ -438,16 +445,31 @@ public enum CSubmenuRogueMap implements ICDoc {
       return;
     }
 
-    // Get the rogue deck to draw cards from reward pool
+    runBazaarShopping();
+
+    // Mark node as completed and move to next
+    bazaarNode.setCompleted(true);
+    currentRun.nextNode();
+
+    // Evaluate achievements after Bazaar (deck/gold may have changed)
+    RogueCommanderAchievements.instance.evaluateRunAchievements(currentRun);
+
+    // Track milestones and check for unlocks
+    RogueMetaProgress.getInstance().onSideNodeCompleted(currentRun);
+
+    // Save run and update view (use update() to trigger tutorials for next row)
+    RogueIO.saveRun(currentRun);
+    update();
+  }
+
+  /** Run Bazaar shopping UI and apply purchases. Reusable by Event triggers. */
+  private void runBazaarShopping() {
     RogueDeck rogueDeck = currentRun.getSelectedRogueDeck();
     if (rogueDeck == null) {
       System.err.println("ERROR: Could not find rogue deck for current run.");
-      currentRun.nextNode();
-      updateView();
       return;
     }
 
-    // Generate Bazaar inventory: Draw 8 non-mythic + 2 mythic (base, adjusted by active boons)
     CardSelectionContext bazaarCtx = new CardSelectionContext();
     RogueEffectComposite.INSTANCE.onCardSelection(bazaarCtx, currentRun);
     int baseNonMythics = 8;
@@ -455,7 +477,7 @@ public enum CSubmenuRogueMap implements ICDoc {
     int totalNonMythics = Math.max(0, baseNonMythics - bazaarCtx.extraMythics);
     int totalMythics = baseMythics + bazaarCtx.extraMythics;
 
-    int rerollsRemaining = bazaarCtx.rerolls; // Fresh per node
+    int rerollsRemaining = bazaarCtx.rerolls;
     int currentGold = currentRun.getCurrentGold();
     Set<PaperCard> selectedCards;
     do {
@@ -470,8 +492,6 @@ public enum CSubmenuRogueMap implements ICDoc {
 
       if (inventory.isEmpty()) {
         System.err.println("ERROR: No cards available in reward pool for Bazaar.");
-        currentRun.nextNode();
-        updateView();
         return;
       }
 
@@ -480,7 +500,7 @@ public enum CSubmenuRogueMap implements ICDoc {
       selectedCards = dialog.show();
 
       if (selectedCards == null) {
-        rerollsRemaining--; // Reroll clicked — unchosen cards stay in pool
+        rerollsRemaining--;
       }
     } while (selectedCards == null && rerollsRemaining >= 0);
 
@@ -488,31 +508,46 @@ public enum CSubmenuRogueMap implements ICDoc {
       selectedCards = new HashSet<>();
     }
 
-    // If player bought cards, add them to deck and deduct gold
     if (!selectedCards.isEmpty()) {
-      // Add bought cards to player's deck (same method as card rewards)
       currentRun.addCardsToRun(new ArrayList<>(selectedCards));
-
-      // Calculate and deduct gold cost using shared pricing
       int totalCost = BazaarPricing.calculateTotalCost(selectedCards);
       currentRun.setCurrentGold(currentGold - totalCost);
-
-      // Remove ONLY the purchased cards from reward pool (not all inventory)
       rogueDeck.removeFromRewardPool(new ArrayList<>(selectedCards));
     }
-    // If nothing purchased, don't remove anything - cards stay in pool for future Bazaars
+  }
 
-    // Mark node as completed and move to next
-    bazaarNode.setCompleted(true);
+  private void handleEventNode(NodeEvent eventNode) {
+    if (currentRun == null) return;
+
+    RogueEvent event = eventNode.getEvent();
+    if (event == null) {
+      currentRun.nextNode();
+      updateView();
+      return;
+    }
+
+    EventDialog dialog = new EventDialog(event);
+    RogueEvent.EventChoice choice = dialog.show();
+
+    if (choice != null) {
+      EventBoon boon = choice.effect();
+      if (boon.getEffectType() == RogueEffect.EffectType.ONESHOT) {
+        EventChoiceContext ctx = new EventChoiceContext();
+        boon.consume(currentRun, ctx);
+        if (ctx.trigger != null) {
+          switch (ctx.trigger) {
+            case BAZAAR: runBazaarShopping(); break;
+          }
+        }
+      } else {
+        currentRun.addEventBoon(boon);
+      }
+      FOptionPane.showMessageDialog(choice.resultText(), "Event Result");
+    }
+
+    eventNode.setCompleted(true);
     currentRun.nextNode();
-
-    // Evaluate achievements after Bazaar (deck/gold may have changed)
-    RogueCommanderAchievements.instance.evaluateRunAchievements(currentRun);
-
-    // Track milestones and check for unlocks
     RogueMetaProgress.getInstance().onSideNodeCompleted(currentRun);
-
-    // Save run and update view (use update() to trigger tutorials for next row)
     RogueIO.saveRun(currentRun);
     update();
   }

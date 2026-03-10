@@ -2,15 +2,7 @@ package forge.gamemodes.rogue;
 
 import forge.game.player.RegisteredPlayer;
 
-/**
- * All event effects -- ONESHOT (one-time, immediate), PERMANENT (stored, persists),
- * and CONSUME (stored, removed after triggering).
- * ONESHOT boons are called directly by the event handler via consume().
- * PERMANENT/CONSUME boons are stored in RogueRun and dispatched by RogueEffectComposite.
- */
 public enum EventBoon implements RogueEffect {
-
-    // === ONESHOT effects (applied immediately, not stored) ===
 
     HEALERS_TOUCH("healers_touch", "Healer's Touch", "Gain 8 life, lose 5 gold.",
             EffectType.ONESHOT) {
@@ -39,7 +31,7 @@ public enum EventBoon implements RogueEffect {
             EffectType.ONESHOT) {
         @Override
         public void consume(RogueRun run, EventChoiceContext ctx) {
-            ctx.triggerNodeType = "BAZAAR";
+            ctx.trigger = EventChoiceContext.NodeTriggerType.BAZAAR;
         }
     },
     NOTHING("nothing", "Nothing", "No effect.",

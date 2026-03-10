@@ -11,7 +11,7 @@ public enum RogueEvent {
     WANDERING_HEALER("Wandering Healer",
         "A mysterious healer offers their services... for a price.",
         List.of(
-            new EventChoice("Pay 5 Gold, Gain 8 Life", "The healer mends your wounds.",
+            new EventChoice("Accept", "The healer mends your wounds.",
                 EventBoon.HEALERS_TOUCH),
             new EventChoice("Decline", "You wave the healer away.",
                 EventBoon.NOTHING)

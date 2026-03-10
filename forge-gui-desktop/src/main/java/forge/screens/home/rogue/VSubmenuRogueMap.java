@@ -19,7 +19,6 @@ import forge.util.Localizer;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
-import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -87,6 +86,7 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
   private final PathVisualizerPanel pathVisualizer = new PathVisualizerPanel();
   private final FScrollPane scrollPathDisplay;
 
+  private JPanel pnlBoons;
   private final FButton btnEnterNode;
   private final FButton btnEditDeck;
   private final FButton btnDevWinRun = new FButton("[DEV] Win Run");
@@ -130,6 +130,21 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
       int descLevel = run.getDescensionLevel();
       lblDescension.setVisible(descLevel > 0);
       if (descLevel > 0) lblDescension.setText("Descension: " + descLevel);
+
+      // Populate active boons from run snapshot
+      pnlBoons.removeAll();
+      List<forge.gamemodes.rogue.RogueEffect> activeBoons = run.getActiveEchoBoons();
+      for (int i = 0; i < activeBoons.size(); i++) {
+        EchoBoon boon = (EchoBoon) activeBoons.get(i);
+        int col = i / 3;
+        int row = i % 3;
+        FLabel boonLbl = new FLabel.Builder().text(boon.getDisplayName()).fontSize(11).build();
+        boonLbl.setToolTipText(boon.getDescription());
+        pnlBoons.add(boonLbl, "cell " + col + " " + row);
+      }
+      pnlBoons.revalidate();
+      pnlBoons.repaint();
+
       pathVisualizer.updatePath(run);
     } else {
       lblCommanderName.setText("");
@@ -176,24 +191,10 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
     infoRow.add(lblRemovalCredits);
     infoRow.add(lblDescension);
 
-    // Active Aether Boons: 2 columns x max 3 rows, fill column 1 first
-    RogueMetaProgress progress = RogueMetaProgress.getInstance();
-    List<EchoBoon> activeBoons = new ArrayList<>();
-    for (EchoBoon t : EchoBoon.values()) {
-      if (progress.isBoonActive(t)) activeBoons.add(t);
-    }
-    if (!activeBoons.isEmpty()) {
-      JPanel pnlBoons = new JPanel(new MigLayout("insets 0, gap 8 1"));
-      pnlBoons.setOpaque(false);
-      for (int i = 0; i < activeBoons.size(); i++) {
-        int col = i / 3;
-        int row = i % 3;
-        FLabel boonLbl = new FLabel.Builder().text(activeBoons.get(i).getDisplayName()).fontSize(11).build();
-        boonLbl.setToolTipText(activeBoons.get(i).getDescription());
-        pnlBoons.add(boonLbl, "cell " + col + " " + row);
-      }
-      infoRow.add(pnlBoons);
-    }
+    // Active Aether Boons panel — populated in updateDisplay() from run snapshot
+    pnlBoons = new JPanel(new MigLayout("insets 0, gap 8 1"));
+    pnlBoons.setOpaque(false);
+    infoRow.add(pnlBoons);
 
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(infoRow, "w 98%!, h pref!, gap 1% 0 10px 10px");
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay()

@@ -2,9 +2,11 @@ package forge.gamemodes.rogue;
 
 /**
  * Mutable context for event choice handling.
- * Set by CONSUME boons that trigger follow-up node types.
+ * Set by ONESHOT boons that trigger follow-up node types.
  */
 public class EventChoiceContext {
-    /** Set by CONSUME boons that trigger another node type (e.g., "opens a bazaar"). Null = no follow-up. */
-    public String triggerNodeType;
+    public enum NodeTriggerType { BAZAAR }
+
+    /** Set by ONESHOT boons that trigger another node type (e.g., "opens a bazaar"). Null = no follow-up. */
+    public NodeTriggerType trigger;
 }

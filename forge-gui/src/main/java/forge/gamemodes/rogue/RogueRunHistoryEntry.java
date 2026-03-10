@@ -5,7 +5,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 /**
  * Lightweight snapshot of a completed/abandoned Rogue Commander run for history display.
@@ -40,11 +39,10 @@ public class RogueRunHistoryEntry {
 
         entry.descensionLevel = run.getDescensionLevel();
 
-        // Capture active boons in enum order for consistent display
-        Set<EchoBoon> active = RogueMetaProgress.getInstance().getActiveEchoBoons();
+        // Capture active boons from run snapshot
         entry.activeBoonNames = new ArrayList<>();
-        for (EchoBoon boon : EchoBoon.values()) {
-            if (active.contains(boon)) {
+        for (RogueEffect effect : run.getActiveEchoBoons()) {
+            if (effect instanceof EchoBoon boon) {
                 entry.activeBoonNames.add(boon.getDisplayName());
             }
         }

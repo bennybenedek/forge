@@ -73,6 +73,13 @@ public enum RogueTutorial {
           "Save gold for powerful cards that fit your strategy."
   ),
 
+  EVENT(
+      "An Event",
+      "Events are random encounters that present you with choices. "
+          + "Each choice has different outcomes — some may heal you, grant gold, "
+          + "or provide permanent bonuses for the rest of your Run."
+  ),
+
   SANCTUM(
       "The Sanctum",
       "The Sanctum offers two services: healing and card removal credits. " +

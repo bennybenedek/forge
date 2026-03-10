@@ -172,19 +172,14 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
     panel.setOpaque(true);
     panel.setBackground(FSkin.getColor(FSkin.Colors.CLR_THEME2));
 
-    FLabel lblLine1 = new FLabel.Builder()
-        .text("Unlock Descension Mode and earn Sparks")
+    FLabel lblInfo = new FLabel.Builder()
+        .text("<html><center>Unlock Descension Mode and earn Sparks<br>"
+            + "to get more Boons, Active Boon-Slots and other Upgrades for the Aether</center></html>")
         .icon(FSkin.getImage(FSkinProp.ICO_LOCK).resize(20, 20))
         .fontSize(13)
         .build();
-    FLabel lblLine2 = new FLabel.Builder()
-        .text("to get more Boons, Active Boon-Slots and other Upgrades for the Aether")
-        .icon(FSkin.getImage(FSkinProp.ICO_QUEST_ELIXIR).resize(16, 16))
-        .fontSize(13)
-        .build();
 
-    panel.add(lblLine1, "growx");
-    panel.add(lblLine2, "growx");
+    panel.add(lblInfo, "growx, push, align center");
     return panel;
   }
 

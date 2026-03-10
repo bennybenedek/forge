@@ -20,6 +20,7 @@ public class NodeEventPanel extends NodeCircularPanel {
   public NodeEventPanel(NodeEvent node) {
     super(node);
     this.eventNode = node;
+    setToolTipText("Event: A random encounter.");
   }
 
   @Override
