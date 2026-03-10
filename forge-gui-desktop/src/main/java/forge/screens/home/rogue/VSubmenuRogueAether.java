@@ -176,6 +176,7 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
         .text("<html><center>Unlock Descension Mode and earn Sparks<br>"
             + "to get more Boons, Active Boon-Slots and other Upgrades for the Aether</center></html>")
         .icon(FSkin.getImage(FSkinProp.ICO_LOCK).resize(20, 20))
+        .iconScaleAuto(false)
         .fontSize(13)
         .build();
 

@@ -75,9 +75,8 @@ public enum RogueTutorial {
 
   EVENT(
       "An Event",
-      "Events are random encounters that present you with choices. "
-          + "Each choice has different outcomes — some may heal you, grant gold, "
-          + "or provide permanent bonuses for the rest of your Run."
+      "Events are random encounters that can have a variety of choices and outcomes for your Run."
+          + "Some events may offer powerful rewards, but often at a cost."
   ),
 
   SANCTUM(

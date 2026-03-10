@@ -39,8 +39,8 @@ public class EventDialog {
     panel.add(lblDescription, "w 100%!, h 30px!, ax center, gap 0 0 10px 20px, wrap");
 
     for (EventChoice choice : event.getChoices()) {
-      FButton btn = new FButton("<html><center>" + choice.label()
-          + "<br><small>" + choice.effect().getDescription() + "</small></center></html>");
+      FButton btn = new FButton("<html><center><font size=4>" + choice.label()
+          + "</font><br><font size=3>" + choice.effect().getDescription() + "</font></center></html>");
       btn.addActionListener(e -> {
         selectedChoice = choice;
         optionPane.setResult(0);
@@ -58,6 +58,7 @@ public class EventDialog {
   public EventChoice show() {
     optionPane = new FOptionPane(null, "Event", null, panel,
         List.of(), -1);
+    optionPane.getTitleBar().setVisible(false);
     panel.revalidate();
     panel.repaint();
     optionPane.setVisible(true);

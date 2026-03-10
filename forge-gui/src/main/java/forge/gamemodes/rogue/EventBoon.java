@@ -39,7 +39,7 @@ public enum EventBoon implements RogueEffect {
 
     // === PERMANENT effects (stored in run, dispatched via RogueEffectComposite) ===
 
-    COMMANDER_BOOST("commander_boost", "Commander's Might", "Your Commander gets +1/+1.",
+    COMMANDER_BOOST("commander_boost", "Commander's Might", "Your Commander gets +1/+1 for the rest of the Run.",
             EffectType.PERMANENT) {
         @Override
         public void onMatchStart(RegisteredPlayer human, RogueRun run) {

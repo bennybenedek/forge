@@ -1,0 +1,5 @@
+Name:Rogue - Commander Boost
+ManaCost:no cost
+Types:Rogue Modifier
+S:Mode$ Continuous | Affected$ Creature.IsCommander+YouCtrl | AddPower$ 1 | AddToughness$ 1 | EffectZone$ Command | Description$ Your commander gets +1/+1.
+Oracle:Your commander gets +1/+1.

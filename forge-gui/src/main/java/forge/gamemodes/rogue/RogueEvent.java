@@ -31,7 +31,7 @@ public enum RogueEvent {
     MERCHANT_CARAVAN("Merchant Caravan",
         "A caravan of planar merchants sets up shop.",
         List.of(
-            new EventChoice("Browse Their Wares", "The merchants open their stalls.",
+            new EventChoice("Browse Their Wares", "The merchant thanks you for the business.",
                 EventBoon.BROWSE_WARES),
             new EventChoice("Rob Them", "You take what you want by force.",
                 EventBoon.CARAVAN_ROB)

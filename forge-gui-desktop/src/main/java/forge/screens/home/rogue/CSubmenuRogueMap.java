@@ -9,7 +9,6 @@ import forge.game.GameType;
 import forge.game.player.RegisteredPlayer;
 import forge.gamemodes.match.HostedMatch;
 import forge.gamemodes.rogue.*;
-import forge.toolbox.FOptionPane;
 import forge.gui.GuiBase;
 import forge.gui.SOverlayUtils;
 import forge.gui.framework.EDocID;
@@ -22,6 +21,7 @@ import forge.player.GamePlayerUtil;
 import forge.screens.deckeditor.CDeckEditorUI;
 import forge.screens.deckeditor.controllers.CEditorRogue;
 import forge.screens.home.CHomeUI;
+import forge.toolbox.FOptionPane;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.*;
@@ -542,7 +542,7 @@ public enum CSubmenuRogueMap implements ICDoc {
       } else {
         currentRun.addEventBoon(boon);
       }
-      FOptionPane.showMessageDialog(choice.resultText(), "Event Result");
+      FOptionPane.showMessageDialog(choice.resultText(), "Event Completed");
     }
 
     eventNode.setCompleted(true);
