@@ -94,9 +94,10 @@ public class RogueWinLoseController {
         int goldReward = 0;
         int echoReward = 0;
 
+        var progress = RogueMetaProgress.getInstance();
+
         // Award gold and echo rewards for ALL planebound nodes (including Boss)
-        if (currentNode instanceof NodePlanebound) {
-            NodePlanebound planeboundNode = (NodePlanebound) currentNode;
+        if (currentNode instanceof NodePlanebound planeboundNode) {
             goldReward = planeboundNode.getGoldReward();
             echoReward = planeboundNode.getEchoReward();
 
@@ -148,15 +149,14 @@ public class RogueWinLoseController {
         }
 
         // Award card rewards (only for non-final nodes)
-        if (currentNode instanceof NodePlanebound) {
-            NodePlanebound planeboundNode = (NodePlanebound) currentNode;
+        if (currentNode instanceof NodePlanebound planeboundNode) {
             // Award card rewards (with Elite flag for mythic rewards)
             boolean isElite = planeboundNode.getPlaneboundType() == RoguePlaneboundType.ELITE;
             awardCardRewards(isElite, goldReward, echoReward);
         }
 
         // Track meta progress for match
-        RogueMetaProgress.getInstance().onMatchCompleted(currentRun, true);
+        progress.onMatchCompleted(currentRun, true);
 
         // Evaluate run-level achievements after rewards
         RogueCommanderAchievements.instance.evaluateRunAchievements(currentRun);
@@ -290,12 +290,14 @@ public class RogueWinLoseController {
         // Persist life total from the lost match
         persistLifeTotal();
 
+        var progress = RogueMetaProgress.getInstance();
+
         // Check revive effects (e.g. Last Spark) BEFORE marking run as failed
         DefeatContext defeatCtx = new DefeatContext();
         RogueEffectComposite.INSTANCE.onDefeat(defeatCtx, currentRun);
         if (defeatCtx.revived) {
             currentRun.setCurrentLife(defeatCtx.reviveLife);
-            RogueMetaProgress.getInstance().onMatchCompleted(currentRun, false);
+            progress.onMatchCompleted(currentRun, false);
             RogueIO.saveRun(currentRun);
             view.getBtnQuit().setText(BTN_CONTINUE_RUN);
             view.showMessage("Last Spark activated! You survived with " + defeatCtx.reviveLife + " life!", "Last Spark!", FSkinProp.ICO_QUEST_ELIXIR);
@@ -308,12 +310,10 @@ public class RogueWinLoseController {
         // Record run history - defeated by current node's planebound
         String defeatedBy = "";
         RoguePathNode curNode = currentRun.getCurrentNode();
-        if (curNode instanceof NodePlanebound) {
-            NodePlanebound pb = (NodePlanebound) curNode;
-            if (pb.getRoguePlanebound() != null) {
+        if (curNode instanceof NodePlanebound pb && pb.getRoguePlanebound() != null) {
                 defeatedBy = pb.getRoguePlanebound().planeboundName();
-            }
         }
+
         progress.addRunHistoryEntry(RogueRunHistoryEntry.fromRun(currentRun, "DEFEAT", defeatedBy));
 
         // Echoes are already added to meta progress after each match win, no transfer needed

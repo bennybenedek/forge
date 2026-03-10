@@ -17,19 +17,8 @@ public class RoguePathGenerator {
     private static List<RoguePlanebound> elitePlanebounds;
 
     /**
-     * Generate a random branched path with multiple planes per row.
-     * Path structure:
-     * Row 0: 2-4 NORMAL planes (columns 0, 1, 2, 3)
-     * Row 1: 2-4 NORMAL planes (columns 0, 1, 2, 3)
-     * Row 2: 1 Sanctum, 1 Bazaar, 1 Sanctum (column 0, 1, 2)
-     * Row 3: 3-4 planes - NORMAL, ELITE, (2. ELITE), NORMAL (columns 0, 1, 2, 3)
-     * Row 4: 1 Bazaar, 1 Sanctum, 1 Bazaar (column 0, 1)
-     * Row 5: 2 NORMAL planes (columns 0, 1)
-     * Row 6: 1 Sanctum, 1 Bazaar (column 0)
-     * Row 7: 1 BOSS plane (column 0)
-     *
-     * @return RoguePath with branched structure
-     */
+     * Generate a random path with multiple planes per row.
+    */
     public static void generateRandomPath(RogueRun run) {
         List<RoguePlanebound> availablePlanebounds = RogueConfig.loadPlanebounds();
 

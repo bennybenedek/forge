@@ -58,13 +58,15 @@ public enum CSubmenuRogueStart implements ICDoc {
   private void showTutorials() {
     RogueTutorialHelper.showIfNotSeen(RogueTutorial.WELCOME, RogueTutorial.COMMANDER_SELECTION);
 
+    var progress = RogueMetaProgress.getInstance();
+
     // Show RUN_COMPLETE tutorial after first completed run
-    if (RogueMetaProgress.getInstance().getTotalRunsCompleted() > 0) {
+    if (progress.getTotalRunsCompleted() > 0) {
       RogueTutorialHelper.showIfNotSeen(RogueTutorial.RUN_COMPLETE);
     }
 
     // Show Descension tutorial once when it becomes unlocked
-    if (RogueMetaProgress.getInstance().isDescensionModeUnlocked()) {
+    if (progress.isDescensionModeUnlocked()) {
       RogueTutorialHelper.showIfNotSeen(RogueTutorial.DESCENSION_UNLOCKED);
     }
   }
@@ -296,17 +298,19 @@ public enum CSubmenuRogueStart implements ICDoc {
       return;
     }
 
+    var progress = RogueMetaProgress.getInstance();
+
     // Record abandoned run history if there's an active run
     RogueRun existingRun = CSubmenuRogueMap.SINGLETON_INSTANCE.getCurrentRun();
     if (existingRun != null && existingRun.getRunState() == RogueRunState.STARTED) {
-      RogueMetaProgress.getInstance().addRunHistoryEntry(
+      progress.addRunHistoryEntry(
           RogueRunHistoryEntry.fromRun(existingRun, "ABANDONED", ""));
     }
 
     // Create new run and snapshot active echo boons
     RogueRun newRun = new RogueRun(selectedDeck);
     newRun.setDescensionLevel(selectedDescensionLevel);
-    newRun.snapshotEchoBoons(RogueMetaProgress.getInstance());
+    newRun.snapshotEchoBoons(progress);
 
     // Generate path and apply run start effects
     RoguePathGenerator.generateRandomPath(newRun);
