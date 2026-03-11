@@ -128,9 +128,8 @@ public class ViewWinLose implements IWinLoseView<FButton> {
 
         final FLabel btnCopyLog = new FLabel.ButtonBuilder().text(localizer.getMessage("btnCopyToClipboard")).build();
         btnCopyLog.setCommand((UiCommand) () -> {
-            final StringSelection ss = new StringSelection(txtLog.getText());
             try {
-                Toolkit.getDefaultToolkit().getSystemClipboard().setContents(ss, null);
+                GuiBase.getInterface().copyToClipboard(txtLog.getText());
             } catch (final IllegalStateException ex) {
                 // ignore; may be unavailable on some platforms
             }
