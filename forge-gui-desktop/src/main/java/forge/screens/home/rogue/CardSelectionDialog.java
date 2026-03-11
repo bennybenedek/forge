@@ -1,5 +1,6 @@
 package forge.screens.home.rogue;
 
+import forge.card.CardType;
 import forge.item.PaperCard;
 import forge.toolbox.FLabel;
 import forge.toolbox.FOptionPane;
@@ -58,10 +59,10 @@ public class CardSelectionDialog {
         .fontAlign(SwingConstants.CENTER)
         .build();
 
-    // Sort by type, then by CMC
+    // Sort by type (Deck Editor order), then by CMC
     cards = new ArrayList<>(cards);
     cards.sort(Comparator
-        .<PaperCard, String>comparing(c -> c.getRules().getType().toString())
+        .<PaperCard>comparingInt(CardSelectionDialog::typeOrder)
         .thenComparingInt(c -> c.getRules().getManaCost().getCMC()));
 
     // Grid panel holds all cards with custom layout
@@ -119,6 +120,7 @@ public class CardSelectionDialog {
     wrapper.setMinimumSize(dialogSize);
 
     optionPane = new FOptionPane(null, title, null, wrapper, List.of("OK"), 0);
+    optionPane.getTitleBar().setVisible(false);
     optionPane.setButtonEnabled(0, false); // Disabled until exact selections met
 
     zoomUtil = new CardUtil(optionPane);
@@ -157,6 +159,20 @@ public class CardSelectionDialog {
 
   private String getInfoText() {
     return String.format("%s (%d / %d selected)", subtitle, selectedCards.size(), exactSelections);
+  }
+
+  /** Returns type sort index matching Deck Editor order (GroupDef.CARD_TYPE). */
+  private static int typeOrder(PaperCard c) {
+    CardType type = c.getRules().getType();
+    if (type.isLand()) return 6;
+    if (type.isPlaneswalker()) return 0;
+    if (type.isCreature()) return 1;
+    if (type.isSorcery()) return 2;
+    if (type.isInstant()) return 3;
+    if (type.isArtifact()) return 4;
+    if (type.isEnchantment()) return 5;
+    if (type.isBattle()) return 7;
+    return 8;
   }
 
   /** Grid panel that lays out cards in a fixed-width grid. */
