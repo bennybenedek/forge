@@ -94,7 +94,6 @@ public class ViewWinLose implements IWinLoseView<FButton> {
                 break;
         }
         if (null == control) {
-            System.out.println("DEBUG: Using default ControlWinLose handler (control was null)");
             control = new ControlWinLose(this, game0, matchUI);
         }
         this.control = control;

@@ -72,7 +72,7 @@ public abstract class SelectableCardPanelBase extends SkinnedPanel implements
     addMouseListener(new MouseAdapter() {
       @Override
       public void mouseClicked(MouseEvent e) {
-        if (!faceDown) {
+        if (!SelectableCardPanelBase.this.faceDown) {
           // Check if click is on flip icon area
           if (hasBackFace && isClickOnFlipIcon(e)) {
             if (!flipAnimation.isAnimating()) {
@@ -101,7 +101,7 @@ public abstract class SelectableCardPanelBase extends SkinnedPanel implements
 
     // Add mouse wheel listener for card zoom (only when revealed)
     addMouseWheelListener(e -> {
-      if (!faceDown && e.getWheelRotation() < 0) {
+      if (!SelectableCardPanelBase.this.faceDown && e.getWheelRotation() < 0) {
         CardUtil zoomUtil = zoomUtilSupplier != null ? zoomUtilSupplier.get() : null;
         if (zoomUtil != null) {
           // Zoom the currently displayed face
