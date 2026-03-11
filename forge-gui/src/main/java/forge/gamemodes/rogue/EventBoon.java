@@ -1,6 +1,10 @@
 package forge.gamemodes.rogue;
 
 import forge.game.player.RegisteredPlayer;
+import forge.item.PaperCard;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public enum EventBoon implements RogueEffect {
 
@@ -32,6 +36,59 @@ public enum EventBoon implements RogueEffect {
         @Override
         public void consume(RogueRun run, EventChoiceContext ctx) {
             ctx.trigger = EventChoiceContext.NodeTriggerType.BAZAAR;
+        }
+    },
+    DECK_SWAP("deck_swap", "Planar Shuffle",
+            "Remove 3 random cards and replace them with cards from your Reward Pool.",
+            EffectType.ONESHOT) {
+        @Override
+        public void consume(RogueRun run, EventChoiceContext ctx) {
+            RogueDeck rogueDeck = run.getSelectedRogueDeck();
+            if (rogueDeck == null) return;
+
+            // Get non-commander cards from deck
+            List<PaperCard> deckCards = run.getCurrentDeck().getMain().toFlatList();
+            String commanderName = rogueDeck.getCommanderCardName();
+            deckCards.removeIf(c -> c.getName().equals(commanderName));
+            if (deckCards.isEmpty()) return;
+
+            // Pick up to 3 random cards to remove
+            Collections.shuffle(deckCards);
+            int swapCount = Math.min(3, deckCards.size());
+            List<PaperCard> removed = new ArrayList<>(deckCards.subList(0, swapCount));
+
+            // Remove from deck
+            for (PaperCard card : removed) {
+                run.getCurrentDeck().getMain().remove(card);
+            }
+
+            // Draw same count from reward pool and add to deck
+            List<PaperCard> added = rogueDeck.drawRewardOptions(swapCount, null);
+            run.addCardsToRun(added);
+            rogueDeck.removeFromRewardPool(added);
+
+            // Store for result display
+            ctx.removedCards = removed;
+            ctx.addedCards = added;
+        }
+    },
+    SURPRISE_FIGHT("surprise_fight", "Ambush!", "Fight a random Planebound on a random Plane!",
+            EffectType.ONESHOT) {
+        @Override
+        public void consume(RogueRun run, EventChoiceContext ctx) {
+            List<RoguePlanebound> all = RogueConfig.loadPlanebounds();
+            all.removeIf(p -> p.type() != RoguePlaneboundType.NORMAL);
+            Collections.shuffle(all);
+            if (all.isEmpty()) return;
+            RoguePlanebound opponent = all.get(0);
+
+            List<PaperCard> planes = RogueConfig.getAllPlanes().toFlatList();
+            Collections.shuffle(planes);
+            String randomPlaneName = planes.isEmpty() ? opponent.planeName() : planes.get(0).getName();
+
+            ctx.planebound = new RoguePlanebound(randomPlaneName, opponent.planeboundName(),
+                    opponent.deckPath(), opponent.avatarIndex(), opponent.type());
+            ctx.trigger = EventChoiceContext.NodeTriggerType.PLANEBOUND;
         }
     },
     NOTHING("nothing", "Nothing", "No effect.",

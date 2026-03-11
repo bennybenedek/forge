@@ -35,6 +35,22 @@ public enum RogueEvent {
                 EventBoon.BROWSE_WARES),
             new EventChoice("Rob Them", "You take what you want by force.",
                 EventBoon.CARAVAN_ROB)
+        )),
+
+    PLANAR_EXCHANGE("Planar Exchange",
+        "A shimmering portal offers to reshape your arsenal.",
+        List.of(
+            new EventChoice("Step Through", "The planes shift your deck...",
+                EventBoon.DECK_SWAP),
+            new EventChoice("Stay Put", "You decide not to risk it.",
+                EventBoon.NOTHING)
+        )),
+
+    AMBUSH("Ambush!",
+        "Hostile forces materialize from a rift! Prepare for battle!",
+        List.of(
+            new EventChoice("Fight!", "You have no choice but to fight.",
+                EventBoon.SURPRISE_FIGHT)
         ));
 
     public record EventChoice(String label, String resultText, EventBoon effect) {}
@@ -52,4 +68,7 @@ public enum RogueEvent {
     public String getDisplayName() { return displayName; }
     public String getDescription() { return description; }
     public List<EventChoice> getChoices() { return choices; }
+
+    @Override
+    public String toString() { return displayName; }
 }

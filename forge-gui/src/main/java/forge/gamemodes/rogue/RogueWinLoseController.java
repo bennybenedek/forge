@@ -96,8 +96,17 @@ public class RogueWinLoseController {
 
         var progress = RogueMetaProgress.getInstance();
 
+        // Resolve planebound: either from the node directly, or from an event-triggered fight
+        NodePlanebound planeboundNode = null;
+        if (currentNode instanceof NodePlanebound pb) {
+            planeboundNode = pb;
+        } else if (currentNode instanceof NodeEvent ev && ev.getEventPlanebound() != null) {
+            planeboundNode = new NodePlanebound(ev.getEventPlanebound());
+            planeboundNode.setRowIndex(currentNode.getRowIndex());
+        }
+
         // Award gold and echo rewards for ALL planebound nodes (including Boss)
-        if (currentNode instanceof NodePlanebound planeboundNode) {
+        if (planeboundNode != null) {
             goldReward = planeboundNode.getGoldReward();
             echoReward = planeboundNode.getEchoReward();
 
@@ -149,8 +158,7 @@ public class RogueWinLoseController {
         }
 
         // Award card rewards (only for non-final nodes)
-        if (currentNode instanceof NodePlanebound planeboundNode) {
-            // Award card rewards (with Elite flag for mythic rewards)
+        if (planeboundNode != null) {
             boolean isElite = planeboundNode.getPlaneboundType() == RoguePlaneboundType.ELITE;
             awardCardRewards(isElite, goldReward, echoReward);
         }
@@ -311,7 +319,9 @@ public class RogueWinLoseController {
         String defeatedBy = "";
         RoguePathNode curNode = currentRun.getCurrentNode();
         if (curNode instanceof NodePlanebound pb && pb.getRoguePlanebound() != null) {
-                defeatedBy = pb.getRoguePlanebound().planeboundName();
+            defeatedBy = pb.getRoguePlanebound().planeboundName();
+        } else if (curNode instanceof NodeEvent ev && ev.getEventPlanebound() != null) {
+            defeatedBy = ev.getEventPlanebound().planeboundName();
         }
 
         progress.addRunHistoryEntry(RogueRunHistoryEntry.fromRun(currentRun, "DEFEAT", defeatedBy));

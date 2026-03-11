@@ -184,11 +184,9 @@ public class RogueConfig {
             cachedPlanarPool = new CardPool();
 
             // Search variant cards for planes
-            int variantCount = 0;
             for (PaperCard card : db.getVariantCards().getAllCards()) {
                 if (card.getRules().getType().isPlane()) {
                     cachedPlanarPool.add(card);
-                    variantCount++;
                 }
             }
         }

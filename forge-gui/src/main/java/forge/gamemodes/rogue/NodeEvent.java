@@ -7,6 +7,7 @@ package forge.gamemodes.rogue;
 public class NodeEvent extends RoguePathNode {
 
     private RogueEvent event;
+    private transient RoguePlanebound eventPlanebound;
 
     public NodeEvent() {
         super();
@@ -18,6 +19,9 @@ public class NodeEvent extends RoguePathNode {
     }
 
     public RogueEvent getEvent() { return event; }
+
+    public RoguePlanebound getEventPlanebound() { return eventPlanebound; }
+    public void setEventPlanebound(RoguePlanebound pb) { this.eventPlanebound = pb; }
 
     @Override
     public String toString() {

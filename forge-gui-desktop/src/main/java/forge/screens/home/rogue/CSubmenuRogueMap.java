@@ -9,6 +9,7 @@ import forge.game.GameType;
 import forge.game.player.RegisteredPlayer;
 import forge.gamemodes.match.HostedMatch;
 import forge.gamemodes.rogue.*;
+import forge.gamemodes.rogue.EventChoiceContext.NodeTriggerType;
 import forge.gui.GuiBase;
 import forge.gui.SOverlayUtils;
 import forge.gui.framework.EDocID;
@@ -17,6 +18,7 @@ import forge.gui.framework.ICDoc;
 import forge.item.PaperCard;
 import forge.localinstance.achievements.RogueCommanderAchievements;
 import forge.localinstance.properties.ForgeConstants;
+import forge.localinstance.properties.ForgePreferences;
 import forge.player.GamePlayerUtil;
 import forge.screens.deckeditor.CDeckEditorUI;
 import forge.screens.deckeditor.controllers.CEditorRogue;
@@ -160,6 +162,7 @@ public enum CSubmenuRogueMap implements ICDoc {
     view.getBtnEnterNode().addActionListener(actEnterNode);
     view.getBtnEditDeck().addActionListener(actEditDeck);
     view.getBtnDevWinRun().addActionListener(e -> devWinRun());
+    view.getBtnDevNextNode().addActionListener(e -> devNextNode());
     view.getPathVisualizer().setNodeClickHandler(this::handleNodeClick);
   }
 
@@ -526,23 +529,50 @@ public enum CSubmenuRogueMap implements ICDoc {
       return;
     }
 
+    // DEV: allow picking which event to test
+    if (ForgePreferences.DEV_MODE) {
+      RogueEvent picked = (RogueEvent) javax.swing.JOptionPane.showInputDialog(
+          null, "Override event:", "[DEV] Pick Event",
+          javax.swing.JOptionPane.PLAIN_MESSAGE, null,
+          RogueEvent.values(), event);
+      if (picked != null) event = picked;
+    }
+
     EventDialog dialog = new EventDialog(event);
     RogueEvent.EventChoice choice = dialog.show();
 
     if (choice != null) {
       EventBoon boon = choice.effect();
+      EventChoiceContext ctx = new EventChoiceContext();
       if (boon.getEffectType() == RogueEffect.EffectType.ONESHOT) {
-        EventChoiceContext ctx = new EventChoiceContext();
         boon.consume(currentRun, ctx);
-        if (ctx.trigger != null) {
-          switch (ctx.trigger) {
-            case BAZAAR: runBazaarShopping(); break;
-          }
+        if (ctx.trigger == NodeTriggerType.BAZAAR) {
+            runBazaarShopping();
+        } else if (ctx.trigger == NodeTriggerType.PLANEBOUND && ctx.planebound != null) {
+            eventNode.setEventPlanebound(ctx.planebound);
+            NodePlanebound tempNode = new NodePlanebound(ctx.planebound);
+            tempNode.setRowIndex(eventNode.getRowIndex());
+            handlePlaneboundNode(tempNode);
+            return;  // win/lose controller handles completion
         }
+
       } else {
         currentRun.addEventBoon(boon);
       }
-      FOptionPane.showMessageDialog(choice.resultText(), "Event Completed");
+
+      // Build result display with card sections if applicable
+      List<EventResultPanel.CardSection> sections = new ArrayList<>();
+      if (ctx.removedCards != null && !ctx.removedCards.isEmpty())
+        sections.add(new EventResultPanel.CardSection("Cards removed:", ctx.removedCards));
+      if (ctx.addedCards != null && !ctx.addedCards.isEmpty())
+        sections.add(new EventResultPanel.CardSection("Cards added:", ctx.addedCards));
+
+      EventResultPanel resultPanel = new EventResultPanel(choice.resultText(), sections);
+      FOptionPane optionPane = new FOptionPane(null, "Event Completed", null, resultPanel,
+          List.of("OK"), 0);
+      resultPanel.initZoom(optionPane);
+      optionPane.setVisible(true);
+      optionPane.dispose();
     }
 
     eventNode.setCompleted(true);
@@ -572,6 +602,22 @@ public enum CSubmenuRogueMap implements ICDoc {
 
   public void setCurrentRun(RogueRun run) {
     this.currentRun = run;
+  }
+
+  private void devNextNode() {
+    if (currentRun == null) return;
+    RoguePathNode node = currentRun.getCurrentNode();
+    if (node == null) return;
+    // Last node — treat as win
+    if (currentRun.getCurrentNodeIndex() >= currentRun.getPath().getNodeCount() - 1) {
+      devWinRun();
+      return;
+    }
+    node.setCompleted(true);
+    currentRun.nextNode();
+    RogueMetaProgress.getInstance().onSideNodeCompleted(currentRun);
+    RogueIO.saveRun(currentRun);
+    update();
   }
 
   private void devWinRun() {

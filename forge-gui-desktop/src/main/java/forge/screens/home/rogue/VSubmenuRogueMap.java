@@ -90,6 +90,7 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
   private final FButton btnEnterNode;
   private final FButton btnEditDeck;
   private final FButton btnDevWinRun = new FButton("[DEV] Win Run");
+  private final FButton btnDevNextNode = new FButton("[DEV] Next Node");
 
   VSubmenuRogueMap() {
     lblTitle.setBackground(FSkin.getColor(FSkin.Colors.CLR_THEME2));
@@ -199,12 +200,13 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(infoRow, "w 98%!, h pref!, gap 1% 0 10px 10px");
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay()
         .add(scrollPathDisplay, "w 96%!, gap 2% 2% 0 0, pushy, growy");
-    int split = ForgePreferences.DEV_MODE ? 3 : 2;
+    int split = ForgePreferences.DEV_MODE ? 4 : 2;
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay()
         .add(btnEnterNode, "w 30%!, h 40px!, ax center, gap 0 2% 10px 20px, split " + split);
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(btnEditDeck, "w 30%!, h 40px!");
     if (ForgePreferences.DEV_MODE) {
-      VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(btnDevWinRun, "w 30%!, h 40px!");
+      VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(btnDevNextNode, "w 15%!, h 40px!");
+      VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(btnDevWinRun, "w 15%!, h 40px!");
     }
 
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().repaintSelf();
@@ -221,6 +223,10 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
 
   public JButton getBtnDevWinRun() {
     return btnDevWinRun;
+  }
+
+  public JButton getBtnDevNextNode() {
+    return btnDevNextNode;
   }
 
   public PathVisualizerPanel getPathVisualizer() {
