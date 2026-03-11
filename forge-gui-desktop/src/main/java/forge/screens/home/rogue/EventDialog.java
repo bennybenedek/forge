@@ -17,7 +17,7 @@ import net.miginfocom.swing.MigLayout;
  */
 public class EventDialog {
 
-  private static final int DIALOG_WIDTH = 500;
+  private static final int DIALOG_WIDTH = 600;
   private static final int DIALOG_HEIGHT = 400;
 
   private final MainPanel panel;
@@ -39,14 +39,14 @@ public class EventDialog {
     panel.add(lblDescription, "w 100%!, h 30px!, ax center, gap 0 0 10px 20px, wrap");
 
     for (EventChoice choice : event.getChoices()) {
-      FButton btn = new FButton("<html><center><font size=4>" + choice.label()
-          + "</font><br><font size=3>" + choice.effect().getDescription() + "</font></center></html>");
+      FButton btn = new FButton("<html><div style='padding:6px 10px;'><center><font size=4>" + choice.label()
+          + "</font><br><font size=3>" + choice.effect().getDescription() + "</font></center></div></html>");
       btn.addActionListener(e -> {
         selectedChoice = choice;
         optionPane.setResult(0);
         optionPane.setVisible(false);
       });
-      panel.add(btn, "w 70%!, h 50px!, ax center, gap 0 0 10px 10px, wrap");
+      panel.add(btn, "w 80%!, ax center, gap 0 0 10px 10px, wrap");
     }
 
     Dimension dialogSize = new Dimension(DIALOG_WIDTH, DIALOG_HEIGHT);

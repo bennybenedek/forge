@@ -41,7 +41,7 @@ public enum RogueEvent {
         "A shimmering portal offers to reshape your arsenal.",
         List.of(
             new EventChoice("Step Through", "The planes shift your deck...",
-                EventBoon.DECK_SWAP),
+                EventBoon.PLANAR_EXCHANGE),
             new EventChoice("Stay Put", "You decide not to risk it.",
                 EventBoon.NOTHING)
         )),
@@ -51,6 +51,13 @@ public enum RogueEvent {
         List.of(
             new EventChoice("Fight!", "You have no choice but to fight.",
                 EventBoon.SURPRISE_FIGHT)
+        )),
+
+    PLANAR_SACRIFICE("Planar Sacrifice",
+        "The planes demand tribute. Sacrifice cards from your deck to receive new ones.",
+        List.of(
+            new EventChoice("Sacrifice!", "The planes reshape your arsenal.",
+                EventBoon.PLANAR_SACRIFICE)
         ));
 
     public record EventChoice(String label, String resultText, EventBoon effect) {}

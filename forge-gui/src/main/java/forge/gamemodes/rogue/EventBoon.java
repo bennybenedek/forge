@@ -11,7 +11,7 @@ public enum EventBoon implements RogueEffect {
     HEALERS_TOUCH("healers_touch", "Healer's Touch", "Gain 8 life, lose 5 gold.",
             EffectType.ONESHOT) {
         @Override
-        public void consume(RogueRun run, EventChoiceContext ctx) {
+        public void applyEffect(RogueRun run, EventChoiceContext ctx) {
             run.setCurrentLife(run.getCurrentLife() + 8);
             run.setCurrentGold(run.getCurrentGold() - 5);
         }
@@ -19,14 +19,14 @@ public enum EventBoon implements RogueEffect {
     RIFT_ENERGY("rift_energy", "Rift Energy", "Gain 10 gold.",
             EffectType.ONESHOT) {
         @Override
-        public void consume(RogueRun run, EventChoiceContext ctx) {
+        public void applyEffect(RogueRun run, EventChoiceContext ctx) {
             run.setCurrentGold(run.getCurrentGold() + 10);
         }
     },
     CARAVAN_ROB("caravan_rob", "Caravan Plunder", "Lose 3 life, gain 8 gold.",
             EffectType.ONESHOT) {
         @Override
-        public void consume(RogueRun run, EventChoiceContext ctx) {
+        public void applyEffect(RogueRun run, EventChoiceContext ctx) {
             run.setCurrentLife(run.getCurrentLife() - 3);
             run.setCurrentGold(run.getCurrentGold() + 8);
         }
@@ -34,22 +34,23 @@ public enum EventBoon implements RogueEffect {
     BROWSE_WARES("browse_wares", "Browse Wares", "Opens a bazaar.",
             EffectType.ONESHOT) {
         @Override
-        public void consume(RogueRun run, EventChoiceContext ctx) {
+        public void applyEffect(RogueRun run, EventChoiceContext ctx) {
             ctx.trigger = EventChoiceContext.NodeTriggerType.BAZAAR;
         }
     },
-    DECK_SWAP("deck_swap", "Planar Shuffle",
-            "Remove 3 random cards and replace them with cards from your Reward Pool.",
+    PLANAR_EXCHANGE("deck_swap", "Planar Shuffle",
+            "Remove 3 random cards (excluding basic lands) and replace them with cards from your Reward Pool.",
             EffectType.ONESHOT) {
         @Override
-        public void consume(RogueRun run, EventChoiceContext ctx) {
+        public void applyEffect(RogueRun run, EventChoiceContext ctx) {
             RogueDeck rogueDeck = run.getSelectedRogueDeck();
             if (rogueDeck == null) return;
 
-            // Get non-commander cards from deck
+            // Get non-commander, non-basic-land cards from deck
             List<PaperCard> deckCards = run.getCurrentDeck().getMain().toFlatList();
             String commanderName = rogueDeck.getCommanderCardName();
-            deckCards.removeIf(c -> c.getName().equals(commanderName));
+            deckCards.removeIf(c -> c.getName().equals(commanderName)
+                    || c.getRules().getType().isBasicLand());
             if (deckCards.isEmpty()) return;
 
             // Pick up to 3 random cards to remove
@@ -75,7 +76,7 @@ public enum EventBoon implements RogueEffect {
     SURPRISE_FIGHT("surprise_fight", "Ambush!", "Fight a random Planebound on a random Plane!",
             EffectType.ONESHOT) {
         @Override
-        public void consume(RogueRun run, EventChoiceContext ctx) {
+        public void applyEffect(RogueRun run, EventChoiceContext ctx) {
             List<RoguePlanebound> all = RogueConfig.loadPlanebounds();
             all.removeIf(p -> p.type() != RoguePlaneboundType.NORMAL);
             Collections.shuffle(all);
@@ -89,6 +90,16 @@ public enum EventBoon implements RogueEffect {
             ctx.planebound = new RoguePlanebound(randomPlaneName, opponent.planeboundName(),
                     opponent.deckPath(), opponent.avatarIndex(), opponent.type());
             ctx.trigger = EventChoiceContext.NodeTriggerType.PLANEBOUND;
+        }
+    },
+    PLANAR_SACRIFICE("planar_sacrifice", "Planar Sacrifice",
+            "Choose 3 cards to remove (excluding basic lands), then receive 3 random cards from your Reward Pool.",
+            EffectType.ONESHOT) {
+        @Override
+        public void applyEffect(RogueRun run, EventChoiceContext ctx) {
+            ctx.trigger = EventChoiceContext.NodeTriggerType.CARD_REMOVAL;
+            ctx.removeCount = 3;
+            ctx.drawCount = 3;
         }
     },
     NOTHING("nothing", "Nothing", "No effect.",
@@ -116,8 +127,8 @@ public enum EventBoon implements RogueEffect {
         this.effectType = effectType;
     }
 
-    /** Override in ONESHOT constants to apply immediate effects. */
-    public void consume(RogueRun run, EventChoiceContext ctx) {}
+    /** Override in ONESHOT constants to apply immediate event effects. */
+    public void applyEffect(RogueRun run, EventChoiceContext ctx) {}
 
     @Override
     public EffectType getEffectType() { return effectType; }

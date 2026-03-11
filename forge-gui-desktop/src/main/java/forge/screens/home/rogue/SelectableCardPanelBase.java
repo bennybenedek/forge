@@ -45,12 +45,14 @@ public abstract class SelectableCardPanelBase extends SkinnedPanel implements
    *
    * @param card             The card to display
    * @param zoomUtilSupplier Supplier for zoom utility (accessed at runtime, can return null)
+   * @param faceDown         Whether the card starts face-down (for flip animation reveal)
    */
-  public SelectableCardPanelBase(PaperCard card, Supplier<CardUtil> zoomUtilSupplier) {
+  public SelectableCardPanelBase(PaperCard card, Supplier<CardUtil> zoomUtilSupplier,
+      boolean faceDown) {
     super(null);
     this.card = card;
     this.selected = false;
-    this.faceDown = true; // Start face-down
+    this.faceDown = faceDown;
     this.flipAnimation = new CardUtil.FlipAnimation(this);
     this.cardPicture = new CardPicturePanel();
     this.zoomUtilSupplier = zoomUtilSupplier;
@@ -62,7 +64,6 @@ public abstract class SelectableCardPanelBase extends SkinnedPanel implements
     setOpaque(false);
     setLayout(null); // Manual layout
 
-    // Set the card to display (start with card back)
     updateCardDisplay();
     cardPicture.setOpaque(false);
     add(cardPicture);

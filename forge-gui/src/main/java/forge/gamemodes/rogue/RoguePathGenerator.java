@@ -12,34 +12,27 @@ import java.util.List;
 public class RoguePathGenerator {
 
     private static int normalPlaneboundIndex;
-    private static int elitePlaneboundIndex;
-    private static int eventIndex;
     private static int currentRowIndex;
-    private static List<RoguePlanebound> elitePlanebounds;
-    private static List<RogueEvent> shuffledEvents;
 
-    /**
+  /**
      * Generate a random path with multiple planes per row.
     */
     public static void generateRandomPath(RogueRun run) {
+        currentRowIndex = 0;
+        normalPlaneboundIndex = 0;
+        int elitePlaneboundIndex = 0;
+        int eventIndex = 0;
+
         List<RoguePlanebound> availablePlanebounds = RogueConfig.loadPlanebounds();
+        List<RogueEvent> events = new ArrayList<>(List.of(RogueEvent.values()));
 
         // Split planebounds into normal, elite and boss lists
         List<RoguePlanebound> normalPlanebounds = getPlaneboundsOfType(
             availablePlanebounds, RoguePlaneboundType.NORMAL);
-        elitePlanebounds = getPlaneboundsOfType(
-            availablePlanebounds, RoguePlaneboundType.ELITE);
+        List<RoguePlanebound> elitePlanebounds = getPlaneboundsOfType(
+          availablePlanebounds, RoguePlaneboundType.ELITE);
         List<RoguePlanebound> bossPlanebounds = getPlaneboundsOfType(
             availablePlanebounds, RoguePlaneboundType.BOSS);
-
-        normalPlaneboundIndex = 0;
-        elitePlaneboundIndex = 0;
-        eventIndex = 0;
-        currentRowIndex = 0;
-
-        // Shuffle events for unique assignment
-        shuffledEvents = new ArrayList<>(List.of(RogueEvent.values()));
-        Collections.shuffle(shuffledEvents, MyRandom.getRandom());
 
         // Validate we have enough unique planebounds of each type
         validateSize(13, normalPlanebounds.size());
@@ -50,6 +43,7 @@ public class RoguePathGenerator {
         shufflePlanebounds(normalPlanebounds);
         shufflePlanebounds(elitePlanebounds);
         shufflePlanebounds(bossPlanebounds);
+        shuffleEvents(events);
 
         // Create nodes for the path
         List<RoguePathNode> nodes = new ArrayList<>();
@@ -60,17 +54,14 @@ public class RoguePathGenerator {
         // Row 1: 2-4 NORMAL planes
         addNormalPlanebundRow(nodes, normalPlanebounds, createRandomNodeCount(2, 4));
 
-        // Row 2: 2-3 Special Nodes (Sanctum, Bazaar, Chance for additional Sanctum)
+        // Row 2: 2-3 Special Nodes (with higher chance for Sanctum)
         List<RoguePathNode> specialNodes = new ArrayList<>();
         specialNodes.add(new NodeSanctum());
+        specialNodes.add(new NodeSanctum());
         specialNodes.add(new NodeBazaar());
-        if (MyRandom.getRandom().nextBoolean()) {
-            specialNodes.add(new NodeSanctum());
-        }
-        if (MyRandom.getRandom().nextBoolean()) {
-            specialNodes.add(new NodeEvent(shuffledEvents.get(eventIndex++)));
-        }
-        addSpecialNodesRow(nodes, specialNodes);
+        specialNodes.add(new NodeEvent(events.get(eventIndex++)));
+
+        addSpecialNodesRow(nodes, specialNodes, createRandomNodeCount(2, specialNodes.size()));
 
         // Row 3: 3 planes - NORMAL, NORMAL, ELITE, Chance for second ELITE)
         List<RoguePlanebound> planeboundNodes = new ArrayList<>();
@@ -79,34 +70,29 @@ public class RoguePathGenerator {
         planeboundNodes.add(normalPlanebounds.get(normalPlaneboundIndex++));
 
         if (MyRandom.getRandom().nextBoolean()) {
-            planeboundNodes.add(elitePlanebounds.get(elitePlaneboundIndex++));
+            planeboundNodes.add(elitePlanebounds.get(elitePlaneboundIndex));
         }
         addMixedPlanebundRow(nodes, planeboundNodes);
 
-        // Row 4: 2-3 Special Nodes (Sanctum, Bazaar, Chance for additional Sanctum)
+        // Row 4: Special Nodes (with higher chance for Bazaar)
         specialNodes = new ArrayList<>();
         specialNodes.add(new NodeSanctum());
         specialNodes.add(new NodeBazaar());
-        if (MyRandom.getRandom().nextBoolean()) {
-            specialNodes.add(new NodeBazaar());
-        }
-        if (MyRandom.getRandom().nextBoolean()) {
-            specialNodes.add(new NodeEvent(shuffledEvents.get(eventIndex++)));
-        }
-        addSpecialNodesRow(nodes, specialNodes);
+        specialNodes.add(new NodeBazaar());
+        specialNodes.add(new NodeEvent(events.get(eventIndex++)));
 
-        // Row 5: 2 - 3 NORMAL planes
+        addSpecialNodesRow(nodes, specialNodes, createRandomNodeCount(2, specialNodes.size()));
+
+        // Row 5: NORMAL planes
         addNormalPlanebundRow(nodes, normalPlanebounds, createRandomNodeCount(2, 3));
 
-        // Row 6: Sanctum, Bazaar
-        // Random columnIndices for the nodes
+        // Row 6: Special Nodes (no higher chance for any type)
         specialNodes = new ArrayList<>();
         specialNodes.add(new NodeSanctum());
         specialNodes.add(new NodeBazaar());
-        if (MyRandom.getRandom().nextBoolean()) {
-            specialNodes.add(new NodeEvent(shuffledEvents.get(eventIndex++)));
-        }
-        addSpecialNodesRow(nodes, specialNodes);
+        specialNodes.add(new NodeEvent(events.get(eventIndex)));
+
+        addSpecialNodesRow(nodes, specialNodes, createRandomNodeCount(2, specialNodes.size() - 1));
 
         // Row 7: 1 BOSS plane
         addPlaneboundNode(nodes, bossPlanebounds.get(0), 0);
@@ -135,7 +121,7 @@ public class RoguePathGenerator {
 
     private static void addMixedPlanebundRow(List<RoguePathNode> allNodes,
         List<RoguePlanebound> mixedPlanebounds) {
-        //shuffle the special nodes to randomize their order
+        //shuffle the planebound nodes to randomize their order
         Collections.shuffle(mixedPlanebounds, MyRandom.getRandom());
 
         for (int columnIndex = 0; columnIndex < mixedPlanebounds.size(); columnIndex++) {
@@ -150,6 +136,17 @@ public class RoguePathGenerator {
         Collections.shuffle(specialNodes, MyRandom.getRandom());
 
         for (int columnIndex = 0; columnIndex < specialNodes.size(); columnIndex++) {
+            addSpecialNode(allNodes, specialNodes.get(columnIndex), columnIndex);
+        }
+        currentRowIndex++;
+    }
+
+    private static void addSpecialNodesRow(List<RoguePathNode> allNodes,
+        List<RoguePathNode> specialNodes, int columnCount) {
+        //shuffle the special nodes to randomize their order
+        Collections.shuffle(specialNodes, MyRandom.getRandom());
+
+        for (int columnIndex = 0; columnIndex < columnCount; columnIndex++) {
             addSpecialNode(allNodes, specialNodes.get(columnIndex), columnIndex);
         }
         currentRowIndex++;
@@ -187,5 +184,9 @@ public class RoguePathGenerator {
 
     private static void shufflePlanebounds(List<RoguePlanebound> planebounds) {
         Collections.shuffle(planebounds, MyRandom.getRandom());
+    }
+
+    private static void shuffleEvents(List<RogueEvent> events) {
+        Collections.shuffle(events, MyRandom.getRandom());
     }
 }

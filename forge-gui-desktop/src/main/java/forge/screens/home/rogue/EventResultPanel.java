@@ -18,9 +18,9 @@ import net.miginfocom.swing.MigLayout;
  */
 public class EventResultPanel extends SkinnedPanel {
 
-    private static final int CARD_WIDTH = 120;
+    private static final int CARD_WIDTH = 180;
     private static final int CARD_HEIGHT = Math.round(CARD_WIDTH * CardPanel.ASPECT_RATIO);
-    private static final int CARD_SPACING = 8;
+    private static final int CARD_SPACING = 12;
 
     private final List<ReadOnlyCardPanel> allCardPanels = new ArrayList<>();
     private CardUtil zoomUtil;
@@ -65,19 +65,37 @@ public class EventResultPanel extends SkinnedPanel {
             add(cardRow, "ax center, wrap");
         }
 
-        // Calculate preferred size
-        int width = 650;
-        int height = 50; // message + padding
+        // Calculate preferred size based on content, capped to screen bounds
+        boolean hasCards = sections.stream().anyMatch(
+                s -> s.cards() != null && !s.cards().isEmpty());
+        int maxCardsInRow = sections.stream()
+                .filter(s -> s.cards() != null)
+                .mapToInt(s -> s.cards().size())
+                .max().orElse(0);
+        int desiredWidth = hasCards
+                ? Math.max(650, maxCardsInRow * (CARD_WIDTH + CARD_SPACING) - CARD_SPACING + 40)
+                : 650;
+        int desiredHeight = 50; // message + padding
         for (CardSection section : sections) {
             if (section.cards() != null && !section.cards().isEmpty()) {
-                height += 25 + CARD_HEIGHT + 10; // label + cards + gap
+                desiredHeight += 25 + CARD_HEIGHT + 10; // label + cards + gap
             }
         }
-        if (sections.isEmpty() || sections.stream().allMatch(
-                s -> s.cards() == null || s.cards().isEmpty())) {
-            height = 50; // text-only
+        if (!hasCards) {
+            desiredHeight = 50; // text-only
         }
-        Dimension size = new Dimension(width, height);
+
+        // Cap to usable screen space (same approach as CardRewardDialog)
+        GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment()
+                .getDefaultScreenDevice().getDefaultConfiguration();
+        Rectangle screenBounds = gc.getBounds();
+        Insets screenInsets = Toolkit.getDefaultToolkit().getScreenInsets(gc);
+        int maxWidth = (int) ((screenBounds.width - screenInsets.left - screenInsets.right) * 0.9) - 80;
+        int maxHeight = (int) ((screenBounds.height - screenInsets.top - screenInsets.bottom) * 0.9) - 80;
+
+        Dimension size = new Dimension(
+                Math.min(desiredWidth, maxWidth),
+                Math.min(desiredHeight, maxHeight));
         setPreferredSize(size);
         setMinimumSize(size);
     }
@@ -96,10 +114,7 @@ public class EventResultPanel extends SkinnedPanel {
     private static class ReadOnlyCardPanel extends SelectableCardPanelBase {
 
         ReadOnlyCardPanel(PaperCard card, Supplier<CardUtil> zoomSupplier) {
-            super(card, zoomSupplier);
-            // Start face-up immediately (no flip animation)
-            faceDown = false;
-            updateCardDisplay();
+            super(card, zoomSupplier, false);
         }
 
         @Override

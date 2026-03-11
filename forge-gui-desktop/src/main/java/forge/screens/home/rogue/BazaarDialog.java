@@ -316,7 +316,7 @@ public class BazaarDialog {
   private class SelectableCardPanel extends SelectableCardPanelBase {
 
     public SelectableCardPanel(PaperCard card) {
-      super(card, () -> BazaarDialog.this.zoomUtil);
+      super(card, () -> BazaarDialog.this.zoomUtil, true);
     }
 
     /**

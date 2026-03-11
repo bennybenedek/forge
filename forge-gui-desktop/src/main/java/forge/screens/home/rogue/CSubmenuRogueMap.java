@@ -392,10 +392,7 @@ public enum CSubmenuRogueMap implements ICDoc {
 
     } catch (Exception e) {
       e.printStackTrace();
-      SwingUtilities.invokeLater(() -> {
-        SOverlayUtils.hideOverlay();
-        // TODO: Show error message to user
-      });
+      SwingUtilities.invokeLater(SOverlayUtils::hideOverlay);
     }
 
     SwingUtilities.invokeLater(SOverlayUtils::hideOverlay);
@@ -538,14 +535,14 @@ public enum CSubmenuRogueMap implements ICDoc {
       if (picked != null) event = picked;
     }
 
-    EventDialog dialog = new EventDialog(event);
-    RogueEvent.EventChoice choice = dialog.show();
+    EventDialog eventDialog = new EventDialog(event);
+    RogueEvent.EventChoice choice = eventDialog.show();
 
     if (choice != null) {
       EventBoon boon = choice.effect();
       EventChoiceContext ctx = new EventChoiceContext();
       if (boon.getEffectType() == RogueEffect.EffectType.ONESHOT) {
-        boon.consume(currentRun, ctx);
+        boon.applyEffect(currentRun, ctx);
         if (ctx.trigger == NodeTriggerType.BAZAAR) {
             runBazaarShopping();
         } else if (ctx.trigger == NodeTriggerType.PLANEBOUND && ctx.planebound != null) {
@@ -554,6 +551,30 @@ public enum CSubmenuRogueMap implements ICDoc {
             tempNode.setRowIndex(eventNode.getRowIndex());
             handlePlaneboundNode(tempNode);
             return;  // win/lose controller handles completion
+        } else if (ctx.trigger == NodeTriggerType.CARD_REMOVAL) {
+            // Get non-commander deck cards
+            List<PaperCard> deckCards = currentRun.getCurrentDeck().getMain().toFlatList();
+            String cmdName = currentRun.getSelectedRogueDeck().getCommanderCardName();
+            deckCards.removeIf(c -> c.getName().equals(cmdName)
+                || c.getRules().getType().isBasicLand());
+
+            CardSelectionDialog cardSelectionDialog = new CardSelectionDialog(
+                "Planar Sacrifice", "Choose " + ctx.removeCount + " cards to remove.",
+                deckCards, ctx.removeCount);
+            List<PaperCard> removed = cardSelectionDialog.show();
+
+            for (PaperCard card : removed) {
+                currentRun.getCurrentDeck().getMain().remove(card);
+            }
+            ctx.removedCards = removed;
+
+            if (ctx.drawCount > 0) {
+                RogueDeck rd = currentRun.getSelectedRogueDeck();
+                List<PaperCard> added = rd.drawRewardOptions(ctx.drawCount, null);
+                currentRun.addCardsToRun(added);
+                rd.removeFromRewardPool(added);
+                ctx.addedCards = added;
+            }
         }
 
       } else {
