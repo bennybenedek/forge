@@ -3,6 +3,7 @@ package forge.screens.match;
 import forge.game.GameLogEntry;
 import forge.game.GameLogEntryType;
 import forge.game.GameView;
+import forge.gui.GuiBase;
 import forge.gui.SOverlayUtils;
 import forge.gui.UiCommand;
 import forge.gui.interfaces.IWinLoseView;
