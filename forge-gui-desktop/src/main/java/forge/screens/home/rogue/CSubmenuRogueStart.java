@@ -307,6 +307,11 @@ public enum CSubmenuRogueStart implements ICDoc {
           RogueRunHistoryEntry.fromRun(existingRun, "ABANDONED", ""));
     }
 
+    // Delete all old run save files — history is preserved in RogueMetaProgress
+    for (RogueRun old : RogueIO.loadAllRuns()) {
+      RogueIO.deleteRun(old);
+    }
+
     // Create new run and snapshot active echo boons
     RogueRun newRun = new RogueRun(selectedDeck);
     newRun.setDescensionLevel(selectedDescensionLevel);
