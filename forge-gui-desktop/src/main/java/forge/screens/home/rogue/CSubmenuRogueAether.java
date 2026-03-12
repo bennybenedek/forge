@@ -1,9 +1,9 @@
 package forge.screens.home.rogue;
 
 import forge.gamemodes.rogue.AetherUpgrade;
-import forge.gamemodes.rogue.EchoBoon;
 import forge.gamemodes.rogue.RogueMetaProgress;
 import forge.gamemodes.rogue.RogueTutorial;
+import forge.gamemodes.rogue.effect.EchoBoon;
 import forge.gui.framework.EDocID;
 import forge.gui.framework.ICDoc;
 import forge.screens.home.CHomeUI;

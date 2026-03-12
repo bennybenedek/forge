@@ -1,6 +1,12 @@
-package forge.gamemodes.rogue;
+package forge.gamemodes.rogue.effect;
 
 import forge.game.player.RegisteredPlayer;
+import forge.gamemodes.rogue.RogueConfig;
+import forge.gamemodes.rogue.RoguePlanebound;
+import forge.gamemodes.rogue.RoguePlaneboundType;
+import forge.gamemodes.rogue.RogueRun;
+import forge.gamemodes.rogue.path.NodePlanebound;
+import forge.gamemodes.rogue.path.RoguePathNode;
 import forge.util.MyRandom;
 import java.util.*;
 

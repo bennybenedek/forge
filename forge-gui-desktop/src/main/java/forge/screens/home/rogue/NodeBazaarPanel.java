@@ -1,6 +1,6 @@
 package forge.screens.home.rogue;
 
-import forge.gamemodes.rogue.NodeBazaar;
+import forge.gamemodes.rogue.path.NodeBazaar;
 import java.awt.*;
 
 /**

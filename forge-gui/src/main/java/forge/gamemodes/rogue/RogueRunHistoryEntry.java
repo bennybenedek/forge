@@ -1,6 +1,9 @@
 package forge.gamemodes.rogue;
 
 import forge.deck.Deck;
+import forge.gamemodes.rogue.effect.EchoBoon;
+import forge.gamemodes.rogue.effect.RogueEffect;
+import forge.gamemodes.rogue.path.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;

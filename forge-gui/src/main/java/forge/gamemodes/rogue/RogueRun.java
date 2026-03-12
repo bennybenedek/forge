@@ -3,6 +3,12 @@ package forge.gamemodes.rogue;
 import com.thoughtworks.xstream.annotations.XStreamOmitField;
 import forge.deck.Deck;
 import forge.gamemodes.match.HostedMatch;
+import forge.gamemodes.rogue.effect.ChestLoot;
+import forge.gamemodes.rogue.effect.EchoBoon;
+import forge.gamemodes.rogue.effect.EventBoon;
+import forge.gamemodes.rogue.effect.RogueEffect;
+import forge.gamemodes.rogue.path.RoguePath;
+import forge.gamemodes.rogue.path.RoguePathNode;
 import forge.item.PaperCard;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -37,13 +43,13 @@ public class RogueRun {
     private int descensionLevel;                // 0 = no descension; XStream defaults int to 0 for old saves
 
     // Echo boons (snapshotted from RogueMetaProgress at run creation)
-    private List<RunBoon> activeEchoBoons;
+    private List<RogueRunBoon> activeEchoBoons;
 
     // Event boons (gained from event nodes during the run)
-    private List<RunBoon> activeEventBoons;
+    private List<RogueRunBoon> activeEventBoons;
 
     // Chest boons (gained from chest nodes during the run)
-    private List<RunBoon> activeChestBoons;
+    private List<RogueRunBoon> activeChestBoons;
 
     // Match History
     private int matchesWon;                     // Win counter
@@ -322,14 +328,14 @@ public class RogueRun {
         for (EchoBoon boon : progress.getActiveEchoBoons()) {
             int rank = progress.getBoonRank(boon);
             int charges = boon.getChargesForRank(rank);
-            activeEchoBoons.add(new RunBoon(boon.getId(), rank, charges));
+            activeEchoBoons.add(new RogueRunBoon(boon.getId(), rank, charges));
         }
     }
 
     public List<RogueEffect> getActiveEchoBoons() {
         if (activeEchoBoons == null) activeEchoBoons = new ArrayList<>();
         List<RogueEffect> result = new ArrayList<>();
-        for (RunBoon rb : activeEchoBoons) {
+        for (RogueRunBoon rb : activeEchoBoons) {
             EchoBoon eb = EchoBoon.fromId(rb.getId());
             if (eb != null) result.add(eb);
         }
@@ -340,7 +346,7 @@ public class RogueRun {
     public List<RogueEffect> getActiveEventBoons() {
         if (activeEventBoons == null) activeEventBoons = new ArrayList<>();
         List<RogueEffect> result = new ArrayList<>();
-        for (RunBoon rb : activeEventBoons) {
+        for (RogueRunBoon rb : activeEventBoons) {
             EventBoon eb = EventBoon.fromId(rb.getId());
             if (eb != null) result.add(eb);
         }
@@ -350,14 +356,14 @@ public class RogueRun {
     public void addEventBoon(EventBoon boon) {
         if (activeEventBoons == null) activeEventBoons = new ArrayList<>();
         int charges = boon.getChargesForRank(0);
-        activeEventBoons.add(new RunBoon(boon.getId(), 0, charges));
+        activeEventBoons.add(new RogueRunBoon(boon.getId(), 0, charges));
     }
 
     // Chest boon management
     public List<RogueEffect> getActiveChestBoons() {
         if (activeChestBoons == null) activeChestBoons = new ArrayList<>();
         List<RogueEffect> result = new ArrayList<>();
-        for (RunBoon rb : activeChestBoons) {
+        for (RogueRunBoon rb : activeChestBoons) {
             ChestLoot cl = ChestLoot.fromId(rb.getId());
             if (cl != null) result.add(cl);
         }
@@ -367,12 +373,12 @@ public class RogueRun {
     public void addChestBoon(ChestLoot loot) {
         if (activeChestBoons == null) activeChestBoons = new ArrayList<>();
         int charges = loot.getChargesForRank(0);
-        activeChestBoons.add(new RunBoon(loot.getId(), 0, charges));
+        activeChestBoons.add(new RogueRunBoon(loot.getId(), 0, charges));
     }
 
     // Boon queries
     public int getRunBoonRank(String id) {
-        RunBoon rb = findRunBoon(id);
+        RogueRunBoon rb = findRunBoon(id);
         return rb != null ? rb.getRank() : 0;
     }
 
@@ -383,11 +389,11 @@ public class RogueRun {
         consumeFromList(activeChestBoons, id);
     }
 
-    private void consumeFromList(List<RunBoon> list, String id) {
+    private void consumeFromList(List<RogueRunBoon> list, String id) {
         if (list == null) return;
-        Iterator<RunBoon> it = list.iterator();
+        Iterator<RogueRunBoon> it = list.iterator();
         while (it.hasNext()) {
-            RunBoon rb = it.next();
+            RogueRunBoon rb = it.next();
             if (rb.getId().equals(id) && rb.consumeCharge()) {
                 it.remove();
                 return;
@@ -395,15 +401,15 @@ public class RogueRun {
         }
     }
 
-    private RunBoon findRunBoon(String id) {
+    private RogueRunBoon findRunBoon(String id) {
         if (activeEchoBoons != null)
-            for (RunBoon rb : activeEchoBoons)
+            for (RogueRunBoon rb : activeEchoBoons)
                 if (rb.getId().equals(id)) return rb;
         if (activeEventBoons != null)
-            for (RunBoon rb : activeEventBoons)
+            for (RogueRunBoon rb : activeEventBoons)
                 if (rb.getId().equals(id)) return rb;
         if (activeChestBoons != null)
-            for (RunBoon rb : activeChestBoons)
+            for (RogueRunBoon rb : activeChestBoons)
                 if (rb.getId().equals(id)) return rb;
         return null;
     }

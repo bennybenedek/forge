@@ -1,6 +1,8 @@
-package forge.gamemodes.rogue;
+package forge.gamemodes.rogue.effect;
 
 import forge.game.player.RegisteredPlayer;
+import forge.gamemodes.rogue.RogueMetaProgress;
+import forge.gamemodes.rogue.RogueRun;
 
 public enum ChestLoot implements RogueEffect {
 

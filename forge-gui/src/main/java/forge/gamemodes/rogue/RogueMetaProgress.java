@@ -4,6 +4,8 @@ import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.security.NoTypePermission;
 import com.thoughtworks.xstream.security.NullPermission;
 import com.thoughtworks.xstream.security.PrimitiveTypePermission;
+import forge.gamemodes.rogue.effect.DescensionLevel;
+import forge.gamemodes.rogue.effect.EchoBoon;
 import forge.util.IgnoringXStream;
 import java.io.BufferedOutputStream;
 import java.io.File;

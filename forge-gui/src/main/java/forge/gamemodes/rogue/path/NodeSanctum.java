@@ -1,4 +1,4 @@
-package forge.gamemodes.rogue;
+package forge.gamemodes.rogue.path;
 
 /**
  * Represents a Sanctum node in a Rogue Commander path.

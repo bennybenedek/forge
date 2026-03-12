@@ -1,7 +1,8 @@
-package forge.gamemodes.rogue;
+package forge.gamemodes.rogue.effect;
 
 import forge.deck.CardPool;
 import forge.game.player.RegisteredPlayer;
+import forge.gamemodes.rogue.*;
 import forge.item.IPaperCard;
 import forge.item.PaperCard;
 import forge.model.FModel;

@@ -1,4 +1,4 @@
-package forge.gamemodes.rogue;
+package forge.gamemodes.rogue.path;
 
 /**
  * Abstract base class for all node types in a Rogue Commander path.

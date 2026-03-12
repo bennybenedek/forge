@@ -3,13 +3,17 @@ package forge.gamemodes.rogue;
 import forge.LobbyPlayer;
 import forge.game.GameView;
 import forge.game.player.PlayerView;
+import forge.gamemodes.rogue.effect.DefeatContext;
+import forge.gamemodes.rogue.effect.RogueEffectComposite;
+import forge.gamemodes.rogue.path.NodeEvent;
+import forge.gamemodes.rogue.path.NodePlanebound;
+import forge.gamemodes.rogue.path.RoguePathNode;
 import forge.gui.interfaces.IButton;
 import forge.gui.interfaces.IWinLoseView;
 import forge.item.PaperCard;
 import forge.localinstance.achievements.RogueCommanderAchievements;
 import forge.localinstance.skin.FSkinProp;
 import forge.player.GamePlayerUtil;
-import java.util.ArrayList;
 import java.util.List;
 
 /**

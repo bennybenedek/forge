@@ -1,4 +1,4 @@
-package forge.gamemodes.rogue;
+package forge.gamemodes.rogue.effect;
 
 /**
  * Mutable context for onCardSelection triggers (card rewards AND bazaar).

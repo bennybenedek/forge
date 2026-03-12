@@ -1,4 +1,4 @@
-package forge.gamemodes.rogue;
+package forge.gamemodes.rogue.path;
 
 import java.util.ArrayList;
 import java.util.Comparator;

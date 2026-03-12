@@ -1,6 +1,7 @@
-package forge.gamemodes.rogue;
+package forge.gamemodes.rogue.effect;
 
 import forge.game.player.RegisteredPlayer;
+import forge.gamemodes.rogue.RogueRun;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;

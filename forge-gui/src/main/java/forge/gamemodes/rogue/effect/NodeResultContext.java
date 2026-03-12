@@ -1,5 +1,6 @@
-package forge.gamemodes.rogue;
+package forge.gamemodes.rogue.effect;
 
+import forge.gamemodes.rogue.RoguePlanebound;
 import forge.item.PaperCard;
 import java.util.List;
 

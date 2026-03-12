@@ -1,6 +1,9 @@
 package forge.screens.home.rogue;
 
 import forge.gamemodes.rogue.*;
+import forge.gamemodes.rogue.effect.DescensionLevel;
+import forge.gamemodes.rogue.effect.RogueEffectComposite;
+import forge.gamemodes.rogue.path.RoguePathGenerator;
 import forge.gui.framework.EDocID;
 import forge.gui.framework.ICDoc;
 import forge.screens.home.CHomeUI;

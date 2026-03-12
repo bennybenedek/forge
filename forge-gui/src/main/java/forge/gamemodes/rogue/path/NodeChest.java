@@ -1,4 +1,6 @@
-package forge.gamemodes.rogue;
+package forge.gamemodes.rogue.path;
+
+import forge.gamemodes.rogue.effect.ChestLoot;
 
 /**
  * Represents a Loot node in a Rogue Commander path.

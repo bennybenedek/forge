@@ -1,6 +1,6 @@
 package forge.screens.home.rogue;
 
-import forge.gamemodes.rogue.NodeChest;
+import forge.gamemodes.rogue.path.NodeChest;
 import java.awt.*;
 
 /**

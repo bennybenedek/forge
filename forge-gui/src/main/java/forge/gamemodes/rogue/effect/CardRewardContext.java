@@ -1,4 +1,4 @@
-package forge.gamemodes.rogue;
+package forge.gamemodes.rogue.effect;
 
 /**
  * Mutable context for onCardReward triggers (card reward nodes only).

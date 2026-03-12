@@ -5,14 +5,14 @@ package forge.gamemodes.rogue;
  * Stores the boon ID, its rank, and remaining consumption charges.
  * Charges of -1 means permanent (never consumed).
  */
-public class RunBoon {
+public class RogueRunBoon {
     private String id;
     private int rank;
     private int charges;  // -1 = permanent, >0 = remaining charges
 
-    public RunBoon() {} // XStream
+    public RogueRunBoon() {} // XStream
 
-    public RunBoon(String id, int rank, int charges) {
+    public RogueRunBoon(String id, int rank, int charges) {
         this.id = id;
         this.rank = rank;
         this.charges = charges;

@@ -1,6 +1,6 @@
 package forge.screens.home.rogue;
 
-import forge.gamemodes.rogue.*;
+import forge.gamemodes.rogue.path.*;
 
 /**
  * Factory for creating the appropriate panel for each node type. Centralizes the mapping between

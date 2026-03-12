@@ -1,6 +1,6 @@
 package forge.screens.home.rogue;
 
-import forge.gamemodes.rogue.RoguePathNode;
+import forge.gamemodes.rogue.path.RoguePathNode;
 import java.awt.*;
 
 /**

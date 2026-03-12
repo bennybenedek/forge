@@ -1,5 +1,8 @@
-package forge.gamemodes.rogue;
+package forge.gamemodes.rogue.path;
 
+import forge.gamemodes.rogue.*;
+import forge.gamemodes.rogue.effect.ChestLoot;
+import forge.gamemodes.rogue.effect.RogueEffectComposite;
 import forge.util.MyRandom;
 import java.util.ArrayList;
 import java.util.Collections;

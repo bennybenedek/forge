@@ -1,5 +1,8 @@
 package forge.gamemodes.rogue;
 
+import forge.gamemodes.rogue.effect.CardRewardContext;
+import forge.gamemodes.rogue.effect.CardSelectionContext;
+import forge.gamemodes.rogue.effect.RogueEffectComposite;
 import forge.item.PaperCard;
 import forge.item.PaperCardPredicates;
 import java.util.ArrayList;

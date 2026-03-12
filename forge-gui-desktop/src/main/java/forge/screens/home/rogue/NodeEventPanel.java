@@ -1,6 +1,6 @@
 package forge.screens.home.rogue;
 
-import forge.gamemodes.rogue.NodeEvent;
+import forge.gamemodes.rogue.path.NodeEvent;
 import java.awt.*;
 
 /**

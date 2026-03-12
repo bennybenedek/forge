@@ -1,6 +1,6 @@
 package forge.screens.home.rogue;
 
-import forge.gamemodes.rogue.NodeSanctum;
+import forge.gamemodes.rogue.path.NodeSanctum;
 import java.awt.*;
 
 /**

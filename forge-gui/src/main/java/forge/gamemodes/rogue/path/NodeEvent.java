@@ -1,4 +1,7 @@
-package forge.gamemodes.rogue;
+package forge.gamemodes.rogue.path;
+
+import forge.gamemodes.rogue.RogueEvent;
+import forge.gamemodes.rogue.RoguePlanebound;
 
 /**
  * Represents an Event node in a Rogue Commander path.

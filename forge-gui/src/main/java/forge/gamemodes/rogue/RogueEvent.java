@@ -1,5 +1,6 @@
 package forge.gamemodes.rogue;
 
+import forge.gamemodes.rogue.effect.EventBoon;
 import java.util.List;
 
 /**

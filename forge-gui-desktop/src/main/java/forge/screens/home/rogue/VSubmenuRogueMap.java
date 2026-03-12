@@ -1,8 +1,9 @@
 package forge.screens.home.rogue;
 
-import forge.gamemodes.rogue.EchoBoon;
 import forge.gamemodes.rogue.RogueMetaProgress;
 import forge.gamemodes.rogue.RogueRun;
+import forge.gamemodes.rogue.effect.EchoBoon;
+import forge.gamemodes.rogue.effect.RogueEffect;
 import forge.gui.framework.DragCell;
 import forge.gui.framework.DragTab;
 import forge.gui.framework.EDocID;
@@ -134,7 +135,7 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
 
       // Populate active boons from run snapshot
       pnlBoons.removeAll();
-      List<forge.gamemodes.rogue.RogueEffect> activeBoons = run.getActiveEchoBoons();
+      List<RogueEffect> activeBoons = run.getActiveEchoBoons();
       for (int i = 0; i < activeBoons.size(); i++) {
         EchoBoon boon = (EchoBoon) activeBoons.get(i);
         int col = i / 3;

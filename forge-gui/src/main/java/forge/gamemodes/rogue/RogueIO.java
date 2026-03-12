@@ -13,6 +13,7 @@ import com.thoughtworks.xstream.security.PrimitiveTypePermission;
 import forge.deck.CardPool;
 import forge.deck.Deck;
 import forge.deck.DeckSection;
+import forge.gamemodes.rogue.path.*;
 import forge.gui.error.BugReporter;
 import forge.item.PaperCard;
 import forge.localinstance.properties.ForgeConstants;

@@ -1,6 +1,6 @@
 package forge.screens.home.rogue;
 
-import forge.gamemodes.rogue.RoguePathNode;
+import forge.gamemodes.rogue.path.RoguePathNode;
 import forge.toolbox.FSkin.SkinnedPanel;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
