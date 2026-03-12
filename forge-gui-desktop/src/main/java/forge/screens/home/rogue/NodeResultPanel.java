@@ -1,6 +1,5 @@
 package forge.screens.home.rogue;
 
-import forge.gui.CardPicturePanel;
 import forge.item.PaperCard;
 import forge.toolbox.FLabel;
 import forge.toolbox.FSkin.SkinnedPanel;
