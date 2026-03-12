@@ -4,14 +4,14 @@ import forge.item.PaperCard;
 import java.util.List;
 
 /**
- * Mutable context for event choice handling.
- * Set by ONESHOT boons that trigger follow-up node types or card effects.
+ * Mutable context for node result handling.
+ * Set by ONESHOT boons/loots that trigger follow-up actions or card effects.
  */
-public class EventChoiceContext {
-    public enum NodeTriggerType { BAZAAR, PLANEBOUND, CARD_REMOVAL }
+public class NodeResultContext {
+    public enum ActionTriggerType { BAZAAR, PLANEBOUND, CARD_REMOVAL, CARD_REWARD, MYTHIC_CARD_REWARD }
 
-    /** Set by ONESHOT boons that trigger another node type (e.g., "opens a bazaar"). Null = no follow-up. */
-    public NodeTriggerType trigger;
+    /** Set by ONESHOT effects that trigger another action (e.g., "opens a bazaar"). Null = no follow-up. */
+    public ActionTriggerType trigger;
 
     /** Set by PLANEBOUND trigger to pass the picked planebound to the UI layer. */
     public RoguePlanebound planebound;

@@ -13,10 +13,10 @@ import javax.swing.SwingConstants;
 import net.miginfocom.swing.MigLayout;
 
 /**
- * Result panel for event effects that may involve card lists.
+ * Result panel for node effects that may involve card lists.
  * Shows a result message and optional named card sections with card images.
  */
-public class EventResultPanel extends SkinnedPanel {
+public class NodeResultPanel extends SkinnedPanel {
 
     private static final int CARD_WIDTH = 180;
     private static final int CARD_HEIGHT = Math.round(CARD_WIDTH * CardPanel.ASPECT_RATIO);
@@ -27,7 +27,7 @@ public class EventResultPanel extends SkinnedPanel {
 
     public record CardSection(String label, List<PaperCard> cards) {}
 
-    public EventResultPanel(String message, List<CardSection> sections) {
+    public NodeResultPanel(String message, List<CardSection> sections) {
         super(new MigLayout("insets 10, gap 0, wrap", "[grow, center]", ""));
         setOpaque(false);
 

@@ -22,6 +22,7 @@ public enum RogueEffectComposite implements RogueEffect {
             if (dl != null) effects.add(dl);
         }
         effects.addAll(run.getActiveEventBoons());
+        effects.addAll(run.getActiveChestBoons());
         return effects;
     }
 

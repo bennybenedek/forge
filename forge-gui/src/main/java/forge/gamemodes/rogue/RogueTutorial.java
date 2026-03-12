@@ -79,6 +79,11 @@ public enum RogueTutorial {
           + "Some events may offer powerful rewards, but often at a cost."
   ),
 
+  CHEST(
+      "A Chest",
+      "Chests contain a random reward - gold, echoes, cards from your Reward Pool, or permanent buffs that last for the rest of the Run."
+  ),
+
   SANCTUM(
       "The Sanctum",
       "The Sanctum offers two services: healing and card removal credits. " +

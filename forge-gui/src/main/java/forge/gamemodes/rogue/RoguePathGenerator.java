@@ -22,9 +22,11 @@ public class RoguePathGenerator {
         normalPlaneboundIndex = 0;
         int elitePlaneboundIndex = 0;
         int eventIndex = 0;
+        int lootIndex = 0;
 
         List<RoguePlanebound> availablePlanebounds = RogueConfig.loadPlanebounds();
         List<RogueEvent> events = new ArrayList<>(List.of(RogueEvent.values()));
+        List<ChestLoot> chestLoot = new ArrayList<>(List.of(ChestLoot.values()));
 
         // Split planebounds into normal, elite and boss lists
         List<RoguePlanebound> normalPlanebounds = getPlaneboundsOfType(
@@ -38,32 +40,46 @@ public class RoguePathGenerator {
         validateSize(13, normalPlanebounds.size());
         validateSize(2, elitePlanebounds.size());
         validateSize(1, bossPlanebounds.size());
+        validateSize(4, events.size());
+        validateSize(4, chestLoot.size());
 
         // Shuffle lists for randomization
         shufflePlanebounds(normalPlanebounds);
         shufflePlanebounds(elitePlanebounds);
         shufflePlanebounds(bossPlanebounds);
         shuffleEvents(events);
+        shuffleChestLoot(chestLoot);
 
         // Create nodes for the path
         List<RoguePathNode> nodes = new ArrayList<>();
 
-        // Row 0: 2-4 NORMAL planes
+        // Row 0: NORMAL planes
         addNormalPlanebundRow(nodes, normalPlanebounds, createRandomNodeCount(2, 4));
 
-        // Row 1: 2-4 NORMAL planes
-        addNormalPlanebundRow(nodes, normalPlanebounds, createRandomNodeCount(2, 4));
-
-        // Row 2: 2-3 Special Nodes (with higher chance for Sanctum)
+        // Row 1: Special Nodes (with higher chance for Event)
         List<RoguePathNode> specialNodes = new ArrayList<>();
+        specialNodes.add(new NodeSanctum());
+        specialNodes.add(new NodeBazaar());
+        specialNodes.add(new NodeEvent(events.get(eventIndex++)));
+        specialNodes.add(new NodeEvent(events.get(eventIndex++)));
+        specialNodes.add(new NodeChest(chestLoot.get(lootIndex++)));
+
+        addSpecialNodesRow(nodes, specialNodes, createRandomNodeCount(2, 4));
+
+        // Row 2: NORMAL planes
+        addNormalPlanebundRow(nodes, normalPlanebounds, createRandomNodeCount(2, 4));
+
+        // Row 3: Special Nodes (with higher chance for Sanctum)
+        specialNodes = new ArrayList<>();
         specialNodes.add(new NodeSanctum());
         specialNodes.add(new NodeSanctum());
         specialNodes.add(new NodeBazaar());
         specialNodes.add(new NodeEvent(events.get(eventIndex++)));
+        specialNodes.add(new NodeChest(chestLoot.get(lootIndex++)));
 
-        addSpecialNodesRow(nodes, specialNodes, createRandomNodeCount(2, specialNodes.size()));
+        addSpecialNodesRow(nodes, specialNodes, createRandomNodeCount(2, 4));
 
-        // Row 3: 3 planes - NORMAL, NORMAL, ELITE, Chance for second ELITE)
+        // Row 4: NORMAL / ELITE planes
         List<RoguePlanebound> planeboundNodes = new ArrayList<>();
         planeboundNodes.add(normalPlanebounds.get(normalPlaneboundIndex++));
         planeboundNodes.add(elitePlanebounds.get(elitePlaneboundIndex++));
@@ -74,27 +90,29 @@ public class RoguePathGenerator {
         }
         addMixedPlanebundRow(nodes, planeboundNodes);
 
-        // Row 4: Special Nodes (with higher chance for Bazaar)
+        // Row 5: Special Nodes (with higher chance for Bazaar)
         specialNodes = new ArrayList<>();
         specialNodes.add(new NodeSanctum());
         specialNodes.add(new NodeBazaar());
         specialNodes.add(new NodeBazaar());
         specialNodes.add(new NodeEvent(events.get(eventIndex++)));
+        specialNodes.add(new NodeChest(chestLoot.get(lootIndex++)));
 
-        addSpecialNodesRow(nodes, specialNodes, createRandomNodeCount(2, specialNodes.size()));
+        addSpecialNodesRow(nodes, specialNodes, createRandomNodeCount(2, 4));
 
-        // Row 5: NORMAL planes
+        // Row 6: NORMAL planes
         addNormalPlanebundRow(nodes, normalPlanebounds, createRandomNodeCount(2, 3));
 
-        // Row 6: Special Nodes (no higher chance for any type)
+        // Row 7: Special Nodes (no higher chance for any type)
         specialNodes = new ArrayList<>();
         specialNodes.add(new NodeSanctum());
         specialNodes.add(new NodeBazaar());
         specialNodes.add(new NodeEvent(events.get(eventIndex)));
+        specialNodes.add(new NodeChest(chestLoot.get(lootIndex)));
 
-        addSpecialNodesRow(nodes, specialNodes, createRandomNodeCount(2, specialNodes.size() - 1));
+        addSpecialNodesRow(nodes, specialNodes, createRandomNodeCount(2, 3));
 
-        // Row 7: 1 BOSS plane
+        // Row 8: BOSS plane
         addPlaneboundNode(nodes, bossPlanebounds.get(0), 0);
 
         // Create path and set on run
@@ -107,7 +125,7 @@ public class RoguePathGenerator {
     private static void validateSize(int required, int size) {
         if (size < required) {
             throw new IllegalStateException(
-                "Not enough available Planebounds for Path.");
+                "Not enough available node content for Path (Planebounds / Events / Chest Loot).");
         }
     }
 
@@ -188,5 +206,9 @@ public class RoguePathGenerator {
 
     private static void shuffleEvents(List<RogueEvent> events) {
         Collections.shuffle(events, MyRandom.getRandom());
+    }
+
+    private static void shuffleChestLoot(List<ChestLoot> loots) {
+        Collections.shuffle(loots, MyRandom.getRandom());
     }
 }

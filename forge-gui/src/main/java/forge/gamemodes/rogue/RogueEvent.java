@@ -37,13 +37,13 @@ public enum RogueEvent {
                 EventBoon.CARAVAN_ROB)
         )),
 
-    PLANAR_EXCHANGE("Planar Exchange",
-        "A shimmering portal offers to reshape your arsenal.",
+    PLANAR_TRIBUTE("Planar Tribute",
+        "The planes demand tribute.",
         List.of(
-            new EventChoice("Step Through", "The planes shift your deck...",
-                EventBoon.PLANAR_EXCHANGE),
-            new EventChoice("Stay Put", "You decide not to risk it.",
-                EventBoon.NOTHING)
+            new EventChoice("Sacrifice!", "The planes take what is yours.",
+                EventBoon.PLANAR_SACRIFICE),
+            new EventChoice("Give and take", "The planes reshape your arsenal.",
+                EventBoon.PLANAR_SHUFFLE)
         )),
 
     AMBUSH("Ambush!",
@@ -53,11 +53,13 @@ public enum RogueEvent {
                 EventBoon.SURPRISE_FIGHT)
         )),
 
-    PLANAR_SACRIFICE("Planar Sacrifice",
-        "The planes demand tribute. Sacrifice cards from your deck to receive new ones.",
+    PLANAR_EXCHANGE("Planar Exchange",
+        "A shimmering portal offers to reshape your arsenal.",
         List.of(
-            new EventChoice("Sacrifice!", "The planes reshape your arsenal.",
-                EventBoon.PLANAR_SACRIFICE)
+            new EventChoice("Step Through", "The planes shift your deck...",
+                EventBoon.PLANAR_EXCHANGE),
+            new EventChoice("Stay Put", "You decide not to risk it.",
+                EventBoon.NOTHING)
         ));
 
     public record EventChoice(String label, String resultText, EventBoon effect) {}

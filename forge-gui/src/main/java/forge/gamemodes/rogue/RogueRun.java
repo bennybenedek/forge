@@ -29,7 +29,6 @@ public class RogueRun {
     private int currentLife;                    // Persistent life total (starts at 20)
     private int startingLife;                   // Initial life (default: 20)
     private int currentGold;                    // Currency (for future Bazaar support)
-    private int currentEchoes;                  // Meta-currency (for future Codex support)
     private RoguePath path;                     // The generated path
     private int currentNodeIndex;               // Current position on path
     private RogueRunState runState;             // Current state of the run
@@ -42,6 +41,9 @@ public class RogueRun {
 
     // Event boons (gained from event nodes during the run)
     private List<RunBoon> activeEventBoons;
+
+    // Chest boons (gained from chest nodes during the run)
+    private List<RunBoon> activeChestBoons;
 
     // Match History
     private int matchesWon;                     // Win counter
@@ -56,7 +58,6 @@ public class RogueRun {
     public RogueRun() {
         this.setStartingLife(20);
         this.setCurrentGold(0);
-        this.setCurrentEchoes(0);
         this.setCurrentNodeIndex(0);
         this.setRemovalCredits(0);
         this.setRunState(RogueRunState.STARTED);
@@ -264,14 +265,6 @@ public class RogueRun {
         this.currentGold = currentGold;
     }
 
-    public int getCurrentEchoes() {
-        return currentEchoes;
-    }
-
-    public void setCurrentEchoes(int currentEchoes) {
-        this.currentEchoes = currentEchoes;
-    }
-
     public RoguePath getPath() {
         return path;
     }
@@ -360,6 +353,23 @@ public class RogueRun {
         activeEventBoons.add(new RunBoon(boon.getId(), 0, charges));
     }
 
+    // Chest boon management
+    public List<RogueEffect> getActiveChestBoons() {
+        if (activeChestBoons == null) activeChestBoons = new ArrayList<>();
+        List<RogueEffect> result = new ArrayList<>();
+        for (RunBoon rb : activeChestBoons) {
+            ChestLoot cl = ChestLoot.fromId(rb.getId());
+            if (cl != null) result.add(cl);
+        }
+        return result;
+    }
+
+    public void addChestBoon(ChestLoot loot) {
+        if (activeChestBoons == null) activeChestBoons = new ArrayList<>();
+        int charges = loot.getChargesForRank(0);
+        activeChestBoons.add(new RunBoon(loot.getId(), 0, charges));
+    }
+
     // Boon queries
     public int getRunBoonRank(String id) {
         RunBoon rb = findRunBoon(id);
@@ -370,6 +380,7 @@ public class RogueRun {
     public void consumeEffect(String id) {
         consumeFromList(activeEchoBoons, id);
         consumeFromList(activeEventBoons, id);
+        consumeFromList(activeChestBoons, id);
     }
 
     private void consumeFromList(List<RunBoon> list, String id) {
@@ -390,6 +401,9 @@ public class RogueRun {
                 if (rb.getId().equals(id)) return rb;
         if (activeEventBoons != null)
             for (RunBoon rb : activeEventBoons)
+                if (rb.getId().equals(id)) return rb;
+        if (activeChestBoons != null)
+            for (RunBoon rb : activeChestBoons)
                 if (rb.getId().equals(id)) return rb;
         return null;
     }

@@ -19,6 +19,7 @@ public class NodeChestPanel extends NodeCircularPanel {
   public NodeChestPanel(NodeChest node) {
     super(node);
     this.chestNode = node;
+    setToolTipText("Chest: Open for a random reward.");
   }
 
   @Override
@@ -48,10 +49,6 @@ public class NodeChestPanel extends NodeCircularPanel {
     int bodyHeight = (int) (size * 0.7);
     g2d.fillRoundRect(centerX - bodyWidth / 2, centerY - bodyHeight / 2, bodyWidth, bodyHeight, 8,
         8);
-
-    // Chest lid (slightly darker brown arc)
-    g2d.setColor(new Color(101, 67, 33));
-    g2d.fillArc(centerX - bodyWidth / 2, centerY - bodyHeight / 2 - 10, bodyWidth, 20, 0, 180);
 
     // Lock/latch (gold rectangle in center)
     g2d.setColor(new Color(255, 215, 0));

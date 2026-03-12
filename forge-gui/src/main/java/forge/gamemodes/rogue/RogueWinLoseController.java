@@ -194,90 +194,27 @@ public class RogueWinLoseController {
     }
 
     private void awardCardRewards(boolean isElite, int goldReward, int echoReward) {
-        // Get the rogue deck data to draw rewards from
-        RogueDeck rogueDeck = currentRun.getSelectedRogueDeck();
-
-        if (rogueDeck == null) {
-            System.err.println("ERROR: Could not find rogue deck for current run.");
-            return;
-        }
-
-        CardRewardContext rewardCtx = new CardRewardContext(3);
-        RogueEffectComposite.INSTANCE.onCardReward(rewardCtx, currentRun);
-        CardSelectionContext selCtx = new CardSelectionContext();
-        RogueEffectComposite.INSTANCE.onCardSelection(selCtx, currentRun);
-        int maxPicks = rewardCtx.maxPicks;
-        int rerollsRemaining = selCtx.rerolls; // Fresh per node
-
-        // Draw cards from reward pool (base: 6 non-mythic + 1 mythic, adjusted by active boons)
-        int baseNonMythics = 6;
-        int baseMythics = 1;
-        int totalNonMythics = Math.max(0, baseNonMythics - selCtx.extraMythics);
-        int totalMythics = baseMythics + selCtx.extraMythics;
-
-        List<PaperCard> rewardOptions;
-        List<PaperCard> chosenCards;
-        do {
-            List<PaperCard> nonMythicCards = rogueDeck.drawRewardOptions(totalNonMythics, forge.item.PaperCardPredicates.IS_MYTHIC_RARE.negate());
-            List<PaperCard> mythicCards = rogueDeck.drawRewardOptions(totalMythics, forge.item.PaperCardPredicates.IS_MYTHIC_RARE);
-
-            rewardOptions = new ArrayList<>();
-            rewardOptions.addAll(nonMythicCards);
-            rewardOptions.addAll(mythicCards);
-
-            if (rewardOptions.isEmpty()) {
-                view.showMessage("No more cards available in reward pool.", "No Rewards", FSkinProp.ADV_CLR_ACTIVE);
-                return;
-            }
-
-            chosenCards = view.showCardRewardDialog("Choose Your Rewards", rewardOptions, maxPicks, rerollsRemaining > 0);
-
-            if (chosenCards == null) {
-                rerollsRemaining--; // Reroll clicked — don't remove current options from pool
-            }
-        } while (chosenCards == null && rerollsRemaining >= 0);
-
-        // Remove only the final draw's options from pool
-        rogueDeck.removeFromRewardPool(rewardOptions);
+        List<PaperCard> chosenCards = CardRewardHelper.runReward(currentRun,
+                view::showCardRewardDialog, false);
 
         if (chosenCards == null) {
-            chosenCards = new ArrayList<>();
+            view.showMessage("No more cards available in reward pool.", "No Rewards", FSkinProp.ADV_CLR_ACTIVE);
+            return;
         }
 
         // If Elite opponent, show second reward screen with mythic cards
         if (isElite) {
-            CardSelectionContext eliteSelCtx = new CardSelectionContext();
-            RogueEffectComposite.INSTANCE.onCardSelection(eliteSelCtx, currentRun);
-            rerollsRemaining = eliteSelCtx.rerolls; // Fresh rerolls for this selection
-            List<PaperCard> mythicOptions = new ArrayList<>();
-            List<PaperCard> chosenMythics = new ArrayList<>();
-            do {
-                mythicOptions = rogueDeck.drawRewardOptions(3, forge.item.PaperCardPredicates.IS_MYTHIC_RARE);
-                if (mythicOptions.isEmpty()) break;
-
-                chosenMythics = view.showCardRewardDialog(
-                    "Choose Your Mythic Reward", mythicOptions, 1, rerollsRemaining > 0);
-
-                if (chosenMythics == null) rerollsRemaining--;
-            } while (chosenMythics == null && rerollsRemaining >= 0);
-
-            if (!mythicOptions.isEmpty()) {
-                rogueDeck.removeFromRewardPool(mythicOptions);
-                if (chosenMythics != null && !chosenMythics.isEmpty()) {
-                    chosenCards.addAll(chosenMythics);
-                }
+            List<PaperCard> chosenMythics = CardRewardHelper.runReward(currentRun,
+                    view::showCardRewardDialog, true);
+            if (chosenMythics != null) {
+                chosenCards.addAll(chosenMythics);
             }
         }
 
         if (!chosenCards.isEmpty()) {
-            // Add chosen cards to the run's current deck and update counter
-            currentRun.addCardsToRun(chosenCards);
-
-            // Show confirmation
             view.showCards("Cards Added to Your Deck", chosenCards);
         }
 
-        // Show gold and echo rewards after card rewards
         if (goldReward > 0) {
             view.showMessage("You won " + goldReward + " Gold.", "Gold Reward", FSkinProp.ICO_QUEST_COIN);
         }

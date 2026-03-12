@@ -32,7 +32,7 @@ public class NodeSanctumPanel extends NodeCircularPanel {
 
     // Heart icon parameters
     int centerX = getWidth() / 2;
-    int centerY = getHeight() / 2;
+    int centerY = getHeight() / 2 + 3;
     int heartSize = 35;
 
     // Draw heart shape

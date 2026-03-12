@@ -9,7 +9,7 @@ import forge.game.GameType;
 import forge.game.player.RegisteredPlayer;
 import forge.gamemodes.match.HostedMatch;
 import forge.gamemodes.rogue.*;
-import forge.gamemodes.rogue.EventChoiceContext.NodeTriggerType;
+import forge.gamemodes.rogue.NodeResultContext.ActionTriggerType;
 import forge.gui.GuiBase;
 import forge.gui.SOverlayUtils;
 import forge.gui.framework.EDocID;
@@ -93,6 +93,8 @@ public enum CSubmenuRogueMap implements ICDoc {
         RogueTutorialHelper.showIfNotSeen(RogueTutorial.BAZAAR);
       } else if (node instanceof NodeEvent) {
         RogueTutorialHelper.showIfNotSeen(RogueTutorial.EVENT);
+      } else if (node instanceof NodeChest) {
+        RogueTutorialHelper.showIfNotSeen(RogueTutorial.CHEST);
       }
     }
   }
@@ -258,6 +260,8 @@ public enum CSubmenuRogueMap implements ICDoc {
       return "Enter Bazaar";
     } else if (node instanceof NodeEvent) {
       return "Enter Event";
+    } else if (node instanceof NodeChest) {
+      return "Open Chest";
     } else {
       return "Enter Node";
     }
@@ -284,10 +288,8 @@ public enum CSubmenuRogueMap implements ICDoc {
       handleBazaarNode(nodeBazaar);
     } else if (node instanceof NodeEvent nodeEvent) {
       handleEventNode(nodeEvent);
-    } else if (node instanceof NodeChest) {
-      // TODO: Implement chest node type
-      currentRun.nextNode();
-      updateView();
+    } else if (node instanceof NodeChest nodeChest) {
+      handleChestNode(nodeChest);
     }
   }
 
@@ -540,18 +542,18 @@ public enum CSubmenuRogueMap implements ICDoc {
 
     if (choice != null) {
       EventBoon boon = choice.effect();
-      EventChoiceContext ctx = new EventChoiceContext();
+      NodeResultContext ctx = new NodeResultContext();
       if (boon.getEffectType() == RogueEffect.EffectType.ONESHOT) {
         boon.applyEffect(currentRun, ctx);
-        if (ctx.trigger == NodeTriggerType.BAZAAR) {
+        if (ctx.trigger == ActionTriggerType.BAZAAR) {
             runBazaarShopping();
-        } else if (ctx.trigger == NodeTriggerType.PLANEBOUND && ctx.planebound != null) {
+        } else if (ctx.trigger == ActionTriggerType.PLANEBOUND && ctx.planebound != null) {
             eventNode.setEventPlanebound(ctx.planebound);
             NodePlanebound tempNode = new NodePlanebound(ctx.planebound);
             tempNode.setRowIndex(eventNode.getRowIndex());
             handlePlaneboundNode(tempNode);
             return;  // win/lose controller handles completion
-        } else if (ctx.trigger == NodeTriggerType.CARD_REMOVAL) {
+        } else if (ctx.trigger == ActionTriggerType.CARD_REMOVAL) {
             // Get non-commander deck cards
             List<PaperCard> deckCards = currentRun.getCurrentDeck().getMain().toFlatList();
             String cmdName = currentRun.getSelectedRogueDeck().getCommanderCardName();
@@ -582,13 +584,13 @@ public enum CSubmenuRogueMap implements ICDoc {
       }
 
       // Build result display with card sections if applicable
-      List<EventResultPanel.CardSection> sections = new ArrayList<>();
+      List<NodeResultPanel.CardSection> sections = new ArrayList<>();
       if (ctx.removedCards != null && !ctx.removedCards.isEmpty())
-        sections.add(new EventResultPanel.CardSection("Cards removed:", ctx.removedCards));
+        sections.add(new NodeResultPanel.CardSection("Cards removed:", ctx.removedCards));
       if (ctx.addedCards != null && !ctx.addedCards.isEmpty())
-        sections.add(new EventResultPanel.CardSection("Cards added:", ctx.addedCards));
+        sections.add(new NodeResultPanel.CardSection("Cards added:", ctx.addedCards));
 
-      EventResultPanel resultPanel = new EventResultPanel(choice.resultText(), sections);
+      NodeResultPanel resultPanel = new NodeResultPanel(choice.resultText(), sections);
       FOptionPane optionPane = new FOptionPane(null, "Event Completed", null, resultPanel,
           List.of("OK"), 0);
       resultPanel.initZoom(optionPane);
@@ -597,6 +599,62 @@ public enum CSubmenuRogueMap implements ICDoc {
     }
 
     eventNode.setCompleted(true);
+    currentRun.nextNode();
+    RogueMetaProgress.getInstance().onSideNodeCompleted(currentRun);
+    RogueIO.saveRun(currentRun);
+    update();
+  }
+
+  private void handleChestNode(NodeChest chestNode) {
+    if (currentRun == null) return;
+
+    // Get or assign random loot
+    ChestLoot loot = chestNode.getLoot();
+    if (loot == null) {
+      ChestLoot[] allLoots = ChestLoot.values();
+      loot = allLoots[new Random().nextInt(allLoots.length)];
+      chestNode.setLoot(loot);
+    }
+
+    // DEV: allow picking which loot to test
+    if (ForgePreferences.DEV_MODE) {
+      ChestLoot picked = (ChestLoot) javax.swing.JOptionPane.showInputDialog(
+          null, "Override chest loot:", "[DEV] Pick Loot",
+          javax.swing.JOptionPane.PLAIN_MESSAGE, null,
+          ChestLoot.values(), loot);
+      if (picked != null) loot = picked;
+    }
+
+    NodeResultContext ctx = new NodeResultContext();
+    if (loot.getEffectType() == RogueEffect.EffectType.ONESHOT) {
+      loot.applyEffect(currentRun, ctx);
+      boolean mythicOnly = ctx.trigger == NodeResultContext.ActionTriggerType.MYTHIC_CARD_REWARD;
+      if (ctx.trigger == NodeResultContext.ActionTriggerType.CARD_REWARD
+          || ctx.trigger == NodeResultContext.ActionTriggerType.MYTHIC_CARD_REWARD) {
+        List<PaperCard> chosen = CardRewardHelper.runReward(currentRun,
+            (title, cards, max, reroll) -> new CardRewardDialog(title, cards, max, reroll).show(),
+            mythicOnly);
+        if (chosen != null && !chosen.isEmpty()) {
+          ctx.addedCards = chosen;
+        }
+      }
+    } else {
+      currentRun.addChestBoon(loot);
+    }
+
+    // Build result display
+    List<NodeResultPanel.CardSection> sections = new ArrayList<>();
+    if (ctx.addedCards != null && !ctx.addedCards.isEmpty())
+      sections.add(new NodeResultPanel.CardSection("Cards added:", ctx.addedCards));
+
+    NodeResultPanel resultPanel = new NodeResultPanel(loot.getDescription(), sections);
+    FOptionPane optionPane = new FOptionPane(null, "Chest: " + loot.getDisplayName(), null,
+        resultPanel, List.of("OK"), 0);
+    resultPanel.initZoom(optionPane);
+    optionPane.setVisible(true);
+    optionPane.dispose();
+
+    chestNode.setCompleted(true);
     currentRun.nextNode();
     RogueMetaProgress.getInstance().onSideNodeCompleted(currentRun);
     RogueIO.saveRun(currentRun);
