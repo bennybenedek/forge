@@ -3,6 +3,7 @@ package forge.gamemodes.rogue.effect;
 import forge.game.player.RegisteredPlayer;
 import forge.gamemodes.rogue.*;
 import forge.item.PaperCard;
+import forge.util.MyRandom;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -111,6 +112,16 @@ public enum EventBoon implements RogueEffect {
             ctx.trigger = NodeResultContext.ActionTriggerType.CARD_REMOVAL;
             ctx.removeCount = 3;
             ctx.drawCount = 0;
+        }
+    },
+    GAIN_WOUND("gain_wound", "Gain Wound", "Gain a random Wound.",
+            EffectType.ONESHOT) {
+        @Override
+        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+            Wound[] wounds = Wound.values();
+            Wound wound = wounds[MyRandom.getRandom().nextInt(wounds.length)];
+            run.addWound(wound);
+            ctx.gainedWound = wound;
         }
     },
     NOTHING("nothing", "Nothing", "No effect.",

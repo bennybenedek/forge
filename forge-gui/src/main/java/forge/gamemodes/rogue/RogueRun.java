@@ -7,6 +7,7 @@ import forge.gamemodes.rogue.effect.ChestLoot;
 import forge.gamemodes.rogue.effect.EchoBoon;
 import forge.gamemodes.rogue.effect.EventBoon;
 import forge.gamemodes.rogue.effect.RogueEffect;
+import forge.gamemodes.rogue.effect.Wound;
 import forge.gamemodes.rogue.path.RoguePath;
 import forge.gamemodes.rogue.path.RoguePathNode;
 import forge.item.PaperCard;
@@ -50,6 +51,9 @@ public class RogueRun {
 
     // Chest boons (gained from chest nodes during the run)
     private List<RogueRunBoon> activeChestBoons;
+
+    // Wounds (permanent debuffs gained from events, descension, etc.)
+    private List<RogueRunBoon> activeWounds;
 
     // Match History
     private int matchesWon;                     // Win counter
@@ -376,6 +380,26 @@ public class RogueRun {
         activeChestBoons.add(new RogueRunBoon(loot.getId(), 0, charges));
     }
 
+    // Wound management
+    public List<RogueEffect> getActiveWounds() {
+        if (activeWounds == null) activeWounds = new ArrayList<>();
+        List<RogueEffect> result = new ArrayList<>();
+        for (RogueRunBoon rb : activeWounds) {
+            Wound w = Wound.fromId(rb.getId());
+            if (w != null) result.add(w);
+        }
+        return result;
+    }
+
+    public void addWound(Wound wound) {
+        if (activeWounds == null) activeWounds = new ArrayList<>();
+        activeWounds.add(new RogueRunBoon(wound.getId(), 0, -1));
+    }
+
+    public void clearWounds() {
+        if (activeWounds != null) activeWounds.clear();
+    }
+
     // Boon queries
     public int getRunBoonRank(String id) {
         RogueRunBoon rb = findRunBoon(id);
@@ -387,6 +411,7 @@ public class RogueRun {
         consumeFromList(activeEchoBoons, id);
         consumeFromList(activeEventBoons, id);
         consumeFromList(activeChestBoons, id);
+        consumeFromList(activeWounds, id);
     }
 
     private void consumeFromList(List<RogueRunBoon> list, String id) {
@@ -410,6 +435,9 @@ public class RogueRun {
                 if (rb.getId().equals(id)) return rb;
         if (activeChestBoons != null)
             for (RogueRunBoon rb : activeChestBoons)
+                if (rb.getId().equals(id)) return rb;
+        if (activeWounds != null)
+            for (RogueRunBoon rb : activeWounds)
                 if (rb.getId().equals(id)) return rb;
         return null;
     }

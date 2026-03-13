@@ -255,7 +255,10 @@ public enum CSubmenuRogueMap implements ICDoc {
    */
   private String getEnterButtonText(RoguePathNode node) {
     if (node instanceof NodePlanebound) {
-      return "Enter " + ((NodePlanebound) node).getRoguePlanebound().planeName();
+      PathUpdateContext pathCtx = new PathUpdateContext();
+      RogueEffectComposite.INSTANCE.onPathUpdate(pathCtx, currentRun);
+      String planeName = pathCtx.hidePlanes ? "???" : ((NodePlanebound) node).getRoguePlanebound().planeName();
+      return "Enter " + planeName;
     } else if (node instanceof NodeSanctum) {
       return "Enter Sanctum";
     } else if (node instanceof NodeBazaar) {
@@ -418,8 +421,9 @@ public enum CSubmenuRogueMap implements ICDoc {
     // Handle player's choice
     switch (choice) {
       case HEAL:
-        // Heal player by healAmount
+        // Heal player and cure all wounds
         currentRun.gainLife(healAmount);
+        currentRun.clearWounds();
         break;
 
       case REMOVE_CARDS:
@@ -592,7 +596,13 @@ public enum CSubmenuRogueMap implements ICDoc {
       if (ctx.addedCards != null && !ctx.addedCards.isEmpty())
         sections.add(new NodeResultPanel.CardSection("Cards added:", ctx.addedCards));
 
-      NodeResultPanel resultPanel = new NodeResultPanel(choice.resultText(), sections);
+      String resultText = choice.resultText();
+      if (ctx.gainedWound != null) {
+        resultText += ": " + ctx.gainedWound.getDisplayName()
+            + " \u2014 " + ctx.gainedWound.getDescription();
+      }
+
+      NodeResultPanel resultPanel = new NodeResultPanel(resultText, sections);
       FOptionPane optionPane = new FOptionPane(null, "Event Completed", null, resultPanel,
           List.of("OK"), 0);
       resultPanel.initZoom(optionPane);

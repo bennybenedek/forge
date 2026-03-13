@@ -24,6 +24,7 @@ public enum RogueEffectComposite implements RogueEffect {
         }
         effects.addAll(run.getActiveEventBoons());
         effects.addAll(run.getActiveChestBoons());
+        effects.addAll(run.getActiveWounds());
         return effects;
     }
 
@@ -68,5 +69,10 @@ public enum RogueEffectComposite implements RogueEffect {
     @Override
     public void afterPathGeneration(RogueRun run) {
         forEachEffect(run, e -> e.afterPathGeneration(run));
+    }
+
+    @Override
+    public void onPathUpdate(PathUpdateContext ctx, RogueRun run) {
+        forEachEffect(run, e -> e.onPathUpdate(ctx, run));
     }
 }

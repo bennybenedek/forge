@@ -58,7 +58,7 @@ public class SanctumDialog {
         .build();
 
     // Heal button
-    FButton btnHeal = new FButton("♥ Gain " + healAmount + " Life");
+    FButton btnHeal = new FButton("♥ Gain " + healAmount + " Life & Cure All Wounds");
     btnHeal.addActionListener(e -> {
       choice = SanctumChoice.HEAL;
       optionPane.setResult(0);

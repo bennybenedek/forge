@@ -1,6 +1,9 @@
 package forge.screens.home.rogue;
 
 import forge.gamemodes.rogue.RogueRun;
+import forge.gamemodes.rogue.effect.PathUpdateContext;
+import forge.gamemodes.rogue.effect.RogueEffectComposite;
+import forge.gamemodes.rogue.path.NodePlanebound;
 import forge.gamemodes.rogue.path.RoguePath;
 import forge.gamemodes.rogue.path.RoguePathNode;
 import forge.toolbox.FSkin;
@@ -66,6 +69,10 @@ public class PathVisualizerPanel extends SkinnedPanel {
     // Get visible nodes in current row (reachable from last completed in previous row)
     List<Integer> visibleInCurrentRow = path.getVisibleNodesInCurrentRow(currentRow);
 
+    // Check wound effects (e.g. Wounded Eye hides planes)
+    PathUpdateContext pathCtx = new PathUpdateContext();
+    RogueEffectComposite.INSTANCE.onPathUpdate(pathCtx, run);
+
     // Create panels for each node
     List<RoguePathNode> nodes = path.getNodes();
     List<NodePlaneboundPanel> toReveal = new ArrayList<>();
@@ -83,6 +90,12 @@ public class PathVisualizerPanel extends SkinnedPanel {
         isFaceDown = !visibleInCurrentRow.contains(i);
       } else {
         // Future rows - all face-down
+        isFaceDown = true;
+      }
+
+      // Wounded Eye: force planes in current and future rows to stay face-down
+      if (pathCtx.hidePlanes && node instanceof NodePlanebound
+          && node.getRowIndex() >= currentRow && !node.isCompleted()) {
         isFaceDown = true;
       }
 

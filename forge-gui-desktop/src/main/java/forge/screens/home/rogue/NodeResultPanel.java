@@ -2,6 +2,7 @@ package forge.screens.home.rogue;
 
 import forge.item.PaperCard;
 import forge.toolbox.FLabel;
+import forge.toolbox.FTextArea;
 import forge.toolbox.FSkin.SkinnedPanel;
 import forge.view.arcane.CardPanel;
 import java.awt.*;
@@ -31,12 +32,9 @@ public class NodeResultPanel extends SkinnedPanel {
         setOpaque(false);
 
         // Result text
-        FLabel lblMessage = new FLabel.Builder()
-                .text(message)
-                .fontSize(14)
-                .fontAlign(SwingConstants.CENTER)
-                .build();
-        add(lblMessage, "w 100%!, h 28px!, ax center, gap 0 0 0 10px, wrap");
+        FTextArea txtMessage = new FTextArea(message);
+        txtMessage.setFont(txtMessage.getFont().deriveFont(14f));
+        add(txtMessage, "w 100%!, ax center, gap 0 0 0 10px, wrap");
 
         // Card sections
         for (CardSection section : sections) {

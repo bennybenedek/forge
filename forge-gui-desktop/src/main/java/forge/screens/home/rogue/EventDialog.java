@@ -5,6 +5,7 @@ import forge.gamemodes.rogue.RogueEvent.EventChoice;
 import forge.toolbox.FButton;
 import forge.toolbox.FLabel;
 import forge.toolbox.FOptionPane;
+import forge.toolbox.FTextArea;
 import forge.toolbox.FSkin.SkinnedPanel;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -31,12 +32,11 @@ public class EventDialog {
         .text(event.getDisplayName())
         .fontSize(20).fontStyle(Font.BOLD).fontAlign(SwingConstants.CENTER).build();
 
-    FLabel lblDescription = new FLabel.Builder()
-        .text(event.getDescription())
-        .fontSize(14).fontAlign(SwingConstants.CENTER).build();
+    FTextArea txtDescription = new FTextArea(event.getDescription());
+    txtDescription.setFont(txtDescription.getFont().deriveFont(14f));
 
     panel.add(lblTitle, "w 100%!, h 60px!, ax center, gap 0 0 20px 10px, wrap");
-    panel.add(lblDescription, "w 100%!, h 30px!, ax center, gap 0 0 10px 20px, wrap");
+    panel.add(txtDescription, "w 100%!, ax center, gap 0 0 10px 20px, wrap");
 
     for (EventChoice choice : event.getChoices()) {
       FButton btn = new FButton("<html><div style='padding:6px 10px;'><center><font size=4>" + choice.label()

@@ -24,4 +24,7 @@ public class NodeResultContext {
     /** Cards removed/added by the effect, for result display. Null = not applicable. */
     public List<PaperCard> removedCards;
     public List<PaperCard> addedCards;
+
+    /** Wound gained from this event, for result display. Null = not applicable. */
+    public Wound gainedWound;
 }

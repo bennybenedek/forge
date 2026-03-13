@@ -4,6 +4,7 @@ import forge.gamemodes.rogue.RogueMetaProgress;
 import forge.gamemodes.rogue.RogueRun;
 import forge.gamemodes.rogue.effect.EchoBoon;
 import forge.gamemodes.rogue.effect.RogueEffect;
+import forge.gamemodes.rogue.effect.Wound;
 import forge.gui.framework.DragCell;
 import forge.gui.framework.DragTab;
 import forge.gui.framework.EDocID;
@@ -88,6 +89,7 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
   private final FScrollPane scrollPathDisplay;
 
   private JPanel pnlBoons;
+  private JPanel pnlWounds;
   private final FButton btnEnterNode;
   private final FButton btnEditDeck;
   private final FButton btnDevWinRun = new FButton("[DEV] Win Run");
@@ -147,6 +149,20 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
       pnlBoons.revalidate();
       pnlBoons.repaint();
 
+      // Populate active wounds from run
+      pnlWounds.removeAll();
+      List<RogueEffect> activeWounds = run.getActiveWounds();
+      for (int i = 0; i < activeWounds.size(); i++) {
+        Wound wound = (Wound) activeWounds.get(i);
+        int col = i / 3;
+        int row = i % 3;
+        FLabel woundLbl = new FLabel.Builder().text(wound.getDisplayName()).fontSize(11).build();
+        woundLbl.setToolTipText(wound.getDescription());
+        pnlWounds.add(woundLbl, "cell " + col + " " + row);
+      }
+      pnlWounds.revalidate();
+      pnlWounds.repaint();
+
       pathVisualizer.updatePath(run);
     } else {
       lblCommanderName.setText("");
@@ -197,6 +213,11 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
     pnlBoons = new JPanel(new MigLayout("insets 0, gap 8 1"));
     pnlBoons.setOpaque(false);
     infoRow.add(pnlBoons);
+
+    // Active Wounds panel — populated in updateDisplay() from run
+    pnlWounds = new JPanel(new MigLayout("insets 0, gap 8 1"));
+    pnlWounds.setOpaque(false);
+    infoRow.add(pnlWounds);
 
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(infoRow, "w 98%!, h pref!, gap 1% 0 10px 10px");
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay()

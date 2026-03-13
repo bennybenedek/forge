@@ -50,6 +50,9 @@ public interface RogueEffect {
     /** Fired after path generation. Modify nodes via run.getPath().getNodes(). */
     default void afterPathGeneration(RogueRun run) {}
 
+    /** Fired when the path visualizer updates. Use to modify plane visibility. */
+    default void onPathUpdate(PathUpdateContext ctx, RogueRun run) {}
+
     /**
      * Loads custom rogue card scripts and adds the named card to the command zone.
      * Use this instead of calling FModel.getMagicDb() directly for rogue-specific cards.

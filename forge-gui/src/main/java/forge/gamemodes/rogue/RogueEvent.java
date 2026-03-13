@@ -61,6 +61,13 @@ public enum RogueEvent {
                 EventBoon.PLANAR_EXCHANGE),
             new EventChoice("Stay Put", "You decide not to risk it.",
                 EventBoon.NOTHING)
+        )),
+
+    THORNS("Thorns",
+        "The land itself rejects your presence. Thorns rise from the soil, leaving your footsteps stained with blood.",
+        List.of(
+            new EventChoice("Endure", "You suffer a wound.",
+                EventBoon.GAIN_WOUND)
         ));
 
     public record EventChoice(String label, String resultText, EventBoon effect) {}
