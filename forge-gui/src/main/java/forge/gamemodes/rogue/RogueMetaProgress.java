@@ -432,6 +432,10 @@ public class RogueMetaProgress {
         return totalEchoes;
     }
 
+    public void setTotalEchoes(int echoes) {
+        this.totalEchoes = Math.max(0, echoes);
+    }
+
     public int getTotalSparks() {
         return totalSparks;
     }

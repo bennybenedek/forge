@@ -118,10 +118,41 @@ public enum EventBoon implements RogueEffect {
             EffectType.ONESHOT) {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
-            Wound[] wounds = Wound.values();
-            Wound wound = wounds[MyRandom.getRandom().nextInt(wounds.length)];
+            List<Wound> available = new ArrayList<>(List.of(Wound.values()));
+            List<RogueEffect> active = run.getActiveWounds();
+            available.removeIf(w -> active.stream().anyMatch(a -> a == w));
+            if (available.isEmpty()) return;
+            Wound wound = available.get(MyRandom.getRandom().nextInt(available.size()));
             run.addWound(wound);
             ctx.gainedWound = wound;
+        }
+    },
+    FIND_CHEST("find_chest", "Hidden Chest", "You find a hidden chest.",
+            EffectType.ONESHOT) {
+        @Override
+        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+            ctx.trigger = NodeResultContext.ActionTriggerType.CHEST;
+        }
+    },
+    FIND_SANCTUM("find_sanctum", "Hidden Sanctum", "You discover a hidden Sanctum.",
+            EffectType.ONESHOT) {
+        @Override
+        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+            ctx.trigger = NodeResultContext.ActionTriggerType.SANCTUM;
+        }
+    },
+    LOSE_ALL_GOLD("lose_all_gold", "Lose All Gold", "You lose all your gold.",
+            EffectType.ONESHOT) {
+        @Override
+        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+            run.setCurrentGold(0);
+        }
+    },
+    LOSE_ALL_ECHOES("lose_all_echoes", "Lose All Echoes", "You lose all your echoes.",
+            EffectType.ONESHOT) {
+        @Override
+        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+            RogueMetaProgress.getInstance().setTotalEchoes(0);
         }
     },
     NOTHING("nothing", "Nothing", "No effect.",
@@ -133,7 +164,32 @@ public enum EventBoon implements RogueEffect {
             EffectType.PERMANENT) {
         @Override
         public void onMatchStart(RegisteredPlayer human, RogueRun run) {
-            RogueEffect.addCustomCardToCommandZone("Rogue - Commander Boost", human);
+            RogueEffect.addCustomCardToCommandZone("Event - Commander's Might", human);
+        }
+    },
+
+    // === CONSUME effects (stored in run, dispatched once, then removed) ===
+
+    LOST_CONNECTION("lost_connection", "Lost Connection", "You may not cast your Commander in the next match.",
+            EffectType.CONSUME) {
+        @Override
+        public int getChargesForRank(int rank) { return 1; }
+
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RogueRun run) {
+            RogueEffect.addCustomCardToCommandZone("Event - Lost Connection", human);
+            run.consumeEffect(getId());
+        }
+    },
+    SKIP_REWARDS("skip_rewards", "Distortion", "You skip all rewards after your next match.",
+            EffectType.CONSUME) {
+        @Override
+        public int getChargesForRank(int rank) { return 1; }
+
+        @Override
+        public void onBeforeRewards(RewardContext ctx, RogueRun run) {
+            ctx.skipRewards = true;
+            run.consumeEffect(getId());
         }
     };
 
@@ -156,7 +212,7 @@ public enum EventBoon implements RogueEffect {
     public EffectType getEffectType() { return effectType; }
 
     public String getId() { return id; }
-    public String getDisplayName() { return displayName; }
+    public String getDisplayName() { return "Event - " + displayName; }
     public String getDescription() { return description; }
 
     public static EventBoon fromId(String id) {

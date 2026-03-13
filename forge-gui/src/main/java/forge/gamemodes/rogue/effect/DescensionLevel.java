@@ -87,6 +87,12 @@ public enum DescensionLevel implements RogueEffect {
         this.description = description;
     }
 
+    @Override
+    public String getDisplayName() { return "Descension - " + name; }
+
+    @Override
+    public String getDescription() { return description; }
+
     public static DescensionLevel forLevel(int level) {
         for (DescensionLevel dl : values()) {
             if (dl.level == level) return dl;

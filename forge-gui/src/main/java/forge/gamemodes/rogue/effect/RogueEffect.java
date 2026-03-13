@@ -2,7 +2,8 @@ package forge.gamemodes.rogue.effect;
 
 import forge.deck.CardPool;
 import forge.game.player.RegisteredPlayer;
-import forge.gamemodes.rogue.*;
+import forge.gamemodes.rogue.RogueConfig;
+import forge.gamemodes.rogue.RogueRun;
 import forge.item.IPaperCard;
 import forge.item.PaperCard;
 import forge.model.FModel;
@@ -18,22 +19,34 @@ public interface RogueEffect {
 
     /**
      * Lifecycle type for effects.
-     * ONESHOT: fire-and-forget, applied once at choice time, never stored or dispatched.
+     * ONESHOT: fire-and-forget, applied once immediately, never stored or dispatched.
      * PERMANENT: stored in run, dispatched at trigger points, persists for the whole run.
-     * CONSUME: stored in run, dispatched at trigger points, removed after triggering.
+     * CONSUME: stored in run, dispatched at trigger points, removed after all charges consumed
      */
     enum EffectType { ONESHOT, PERMANENT, CONSUME }
 
     default EffectType getEffectType() { return EffectType.PERMANENT; }
 
+    /** Display name for UI. Override in concrete types. */
+    default String getDisplayName() { return ""; }
+
+    /** Description for tooltips. Override in concrete types. */
+    default String getDescription() { return ""; }
+
     /** Number of charges for CONSUME effects at the given rank. -1 = permanent (default). */
     default int getChargesForRank(int rank) { return -1; }
 
-    /** Fired once per match start. Add command zone cards, adjust hand size, etc. */
-    default void onMatchStart(RegisteredPlayer human, RogueRun run) {}
-
     /** Fired once when a new run is created. Adjust starting life, gold, etc. */
     default void onRunStart(RogueRun run) {}
+
+    /** Fired after path generation. Modify nodes via run.getPath().getNodes(). */
+    default void afterPathGeneration(RogueRun run) {}
+
+    /** Fired when the path visualizer updates. Use to modify plane visibility. */
+    default void onPathUpdate(PathUpdateContext ctx, RogueRun run) {}
+
+    /** Fired once per match start. Add command zone cards, adjust hand size, etc. */
+    default void onMatchStart(RegisteredPlayer human, RogueRun run) {}
 
     /** Fired after winning a match (non-final node). Heal life, etc. */
     default void onMatchWin(RogueRun run) {}
@@ -41,17 +54,14 @@ public interface RogueEffect {
     /** Fired when the player would lose the run. */
     default void onDefeat(DefeatContext ctx, RogueRun run) {}
 
+    /** Fired before rewards are given after a match win. Use to skip rewards. */
+    default void onBeforeRewards(RewardContext ctx, RogueRun run) {}
+
     /** Fired for card reward node selections. */
     default void onCardReward(CardRewardContext ctx, RogueRun run) {}
 
     /** Fired for both card reward and bazaar selections. */
     default void onCardSelection(CardSelectionContext ctx, RogueRun run) {}
-
-    /** Fired after path generation. Modify nodes via run.getPath().getNodes(). */
-    default void afterPathGeneration(RogueRun run) {}
-
-    /** Fired when the path visualizer updates. Use to modify plane visibility. */
-    default void onPathUpdate(PathUpdateContext ctx, RogueRun run) {}
 
     /**
      * Loads custom rogue card scripts and adds the named card to the command zone.

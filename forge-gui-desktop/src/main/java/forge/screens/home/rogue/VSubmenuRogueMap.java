@@ -2,9 +2,8 @@ package forge.screens.home.rogue;
 
 import forge.gamemodes.rogue.RogueMetaProgress;
 import forge.gamemodes.rogue.RogueRun;
-import forge.gamemodes.rogue.effect.EchoBoon;
 import forge.gamemodes.rogue.effect.RogueEffect;
-import forge.gamemodes.rogue.effect.Wound;
+import forge.gamemodes.rogue.effect.RogueEffectComposite;
 import forge.gui.framework.DragCell;
 import forge.gui.framework.DragTab;
 import forge.gui.framework.EDocID;
@@ -88,8 +87,7 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
   private final PathVisualizerPanel pathVisualizer = new PathVisualizerPanel();
   private final FScrollPane scrollPathDisplay;
 
-  private JPanel pnlBoons;
-  private JPanel pnlWounds;
+  private JPanel pnlEffects;
   private final FButton btnEnterNode;
   private final FButton btnEditDeck;
   private final FButton btnDevWinRun = new FButton("[DEV] Win Run");
@@ -135,33 +133,19 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
       lblDescension.setVisible(descLevel > 0);
       if (descLevel > 0) lblDescension.setText("Descension: " + descLevel);
 
-      // Populate active boons from run snapshot
-      pnlBoons.removeAll();
-      List<RogueEffect> activeBoons = run.getActiveEchoBoons();
-      for (int i = 0; i < activeBoons.size(); i++) {
-        EchoBoon boon = (EchoBoon) activeBoons.get(i);
+      // Populate active effects (echo boons, descension, event boons, chest boons, wounds)
+      pnlEffects.removeAll();
+      List<RogueEffect> allEffects = RogueEffectComposite.getAllEffects(run);
+      for (int i = 0; i < allEffects.size(); i++) {
+        RogueEffect effect = allEffects.get(i);
         int col = i / 3;
         int row = i % 3;
-        FLabel boonLbl = new FLabel.Builder().text(boon.getDisplayName()).fontSize(11).build();
-        boonLbl.setToolTipText(boon.getDescription());
-        pnlBoons.add(boonLbl, "cell " + col + " " + row);
+        FLabel effectLbl = new FLabel.Builder().text(effect.getDisplayName()).fontSize(11).build();
+        effectLbl.setToolTipText(effect.getDescription());
+        pnlEffects.add(effectLbl, "cell " + col + " " + row);
       }
-      pnlBoons.revalidate();
-      pnlBoons.repaint();
-
-      // Populate active wounds from run
-      pnlWounds.removeAll();
-      List<RogueEffect> activeWounds = run.getActiveWounds();
-      for (int i = 0; i < activeWounds.size(); i++) {
-        Wound wound = (Wound) activeWounds.get(i);
-        int col = i / 3;
-        int row = i % 3;
-        FLabel woundLbl = new FLabel.Builder().text(wound.getDisplayName()).fontSize(11).build();
-        woundLbl.setToolTipText(wound.getDescription());
-        pnlWounds.add(woundLbl, "cell " + col + " " + row);
-      }
-      pnlWounds.revalidate();
-      pnlWounds.repaint();
+      pnlEffects.revalidate();
+      pnlEffects.repaint();
 
       pathVisualizer.updatePath(run);
     } else {
@@ -209,15 +193,10 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
     infoRow.add(lblRemovalCredits);
     infoRow.add(lblDescension);
 
-    // Active Aether Boons panel — populated in updateDisplay() from run snapshot
-    pnlBoons = new JPanel(new MigLayout("insets 0, gap 8 1"));
-    pnlBoons.setOpaque(false);
-    infoRow.add(pnlBoons);
-
-    // Active Wounds panel — populated in updateDisplay() from run
-    pnlWounds = new JPanel(new MigLayout("insets 0, gap 8 1"));
-    pnlWounds.setOpaque(false);
-    infoRow.add(pnlWounds);
+    // Active effects panel (echo boons, descension, event boons, chest boons, wounds)
+    pnlEffects = new JPanel(new MigLayout("insets 0, gap 8 1"));
+    pnlEffects.setOpaque(false);
+    infoRow.add(pnlEffects);
 
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(infoRow, "w 98%!, h pref!, gap 1% 0 10px 10px");
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay()

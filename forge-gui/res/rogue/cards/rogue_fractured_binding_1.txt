@@ -1,4 +1,4 @@
-Name:Rogue - Fractured Binding 1
+Name:Echo - Fractured Binding 1
 ManaCost:no cost
 Types:Rogue Modifier
 S:Mode$ ReduceCost | ValidCard$ Card.IsCommander+YouOwn | Type$ Spell | Amount$ 1 | EffectZone$ Command | Description$ Your commander costs {1} less to cast from the command zone.

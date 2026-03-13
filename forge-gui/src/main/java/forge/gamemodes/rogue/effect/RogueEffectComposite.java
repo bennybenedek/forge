@@ -14,7 +14,8 @@ public enum RogueEffectComposite implements RogueEffect {
 
     INSTANCE;
 
-    private static List<RogueEffect> getAllEffects(RogueRun run) {
+    /** Returns all active effects from all sources (echo boons, descension, event boons, chest boons, wounds). */
+    public static List<RogueEffect> getAllEffects(RogueRun run) {
         List<RogueEffect> effects = new ArrayList<>();
         effects.addAll(run.getActiveEchoBoons());
         int descLevel = run.getDescensionLevel();
@@ -69,6 +70,11 @@ public enum RogueEffectComposite implements RogueEffect {
     @Override
     public void afterPathGeneration(RogueRun run) {
         forEachEffect(run, e -> e.afterPathGeneration(run));
+    }
+
+    @Override
+    public void onBeforeRewards(RewardContext ctx, RogueRun run) {
+        forEachEffect(run, e -> e.onBeforeRewards(ctx, run));
     }
 
     @Override

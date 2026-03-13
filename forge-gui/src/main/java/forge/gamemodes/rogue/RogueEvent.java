@@ -68,6 +68,43 @@ public enum RogueEvent {
         List.of(
             new EventChoice("Endure", "You suffer a wound.",
                 EventBoon.GAIN_WOUND)
+        )),
+
+    HORROR("Horror",
+        "A glistening horror clings to your soul, invisible but insatiable. It drinks deep, of your vitality, your future, and your fortune.",
+        List.of(
+            new EventChoice("Surrender Your Gold", "You lose all your gold.",
+                EventBoon.LOSE_ALL_GOLD),
+            new EventChoice("Surrender Your Echoes", "You lose all your echoes.",
+                EventBoon.LOSE_ALL_ECHOES)
+        )),
+
+    LOST("Lost",
+        "Your connection to your spark flickers. You reach for your Commander's presence, but the link has gone cold.",
+        List.of(
+            new EventChoice("Endure", "You may not cast your Commander in the next match.",
+                EventBoon.LOST_CONNECTION)
+        )),
+
+    SATCHEL("Satchel",
+        "Hidden beneath a crumbled pillar, you find a satchel of cards bound in leather; remnants of a Planeswalker who walked here before you.",
+        List.of(
+            new EventChoice("Open the Satchel", "You find a hidden chest.",
+                EventBoon.FIND_CHEST)
+        )),
+
+    SHRINE("Shrine",
+        "A crumbling shrine pulses faintly with restorative energy. As you kneel, you immediately feel its soothing powers.",
+        List.of(
+            new EventChoice("Kneel", "You discover a hidden Sanctum.",
+                EventBoon.FIND_SANCTUM)
+        )),
+
+    DISTORTION("Distortion",
+        "Time lurches sideways. When the battle ends, there's nothing left to salvage. No spoils. No memory. Only silence.",
+        List.of(
+            new EventChoice("Endure", "You skip all rewards after your next match.",
+                EventBoon.SKIP_REWARDS)
         ));
 
     public record EventChoice(String label, String resultText, EventBoon effect) {}

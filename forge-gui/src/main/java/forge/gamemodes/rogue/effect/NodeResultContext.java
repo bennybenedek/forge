@@ -9,7 +9,7 @@ import java.util.List;
  * Set by ONESHOT boons/loots that trigger follow-up actions or card effects.
  */
 public class NodeResultContext {
-    public enum ActionTriggerType { BAZAAR, PLANEBOUND, CARD_REMOVAL, CARD_REWARD, MYTHIC_CARD_REWARD }
+    public enum ActionTriggerType { BAZAAR, PLANEBOUND, CARD_REMOVAL, CARD_REWARD, MYTHIC_CARD_REWARD, CHEST, SANCTUM }
 
     /** Set by ONESHOT effects that trigger another action (e.g., "opens a bazaar"). Null = no follow-up. */
     public ActionTriggerType trigger;

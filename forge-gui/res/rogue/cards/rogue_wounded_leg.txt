@@ -1,4 +1,4 @@
-Name:Rogue - Wounded Leg
+Name:Wound - Leg
 ManaCost:no cost
 Types:Rogue Modifier
 S:Mode$ RaiseCost | ValidCard$ Card | Activator$ You | Type$ Spell | Amount$ 1 | EffectZone$ Command | Description$ Spells you cast cost {1} more to cast.

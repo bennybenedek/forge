@@ -551,38 +551,50 @@ public enum CSubmenuRogueMap implements ICDoc {
       NodeResultContext ctx = new NodeResultContext();
       if (boon.getEffectType() == RogueEffect.EffectType.ONESHOT) {
         boon.applyEffect(currentRun, ctx);
-        if (ctx.trigger == ActionTriggerType.BAZAAR) {
+
+        if (ctx.trigger != null) switch (ctx.trigger) {
+          case BAZAAR:
             runBazaarShopping();
-        } else if (ctx.trigger == ActionTriggerType.PLANEBOUND && ctx.planebound != null) {
-            eventNode.setEventPlanebound(ctx.planebound);
-            NodePlanebound tempNode = new NodePlanebound(ctx.planebound);
-            tempNode.setRowIndex(eventNode.getRowIndex());
-            handlePlaneboundNode(tempNode);
-            return;  // win/lose controller handles completion
-        } else if (ctx.trigger == ActionTriggerType.CARD_REMOVAL) {
-            // Get non-commander deck cards
+            break;
+          case PLANEBOUND:
+            if (ctx.planebound != null) {
+              eventNode.setEventPlanebound(ctx.planebound);
+              NodePlanebound tempNode = new NodePlanebound(ctx.planebound);
+              tempNode.setRowIndex(eventNode.getRowIndex());
+              handlePlaneboundNode(tempNode);
+              return;  // win/lose controller handles completion
+            }
+            break;
+          case CHEST:
+            eventNode.setCompleted(true);
+            handleChestNode(new NodeChest());
+            return;
+          case SANCTUM:
+            eventNode.setCompleted(true);
+            handleSanctumNode(new NodeSanctum());
+            return;
+          case CARD_REMOVAL:
             List<PaperCard> deckCards = currentRun.getCurrentDeck().getMain().toFlatList();
             String cmdName = currentRun.getSelectedRogueDeck().getCommanderCardName();
             deckCards.removeIf(c -> c.getName().equals(cmdName)
                 || c.getRules().getType().isBasicLand());
-
             CardSelectionDialog cardSelectionDialog = new CardSelectionDialog(
                 "Planar Sacrifice", "Choose " + ctx.removeCount + " cards to remove.",
                 deckCards, ctx.removeCount);
             List<PaperCard> removed = cardSelectionDialog.show();
-
-            for (PaperCard card : removed) {
-                currentRun.getCurrentDeck().getMain().remove(card);
-            }
+            for (PaperCard card : removed)
+              currentRun.getCurrentDeck().getMain().remove(card);
             ctx.removedCards = removed;
-
             if (ctx.drawCount > 0) {
-                RogueDeck rd = currentRun.getSelectedRogueDeck();
-                List<PaperCard> added = rd.drawRewardOptions(ctx.drawCount, null);
-                currentRun.addCardsToRun(added);
-                rd.removeFromRewardPool(added);
-                ctx.addedCards = added;
+              RogueDeck rd = currentRun.getSelectedRogueDeck();
+              List<PaperCard> added = rd.drawRewardOptions(ctx.drawCount, null);
+              currentRun.addCardsToRun(added);
+              rd.removeFromRewardPool(added);
+              ctx.addedCards = added;
             }
+            break;
+          default:
+            break;
         }
 
       } else {
@@ -600,6 +612,8 @@ public enum CSubmenuRogueMap implements ICDoc {
       if (ctx.gainedWound != null) {
         resultText += ": " + ctx.gainedWound.getDisplayName()
             + " \u2014 " + ctx.gainedWound.getDescription();
+      } else if (choice.effect() == EventBoon.GAIN_WOUND) {
+        resultText = "You already bear all wounds.";
       }
 
       NodeResultPanel resultPanel = new NodeResultPanel(resultText, sections);

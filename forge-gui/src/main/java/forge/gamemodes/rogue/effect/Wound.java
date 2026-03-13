@@ -5,21 +5,21 @@ import forge.gamemodes.rogue.RogueRun;
 
 public enum Wound implements RogueEffect {
 
-    LEG("leg", "Wounded Leg", "Every spell you cast costs {1} more.",
+    LEG("leg", "Leg", "Every spell you cast costs {1} more.",
             EffectType.PERMANENT) {
         @Override
         public void onMatchStart(RegisteredPlayer human, RogueRun run) {
-            RogueEffect.addCustomCardToCommandZone("Rogue - Wounded Leg", human);
+            RogueEffect.addCustomCardToCommandZone("Wound - Leg", human);
         }
     },
-    HEAD("head", "Wounded Head", "Start each match with 1 less card in hand.",
+    HEAD("head", "Head", "Start each match with 1 less card in hand.",
             EffectType.PERMANENT) {
         @Override
         public void onMatchStart(RegisteredPlayer human, RogueRun run) {
             human.setStartingHand(human.getStartingHand() - 1);
         }
     },
-    EYE("eye", "Wounded Eye", "Planes on the path are not revealed when you reach them.",
+    EYE("eye", "Eye", "Planes on the path are not revealed when you reach them.",
             EffectType.PERMANENT) {
         @Override
         public void onPathUpdate(PathUpdateContext ctx, RogueRun run) {
@@ -43,7 +43,7 @@ public enum Wound implements RogueEffect {
     public EffectType getEffectType() { return effectType; }
 
     public String getId() { return id; }
-    public String getDisplayName() { return displayName; }
+    public String getDisplayName() { return "Wound - " + displayName; }
     public String getDescription() { return description; }
 
     public static Wound fromId(String id) {

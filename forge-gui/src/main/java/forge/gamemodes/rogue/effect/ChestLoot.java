@@ -36,14 +36,14 @@ public enum ChestLoot implements RogueEffect {
             EffectType.PERMANENT) {
         @Override
         public void onMatchStart(RegisteredPlayer human, RogueRun run) {
-            RogueEffect.addCustomCardToCommandZone("Rogue - Commander Strength", human);
+            RogueEffect.addCustomCardToCommandZone("Chest - Commander Strength", human);
         }
     },
     COST_REDUCTION("cost_reduction", "Planar Discount", "You gained a Boon: Permanent spells you cast cost {1} less for the rest of the Run.",
             EffectType.PERMANENT) {
         @Override
         public void onMatchStart(RegisteredPlayer human, RogueRun run) {
-            RogueEffect.addCustomCardToCommandZone("Rogue - Planar Discount", human);
+            RogueEffect.addCustomCardToCommandZone("Chest - Planar Discount", human);
         }
     },
     EXTRA_DRAW("extra_draw", "Extra Draw", "You gained a Boon: Draw 1 extra card at the start of each match for the rest of the Run.",
@@ -73,7 +73,7 @@ public enum ChestLoot implements RogueEffect {
     public EffectType getEffectType() { return effectType; }
 
     public String getId() { return id; }
-    public String getDisplayName() { return displayName; }
+    public String getDisplayName() { return "Chest - " + displayName; }
     public String getDescription() { return description; }
 
     public static ChestLoot fromId(String id) {

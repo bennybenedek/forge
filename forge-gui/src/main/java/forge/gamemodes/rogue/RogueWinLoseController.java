@@ -4,6 +4,7 @@ import forge.LobbyPlayer;
 import forge.game.GameView;
 import forge.game.player.PlayerView;
 import forge.gamemodes.rogue.effect.DefeatContext;
+import forge.gamemodes.rogue.effect.RewardContext;
 import forge.gamemodes.rogue.effect.RogueEffectComposite;
 import forge.gamemodes.rogue.path.NodeEvent;
 import forge.gamemodes.rogue.path.NodePlanebound;
@@ -100,6 +101,10 @@ public class RogueWinLoseController {
 
         var progress = RogueMetaProgress.getInstance();
 
+        // Check if rewards should be skipped (e.g. Distortion effect)
+        RewardContext rewardCtx = new RewardContext();
+        RogueEffectComposite.INSTANCE.onBeforeRewards(rewardCtx, currentRun);
+
         // Resolve planebound: either from the node directly, or from an event-triggered fight
         NodePlanebound planeboundNode = null;
         if (currentNode instanceof NodePlanebound pb) {
@@ -110,7 +115,7 @@ public class RogueWinLoseController {
         }
 
         // Award gold and echo rewards for ALL planebound nodes (including Boss)
-        if (planeboundNode != null) {
+        if (planeboundNode != null && !rewardCtx.skipRewards) {
             goldReward = planeboundNode.getGoldReward();
             echoReward = planeboundNode.getEchoReward();
 
@@ -161,8 +166,8 @@ public class RogueWinLoseController {
             return; // Skip card rewards and navigation
         }
 
-        // Award card rewards (only for non-final nodes)
-        if (planeboundNode != null) {
+        // Award card rewards (only for non-final nodes, skip if distortion)
+        if (planeboundNode != null && !rewardCtx.skipRewards) {
             boolean isElite = planeboundNode.getPlaneboundType() == RoguePlaneboundType.ELITE;
             awardCardRewards(isElite, goldReward, echoReward);
         }
