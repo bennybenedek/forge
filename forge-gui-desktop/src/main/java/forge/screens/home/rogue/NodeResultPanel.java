@@ -2,14 +2,13 @@ package forge.screens.home.rogue;
 
 import forge.item.PaperCard;
 import forge.toolbox.FLabel;
-import forge.toolbox.FTextArea;
 import forge.toolbox.FSkin.SkinnedPanel;
+import forge.toolbox.FTextArea;
 import forge.view.arcane.CardPanel;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
-import javax.swing.SwingConstants;
 import net.miginfocom.swing.MigLayout;
 
 /**

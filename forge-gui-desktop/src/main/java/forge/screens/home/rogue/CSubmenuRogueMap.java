@@ -10,7 +10,6 @@ import forge.game.player.RegisteredPlayer;
 import forge.gamemodes.match.HostedMatch;
 import forge.gamemodes.rogue.*;
 import forge.gamemodes.rogue.effect.*;
-import forge.gamemodes.rogue.effect.NodeResultContext.ActionTriggerType;
 import forge.gamemodes.rogue.path.*;
 import forge.gui.GuiBase;
 import forge.gui.SOverlayUtils;
