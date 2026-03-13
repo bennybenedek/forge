@@ -2,8 +2,7 @@ package forge.screens.home.rogue;
 
 import forge.gamemodes.rogue.RogueMetaProgress;
 import forge.gamemodes.rogue.RogueRun;
-import forge.gamemodes.rogue.effect.RogueEffect;
-import forge.gamemodes.rogue.effect.RogueEffectComposite;
+import forge.gamemodes.rogue.effect.*;
 import forge.gui.framework.DragCell;
 import forge.gui.framework.DragTab;
 import forge.gui.framework.EDocID;
@@ -140,7 +139,13 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
         RogueEffect effect = allEffects.get(i);
         int col = i / 3;
         int row = i % 3;
-        FLabel effectLbl = new FLabel.Builder().text(effect.getDisplayName()).fontSize(11).build();
+        String prefix = "";
+        if (effect instanceof Wound) prefix = "Wound - ";
+        else if (effect instanceof EchoBoon) prefix = "Echo - ";
+        else if (effect instanceof EventBoon) prefix = "Event - ";
+        else if (effect instanceof ChestLoot) prefix = "Chest - ";
+        else if (effect instanceof DescensionLevel) prefix = "Descension - ";
+        FLabel effectLbl = new FLabel.Builder().text(prefix + effect.getDisplayName()).fontSize(11).build();
         effectLbl.setToolTipText(effect.getDescription());
         pnlEffects.add(effectLbl, "cell " + col + " " + row);
       }

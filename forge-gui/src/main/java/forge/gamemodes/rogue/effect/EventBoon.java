@@ -18,11 +18,11 @@ public enum EventBoon implements RogueEffect {
             run.setCurrentGold(run.getCurrentGold() - 5);
         }
     },
-    RIFT_ENERGY("rift_energy", "Rift Energy", "Gain 10 gold.",
+    RIFT_ENERGY("rift_energy", "Rift Energy", "Gain 5 gold.",
             EffectType.ONESHOT) {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
-            run.setCurrentGold(run.getCurrentGold() + 10);
+            run.setCurrentGold(run.getCurrentGold() + 5);
         }
     },
     CARAVAN_ROB("caravan_rob", "Caravan Plunder", "Lose 3 life, gain 8 gold.",
@@ -212,7 +212,7 @@ public enum EventBoon implements RogueEffect {
     public EffectType getEffectType() { return effectType; }
 
     public String getId() { return id; }
-    public String getDisplayName() { return "Event - " + displayName; }
+    public String getDisplayName() { return displayName; }
     public String getDescription() { return description; }
 
     public static EventBoon fromId(String id) {

@@ -650,34 +650,23 @@ public enum CSubmenuRogueMap implements ICDoc {
       if (picked != null) loot = picked;
     }
 
+    // Show chest dialog (same structure as EventDialog)
+    new ChestDialog(loot).show();
+
+    // Apply effect after player acknowledges
     NodeResultContext ctx = new NodeResultContext();
     if (loot.getEffectType() == RogueEffect.EffectType.ONESHOT) {
       loot.applyEffect(currentRun, ctx);
       boolean mythicOnly = ctx.trigger == NodeResultContext.ActionTriggerType.MYTHIC_CARD_REWARD;
       if (ctx.trigger == NodeResultContext.ActionTriggerType.CARD_REWARD
           || ctx.trigger == NodeResultContext.ActionTriggerType.MYTHIC_CARD_REWARD) {
-        List<PaperCard> chosen = CardRewardHelper.runReward(currentRun,
+        CardRewardHelper.runReward(currentRun,
             (title, cards, max, reroll) -> new CardRewardDialog(title, cards, max, reroll).show(),
             mythicOnly);
-        if (chosen != null && !chosen.isEmpty()) {
-          ctx.addedCards = chosen;
-        }
       }
     } else {
       currentRun.addChestBoon(loot);
     }
-
-    // Build result display
-    List<NodeResultPanel.CardSection> sections = new ArrayList<>();
-    if (ctx.addedCards != null && !ctx.addedCards.isEmpty())
-      sections.add(new NodeResultPanel.CardSection("Cards added:", ctx.addedCards));
-
-    NodeResultPanel resultPanel = new NodeResultPanel(loot.getDescription(), sections);
-    FOptionPane optionPane = new FOptionPane(null, "Chest: " + loot.getDisplayName(), null,
-        resultPanel, List.of("OK"), 0);
-    resultPanel.initZoom(optionPane);
-    optionPane.setVisible(true);
-    optionPane.dispose();
 
     chestNode.setCompleted(true);
     currentRun.nextNode();

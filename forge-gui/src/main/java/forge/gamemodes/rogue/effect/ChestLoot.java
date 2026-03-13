@@ -6,25 +6,25 @@ import forge.gamemodes.rogue.RogueRun;
 
 public enum ChestLoot implements RogueEffect {
 
-    FIND_GOLD("find_gold", "Find Gold", "You found 5 gold.", EffectType.ONESHOT) {
+    FIND_GOLD("find_gold", "Treasure", "You found 5 gold.", EffectType.ONESHOT) {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
             run.setCurrentGold(run.getCurrentGold() + 5);
         }
     },
-    FIND_ECHOES("find_echoes", "Find Echoes", "You found 5 echoes.", EffectType.ONESHOT) {
+    FIND_ECHOES("find_echoes", "Giant Soul", "You found 5 echoes.", EffectType.ONESHOT) {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
             RogueMetaProgress.getInstance().addEchoes(5);
         }
     },
-    CARD_REWARD("card_reward", "Card Cache", "You gained cards from the Reward Pool.", EffectType.ONESHOT) {
+    CARD_REWARD("card_reward", "Card Cache", "Gain a Card Reward.", EffectType.ONESHOT) {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
             ctx.trigger = NodeResultContext.ActionTriggerType.CARD_REWARD;
         }
     },
-    MYTHIC_CARD_REWARD("mythic_card_reward", "Mythic Relic", "You gained mythic cards from the Reward Pool.", EffectType.ONESHOT) {
+    MYTHIC_CARD_REWARD("mythic_card_reward", "Mythic Card Cache", "Gain a Mythic Card Reward.", EffectType.ONESHOT) {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
             ctx.trigger = NodeResultContext.ActionTriggerType.MYTHIC_CARD_REWARD;
@@ -32,21 +32,21 @@ public enum ChestLoot implements RogueEffect {
     },
 
     // PERMANENT loots
-    COMMANDER_STRENGTH("commander_strength", "Commander Strength", "You gained a Boon: Your commander gets +2/+2 for the rest of the Run.",
+    COMMANDER_STRENGTH("commander_strength", "Relic Of Strength", "Your commander gets +2/+2 for the rest of the Run.",
             EffectType.PERMANENT) {
         @Override
         public void onMatchStart(RegisteredPlayer human, RogueRun run) {
             RogueEffect.addCustomCardToCommandZone("Chest - Commander Strength", human);
         }
     },
-    COST_REDUCTION("cost_reduction", "Planar Discount", "You gained a Boon: Permanent spells you cast cost {1} less for the rest of the Run.",
+    COST_REDUCTION("cost_reduction", "Relic Of Agility", "Permanent spells you cast cost {1} less for the rest of the Run.",
             EffectType.PERMANENT) {
         @Override
         public void onMatchStart(RegisteredPlayer human, RogueRun run) {
             RogueEffect.addCustomCardToCommandZone("Chest - Planar Discount", human);
         }
     },
-    EXTRA_DRAW("extra_draw", "Extra Draw", "You gained a Boon: Draw 1 extra card at the start of each match for the rest of the Run.",
+    EXTRA_DRAW("extra_draw", "Relic Of Wisdom", "Draw 1 extra card at the start of each match for the rest of the Run.",
             EffectType.PERMANENT) {
         @Override
         public void onMatchStart(RegisteredPlayer human, RogueRun run) {
@@ -73,7 +73,7 @@ public enum ChestLoot implements RogueEffect {
     public EffectType getEffectType() { return effectType; }
 
     public String getId() { return id; }
-    public String getDisplayName() { return "Chest - " + displayName; }
+    public String getDisplayName() { return displayName; }
     public String getDescription() { return description; }
 
     public static ChestLoot fromId(String id) {

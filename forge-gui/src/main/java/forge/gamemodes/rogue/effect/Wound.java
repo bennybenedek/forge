@@ -43,7 +43,7 @@ public enum Wound implements RogueEffect {
     public EffectType getEffectType() { return effectType; }
 
     public String getId() { return id; }
-    public String getDisplayName() { return "Wound - " + displayName; }
+    public String getDisplayName() { return displayName; }
     public String getDescription() { return description; }
 
     public static Wound fromId(String id) {

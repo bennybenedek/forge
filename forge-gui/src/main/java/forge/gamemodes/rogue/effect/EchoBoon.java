@@ -176,7 +176,7 @@ public enum EchoBoon implements RogueEffect {
     }
 
     public String getDisplayName() {
-        return "Echo - " + displayName;
+        return displayName;
     }
 
     public String getDescription() {

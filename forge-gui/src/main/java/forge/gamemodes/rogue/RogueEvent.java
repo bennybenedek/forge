@@ -41,16 +41,16 @@ public enum RogueEvent {
     PLANAR_TRIBUTE("Planar Tribute",
         "The planes demand tribute.",
         List.of(
-            new EventChoice("Sacrifice!", "The planes take what is yours.",
+            new EventChoice("Sacrifice!", "The planes took what is yours.",
                 EventBoon.PLANAR_SACRIFICE),
-            new EventChoice("Give and take", "The planes reshape your arsenal.",
+            new EventChoice("Give and take", "The planes reshaped your arsenal.",
                 EventBoon.PLANAR_SHUFFLE)
         )),
 
     AMBUSH("Ambush!",
         "Hostile forces materialize from a rift! Prepare for battle!",
         List.of(
-            new EventChoice("Fight!", "You have no choice but to fight.",
+            new EventChoice("Fight!", "You fought your way through.",
                 EventBoon.SURPRISE_FIGHT)
         )),
 
@@ -73,16 +73,16 @@ public enum RogueEvent {
     HORROR("Horror",
         "A glistening horror clings to your soul, invisible but insatiable. It drinks deep, of your vitality, your future, and your fortune.",
         List.of(
-            new EventChoice("Surrender Your Gold", "You lose all your gold.",
+            new EventChoice("Surrender", "You lose all your gold.",
                 EventBoon.LOSE_ALL_GOLD),
-            new EventChoice("Surrender Your Echoes", "You lose all your echoes.",
+            new EventChoice("Resist", "You lose all your echoes.",
                 EventBoon.LOSE_ALL_ECHOES)
         )),
 
     LOST("Lost",
         "Your connection to your spark flickers. You reach for your Commander's presence, but the link has gone cold.",
         List.of(
-            new EventChoice("Endure", "You may not cast your Commander in the next match.",
+            new EventChoice("Depart", "Your Commander disappeared into the void.",
                 EventBoon.LOST_CONNECTION)
         )),
 
@@ -103,7 +103,7 @@ public enum RogueEvent {
     DISTORTION("Distortion",
         "Time lurches sideways. When the battle ends, there's nothing left to salvage. No spoils. No memory. Only silence.",
         List.of(
-            new EventChoice("Endure", "You skip all rewards after your next match.",
+            new EventChoice("Suffer", "The silence consumed you.",
                 EventBoon.SKIP_REWARDS)
         ));
 
