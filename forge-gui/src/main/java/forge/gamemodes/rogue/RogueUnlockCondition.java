@@ -10,17 +10,14 @@ import java.util.Map;
  *
  * Supported conditions:
  * - Default$ True/False - Always unlocked or always locked
- * - RunsWon$ N - Unlock after winning N total runs
- * - MatchesWon$ N - Unlock after winning N total matches
  * - WinWithCommander$ Name - Unlock after winning a run with specified commander
- * - UseCommander$ Name - Unlock after using specified commander in any run
- * - MaxLife$ N - Unlock after reaching N life in any run
- * - MaxGold$ N - Unlock after earning N gold in any run
- * - CreatureTypes$ N - Unlock after having N different creature types in deck
- * - LegendaryPermanents$ N - Unlock after having N legendary permanents in deck
+ * - Any RogueStats conditionKey$ N - Unlock when stat value reaches N
  */
 public class RogueUnlockCondition {
 
+    // Non-stat condition keys (not backed by RogueStats enum)
+    private static final String KEY_DEFAULT = "Default";
+    private static final String KEY_WIN_WITH_COMMANDER = "WinWithCommander";
     private final Map<String, String> conditions;
     private final String rawCondition;
 
@@ -34,7 +31,7 @@ public class RogueUnlockCondition {
 
         if (conditionString == null || conditionString.trim().isEmpty()) {
             // No condition means always unlocked
-            conditions.put("Default", "True");
+            conditions.put(KEY_DEFAULT, "True");
             return;
         }
 
@@ -73,46 +70,20 @@ public class RogueUnlockCondition {
 
     /**
      * Evaluate a single condition key-value pair.
+     * Stat-backed conditions use getStatValue(); special conditions handled explicitly.
      */
     private boolean evaluateSingleCondition(String key, String value, RogueMetaProgress progress) {
-        switch (key) {
-            case "Default":
-                return Boolean.parseBoolean(value);
+        if (KEY_DEFAULT.equals(key)) return Boolean.parseBoolean(value);
+        if (KEY_WIN_WITH_COMMANDER.equals(key)) return progress.hasWonWithCommander(value);
+        // All other keys are stat-backed (RunsStarted, MatchesWon, MaxLife, etc.)
+        return progress.getStatValue(key) >= parseIntSafe(value);
+    }
 
-            case "RunsStarted":
-                return progress.getTotalRunsStarted() >= parseIntSafe(value);
-
-            case "RunsCompleted":
-                return progress.getTotalRunsCompleted() >= parseIntSafe(value);
-
-            case "RunsWon":
-                return progress.getTotalRunsWon() >= parseIntSafe(value);
-
-            case "MatchesWon":
-                return progress.getTotalMatchesWon() >= parseIntSafe(value);
-
-            case "WinWithCommander":
-                return progress.hasWonWithCommander(value);
-
-            case "UseCommander":
-                return progress.hasUsedCommander(value);
-
-            case "MaxLife":
-                return progress.getMaxLifeInRun() >= parseIntSafe(value);
-
-            case "MaxGold":
-                return progress.getMaxGoldInRun() >= parseIntSafe(value);
-
-            case "CreatureTypes":
-                return progress.getMaxCreatureTypesInDeck() >= parseIntSafe(value);
-
-            case "LegendaryPermanents":
-                return progress.getMaxLegendaryPermanentsInDeck() >= parseIntSafe(value);
-
-            default:
-                System.err.println("Unknown unlock condition key: " + key);
-                return true; // Unknown conditions are ignored (don't block unlock)
-        }
+    /**
+     * Check if this condition references a specific key.
+     */
+    public boolean hasCondition(String key) {
+        return conditions.containsKey(key);
     }
 
     /**
@@ -132,8 +103,8 @@ public class RogueUnlockCondition {
      * @return Description for display in UI
      */
     public String getDescription() {
-        if (conditions.containsKey("Default")) {
-            return Boolean.parseBoolean(conditions.get("Default"))
+        if (conditions.containsKey(KEY_DEFAULT)) {
+            return Boolean.parseBoolean(conditions.get(KEY_DEFAULT))
                 ? "Always available"
                 : "Locked";
         }
@@ -152,44 +123,28 @@ public class RogueUnlockCondition {
      * Get description for a single condition.
      */
     private String getConditionDescription(String key, String value) {
-        switch (key) {
-            case "RunsStarted":
-                return "Start " + value + " Run(s).";
-            case "RunsCompleted":
-                return "Complete " + value + " Run(s).";
-            case "RunsWon":
-                return "Win a Run.";
-            case "MatchesWon":
-                return "Win " + value + " matches.";
-            case "WinWithCommander":
-                return "Win a Run with " + value;
-            case "UseCommander":
-                return "Use " + value + " in a run.";
-            case "MaxLife":
-                return "Have " + value + "+ life after any match.";
-            case "MaxGold":
-                return "Earn " + value + " gold in a run.";
-            case "CreatureTypes":
-                return "Have " + value + "+ creature types in your deck.";
-            case "LegendaryPermanents":
-                return "Have " + value + "+ legendary permanents in your deck.";
-            default:
-                return key + ": " + value;
-        }
+        // Non-stat conditions
+        if (KEY_WIN_WITH_COMMANDER.equals(key)) return "Win a Run with " + value;
+
+        // Stat-backed conditions — look up by enum key
+        RogueStats stat = RogueStats.fromKey(key);
+        if (stat != null) return stat.getUnlockDescription(value);
+
+        return key + ": " + value;
     }
 
     /**
      * Check if this is a default unlock (always available or always locked).
      */
     public boolean isDefault() {
-        return conditions.size() == 1 && conditions.containsKey("Default");
+        return conditions.size() == 1 && conditions.containsKey(KEY_DEFAULT);
     }
 
     /**
      * Check if this is always locked (Default$ False with no other conditions).
      */
     public boolean isAlwaysLocked() {
-        return isDefault() && !Boolean.parseBoolean(conditions.get("Default"));
+        return isDefault() && !Boolean.parseBoolean(conditions.get(KEY_DEFAULT));
     }
 
     /**

@@ -439,8 +439,8 @@ public enum CSubmenuRogueMap implements ICDoc {
     sanctumNode.setCompleted(true);
     currentRun.nextNode();
 
-    // Track milestones and check for unlocks
-    RogueMetaProgress.getInstance().onSideNodeCompleted(currentRun);
+    // Track stats and check for unlocks
+    RogueStats.fireOnSideNodeCompleted(currentRun, RogueMetaProgress.getInstance());
 
     // Save run and update view (use update() to trigger tutorials for next row)
     RogueIO.saveRun(currentRun);
@@ -461,8 +461,8 @@ public enum CSubmenuRogueMap implements ICDoc {
     // Evaluate achievements after Bazaar (deck/gold may have changed)
     RogueCommanderAchievements.instance.evaluateRunAchievements(currentRun);
 
-    // Track milestones and check for unlocks
-    RogueMetaProgress.getInstance().onSideNodeCompleted(currentRun);
+    // Track stats and check for unlocks
+    RogueStats.fireOnSideNodeCompleted(currentRun, RogueMetaProgress.getInstance());
 
     // Save run and update view (use update() to trigger tutorials for next row)
     RogueIO.saveRun(currentRun);
@@ -625,7 +625,7 @@ public enum CSubmenuRogueMap implements ICDoc {
 
     eventNode.setCompleted(true);
     currentRun.nextNode();
-    RogueMetaProgress.getInstance().onSideNodeCompleted(currentRun);
+    RogueStats.fireOnSideNodeCompleted(currentRun, RogueMetaProgress.getInstance());
     RogueIO.saveRun(currentRun);
     update();
   }
@@ -670,7 +670,7 @@ public enum CSubmenuRogueMap implements ICDoc {
 
     chestNode.setCompleted(true);
     currentRun.nextNode();
-    RogueMetaProgress.getInstance().onSideNodeCompleted(currentRun);
+    RogueStats.fireOnSideNodeCompleted(currentRun, RogueMetaProgress.getInstance());
     RogueIO.saveRun(currentRun);
     update();
   }
@@ -708,7 +708,7 @@ public enum CSubmenuRogueMap implements ICDoc {
     }
     node.setCompleted(true);
     currentRun.nextNode();
-    RogueMetaProgress.getInstance().onSideNodeCompleted(currentRun);
+    RogueStats.fireOnSideNodeCompleted(currentRun, RogueMetaProgress.getInstance());
     RogueIO.saveRun(currentRun);
     update();
   }
@@ -720,7 +720,7 @@ public enum CSubmenuRogueMap implements ICDoc {
     RogueMetaProgress progress = RogueMetaProgress.getInstance();
     progress.addEchoes(20);
     progress.addRunHistoryEntry(RogueRunHistoryEntry.fromRun(currentRun, "VICTORY", "[DEV]"));
-    progress.onRunCompleted(currentRun, true);
+    RogueStats.fireOnRunCompleted(currentRun, progress, true);
     RogueCommanderAchievements.instance.recordRunWon(commanderName);
     int descLevel = currentRun.getDescensionLevel();
     if (descLevel > 0) {

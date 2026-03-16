@@ -24,23 +24,12 @@ public class RogueMetaProgress {
     private static final String META_PROGRESS_FILE = "meta_progress.dat";
     private static RogueMetaProgress instance;
 
-    // Basic counters
-    private int totalRunsStarted;
-    private int totalRunsCompleted;  // Finished (win or lose)
-    private int totalRunsWon;
-    private int totalMatchesWon;
-    private int totalMatchesLost;
-
     // Per-commander tracking
     private Map<String, Integer> runsStartedPerCommander;
     private Map<String, Integer> runsWonPerCommander;
-    private Set<String> commandersUsed;
 
-    // Milestone tracking (captured during/after runs)
-    private int maxCreatureTypesInDeck;
-    private int maxLegendaryPermanentsInDeck;
-    private int maxLifeInRun;
-    private int maxGoldInRun;
+    // Stat tracking (unified map, keyed by RogueStats.conditionKey)
+    private Map<String, Integer> statValues;
 
     // Per-commander descension tracking
     private Map<String, Integer> maxDescensionWonPerCommander = new HashMap<>();
@@ -63,18 +52,9 @@ public class RogueMetaProgress {
 
     // Private constructor for singleton
     private RogueMetaProgress() {
-        totalRunsStarted = 0;
-        totalRunsCompleted = 0;
-        totalRunsWon = 0;
-        totalMatchesWon = 0;
-        totalMatchesLost = 0;
         runsStartedPerCommander = new HashMap<>();
         runsWonPerCommander = new HashMap<>();
-        commandersUsed = new HashSet<>();
-        maxCreatureTypesInDeck = 0;
-        maxLegendaryPermanentsInDeck = 0;
-        maxLifeInRun = 0;
-        maxGoldInRun = 0;
+        statValues = new HashMap<>();
 
         // Initialize Aether system
         totalEchoes = 0;
@@ -109,18 +89,9 @@ public class RogueMetaProgress {
      * Reset all statistics to initial values and save.
      */
     public void reset() {
-        totalRunsStarted = 0;
-        totalRunsCompleted = 0;
-        totalRunsWon = 0;
-        totalMatchesWon = 0;
-        totalMatchesLost = 0;
         runsStartedPerCommander = new HashMap<>();
         runsWonPerCommander = new HashMap<>();
-        commandersUsed = new HashSet<>();
-        maxCreatureTypesInDeck = 0;
-        maxLegendaryPermanentsInDeck = 0;
-        maxLifeInRun = 0;
-        maxGoldInRun = 0;
+        statValues = new HashMap<>();
         maxDescensionWonPerCommander = new HashMap<>();
 
         // Reset Aether system
@@ -138,134 +109,86 @@ public class RogueMetaProgress {
         save();
     }
 
-    // ==================== Progress Tracking Methods ====================
+    // ==================== Stat System ====================
 
     /**
-     * Called when a new run is started.
+     * Get the stored value for a stat key.
      */
-    public void onRunStarted(String commanderName) {
-        totalRunsStarted++;
-        commandersUsed.add(commanderName);
+    public int getStatValue(String key) {
+        if (statValues == null) statValues = new HashMap<>();
+        return statValues.getOrDefault(key, 0);
+    }
+
+    /**
+     * Update a stat value if the new value exceeds the stored value.
+     * Works for both counters (pass current + 1) and max-value tracking (pass snapshot).
+     * Checks decks with matching unlock conditions for new unlocks.
+     */
+    public void updateStat(RogueStats stat, int value) {
+        if (statValues == null) statValues = new HashMap<>();
+        String key = stat.getConditionKey();
+        if (value > statValues.getOrDefault(key, 0)) {
+            statValues.put(key, value);
+        }
+        checkForNewUnlocks(stat);
+    }
+
+    // ==================== Per-Commander Tracking ====================
+
+    /**
+     * Track per-commander run start count.
+     */
+    public void trackCommanderStarted(String commanderName) {
         runsStartedPerCommander.merge(commanderName, 1, Integer::sum);
-        save();
     }
 
-    /**
-     * Called after each match in a run.
-     */
-    public void onMatchCompleted(RogueRun run, boolean won) {
-        if (won) {
-            totalMatchesWon++;
-        } else {
-            totalMatchesLost++;
-        }
-
-        // Track milestones during the run
-        updateMilestones(run);
-        save();
+    public void mergeRunsWonPerCommander(String commanderName) {
+        runsWonPerCommander.merge(commanderName, 1, Integer::sum);
     }
 
-    /**
-     * Called after completing a non-match node (Bazaar, Sanctum, etc.).
-     * Updates milestones and checks for new unlocks.
-     */
-    public void onSideNodeCompleted(RogueRun run) {
-        updateMilestones(run);
-        save();
-    }
+    // ==================== Unlock Checking ====================
 
     /**
-     * Called when a run is completed (won or lost).
+     * Check for new unlocks relevant to the given stat.
      */
-    public void onRunCompleted(RogueRun run, boolean won) {
-        totalRunsCompleted++;
-
-        String commanderName = run.getSelectedRogueDeck().getCommanderCardName();
-
-        if (won) {
-            totalRunsWon++;
-            runsWonPerCommander.merge(commanderName, 1, Integer::sum);
-        }
-
-        // Final unlock checks after run completion
-        checkForNewUnlocks();
-        save();
-    }
-
-    /**
-     * Update milestone tracking based on current run state.
-     */
-    private void updateMilestones(RogueRun run) {
-        // Track max life
-        if (run.getCurrentLife() > maxLifeInRun) {
-            maxLifeInRun = run.getCurrentLife();
-        }
-
-        // Track max gold
-        if (run.getCurrentGold() > maxGoldInRun) {
-            maxGoldInRun = run.getCurrentGold();
-        }
-
-        // Track creature types in deck
-        int creatureTypes = countCreatureTypesInDeck(run.getCurrentDeck());
-        if (creatureTypes > maxCreatureTypesInDeck) {
-            maxCreatureTypesInDeck = creatureTypes;
-        }
-
-        // Track legendary permanents in deck
-        int legendaryPermanents = countLegendaryPermanentsInDeck(run.getCurrentDeck());
-        if (legendaryPermanents > maxLegendaryPermanentsInDeck) {
-            maxLegendaryPermanentsInDeck = legendaryPermanents;
-        }
-
-        checkForNewUnlocks();
-    }
-
-    /**
-     * Check all commanders for new unlocks and show a popup for each.
-     * Called after meta progress updates (onMatchCompleted, onRunCompleted).
-     */
-    public void checkForNewUnlocks() {
-        if (notifiedUnlocks == null) {
-            notifiedUnlocks = new HashSet<>();
-        }
+    void checkForNewUnlocks(RogueStats stat) {
+        if (notifiedUnlocks == null) notifiedUnlocks = new HashSet<>();
+        String key = stat.getConditionKey();
 
         boolean changed = false;
         for (RogueDeck deck : RogueConfig.loadRogueDecks()) {
+            if (deck.getUnlockCondition() == null || deck.getUnlockCondition().isDefault()) continue;
+            if (!deck.getUnlockCondition().hasCondition(key)) continue;
+
             String name = deck.getCommanderCardName();
-
-            // Skip commanders that are always available (no unlock condition)
-            if (deck.getUnlockCondition() == null || deck.getUnlockCondition().isDefault()) {
-                continue;
-            }
-
             if (deck.isUnlocked() && !notifiedUnlocks.contains(name)) {
                 notifiedUnlocks.add(name);
                 changed = true;
 
-                // Show unlock popup with commander card image
                 forge.item.PaperCard card = forge.model.FModel.getMagicDb()
                     .getCommonCards().getCard(name);
                 forge.localinstance.skin.ISkinImage image = forge.gui.GuiBase.getInterface()
                     .createLayeredImage(card, forge.localinstance.skin.FSkinProp.IMG_SPECIAL_TROPHY,
                         forge.localinstance.properties.ForgeConstants.CACHE_ACHIEVEMENTS_DIR
                             + "/unlock_" + name.replace(" ", "_") + ".png", 1f);
-                String unlockDesc = deck.getUnlockCondition() != null
-                    ? deck.getUnlockCondition().getDescription() : "";
+                String unlockDesc = deck.getUnlockCondition().getDescription();
                 forge.gui.GuiBase.getInterface().showImageDialog(image,
                     name + "\n" + unlockDesc,
                     "Commander Unlocked!");
             }
         }
-        // Check global Descension Mode unlock
-        final String descensionKey = "DESCENSION_MODE";
-        if (isDescensionModeUnlocked() && !notifiedUnlocks.contains(descensionKey)) {
-            notifiedUnlocks.add(descensionKey);
-            changed = true;
-            forge.gui.GuiBase.getInterface().showImageDialog(null,
-                "You have won Runs with 3 different Commanders!\n" +
-                    "Descension Mode is now unlocked.",
-                "Descension Mode Unlocked!");
+
+        // Check global Descension Mode unlock when runs are won
+        if (stat == RogueStats.RUNS_WON) {
+            final String descensionKey = "DESCENSION_MODE";
+            if (isDescensionModeUnlocked() && !notifiedUnlocks.contains(descensionKey)) {
+                notifiedUnlocks.add(descensionKey);
+                changed = true;
+                forge.gui.GuiBase.getInterface().showImageDialog(null,
+                    "You have won Runs with 3 different Commanders!\n" +
+                        "Descension Mode is now unlocked.",
+                    "Descension Mode Unlocked!");
+            }
         }
 
         if (changed) {
@@ -273,68 +196,30 @@ public class RogueMetaProgress {
         }
     }
 
-    /**
-     * Count unique creature types in a deck.
-     */
-    private int countCreatureTypesInDeck(forge.deck.Deck deck) {
-        if (deck == null || deck.getMain() == null) {
-            return 0;
-        }
-
-        Set<String> creatureTypes = new HashSet<>();
-        for (forge.item.PaperCard card : deck.getMain().toFlatList()) {
-            if (card.getRules().getType().isCreature()) {
-                creatureTypes.addAll(card.getRules().getType().getCreatureTypes());
-            }
-        }
-        return creatureTypes.size();
-    }
-
-    /**
-     * Count legendary permanents in a deck.
-     */
-    private int countLegendaryPermanentsInDeck(forge.deck.Deck deck) {
-        if (deck == null || deck.getMain() == null) {
-            return 0;
-        }
-
-        int count = 0;
-        for (forge.item.PaperCard card : deck.getMain().toFlatList()) {
-            if (card.getRules().getType().isLegendary() && card.getRules().getType().isPermanent()) {
-                count++;
-            }
-        }
-        return count;
-    }
-
     // ==================== Getters for Unlock Condition Evaluation ====================
 
     public int getTotalRunsStarted() {
-        return totalRunsStarted;
+        return getStatValue(RogueStats.RUNS_STARTED.getConditionKey());
     }
 
     public int getTotalRunsCompleted() {
-        return totalRunsCompleted;
+        return getStatValue(RogueStats.RUNS_COMPLETED.getConditionKey());
     }
 
     public int getTotalRunsWon() {
-        return totalRunsWon;
+        return getStatValue(RogueStats.RUNS_WON.getConditionKey());
     }
 
     public int getTotalMatchesWon() {
-        return totalMatchesWon;
+        return getStatValue(RogueStats.MATCHES_WON.getConditionKey());
     }
 
     public int getTotalMatchesLost() {
-        return totalMatchesLost;
+        return getStatValue(RogueStats.MATCHES_LOST.getConditionKey());
     }
 
     public int getRunsWonWithCommander(String commanderName) {
         return runsWonPerCommander.getOrDefault(commanderName, 0);
-    }
-
-    public boolean hasUsedCommander(String commanderName) {
-        return commandersUsed.contains(commanderName);
     }
 
     public boolean hasWonWithCommander(String commanderName) {
@@ -342,23 +227,23 @@ public class RogueMetaProgress {
     }
 
     public int getMaxCreatureTypesInDeck() {
-        return maxCreatureTypesInDeck;
+        return getStatValue(RogueStats.CREATURE_TYPES.getConditionKey());
     }
 
     public int getMaxLegendaryPermanentsInDeck() {
-        return maxLegendaryPermanentsInDeck;
+        return getStatValue(RogueStats.LEGENDARY_PERMANENTS.getConditionKey());
     }
 
     public int getMaxLifeInRun() {
-        return maxLifeInRun;
+        return getStatValue(RogueStats.MAX_LIFE.getConditionKey());
     }
 
     public int getMaxGoldInRun() {
-        return maxGoldInRun;
+        return getStatValue(RogueStats.MAX_GOLD.getConditionKey());
     }
 
     public Set<String> getCommandersUsed() {
-        return new HashSet<>(commandersUsed);
+        return new HashSet<>(runsStartedPerCommander.keySet());
     }
 
     public int getRunsStartedWithCommander(String commanderName) {

@@ -330,7 +330,7 @@ public enum CSubmenuRogueStart implements ICDoc {
     newRun.setName(runName);
 
     // Track meta progress
-    progress.onRunStarted(selectedDeck.getCommanderCardName());
+    RogueStats.fireOnRunStarted(newRun, progress);
 
     // Save the run
     RogueIO.saveRun(newRun);

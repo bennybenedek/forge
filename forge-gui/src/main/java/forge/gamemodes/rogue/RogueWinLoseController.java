@@ -76,7 +76,7 @@ public class RogueWinLoseController {
         // Record the victory (this also marks the node as completed)
         currentRun.recordMatchResult(true);
 
-        // Persist life total from match (before meta progress so milestones see current life)
+        // Persist life total from match (before meta progress so stats see current life)
         persistLifeTotal();
 
         // Check if this was the last node (run completed)
@@ -149,8 +149,8 @@ public class RogueWinLoseController {
             }
             progress.addRunHistoryEntry(RogueRunHistoryEntry.fromRun(currentRun, "VICTORY", bossName));
 
-            progress.onMatchCompleted(currentRun, true);
-            progress.onRunCompleted(currentRun, true);
+            RogueStats.fireOnMatchCompleted(currentRun, progress, true);
+            RogueStats.fireOnRunCompleted(currentRun, progress, true);
             RogueCommanderAchievements.instance.recordRunWon(
                 currentRun.getSelectedRogueDeck().getCommanderCardName());
             int descLevel = currentRun.getDescensionLevel();
@@ -173,7 +173,7 @@ public class RogueWinLoseController {
         }
 
         // Track meta progress for match
-        progress.onMatchCompleted(currentRun, true);
+        RogueStats.fireOnMatchCompleted(currentRun, progress, true);
 
         // Evaluate run-level achievements after rewards
         RogueCommanderAchievements.instance.evaluateRunAchievements(currentRun);
@@ -251,7 +251,7 @@ public class RogueWinLoseController {
         RogueEffectComposite.INSTANCE.onDefeat(defeatCtx, currentRun);
         if (defeatCtx.revived) {
             currentRun.setCurrentLife(defeatCtx.reviveLife);
-            progress.onMatchCompleted(currentRun, false);
+            RogueStats.fireOnMatchCompleted(currentRun, progress, false);
             RogueIO.saveRun(currentRun);
             view.getBtnQuit().setText(BTN_CONTINUE_RUN);
             view.showMessage("Last Spark activated! You survived with " + defeatCtx.reviveLife + " life!", "Last Spark!", FSkinProp.ICO_QUEST_ELIXIR);
@@ -273,8 +273,8 @@ public class RogueWinLoseController {
         progress.addRunHistoryEntry(RogueRunHistoryEntry.fromRun(currentRun, "DEFEAT", defeatedBy));
 
         // Echoes are already added to meta progress after each match win, no transfer needed
-        progress.onMatchCompleted(currentRun, false);
-        progress.onRunCompleted(currentRun, false);
+        RogueStats.fireOnMatchCompleted(currentRun, progress, false);
+        RogueStats.fireOnRunCompleted(currentRun, progress, false);
         RogueCommanderAchievements.instance.evaluateRunAchievements(currentRun);
 
         // Save run state
