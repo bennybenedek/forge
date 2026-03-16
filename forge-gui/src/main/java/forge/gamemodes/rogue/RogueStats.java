@@ -73,8 +73,8 @@ public enum RogueStats {
     RUNS_STARTED("RunsStarted", "Start %s Run(s).") {
         @Override public int evaluate(RogueRun run, RogueMetaProgress p) { return p.getStatValue(getConditionKey()); }
         @Override public void onRunStarted(RogueRun run, RogueMetaProgress p) {
-            p.updateStat(this, evaluate(run, p) + 1);
             p.trackCommanderStarted(run.getSelectedRogueDeck().getCommanderCardName());
+            p.updateStat(this, evaluate(run, p) + 1);
         }
     },
     MATCHES_WON("MatchesWon", "Win %s matches.") {
@@ -99,8 +99,8 @@ public enum RogueStats {
         @Override public int evaluate(RogueRun run, RogueMetaProgress p) { return p.getStatValue(getConditionKey()); }
         @Override public void onRunCompleted(RogueRun run, RogueMetaProgress p, boolean won) {
             if (won) {
-                p.updateStat(this, evaluate(run, p) + 1);
                 p.mergeRunsWonPerCommander(run.getSelectedRogueDeck().getCommanderCardName());
+                p.updateStat(this, evaluate(run, p) + 1);
             }
         }
     };

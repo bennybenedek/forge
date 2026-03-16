@@ -7,6 +7,7 @@ import forge.gamemodes.rogue.path.RoguePathGenerator;
 import forge.gui.framework.EDocID;
 import forge.gui.framework.ICDoc;
 import forge.screens.home.CHomeUI;
+import forge.toolbox.FOptionPane;
 import java.util.Comparator;
 import java.util.List;
 import javax.swing.SwingUtilities;
@@ -303,9 +304,18 @@ public enum CSubmenuRogueStart implements ICDoc {
 
     var progress = RogueMetaProgress.getInstance();
 
-    // Record abandoned run history if there's an active run
+    // Warn if there's an active run that will be abandoned
     RogueRun existingRun = CSubmenuRogueMap.SINGLETON_INSTANCE.getCurrentRun();
     if (existingRun != null && existingRun.getRunState() == RogueRunState.STARTED) {
+      boolean confirmed = FOptionPane.showConfirmDialog(
+          "You have an active Run in progress.\nStarting a new Run will abandon it. Continue?",
+          "Abandon Current Run",
+          "Start New Run",
+          "Cancel",
+          false
+      );
+      if (!confirmed) return;
+
       progress.addRunHistoryEntry(
           RogueRunHistoryEntry.fromRun(existingRun, "ABANDONED", ""));
     }
