@@ -701,19 +701,21 @@ public enum CSubmenuRogueMap implements ICDoc {
     if (currentRun == null) return;
     RoguePathNode node = currentRun.getCurrentNode();
     if (node == null) return;
-    // Last node — treat as win
-    if (currentRun.getCurrentNodeIndex() >= currentRun.getPath().getNodeCount() - 1) {
-      devWinRun();
-      return;
-    }
+
     node.setCompleted(true);
-    currentRun.nextNode();
     var progress = RogueMetaProgress.getInstance();
     if (node instanceof NodePlanebound) {
       RogueStats.fireOnMatchCompleted(currentRun, progress, true);
     } else {
       RogueStats.fireOnSideNodeCompleted(currentRun, progress);
     }
+    // Last node — treat as win
+    if (currentRun.getCurrentNodeIndex() >= currentRun.getPath().getNodeCount() - 1) {
+      devWinRun();
+      return;
+    }
+
+    currentRun.nextNode();
     RogueIO.saveRun(currentRun);
     update();
   }
