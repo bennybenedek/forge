@@ -708,7 +708,12 @@ public enum CSubmenuRogueMap implements ICDoc {
     }
     node.setCompleted(true);
     currentRun.nextNode();
-    RogueStats.fireOnSideNodeCompleted(currentRun, RogueMetaProgress.getInstance());
+    var progress = RogueMetaProgress.getInstance();
+    if (node instanceof NodePlanebound) {
+      RogueStats.fireOnMatchCompleted(currentRun, progress, true);
+    } else {
+      RogueStats.fireOnSideNodeCompleted(currentRun, progress);
+    }
     RogueIO.saveRun(currentRun);
     update();
   }
