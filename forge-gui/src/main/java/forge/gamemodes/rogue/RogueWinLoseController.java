@@ -25,6 +25,7 @@ public class RogueWinLoseController {
     private static final String BTN_CONTINUE_RUN = "Continue Run";
     private static final String BTN_WIN_RUN = "Finish Run";
     private static final String BTN_LOSE_RUN = "End Run";
+    private static final String YOU_WON = "You won ";
 
     private final GameView lastGame;
     private final IWinLoseView<? extends IButton> view;
@@ -60,14 +61,14 @@ public class RogueWinLoseController {
         // Show rewards on a separate thread
         view.showRewards(() -> {
             if (wonMatch) {
-                handleVictory();
+                handleMatchVictory();
             } else {
-                handleDefeat();
+                handleMatchDefeat();
             }
         });
     }
 
-    private void handleVictory() {
+    private void handleMatchVictory() {
         if (currentRun == null) {
             System.err.println("ERROR: No current run found in RogueWinLoseController");
             return;
@@ -90,6 +91,13 @@ public class RogueWinLoseController {
             if (healed > 0) {
                 view.showMessage("Healed " + healed + " life.", "Boon Effect", FSkinProp.ICO_QUEST_CHARM);
             }
+
+            // Won the match but life is still <= 0 (e.g. "can't lose the game" effect) — run is lost
+            if (currentRun.getCurrentLife() <= 0) {
+                RogueStats.fireOnMatchCompleted(currentRun, RogueMetaProgress.getInstance(), true);
+                handleRunDefeat();
+                return;
+            }
         }
 
         // Get current node for rewards (applies to ALL nodes including Boss)
@@ -105,14 +113,7 @@ public class RogueWinLoseController {
         RewardContext rewardCtx = new RewardContext();
         RogueEffectComposite.INSTANCE.onBeforeRewards(rewardCtx, currentRun);
 
-        // Resolve planebound: either from the node directly, or from an event-triggered fight
-        NodePlanebound planeboundNode = null;
-        if (currentNode instanceof NodePlanebound pb) {
-            planeboundNode = pb;
-        } else if (currentNode instanceof NodeEvent ev && ev.getEventPlanebound() != null) {
-            planeboundNode = new NodePlanebound(ev.getEventPlanebound());
-            planeboundNode.setRowIndex(currentNode.getRowIndex());
-        }
+        NodePlanebound planeboundNode = resolvePlanebound(currentNode);
 
         // Award gold and echo rewards for ALL planebound nodes (including Boss)
         if (planeboundNode != null && !rewardCtx.skipRewards) {
@@ -129,41 +130,8 @@ public class RogueWinLoseController {
         }
 
         if (isLastNode) {
-            // Show echo rewards for Boss before victory message
-            if (echoReward > 0) {
-                view.showMessage("You won " + echoReward + " Echoes.", "Echo Reward", FSkinProp.ICO_QUEST_GOLD);
-            }
-
-            // Run is complete - mark as won
-            currentRun.setRunWon(true);
-
-            // Record run history - find boss name from last NodePlanebound (BOSS type)
-            String bossName = "";
-            for (RoguePathNode node : currentRun.getPath().getNodes()) {
-                if (node instanceof NodePlanebound) {
-                    NodePlanebound pb = (NodePlanebound) node;
-                    if (pb.getPlaneboundType() == RoguePlaneboundType.BOSS) {
-                        bossName = pb.getRoguePlanebound().planeboundName();
-                    }
-                }
-            }
-            progress.addRunHistoryEntry(RogueRunHistoryEntry.fromRun(currentRun, "VICTORY", bossName));
-
-            RogueStats.fireOnMatchCompleted(currentRun, progress, true);
-            RogueStats.fireOnRunCompleted(currentRun, progress, true);
-            RogueCommanderAchievements.instance.recordRunWon(
-                currentRun.getSelectedRogueDeck().getCommanderCardName());
-            int descLevel = currentRun.getDescensionLevel();
-            if (descLevel > 0 && progress.recordDescensionWin(
-                    currentRun.getSelectedRogueDeck().getCommanderCardName(), descLevel)) {
-                view.showMessage("You won 1 Spark!", "Spark Reward", FSkinProp.ICO_QUEST_ELIXIR);
-            }
-            RogueCommanderAchievements.instance.evaluateRunAchievements(currentRun);
-            progress.notifyDescensionL1IfFirstWin(currentRun.getSelectedRogueDeck().getCommanderCardName());
-            RogueIO.saveRun(currentRun);
-            view.getBtnQuit().setText(BTN_WIN_RUN);
-            view.showMessage("Congratulations! You have completed the run!", "Victory", FSkinProp.ICO_QUEST_CHARM);
-            return; // Skip card rewards and navigation
+            handleRunVictory(echoReward);
+            return;
         }
 
         // Award card rewards (only for non-final nodes, skip if distortion)
@@ -185,21 +153,41 @@ public class RogueWinLoseController {
         RogueIO.saveRun(currentRun);
     }
 
-    private void persistLifeTotal() {
-        // Get player's life total at end of match
-        final LobbyPlayer humanLobbyPlayer = GamePlayerUtil.getGuiPlayer();
-        PlayerView humanPlayer = null;
-        for (final PlayerView p : lastGame.getPlayers()) {
-            if (p.isLobbyPlayer(humanLobbyPlayer)) {
-                humanPlayer = p;
-                break;
+    private void handleRunVictory(int echoReward) {
+        if (echoReward > 0) {
+            view.showMessage(YOU_WON + echoReward + " Echoes.", "Echo Reward", FSkinProp.ICO_QUEST_GOLD);
+        }
+
+        currentRun.setRunWon(true);
+
+        // Record run history - find boss name from last NodePlanebound (BOSS type)
+        String bossName = "";
+        for (RoguePathNode node : currentRun.getPath().getNodes()) {
+            if (node instanceof NodePlanebound pb && pb.getPlaneboundType() == RoguePlaneboundType.BOSS) {
+                bossName = pb.getRoguePlanebound().planeboundName();
             }
         }
 
-        if (humanPlayer != null) {
-            int endingLife = humanPlayer.getLife();
-            currentRun.setCurrentLife(endingLife);
+        var progress = RogueMetaProgress.getInstance();
+        progress.addRunHistoryEntry(RogueRunHistoryEntry.fromRun(currentRun, "VICTORY", bossName));
+
+        RogueStats.fireOnMatchCompleted(currentRun, progress, true);
+        RogueStats.fireOnRunCompleted(currentRun, progress, true);
+
+        RogueCommanderAchievements.instance.recordRunWon(
+            currentRun.getSelectedRogueDeck().getCommanderCardName());
+
+        int descLevel = currentRun.getDescensionLevel();
+        if (descLevel > 0 && progress.recordDescensionWin(
+                currentRun.getSelectedRogueDeck().getCommanderCardName(), descLevel)) {
+            view.showMessage("You won 1 Spark!", "Spark Reward", FSkinProp.ICO_QUEST_ELIXIR);
         }
+        RogueCommanderAchievements.instance.evaluateRunAchievements(currentRun);
+        progress.notifyDescensionL1IfFirstWin(currentRun.getSelectedRogueDeck().getCommanderCardName());
+
+        RogueIO.saveRun(currentRun);
+        view.getBtnQuit().setText(BTN_WIN_RUN);
+        view.showMessage("Congratulations! You have completed the run!", "Victory", FSkinProp.ICO_QUEST_CHARM);
     }
 
     private void awardCardRewards(boolean isElite, int goldReward, int echoReward) {
@@ -225,15 +213,15 @@ public class RogueWinLoseController {
         }
 
         if (goldReward > 0) {
-            view.showMessage("You won " + goldReward + " Gold.", "Gold Reward", FSkinProp.ICO_QUEST_COIN);
+            view.showMessage(YOU_WON + goldReward + " Gold.", "Gold Reward", FSkinProp.ICO_QUEST_COIN);
         }
 
         if (echoReward > 0) {
-            view.showMessage("You won " + echoReward + " Echoes.", "Echo Reward", FSkinProp.ICO_QUEST_GOLD);
+            view.showMessage(YOU_WON + echoReward + " Echoes.", "Echo Reward", FSkinProp.ICO_QUEST_GOLD);
         }
     }
 
-    private void handleDefeat() {
+    private void handleMatchDefeat() {
         if (currentRun == null) {
             return;
         }
@@ -244,21 +232,23 @@ public class RogueWinLoseController {
         // Persist life total from the lost match
         persistLifeTotal();
 
-        var progress = RogueMetaProgress.getInstance();
-
         // Check revive effects (e.g. Last Spark) BEFORE marking run as failed
         DefeatContext defeatCtx = new DefeatContext();
         RogueEffectComposite.INSTANCE.onDefeat(defeatCtx, currentRun);
         if (defeatCtx.revived) {
             currentRun.setCurrentLife(defeatCtx.reviveLife);
-            RogueStats.fireOnMatchCompleted(currentRun, progress, false);
+            RogueStats.fireOnMatchCompleted(currentRun, RogueMetaProgress.getInstance(), false);
             RogueIO.saveRun(currentRun);
             view.getBtnQuit().setText(BTN_CONTINUE_RUN);
             view.showMessage("Last Spark activated! You survived with " + defeatCtx.reviveLife + " life!", "Last Spark!", FSkinProp.ICO_QUEST_ELIXIR);
             return;
         }
 
-        // Normal defeat: mark run as failed
+        RogueStats.fireOnMatchCompleted(currentRun, RogueMetaProgress.getInstance(), false);
+        handleRunDefeat();
+    }
+
+    private void handleRunDefeat() {
         currentRun.setRunFailed(true);
 
         // Record run history - defeated by current node's planebound
@@ -270,17 +260,44 @@ public class RogueWinLoseController {
             defeatedBy = ev.getEventPlanebound().planeboundName();
         }
 
+        var progress = RogueMetaProgress.getInstance();
         progress.addRunHistoryEntry(RogueRunHistoryEntry.fromRun(currentRun, "DEFEAT", defeatedBy));
 
-        // Echoes are already added to meta progress after each match win, no transfer needed
-        RogueStats.fireOnMatchCompleted(currentRun, progress, false);
         RogueStats.fireOnRunCompleted(currentRun, progress, false);
         RogueCommanderAchievements.instance.evaluateRunAchievements(currentRun);
 
-        // Save run state
         RogueIO.saveRun(currentRun);
 
+        view.getBtnQuit().setText(BTN_LOSE_RUN);
         view.showMessage("You were defeated! Your Run has ended.", "Defeat", FSkinProp.ICO_QUEST_ZEP);
+    }
+
+    private NodePlanebound resolvePlanebound(RoguePathNode node) {
+        if (node instanceof NodePlanebound pb) {
+            return pb;
+        } else if (node instanceof NodeEvent ev && ev.getEventPlanebound() != null) {
+            NodePlanebound pb = new NodePlanebound(ev.getEventPlanebound());
+            pb.setRowIndex(node.getRowIndex());
+            return pb;
+        }
+        return null;
+    }
+
+    private void persistLifeTotal() {
+        // Get player's life total at end of match
+        final LobbyPlayer humanLobbyPlayer = GamePlayerUtil.getGuiPlayer();
+        PlayerView humanPlayer = null;
+        for (final PlayerView p : lastGame.getPlayers()) {
+            if (p.isLobbyPlayer(humanLobbyPlayer)) {
+                humanPlayer = p;
+                break;
+            }
+        }
+
+        if (humanPlayer != null) {
+            int endingLife = humanPlayer.getLife();
+            currentRun.setCurrentLife(endingLife);
+        }
     }
 
     public void actionOnQuit() {
