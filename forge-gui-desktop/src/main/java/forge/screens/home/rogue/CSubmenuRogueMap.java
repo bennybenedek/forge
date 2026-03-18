@@ -25,10 +25,15 @@ import forge.screens.deckeditor.CDeckEditorUI;
 import forge.screens.deckeditor.controllers.CEditorRogue;
 import forge.screens.home.CHomeUI;
 import forge.toolbox.FOptionPane;
+import forge.toolbox.FSkin;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.*;
+import javax.swing.ImageIcon;
+import javax.swing.JLabel;
+import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import net.miginfocom.swing.MigLayout;
 
 /**
  * Controls the "rogue map" submenu in the home UI.
@@ -301,6 +306,30 @@ public enum CSubmenuRogueMap implements ICDoc {
     // Prevent starting a new match if one is already in progress this session
     if (currentRun.getHostedMatch() != null) {
       return;
+    }
+
+    // Roll and apply wrathful effects if this node is wrathful
+    int wrathfulCount = node.getWrathfulCount();
+    if (wrathfulCount > 0) {
+      ImageIcon flameIcon = NodePlaneboundPanel.createFlameIcon(14, 18);
+      FSkin.SkinnedPanel effectsPanel = new FSkin.SkinnedPanel(
+          new MigLayout("insets 5, gap 0, wrap", "[grow]"));
+      effectsPanel.setOpaque(false);
+      Set<Wrathful> usedWrathful = new HashSet<>();
+      for (int i = 0; i < wrathfulCount; i++) {
+        Wrathful w = Wrathful.getRandomExcluding(usedWrathful);
+        usedWrathful.add(w);
+        currentRun.addWrathful(w);
+        JLabel lbl = new JLabel(w.getDisplayName() + " - " + w.getDescription(), flameIcon, SwingConstants.LEFT);
+        lbl.setFont(FSkin.getRelativeFont(12).getBaseFont());
+        lbl.setForeground(FSkin.getColor(FSkin.Colors.CLR_TEXT).getColor());
+        lbl.setIconTextGap(5);
+        lbl.setOpaque(false);
+        effectsPanel.add(lbl, "growx, h 24px!, wrap");
+      }
+      FOptionPane.showOptionDialog("This Planebound is Wrathful!", "Wrathful Planebound", null, effectsPanel,
+          java.util.List.of("OK"), 0);
+      RogueIO.saveRun(currentRun);
     }
 
     // Show loading overlay

@@ -16,10 +16,9 @@ import forge.toolbox.imaging.FImageUtil;
 import forge.util.ImageFetcher;
 import java.awt.*;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Path2D;
 import java.awt.image.BufferedImage;
-import javax.swing.JLabel;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import org.apache.commons.lang3.tuple.Pair;
 
 /**
@@ -32,7 +31,10 @@ public class NodePlaneboundPanel extends NodePanel implements ImageFetcher.Callb
   private static final int CARD_WIDTH = 250;  // Wider (was height)
   private static final int CARD_HEIGHT = 180; // Shorter (was width)
 
+  private static final ImageIcon FLAME_ICON = createFlameIcon(14, 18);
+
   private final CardPicturePanel cardImage;
+  private final JPanel pnlNameRow;
   private final JLabel lblPlaneboundName;
   private final JLabel lblLifeTotal;
   private final PaperCard currentPlaneCard;
@@ -112,27 +114,34 @@ public class NodePlaneboundPanel extends NodePanel implements ImageFetcher.Callb
       }
     });
 
-    // Planebound name label with icon for Elite/Boss
+    // Name row: flames + planebound name in a centered flow layout
+    pnlNameRow = new JPanel(new FlowLayout(FlowLayout.CENTER, 2, 0));
+    pnlNameRow.setOpaque(false);
+
+    for (int i = 0; i < node.getWrathfulCount(); i++) {
+      JLabel flame = new JLabel(FLAME_ICON);
+      flame.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 5, 0));
+      pnlNameRow.add(flame);
+    }
+
     String planeboundName = showFaceDown ? "???" : node.getRoguePlanebound().planeboundName();
     lblPlaneboundName = new JLabel(planeboundName);
     lblPlaneboundName.setFont(FSkin.getRelativeFont(12).getBaseFont());
     lblPlaneboundName.setForeground(FSkin.getColor(FSkin.Colors.CLR_TEXT).getColor());
-    lblPlaneboundName.setHorizontalAlignment(SwingConstants.CENTER);
 
-    // Add icon based on planebound type (always shown)
     RoguePlaneboundType type = node.getPlaneboundType();
     if (type == RoguePlaneboundType.ELITE) {
-      // Elite gets a filled star icon
-      lblPlaneboundName.setIcon(FSkin.getImage(FSkinProp.IMG_STAR_FILLED).resize(16, 16).getIcon());
-      lblPlaneboundName.setIconTextGap(5);
+      JLabel star = new JLabel(FSkin.getImage(FSkinProp.IMG_STAR_FILLED).resize(16, 16).getIcon());
+      star.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 5, 0));
+      pnlNameRow.add(star);
     } else if (type == RoguePlaneboundType.BOSS) {
-      // Boss gets an attack/sword icon
-      lblPlaneboundName.setIcon(
-          FSkin.getImage(FSkinProp.ICO_QUEST_BIG_AXE).resize(18, 18).getIcon());
-      lblPlaneboundName.setIconTextGap(5);
+      JLabel skull = new JLabel(FSkin.getImage(FSkinProp.IMG_POISON).resize(18, 18).getIcon());
+      skull.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 5, 0));
+      pnlNameRow.add(skull);
     }
 
-    add(lblPlaneboundName);
+    pnlNameRow.add(lblPlaneboundName);
+    add(pnlNameRow);
 
     // Life total label (always shown - it's a known rule that life scales by Planebound row)
     int planeboundLife = 5 * planeboundRowCount;
@@ -187,8 +196,8 @@ public class NodePlaneboundPanel extends NodePanel implements ImageFetcher.Callb
     cardImage.setBounds(x, y, CARD_WIDTH, CARD_HEIGHT);
     y += CARD_HEIGHT + 5;
 
-    // Planebound name
-    lblPlaneboundName.setBounds(x, y, CARD_WIDTH, 20);
+    // Name row (flames + name, centered by FlowLayout)
+    pnlNameRow.setBounds(x, y, CARD_WIDTH, 20);
     y += 25;
 
     // Life total
@@ -341,5 +350,32 @@ public class NodePlaneboundPanel extends NodePanel implements ImageFetcher.Callb
       cardImage.revalidate();
       cardImage.repaint();
     }
+  }
+
+  static ImageIcon createFlameIcon(int w, int h) {
+    BufferedImage img = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+    Graphics2D g = img.createGraphics();
+    g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+    double cx = w / 2.0;
+    // Outer flame: narrow tip at top, wide bulge in lower half
+    Path2D outer = new Path2D.Double();
+    outer.moveTo(cx, 0);
+    outer.curveTo(cx + w * 0.1, h * 0.2, cx + w * 0.55, h * 0.4, cx + w * 0.45, h * 0.7);
+    outer.curveTo(cx + w * 0.35, h * 0.9, cx + w * 0.1, h, cx, h);
+    outer.curveTo(cx - w * 0.1, h, cx - w * 0.35, h * 0.9, cx - w * 0.45, h * 0.7);
+    outer.curveTo(cx - w * 0.55, h * 0.4, cx - w * 0.1, h * 0.2, cx, 0);
+    g.setColor(new Color(255, 80, 0));
+    g.fill(outer);
+    // Inner core: smaller, yellow, offset downward
+    Path2D inner = new Path2D.Double();
+    inner.moveTo(cx, h * 0.3);
+    inner.curveTo(cx + w * 0.05, h * 0.45, cx + w * 0.25, h * 0.55, cx + w * 0.2, h * 0.75);
+    inner.curveTo(cx + w * 0.1, h * 0.9, cx, h * 0.95, cx, h * 0.95);
+    inner.curveTo(cx, h * 0.95, cx - w * 0.1, h * 0.9, cx - w * 0.2, h * 0.75);
+    inner.curveTo(cx - w * 0.25, h * 0.55, cx - w * 0.05, h * 0.45, cx, h * 0.3);
+    g.setColor(new Color(255, 200, 50));
+    g.fill(inner);
+    g.dispose();
+    return new ImageIcon(img);
   }
 }

@@ -11,6 +11,7 @@ import forge.gamemodes.rogue.RoguePlaneboundType;
 public class NodePlanebound extends RoguePathNode {
 
     private RoguePlanebound roguePlanebound;
+    private int wrathfulCount;
 
     public NodePlanebound() {
         super();
@@ -28,6 +29,14 @@ public class NodePlanebound extends RoguePathNode {
 
     public void setRoguePlanebound(RoguePlanebound roguePlanebound) {
         this.roguePlanebound = roguePlanebound;
+    }
+
+    public int getWrathfulCount() {
+        return wrathfulCount;
+    }
+
+    public void setWrathfulCount(int wrathfulCount) {
+        this.wrathfulCount = wrathfulCount;
     }
 
     public RoguePlaneboundType getPlaneboundType() {

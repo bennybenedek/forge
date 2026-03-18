@@ -8,6 +8,7 @@ import forge.gamemodes.rogue.effect.EchoBoon;
 import forge.gamemodes.rogue.effect.EventBoon;
 import forge.gamemodes.rogue.effect.RogueEffect;
 import forge.gamemodes.rogue.effect.Wound;
+import forge.gamemodes.rogue.effect.Wrathful;
 import forge.gamemodes.rogue.path.RoguePath;
 import forge.gamemodes.rogue.path.RoguePathNode;
 import forge.item.PaperCard;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * Main container for a Rogue Commander run state.
@@ -54,6 +56,9 @@ public class RogueRun {
 
     // Wounds (permanent debuffs gained from events, descension, etc.)
     private List<RogueRunBoon> activeWounds;
+
+    // Wrathful effects (consume debuffs from wrathful planebounds)
+    private List<RogueRunBoon> activeWrathful;
 
     // Match History
     private int matchesWon;                     // Win counter
@@ -336,64 +341,35 @@ public class RogueRun {
         }
     }
 
-    public List<RogueEffect> getActiveEchoBoons() {
-        if (activeEchoBoons == null) activeEchoBoons = new ArrayList<>();
+    // Generic effect list helpers
+    private List<RogueRunBoon> ensureList(List<RogueRunBoon> list) {
+        return list != null ? list : new ArrayList<>();
+    }
+
+    private List<RogueEffect> mapEffects(List<RogueRunBoon> list, Function<String, ? extends RogueEffect> lookup) {
         List<RogueEffect> result = new ArrayList<>();
-        for (RogueRunBoon rb : activeEchoBoons) {
-            EchoBoon eb = EchoBoon.fromId(rb.getId());
-            if (eb != null) result.add(eb);
+        for (RogueRunBoon rb : ensureList(list)) {
+            RogueEffect e = lookup.apply(rb.getId());
+            if (e != null) result.add(e);
         }
         return result;
     }
 
-    // Event boon management
-    public List<RogueEffect> getActiveEventBoons() {
-        if (activeEventBoons == null) activeEventBoons = new ArrayList<>();
-        List<RogueEffect> result = new ArrayList<>();
-        for (RogueRunBoon rb : activeEventBoons) {
-            EventBoon eb = EventBoon.fromId(rb.getId());
-            if (eb != null) result.add(eb);
-        }
-        return result;
-    }
+    public List<RogueEffect> getActiveEchoBoons()  { return mapEffects(activeEchoBoons, EchoBoon::fromId); }
+    public List<RogueEffect> getActiveEventBoons() { return mapEffects(activeEventBoons, EventBoon::fromId); }
+    public List<RogueEffect> getActiveChestBoons() { return mapEffects(activeChestBoons, ChestLoot::fromId); }
+    public List<RogueEffect> getActiveWounds()     { return mapEffects(activeWounds, Wound::fromId); }
+    public List<RogueEffect> getActiveWrathful()   { return mapEffects(activeWrathful, Wrathful::fromId); }
 
-    public void addEventBoon(EventBoon boon) {
-        if (activeEventBoons == null) activeEventBoons = new ArrayList<>();
-        int charges = boon.getChargesForRank(0);
-        activeEventBoons.add(new RogueRunBoon(boon.getId(), 0, charges));
-    }
+    public void addEventBoon(EventBoon boon)   { activeEventBoons = addEffect(activeEventBoons, boon); }
+    public void addChestBoon(ChestLoot loot)    { activeChestBoons = addEffect(activeChestBoons, loot); }
+    public void addWound(Wound wound)           { activeWounds = addEffect(activeWounds, wound); }
+    public void addWrathful(Wrathful wrathful)  { activeWrathful = addEffect(activeWrathful, wrathful); }
 
-    // Chest boon management
-    public List<RogueEffect> getActiveChestBoons() {
-        if (activeChestBoons == null) activeChestBoons = new ArrayList<>();
-        List<RogueEffect> result = new ArrayList<>();
-        for (RogueRunBoon rb : activeChestBoons) {
-            ChestLoot cl = ChestLoot.fromId(rb.getId());
-            if (cl != null) result.add(cl);
-        }
-        return result;
-    }
-
-    public void addChestBoon(ChestLoot loot) {
-        if (activeChestBoons == null) activeChestBoons = new ArrayList<>();
-        int charges = loot.getChargesForRank(0);
-        activeChestBoons.add(new RogueRunBoon(loot.getId(), 0, charges));
-    }
-
-    // Wound management
-    public List<RogueEffect> getActiveWounds() {
-        if (activeWounds == null) activeWounds = new ArrayList<>();
-        List<RogueEffect> result = new ArrayList<>();
-        for (RogueRunBoon rb : activeWounds) {
-            Wound w = Wound.fromId(rb.getId());
-            if (w != null) result.add(w);
-        }
-        return result;
-    }
-
-    public void addWound(Wound wound) {
-        if (activeWounds == null) activeWounds = new ArrayList<>();
-        activeWounds.add(new RogueRunBoon(wound.getId(), 0, -1));
+    private List<RogueRunBoon> addEffect(List<RogueRunBoon> list, RogueEffect effect) {
+        if (list == null) list = new ArrayList<>();
+        list.add(new RogueRunBoon(effect.getId(), 0, effect.getChargesForRank(0)));
+        return list;
     }
 
     public void clearWounds() {
@@ -412,6 +388,7 @@ public class RogueRun {
         consumeFromList(activeEventBoons, id);
         consumeFromList(activeChestBoons, id);
         consumeFromList(activeWounds, id);
+        consumeFromList(activeWrathful, id);
     }
 
     private void consumeFromList(List<RogueRunBoon> list, String id) {
@@ -438,6 +415,9 @@ public class RogueRun {
                 if (rb.getId().equals(id)) return rb;
         if (activeWounds != null)
             for (RogueRunBoon rb : activeWounds)
+                if (rb.getId().equals(id)) return rb;
+        if (activeWrathful != null)
+            for (RogueRunBoon rb : activeWrathful)
                 if (rb.getId().equals(id)) return rb;
         return null;
     }

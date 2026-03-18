@@ -26,6 +26,7 @@ public enum RogueEffectComposite implements RogueEffect {
         effects.addAll(run.getActiveEventBoons());
         effects.addAll(run.getActiveChestBoons());
         effects.addAll(run.getActiveWounds());
+        effects.addAll(run.getActiveWrathful());
         return effects;
     }
 

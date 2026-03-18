@@ -27,6 +27,9 @@ public interface RogueEffect {
 
     default EffectType getEffectType() { return EffectType.PERMANENT; }
 
+    /** Unique identifier for serialization and lookup. Override in concrete types. */
+    default String getId() { return ""; }
+
     /** Display name for UI. Override in concrete types. */
     default String getDisplayName() { return ""; }
 

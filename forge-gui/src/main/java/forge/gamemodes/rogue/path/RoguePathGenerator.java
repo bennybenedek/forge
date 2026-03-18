@@ -152,17 +152,6 @@ public class RoguePathGenerator {
     }
 
     private static void addSpecialNodesRow(List<RoguePathNode> allNodes,
-        List<RoguePathNode> specialNodes) {
-        //shuffle the special nodes to randomize their order
-        Collections.shuffle(specialNodes, MyRandom.getRandom());
-
-        for (int columnIndex = 0; columnIndex < specialNodes.size(); columnIndex++) {
-            addSpecialNode(allNodes, specialNodes.get(columnIndex), columnIndex);
-        }
-        currentRowIndex++;
-    }
-
-    private static void addSpecialNodesRow(List<RoguePathNode> allNodes,
         List<RoguePathNode> specialNodes, int columnCount) {
         //shuffle the special nodes to randomize their order
         Collections.shuffle(specialNodes, MyRandom.getRandom());
