@@ -1,7 +1,9 @@
 package forge.gamemodes.rogue;
 
 import forge.item.PaperCard;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -41,6 +43,30 @@ public enum RogueStats {
                 }
             }
             return types.size();
+        }
+        @Override public void onMatchCompleted(RogueRun run, RogueMetaProgress p, boolean won) {
+            p.updateStat(this, evaluate(run, p));
+        }
+        @Override public void onSideNodeCompleted(RogueRun run, RogueMetaProgress p) {
+            p.updateStat(this, evaluate(run, p));
+        }
+    },
+    MAX_SHARED_CREATURE_TYPE("MaxSharedCreatureType", "Have %s+ creatures that share a creature type in your deck.") {
+        @Override public int evaluate(RogueRun run, RogueMetaProgress p) {
+            if (run.getCurrentDeck() == null || run.getCurrentDeck().getMain() == null) return 0;
+            Map<String, Integer> typeCounts = new HashMap<>();
+            for (PaperCard card : run.getCurrentDeck().getMain().toFlatList()) {
+                if (card.getRules().getType().isCreature()) {
+                    for (String type : card.getRules().getType().getCreatureTypes()) {
+                        typeCounts.merge(type, 1, Integer::sum);
+                    }
+                }
+            }
+            int max = 0;
+            for (int count : typeCounts.values()) {
+                if (count > max) max = count;
+            }
+            return max;
         }
         @Override public void onMatchCompleted(RogueRun run, RogueMetaProgress p, boolean won) {
             p.updateStat(this, evaluate(run, p));

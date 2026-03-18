@@ -8,7 +8,7 @@ public enum Wrathful implements RogueEffect {
 
     COMMANDER_BOOST("wrathful_commander_boost", "Wrathful Might",
             "Planebound Commander gets +2/+2.",
-            "Wrathful - Commander Boost") {
+            "Wrathful - Wrathful Might") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RogueRun run) {
             RogueEffect.addCustomCardToCommandZone(cardName, human);
@@ -17,7 +17,7 @@ public enum Wrathful implements RogueEffect {
     },
     UPKEEP_HEAL("wrathful_upkeep_heal", "Wrathful Resilience",
             "Planebound gains 1 life at the beginning of each of their upkeeps.",
-            "Wrathful - Upkeep Heal") {
+            "Wrathful - Wrathful Resilience") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RogueRun run) {
             RogueEffect.addCustomCardToCommandZone(cardName, human);
@@ -26,7 +26,7 @@ public enum Wrathful implements RogueEffect {
     },
     COMMANDER_DISCOUNT("wrathful_commander_discount", "Wrathful Haste",
             "Planebound Commander costs {1} less to cast.",
-            "Wrathful - Commander Discount") {
+            "Wrathful - Wrathful Haste") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RogueRun run) {
             RogueEffect.addCustomCardToCommandZone(cardName, human);

@@ -121,6 +121,7 @@ public class NodePlaneboundPanel extends NodePanel implements ImageFetcher.Callb
     for (int i = 0; i < node.getWrathfulCount(); i++) {
       JLabel flame = new JLabel(FLAME_ICON);
       flame.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 5, 0));
+      flame.setToolTipText("Wrathful — this Planebound gains random buffs");
       pnlNameRow.add(flame);
     }
 
@@ -133,10 +134,12 @@ public class NodePlaneboundPanel extends NodePanel implements ImageFetcher.Callb
     if (type == RoguePlaneboundType.ELITE) {
       JLabel star = new JLabel(FSkin.getImage(FSkinProp.IMG_STAR_FILLED).resize(16, 16).getIcon());
       star.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 5, 0));
+      star.setToolTipText("Elite Planebound");
       pnlNameRow.add(star);
     } else if (type == RoguePlaneboundType.BOSS) {
       JLabel skull = new JLabel(FSkin.getImage(FSkinProp.IMG_POISON).resize(18, 18).getIcon());
       skull.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 5, 0));
+      skull.setToolTipText("Boss Planebound");
       pnlNameRow.add(skull);
     }
 

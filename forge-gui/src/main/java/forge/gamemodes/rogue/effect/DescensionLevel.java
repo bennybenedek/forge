@@ -53,7 +53,7 @@ public enum DescensionLevel implements RogueEffect {
         "Whenever a creature an opponent controls deals damage to you, it deals 1 additional damage.") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RogueRun run) {
-            RogueEffect.addCustomCardToCommandZone("Descension - Bloodthirst", human);
+            RogueEffect.addCustomCardToCommandZone("Descension - Bloodthirsty", human);
         }
     },
 

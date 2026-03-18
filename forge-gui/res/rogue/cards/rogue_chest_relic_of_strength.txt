@@ -1,4 +1,4 @@
-Name:Chest - Commander Strength
+Name:Chest - Relic Of Strength
 ManaCost:no cost
 Types:Rogue Modifier
 S:Mode$ Continuous | Affected$ Creature.IsCommander+YouCtrl | AddPower$ 2 | AddToughness$ 2 | EffectZone$ Command | Description$ Your commander gets +2/+2.
