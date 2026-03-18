@@ -6,16 +6,16 @@ import forge.gamemodes.rogue.RogueRun;
 
 public enum ChestLoot implements RogueEffect {
 
-    FIND_GOLD("find_gold", "Treasure", "You found 5 gold.", EffectType.ONESHOT) {
+    FIND_GOLD("find_gold", "Treasure", "You found 10 gold.", EffectType.ONESHOT) {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
-            run.setCurrentGold(run.getCurrentGold() + 5);
+            run.setCurrentGold(run.getCurrentGold() + 10);
         }
     },
-    FIND_ECHOES("find_echoes", "Giant Soul", "You found 5 echoes.", EffectType.ONESHOT) {
+    FIND_ECHOES("find_echoes", "Giant Soul", "You found 10 echoes.", EffectType.ONESHOT) {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
-            RogueMetaProgress.getInstance().addEchoes(5);
+            RogueMetaProgress.getInstance().addEchoes(10);
         }
     },
     CARD_REWARD("card_reward", "Card Cache", "Gain a Card Reward.", EffectType.ONESHOT) {
