@@ -6,27 +6,27 @@ import forge.util.MyRandom;
 
 public enum Wrathful implements RogueEffect {
 
-    COMMANDER_BOOST("wrathful_commander_boost", "Wrathful Might",
+    COMMANDER_BOOST("wrathful_commander_boost", "Might",
             "Planebound Commander gets +2/+2.",
-            "Wrathful - Wrathful Might") {
+            "Wrathful - Might") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RogueRun run) {
             RogueEffect.addCustomCardToCommandZone(cardName, human);
             run.consumeEffect(getId());
         }
     },
-    UPKEEP_HEAL("wrathful_upkeep_heal", "Wrathful Resilience",
+    UPKEEP_HEAL("wrathful_upkeep_heal", "Resilience",
             "Planebound gains 1 life at the beginning of each of their upkeeps.",
-            "Wrathful - Wrathful Resilience") {
+            "Wrathful - Resilience") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RogueRun run) {
             RogueEffect.addCustomCardToCommandZone(cardName, human);
             run.consumeEffect(getId());
         }
     },
-    COMMANDER_DISCOUNT("wrathful_commander_discount", "Wrathful Haste",
+    COMMANDER_DISCOUNT("wrathful_commander_discount", "Haste",
             "Planebound Commander costs {1} less to cast.",
-            "Wrathful - Wrathful Haste") {
+            "Wrathful - Haste") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RogueRun run) {
             RogueEffect.addCustomCardToCommandZone(cardName, human);

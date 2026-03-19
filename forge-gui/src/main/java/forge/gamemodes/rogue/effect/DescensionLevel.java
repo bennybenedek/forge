@@ -34,7 +34,7 @@ public enum DescensionLevel implements RogueEffect {
             }
             if (planeboundNodes.isEmpty()) return;
 
-            int markerCount = Math.max(4, planeboundNodes.size() / 2);
+            int markerCount = planeboundNodes.size() - 3;
             Random rng = MyRandom.getRandom();
             for (int i = 0; i < markerCount; i++) {
                 // Build list of nodes that can still receive a marker (max 2 per node)

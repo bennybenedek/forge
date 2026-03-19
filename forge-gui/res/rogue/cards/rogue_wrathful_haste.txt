@@ -1,5 +1,5 @@
-Name:Wrathful - Wrathful Haste
+Name:Wrathful - Haste
 ManaCost:no cost
 Types:Rogue Modifier
-S:Mode$ ReduceCost | ValidCard$ Card.IsCommander+OppOwn | Activator$ Opponent | Type$ Spell | Amount$ 1 | EffectZone$ Command | Description$ Opponent's commander costs {1} less to cast.
+S:Mode$ ReduceCost | ValidCard$ Card.IsCommander | Activator$ Player.Opponent | Type$ Spell | Amount$ 1 | EffectZone$ Command | Description$ Opponent's commander costs {1} less to cast.
 Oracle:Opponent's commander costs {1} less to cast.

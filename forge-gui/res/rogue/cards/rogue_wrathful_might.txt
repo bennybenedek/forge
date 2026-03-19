@@ -1,4 +1,4 @@
-Name:Wrathful - Wrathful Might
+Name:Wrathful - Might
 ManaCost:no cost
 Types:Rogue Modifier
 S:Mode$ Continuous | Affected$ Creature.IsCommander+OppCtrl | AddPower$ 2 | AddToughness$ 2 | EffectZone$ Command | Description$ Opponent's commander gets +2/+2.

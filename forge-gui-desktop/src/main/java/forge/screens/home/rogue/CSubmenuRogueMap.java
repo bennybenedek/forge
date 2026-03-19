@@ -309,28 +309,7 @@ public enum CSubmenuRogueMap implements ICDoc {
     }
 
     // Roll and apply wrathful effects if this node is wrathful
-    int wrathfulCount = node.getWrathfulCount();
-    if (wrathfulCount > 0) {
-      ImageIcon flameIcon = NodePlaneboundPanel.createFlameIcon(14, 18);
-      FSkin.SkinnedPanel effectsPanel = new FSkin.SkinnedPanel(
-          new MigLayout("insets 5, gap 0, wrap", "[grow]"));
-      effectsPanel.setOpaque(false);
-      Set<Wrathful> usedWrathful = new HashSet<>();
-      for (int i = 0; i < wrathfulCount; i++) {
-        Wrathful w = Wrathful.getRandomExcluding(usedWrathful);
-        usedWrathful.add(w);
-        currentRun.addWrathful(w);
-        JLabel lbl = new JLabel(w.getDisplayName() + " - " + w.getDescription(), flameIcon, SwingConstants.LEFT);
-        lbl.setFont(FSkin.getRelativeFont(12).getBaseFont());
-        lbl.setForeground(FSkin.getColor(FSkin.Colors.CLR_TEXT).getColor());
-        lbl.setIconTextGap(5);
-        lbl.setOpaque(false);
-        effectsPanel.add(lbl, "growx, h 24px!, wrap");
-      }
-      FOptionPane.showOptionDialog("This Planebound is Wrathful!", "Wrathful Planebound", null, effectsPanel,
-          java.util.List.of("OK"), 0);
-      RogueIO.saveRun(currentRun);
-    }
+    handlePlaneboundWrathful(node);
 
     // Show loading overlay
     SwingUtilities.invokeLater(() -> {
@@ -431,6 +410,30 @@ public enum CSubmenuRogueMap implements ICDoc {
     }
 
     SwingUtilities.invokeLater(SOverlayUtils::hideOverlay);
+  }
+
+  private void handlePlaneboundWrathful(NodePlanebound node) {
+    int wrathfulCount = node.getWrathfulCount();
+    if (wrathfulCount > 0) {
+      ImageIcon flameIcon = NodePlaneboundPanel.createFlameIcon(14, 18);
+      FSkin.SkinnedPanel effectsPanel = new FSkin.SkinnedPanel(
+          new MigLayout("insets 5, gap 0, wrap", "[grow]"));
+      effectsPanel.setOpaque(false);
+      Set<Wrathful> usedWrathful = new HashSet<>();
+      for (int i = 0; i < wrathfulCount; i++) {
+        Wrathful w = Wrathful.getRandomExcluding(usedWrathful);
+        usedWrathful.add(w);
+        currentRun.addWrathful(w);
+        JLabel lbl = new JLabel(w.getDisplayName() + " - " + w.getDescription(), flameIcon, SwingConstants.LEFT);
+        lbl.setFont(FSkin.getRelativeFont(12).getBaseFont());
+        lbl.setForeground(FSkin.getColor(FSkin.Colors.CLR_TEXT).getColor());
+        lbl.setIconTextGap(5);
+        lbl.setOpaque(false);
+        effectsPanel.add(lbl, "growx, h 24px!, wrap");
+      }
+      FOptionPane.showOptionDialog("This Planebound is Wrathful!", "Wrathful Planebound", null, effectsPanel,
+          List.of("OK"), 0);
+    }
   }
 
   private void handleSanctumNode(NodeSanctum sanctumNode) {
