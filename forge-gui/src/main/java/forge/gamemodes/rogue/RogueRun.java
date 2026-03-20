@@ -10,6 +10,7 @@ import forge.gamemodes.rogue.effect.EventBoon;
 import forge.gamemodes.rogue.effect.RogueEffect;
 import forge.gamemodes.rogue.effect.Wound;
 import forge.gamemodes.rogue.effect.Wrathful;
+import forge.gamemodes.rogue.npc.NPCBoon;
 import forge.gamemodes.rogue.path.RoguePath;
 import forge.gamemodes.rogue.path.RoguePathNode;
 import forge.item.PaperCard;
@@ -63,6 +64,9 @@ public class RogueRun {
 
     // Cursed effects (consume debuffs from cursed planebounds)
     private List<RogueRunBoon> activeCursed;
+
+    // NPC boons (gained from NPC encounters at run start)
+    private List<RogueRunBoon> activeNPCBoons;
 
     // Match History
     private int matchesWon;                     // Win counter
@@ -346,12 +350,14 @@ public class RogueRun {
     public List<RogueEffect> getActiveWounds()     { return mapEffects(activeWounds, Wound::fromId); }
     public List<RogueEffect> getActiveWrathful()   { return mapEffects(activeWrathful, Wrathful::fromId); }
     public List<RogueEffect> getActiveCursed()    { return mapEffects(activeCursed, Cursed::fromId); }
+    public List<RogueEffect> getActiveNPCBoons() { return mapEffects(activeNPCBoons, NPCBoon::fromId); }
 
     public void addEventBoon(EventBoon boon)   { activeEventBoons = addEffect(activeEventBoons, boon); }
     public void addChestBoon(ChestLoot loot)    { activeChestBoons = addEffect(activeChestBoons, loot); }
     public void addWound(Wound wound)           { activeWounds = addEffect(activeWounds, wound); }
     public void addWrathful(Wrathful wrathful)  { activeWrathful = addEffect(activeWrathful, wrathful); }
     public void addCursed(Cursed cursed)        { activeCursed = addEffect(activeCursed, cursed); }
+    public void addNPCBoon(NPCBoon boon)       { activeNPCBoons = addEffect(activeNPCBoons, boon); }
 
     private List<RogueRunBoon> addEffect(List<RogueRunBoon> list, RogueEffect effect) {
         if (list == null) list = new ArrayList<>();
@@ -372,7 +378,7 @@ public class RogueRun {
     @SuppressWarnings("unchecked")
     private List<RogueRunBoon>[] allBoonLists() {
         return new List[]{activeEchoBoons, activeEventBoons, activeChestBoons,
-                activeWounds, activeWrathful, activeCursed};
+                activeWounds, activeWrathful, activeCursed, activeNPCBoons};
     }
 
     // Effect consumption

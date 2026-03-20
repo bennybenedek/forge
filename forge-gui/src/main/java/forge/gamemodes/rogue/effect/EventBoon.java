@@ -2,6 +2,7 @@ package forge.gamemodes.rogue.effect;
 
 import forge.game.player.RegisteredPlayer;
 import forge.gamemodes.rogue.*;
+import forge.gamemodes.rogue.npc.NPC;
 import forge.item.PaperCard;
 import forge.util.MyRandom;
 import java.util.ArrayList;
@@ -157,6 +158,16 @@ public enum EventBoon implements RogueEffect {
     },
     NOTHING("nothing", "Nothing", "No effect.",
             EffectType.ONESHOT),
+    MEET_NPC_TYVAR("meet_npc_tyvar", "Meet Tyvar Kell", "Tyvar Kell offers to train your Commander.",
+            EffectType.ONESHOT) {
+        @Override
+        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+            RogueMetaProgress progress = RogueMetaProgress.getInstance();
+            if (progress.getNPCLevel(NPC.TYVAR.id) < 1) {
+                progress.setNPCLevel(NPC.TYVAR.id, 1);
+            }
+        }
+    },
 
     // === PERMANENT effects (stored in run, dispatched via RogueEffectComposite) ===
 

@@ -41,6 +41,9 @@ public class RogueMetaProgress {
     private Map<String, Integer> boonRanks;       // Boon ID -> current rank (0 = not unlocked)
     private Set<String> activeEchoBoons;          // Currently equipped Echo boon IDs (max slots via getActiveBoonSlots())
 
+    // NPC progression levels (npcId -> level)
+    private Map<String, Integer> npcLevels;
+
     // Unlock notification tracking - which unlocks have been shown to the player
     private Set<String> notifiedUnlocks;
 
@@ -101,6 +104,7 @@ public class RogueMetaProgress {
         boonRanks = new HashMap<>();
         activeEchoBoons = new HashSet<>();
         notifiedUnlocks = new HashSet<>();
+        npcLevels = new HashMap<>();
 
         // Reset run history
         runHistory = new ArrayList<>();
@@ -585,6 +589,21 @@ public class RogueMetaProgress {
         }
         seenTutorials.clear();
         save();
+    }
+
+    // ==================== NPC Progression ====================
+
+    public int getNPCLevel(String id) {
+        if (npcLevels == null) npcLevels = new HashMap<>();
+        return npcLevels.getOrDefault(id, 0);
+    }
+
+    public void setNPCLevel(String id, int level) {
+        if (npcLevels == null) npcLevels = new HashMap<>();
+        if (level > npcLevels.getOrDefault(id, 0)) {
+            npcLevels.put(id, level);
+            save();
+        }
     }
 
     // ==================== Persistence ====================

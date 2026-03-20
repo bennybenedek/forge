@@ -28,7 +28,10 @@ public class RoguePathGenerator {
         int lootIndex = 0;
 
         List<RoguePlanebound> availablePlanebounds = RogueConfig.loadPlanebounds();
-        List<RogueEvent> events = new ArrayList<>(List.of(RogueEvent.values()));
+        List<RogueEvent> events = new ArrayList<>();
+        for (RogueEvent e : RogueEvent.values()) {
+            if (e.isAvailable()) events.add(e);
+        }
         List<ChestLoot> chestLoot = new ArrayList<>(List.of(ChestLoot.values()));
 
         // Split planebounds into normal, elite and boss lists

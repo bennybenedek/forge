@@ -1,0 +1,5 @@
+Name:NPC Tyvar - Haste
+ManaCost:no cost
+Types:Rogue Modifier
+S:Mode$ Continuous | Affected$ Creature.IsCommander+YouCtrl | AddKeyword$ Haste | EffectZone$ Command | Description$ Your commander has haste.
+Oracle:Your commander has haste.

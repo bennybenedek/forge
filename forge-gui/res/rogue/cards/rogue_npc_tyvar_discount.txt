@@ -1,0 +1,5 @@
+Name:NPC Tyvar - Discount
+ManaCost:no cost
+Types:Rogue Modifier
+S:Mode$ ReduceCost | ValidCard$ Card.IsCommander+YouOwn | Type$ Spell | Amount$ 1 | EffectZone$ Command | Description$ Your commander costs {1} less to cast.
+Oracle:Your commander costs {1} less to cast.

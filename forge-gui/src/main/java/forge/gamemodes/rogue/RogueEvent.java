@@ -1,6 +1,7 @@
 package forge.gamemodes.rogue;
 
 import forge.gamemodes.rogue.effect.EventBoon;
+import forge.gamemodes.rogue.npc.NPC;
 import java.util.List;
 
 /**
@@ -105,7 +106,20 @@ public enum RogueEvent {
         List.of(
             new EventChoice("Suffer", "The silence consumed you.",
                 EventBoon.SKIP_REWARDS)
-        ));
+        )),
+
+    MEET_TYVAR("Tyvar Kell",
+        "An elf Planeswalker emerges from a rift, his spark blazing with raw energy. " +
+        "\"I am Tyvar Kell, and I know talent when I see it. Let me become your Commander's trainer.\"",
+        List.of(
+            new EventChoice("Accept", "Tyvar Kell will appear at the start of future Runs to train your Commander.",
+                EventBoon.MEET_NPC_TYVAR)
+        )) {
+        @Override
+        public boolean isAvailable() {
+            return RogueMetaProgress.getInstance().getNPCLevel(NPC.TYVAR.id) < 1;
+        }
+    };
 
     public record EventChoice(String label, String resultText, EventBoon effect) {}
 
@@ -122,6 +136,9 @@ public enum RogueEvent {
     public String getDisplayName() { return displayName; }
     public String getDescription() { return description; }
     public List<EventChoice> getChoices() { return choices; }
+
+    /** Whether this event should appear in the event pool. Override for one-time events. */
+    public boolean isAvailable() { return true; }
 
     @Override
     public String toString() { return displayName; }

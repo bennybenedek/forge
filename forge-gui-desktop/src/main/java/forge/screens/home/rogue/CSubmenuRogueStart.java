@@ -3,6 +3,9 @@ package forge.screens.home.rogue;
 import forge.gamemodes.rogue.*;
 import forge.gamemodes.rogue.effect.DescensionLevel;
 import forge.gamemodes.rogue.effect.RogueEffectComposite;
+import forge.gamemodes.rogue.npc.NPCBoon;
+import forge.gamemodes.rogue.npc.NPCContext;
+import forge.gamemodes.rogue.npc.NPCEncounterComposite;
 import forge.gamemodes.rogue.path.RoguePathGenerator;
 import forge.gui.framework.EDocID;
 import forge.gui.framework.ICDoc;
@@ -333,6 +336,12 @@ public enum CSubmenuRogueStart implements ICDoc {
     // Generate path and apply run start effects
     RoguePathGenerator.generateRandomPath(newRun);
     RogueEffectComposite.INSTANCE.onRunStart(newRun);
+
+    // Show NPC encounter dialogs (e.g. Tyvar offering boon choices)
+    for (NPCContext ctx : NPCEncounterComposite.INSTANCE.onRunStart(progress)) {
+      NPCBoon chosen = new NPCDialog(ctx).show();
+      if (chosen != null) newRun.addNPCBoon(chosen);
+    }
 
     // Generate unique name for the run (used as filename)
     // Format: DeckName_Timestamp (e.g., "MeriaRogueCommander_12-11-25_143022")
