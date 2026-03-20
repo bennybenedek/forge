@@ -122,14 +122,14 @@ public class NodePlaneboundPanel extends NodePanel implements ImageFetcher.Callb
     for (int i = 0; i < node.getWrathfulCount(); i++) {
       JLabel flame = new JLabel(FLAME_ICON);
       flame.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 5, 0));
-      flame.setToolTipText("Wrathful — this Planebound gains random buffs");
+      flame.setToolTipText("Wrathful — this Planebound gains a minor buff");
       pnlNameRow.add(flame);
     }
 
     for (int i = 0; i < node.getCursedCount(); i++) {
       JLabel pentagram = new JLabel(PENTAGRAM_ICON);
       pentagram.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 5, 0));
-      pentagram.setToolTipText("Cursed — this Planebound gains powerful buffs");
+      pentagram.setToolTipText("Cursed — this Planebound gains a powerful buff");
       pnlNameRow.add(pentagram);
     }
 
@@ -368,34 +368,29 @@ public class NodePlaneboundPanel extends NodePanel implements ImageFetcher.Callb
     Graphics2D g = img.createGraphics();
     g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
     double cx = w / 2.0, cy = h / 2.0;
-    double outerR = Math.min(w, h) / 2.0 - 1;
-    double innerR = outerR * 0.38;
-    // 5-pointed star: 10 vertices alternating outer/inner, starting at top
-    Path2D star = new Path2D.Double();
-    for (int i = 0; i < 10; i++) {
-      double angle = Math.PI / 2 + i * Math.PI / 5;
-      double r = (i % 2 == 0) ? outerR : innerR;
-      double px = cx + r * Math.cos(angle);
-      double py = cy - r * Math.sin(angle);
-      if (i == 0) star.moveTo(px, py); else star.lineTo(px, py);
+    double r = h / 2.0 - 1;
+    // 5 vertices, connect every other (0→2→4→1→3) for pentagram shape
+    double[] px = new double[5], py = new double[5];
+    for (int i = 0; i < 5; i++) {
+      double angle = Math.PI / 2 + i * 2 * Math.PI / 5;
+      px[i] = cx + r * Math.cos(angle);
+      py[i] = cy - r * Math.sin(angle);
     }
-    star.closePath();
-    g.setColor(new Color(140, 40, 200));
-    g.fill(star);
-    // Inner smaller pentagram
-    double innerOuterR = outerR * 0.55;
-    double innerInnerR = innerOuterR * 0.38;
-    Path2D inner = new Path2D.Double();
-    for (int i = 0; i < 10; i++) {
-      double angle = Math.PI / 2 + i * Math.PI / 5;
-      double r = (i % 2 == 0) ? innerOuterR : innerInnerR;
-      double px = cx + r * Math.cos(angle);
-      double py = cy - r * Math.sin(angle);
-      if (i == 0) inner.moveTo(px, py); else inner.lineTo(px, py);
-    }
-    inner.closePath();
+    // Solid fill: use WIND_NON_ZERO so the center is filled too
+    Path2D pentagram = new Path2D.Double();
+    int[] order = {0, 2, 4, 1, 3};
+    pentagram.moveTo(px[order[0]], py[order[0]]);
+    for (int i = 1; i < 5; i++) pentagram.lineTo(px[order[i]], py[order[i]]);
+    pentagram.closePath();
+    g.setColor(new Color(80, 10, 120));
+    g.fill(pentagram);
+    // Draw crossing lines in lighter purple to show pentagram structure
+    g.setStroke(new BasicStroke(1.5f));
     g.setColor(new Color(200, 130, 255));
-    g.fill(inner);
+    for (int i = 0; i < 5; i++) {
+      int j = (i + 2) % 5;
+      g.drawLine((int) px[i], (int) py[i], (int) px[j], (int) py[j]);
+    }
     g.dispose();
     return new ImageIcon(img);
   }

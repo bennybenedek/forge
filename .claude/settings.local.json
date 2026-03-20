@@ -29,7 +29,8 @@
       "Bash(cd:*)",
       "Bash(pdftotext:*)",
       "Bash(python3:*)",
-      "Bash(pip install:*)"
+      "Bash(pip install:*)",
+      "Skill(commitMessage)"
     ],
     "deny": [],
     "ask": []

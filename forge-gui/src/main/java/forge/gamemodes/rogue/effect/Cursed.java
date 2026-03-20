@@ -12,7 +12,7 @@ import java.util.Set;
 public enum Cursed implements PlaneboundBoon {
 
     SPELL_DISCOUNT("cursed_spell_discount", "Bargain",
-            "All of the Planebound's spells cost {1} less to cast.",
+            "All of Planebound's spells cost {1} less to cast.",
             "Cursed - Bargain") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
@@ -21,7 +21,7 @@ public enum Cursed implements PlaneboundBoon {
         }
     },
     SCRY("cursed_scry", "Foresight",
-            "At the beginning of each of the Planebound's upkeeps, they scry 2.",
+            "At the beginning of each of Planebound's upkeeps, they scry 2.",
             "Cursed - Foresight") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
@@ -30,7 +30,7 @@ public enum Cursed implements PlaneboundBoon {
         }
     },
     FREE_CREATURE("cursed_free_creature", "Summon",
-            "The Planebound starts the match with a random creature from their deck on the battlefield.",
+            "Planebound starts the match with a random creature from their deck on the battlefield.",
             null) {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
@@ -48,7 +48,7 @@ public enum Cursed implements PlaneboundBoon {
         }
     },
     FREE_LANDS("cursed_free_lands", "Fortify",
-            "The Planebound starts the match with 2 random lands from their deck on the battlefield.",
+            "Planebound starts the match with 2 random lands from their deck on the battlefield.",
             null) {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
