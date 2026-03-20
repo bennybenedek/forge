@@ -49,7 +49,7 @@ public interface RogueEffect {
     default void onPathUpdate(PathUpdateContext ctx, RogueRun run) {}
 
     /** Fired once per match start. Add command zone cards, adjust hand size, etc. */
-    default void onMatchStart(RegisteredPlayer human, RogueRun run) {}
+    default void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {}
 
     /** Fired after winning a match (non-final node). Heal life, etc. */
     default void onMatchWin(RogueRun run) {}

@@ -163,7 +163,7 @@ public enum EventBoon implements RogueEffect {
     COMMANDER_BOOST("commander_boost", "Commander's Might", "Your Commander gets +1/+1 for the rest of the Run.",
             EffectType.PERMANENT) {
         @Override
-        public void onMatchStart(RegisteredPlayer human, RogueRun run) {
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             RogueEffect.addCustomCardToCommandZone("Event - Commander's Might", human);
         }
     },
@@ -176,7 +176,7 @@ public enum EventBoon implements RogueEffect {
         public int getChargesForRank(int rank) { return 1; }
 
         @Override
-        public void onMatchStart(RegisteredPlayer human, RogueRun run) {
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             RogueEffect.addCustomCardToCommandZone("Event - Lost Connection", human);
             run.consumeEffect(getId());
         }
@@ -205,14 +205,18 @@ public enum EventBoon implements RogueEffect {
         this.effectType = effectType;
     }
 
-    /** Override in ONESHOT constants to apply immediate event effects. */
-    public void applyEffect(RogueRun run, NodeResultContext ctx) {}
+    public void applyEffect(RogueRun run, NodeResultContext ctx) { /* Override in ONESHOT constants to apply immediate event effects. */}
 
     @Override
     public EffectType getEffectType() { return effectType; }
 
+    @Override
     public String getId() { return id; }
+
+    @Override
     public String getDisplayName() { return displayName; }
+
+    @Override
     public String getDescription() { return description; }
 
     public static EventBoon fromId(String id) {

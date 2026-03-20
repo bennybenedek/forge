@@ -16,8 +16,7 @@ public enum RogueEffectComposite implements RogueEffect {
 
     /** Returns all active effects from all sources (echo boons, descension, event boons, chest boons, wounds). */
     public static List<RogueEffect> getAllEffects(RogueRun run) {
-        List<RogueEffect> effects = new ArrayList<>();
-        effects.addAll(run.getActiveEchoBoons());
+      List<RogueEffect> effects = new ArrayList<>(run.getActiveEchoBoons());
         int descLevel = run.getDescensionLevel();
         for (int l = 1; l <= descLevel; l++) {
             DescensionLevel dl = DescensionLevel.forLevel(l);
@@ -27,6 +26,7 @@ public enum RogueEffectComposite implements RogueEffect {
         effects.addAll(run.getActiveChestBoons());
         effects.addAll(run.getActiveWounds());
         effects.addAll(run.getActiveWrathful());
+        effects.addAll(run.getActiveCursed());
         return effects;
     }
 
@@ -36,8 +36,8 @@ public enum RogueEffectComposite implements RogueEffect {
     }
 
     @Override
-    public void onMatchStart(RegisteredPlayer human, RogueRun run) {
-        forEachEffect(run, e -> e.onMatchStart(human, run));
+    public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+        forEachEffect(run, e -> e.onMatchStart(human, opponent, run));
     }
 
     @Override

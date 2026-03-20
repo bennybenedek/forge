@@ -8,14 +8,14 @@ public enum Wound implements RogueEffect {
     LEG("leg", "Leg", "Every spell you cast costs {1} more.",
             EffectType.PERMANENT) {
         @Override
-        public void onMatchStart(RegisteredPlayer human, RogueRun run) {
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             RogueEffect.addCustomCardToCommandZone("Wound - Leg", human);
         }
     },
     HEAD("head", "Head", "Start each match with 1 less card in hand.",
             EffectType.PERMANENT) {
         @Override
-        public void onMatchStart(RegisteredPlayer human, RogueRun run) {
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             human.setStartingHand(human.getStartingHand() - 1);
         }
     },
@@ -42,8 +42,13 @@ public enum Wound implements RogueEffect {
     @Override
     public EffectType getEffectType() { return effectType; }
 
+    @Override
     public String getId() { return id; }
+
+    @Override
     public String getDisplayName() { return displayName; }
+
+    @Override
     public String getDescription() { return description; }
 
     public static Wound fromId(String id) {

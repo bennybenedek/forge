@@ -1,0 +1,5 @@
+Name:Cursed - Bargain
+ManaCost:no cost
+Types:Rogue Modifier
+S:Mode$ ReduceCost | ValidCard$ Card | Activator$ Player.Opponent | Type$ Spell | Amount$ 1 | EffectZone$ Command | Description$ All of the opponent's spells cost {1} less to cast.
+Oracle:All of the opponent's spells cost {1} less to cast.

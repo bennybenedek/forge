@@ -35,21 +35,21 @@ public enum ChestLoot implements RogueEffect {
     COMMANDER_STRENGTH("commander_strength", "Relic Of Strength", "Your commander gets +2/+2 for the rest of the Run.",
             EffectType.PERMANENT) {
         @Override
-        public void onMatchStart(RegisteredPlayer human, RogueRun run) {
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             RogueEffect.addCustomCardToCommandZone("Chest - Relic Of Strength", human);
         }
     },
     COST_REDUCTION("cost_reduction", "Relic Of Agility", "Permanent spells you cast cost {1} less for the rest of the Run.",
             EffectType.PERMANENT) {
         @Override
-        public void onMatchStart(RegisteredPlayer human, RogueRun run) {
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             RogueEffect.addCustomCardToCommandZone("Chest - Relic Of Agility", human);
         }
     },
     EXTRA_DRAW("extra_draw", "Relic Of Wisdom", "Draw 1 extra card at the start of each match for the rest of the Run.",
             EffectType.PERMANENT) {
         @Override
-        public void onMatchStart(RegisteredPlayer human, RogueRun run) {
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             human.setStartingHand(human.getStartingHand() + 1);
         }
     };
@@ -66,14 +66,18 @@ public enum ChestLoot implements RogueEffect {
         this.effectType = effectType;
     }
 
-    /** Override in ONESHOT constants to apply immediate chest effects. */
-    public void applyEffect(RogueRun run, NodeResultContext ctx) { /* TODO document why this method is empty */ }
+    public void applyEffect(RogueRun run, NodeResultContext ctx) { /* Override in ONESHOT constants to apply immediate chest effects. */ }
 
     @Override
     public EffectType getEffectType() { return effectType; }
 
+    @Override
     public String getId() { return id; }
+
+    @Override
     public String getDisplayName() { return displayName; }
+
+    @Override
     public String getDescription() { return description; }
 
     public static ChestLoot fromId(String id) {

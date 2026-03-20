@@ -27,7 +27,9 @@
       "Bash(dir:*)",
       "Bash(xargs cat:*)",
       "Bash(cd:*)",
-      "Bash(pdftotext:*)"
+      "Bash(pdftotext:*)",
+      "Bash(python3:*)",
+      "Bash(pip install:*)"
     ],
     "deny": [],
     "ask": []

@@ -16,9 +16,10 @@ import java.util.*;
  *
  * Active effects per descension level (cumulative):
  *   Level 1: Wrathful — some Planebounds gain random advantages (afterPathGeneration)
- *   Level 2: Bloodthirst — creatures deal +1 damage to you (onMatchStart)
- *   Level 3: 2 random Normal Planes replaced by Elite Planes (afterPathGeneration)
- *   Level 4: Taxing Mana — all spells cost {1} more (onMatchStart)
+ *   Level 2: Cursed — some Planebounds gain powerful opponent buffs (afterPathGeneration)
+ *   Level 3: Bloodthirsty — creatures deal +1 damage to you (onMatchStart)
+ *   Level 4: Elite Paths — 2 random Normal Planes replaced by Elite Planes (afterPathGeneration)
+ *   Level 5: Taxing Mana — all spells cost {1} more (onMatchStart)
  */
 public enum DescensionLevel implements RogueEffect {
 
@@ -37,7 +38,6 @@ public enum DescensionLevel implements RogueEffect {
             int markerCount = planeboundNodes.size() - 3;
             Random rng = MyRandom.getRandom();
             for (int i = 0; i < markerCount; i++) {
-                // Build list of nodes that can still receive a marker (max 2 per node)
                 List<NodePlanebound> eligible = new ArrayList<>();
                 for (NodePlanebound np : planeboundNodes) {
                     if (np.getWrathfulCount() < 2) eligible.add(np);
@@ -49,15 +49,41 @@ public enum DescensionLevel implements RogueEffect {
         }
     },
 
-    LEVEL_2(2, "Bloodthirsty",
+    LEVEL_2(2, "Cursed",
+        "Some Planebounds on the path become Cursed, gaining powerful buffs for the opponent.") {
+        @Override
+        public void afterPathGeneration(RogueRun run) {
+            List<NodePlanebound> planeboundNodes = new ArrayList<>();
+            for (RoguePathNode node : run.getPath().getNodes()) {
+                if (node instanceof NodePlanebound np) {
+                    planeboundNodes.add(np);
+                }
+            }
+            if (planeboundNodes.isEmpty()) return;
+
+            int markerCount = planeboundNodes.size() / 2;
+            Random rng = MyRandom.getRandom();
+            for (int i = 0; i < markerCount; i++) {
+                List<NodePlanebound> eligible = new ArrayList<>();
+                for (NodePlanebound np : planeboundNodes) {
+                    if (np.getCursedCount() < 2) eligible.add(np);
+                }
+                if (eligible.isEmpty()) break;
+                NodePlanebound target = eligible.get(rng.nextInt(eligible.size()));
+                target.setCursedCount(target.getCursedCount() + 1);
+            }
+        }
+    },
+
+    LEVEL_3(3, "Bloodthirsty",
         "Whenever a creature an opponent controls deals damage to you, it deals 1 additional damage.") {
         @Override
-        public void onMatchStart(RegisteredPlayer human, RogueRun run) {
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             RogueEffect.addCustomCardToCommandZone("Descension - Bloodthirsty", human);
         }
     },
 
-    LEVEL_3(3, "Elite Paths",
+    LEVEL_4(4, "Elite Paths",
         "2 random Normal Planes of the Path are replaced by Elite Planes.") {
         @Override
         public void afterPathGeneration(RogueRun run) {
@@ -97,10 +123,10 @@ public enum DescensionLevel implements RogueEffect {
         }
     },
 
-    LEVEL_4(4, "Taxing Mana",
+    LEVEL_5(5, "Taxing Mana",
         "Every spell you cast costs {1} more to cast.") {
         @Override
-        public void onMatchStart(RegisteredPlayer human, RogueRun run) {
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             RogueEffect.addCustomCardToCommandZone("Descension - Taxing Mana", human);
         }
     };

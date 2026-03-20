@@ -4,6 +4,7 @@ import com.thoughtworks.xstream.annotations.XStreamOmitField;
 import forge.deck.Deck;
 import forge.gamemodes.match.HostedMatch;
 import forge.gamemodes.rogue.effect.ChestLoot;
+import forge.gamemodes.rogue.effect.Cursed;
 import forge.gamemodes.rogue.effect.EchoBoon;
 import forge.gamemodes.rogue.effect.EventBoon;
 import forge.gamemodes.rogue.effect.RogueEffect;
@@ -59,6 +60,9 @@ public class RogueRun {
 
     // Wrathful effects (consume debuffs from wrathful planebounds)
     private List<RogueRunBoon> activeWrathful;
+
+    // Cursed effects (consume debuffs from cursed planebounds)
+    private List<RogueRunBoon> activeCursed;
 
     // Match History
     private int matchesWon;                     // Win counter
@@ -296,25 +300,6 @@ public class RogueRun {
         this.currentNodeIndex = currentNodeIndex;
     }
 
-    /**
-     * Get indices of nodes reachable from the current node.
-     * @return List of reachable node indices
-     */
-    public List<Integer> getReachableNodeIndices() {
-        if (path == null) {
-            return new java.util.ArrayList<>();
-        }
-        return path.getReachableNodeIndices(currentNodeIndex);
-    }
-
-    public int getMatchesWon() {
-        return matchesWon;
-    }
-
-    public int getMatchesLost() {
-        return matchesLost;
-    }
-
     public int getRemovalCredits() {
         return removalCredits;
     }
@@ -360,11 +345,13 @@ public class RogueRun {
     public List<RogueEffect> getActiveChestBoons() { return mapEffects(activeChestBoons, ChestLoot::fromId); }
     public List<RogueEffect> getActiveWounds()     { return mapEffects(activeWounds, Wound::fromId); }
     public List<RogueEffect> getActiveWrathful()   { return mapEffects(activeWrathful, Wrathful::fromId); }
+    public List<RogueEffect> getActiveCursed()    { return mapEffects(activeCursed, Cursed::fromId); }
 
     public void addEventBoon(EventBoon boon)   { activeEventBoons = addEffect(activeEventBoons, boon); }
     public void addChestBoon(ChestLoot loot)    { activeChestBoons = addEffect(activeChestBoons, loot); }
     public void addWound(Wound wound)           { activeWounds = addEffect(activeWounds, wound); }
     public void addWrathful(Wrathful wrathful)  { activeWrathful = addEffect(activeWrathful, wrathful); }
+    public void addCursed(Cursed cursed)        { activeCursed = addEffect(activeCursed, cursed); }
 
     private List<RogueRunBoon> addEffect(List<RogueRunBoon> list, RogueEffect effect) {
         if (list == null) list = new ArrayList<>();
@@ -382,13 +369,16 @@ public class RogueRun {
         return rb != null ? rb.getRank() : 0;
     }
 
+    @SuppressWarnings("unchecked")
+    private List<RogueRunBoon>[] allBoonLists() {
+        return new List[]{activeEchoBoons, activeEventBoons, activeChestBoons,
+                activeWounds, activeWrathful, activeCursed};
+    }
+
     // Effect consumption
     public void consumeEffect(String id) {
-        consumeFromList(activeEchoBoons, id);
-        consumeFromList(activeEventBoons, id);
-        consumeFromList(activeChestBoons, id);
-        consumeFromList(activeWounds, id);
-        consumeFromList(activeWrathful, id);
+        for (List<RogueRunBoon> list : allBoonLists())
+            consumeFromList(list, id);
     }
 
     private void consumeFromList(List<RogueRunBoon> list, String id) {
@@ -404,21 +394,11 @@ public class RogueRun {
     }
 
     private RogueRunBoon findRunBoon(String id) {
-        if (activeEchoBoons != null)
-            for (RogueRunBoon rb : activeEchoBoons)
+        for (List<RogueRunBoon> list : allBoonLists()) {
+            if (list == null) continue;
+            for (RogueRunBoon rb : list)
                 if (rb.getId().equals(id)) return rb;
-        if (activeEventBoons != null)
-            for (RogueRunBoon rb : activeEventBoons)
-                if (rb.getId().equals(id)) return rb;
-        if (activeChestBoons != null)
-            for (RogueRunBoon rb : activeChestBoons)
-                if (rb.getId().equals(id)) return rb;
-        if (activeWounds != null)
-            for (RogueRunBoon rb : activeWounds)
-                if (rb.getId().equals(id)) return rb;
-        if (activeWrathful != null)
-            for (RogueRunBoon rb : activeWrathful)
-                if (rb.getId().equals(id)) return rb;
+        }
         return null;
     }
 

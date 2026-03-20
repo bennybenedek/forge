@@ -32,6 +32,7 @@ public class NodePlaneboundPanel extends NodePanel implements ImageFetcher.Callb
   private static final int CARD_HEIGHT = 180; // Shorter (was width)
 
   private static final ImageIcon FLAME_ICON = createFlameIcon(14, 18);
+  private static final ImageIcon PENTAGRAM_ICON = createPentagramIcon(14, 18);
 
   private final CardPicturePanel cardImage;
   private final JPanel pnlNameRow;
@@ -123,6 +124,13 @@ public class NodePlaneboundPanel extends NodePanel implements ImageFetcher.Callb
       flame.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 5, 0));
       flame.setToolTipText("Wrathful — this Planebound gains random buffs");
       pnlNameRow.add(flame);
+    }
+
+    for (int i = 0; i < node.getCursedCount(); i++) {
+      JLabel pentagram = new JLabel(PENTAGRAM_ICON);
+      pentagram.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 5, 0));
+      pentagram.setToolTipText("Cursed — this Planebound gains powerful buffs");
+      pnlNameRow.add(pentagram);
     }
 
     String planeboundName = showFaceDown ? "???" : node.getRoguePlanebound().planeboundName();
@@ -353,6 +361,43 @@ public class NodePlaneboundPanel extends NodePanel implements ImageFetcher.Callb
       cardImage.revalidate();
       cardImage.repaint();
     }
+  }
+
+  static ImageIcon createPentagramIcon(int w, int h) {
+    BufferedImage img = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);
+    Graphics2D g = img.createGraphics();
+    g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+    double cx = w / 2.0, cy = h / 2.0;
+    double outerR = Math.min(w, h) / 2.0 - 1;
+    double innerR = outerR * 0.38;
+    // 5-pointed star: 10 vertices alternating outer/inner, starting at top
+    Path2D star = new Path2D.Double();
+    for (int i = 0; i < 10; i++) {
+      double angle = Math.PI / 2 + i * Math.PI / 5;
+      double r = (i % 2 == 0) ? outerR : innerR;
+      double px = cx + r * Math.cos(angle);
+      double py = cy - r * Math.sin(angle);
+      if (i == 0) star.moveTo(px, py); else star.lineTo(px, py);
+    }
+    star.closePath();
+    g.setColor(new Color(140, 40, 200));
+    g.fill(star);
+    // Inner smaller pentagram
+    double innerOuterR = outerR * 0.55;
+    double innerInnerR = innerOuterR * 0.38;
+    Path2D inner = new Path2D.Double();
+    for (int i = 0; i < 10; i++) {
+      double angle = Math.PI / 2 + i * Math.PI / 5;
+      double r = (i % 2 == 0) ? innerOuterR : innerInnerR;
+      double px = cx + r * Math.cos(angle);
+      double py = cy - r * Math.sin(angle);
+      if (i == 0) inner.moveTo(px, py); else inner.lineTo(px, py);
+    }
+    inner.closePath();
+    g.setColor(new Color(200, 130, 255));
+    g.fill(inner);
+    g.dispose();
+    return new ImageIcon(img);
   }
 
   static ImageIcon createFlameIcon(int w, int h) {

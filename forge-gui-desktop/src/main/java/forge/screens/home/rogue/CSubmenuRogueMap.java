@@ -308,8 +308,8 @@ public enum CSubmenuRogueMap implements ICDoc {
       return;
     }
 
-    // Roll and apply wrathful effects if this node is wrathful
-    handlePlaneboundWrathful(node);
+    // Roll and apply wrathful/cursed effects, show combined dialog
+    handlePlaneboundBoons(node);
 
     // Show loading overlay
     SwingUtilities.invokeLater(() -> {
@@ -332,7 +332,6 @@ public enum CSubmenuRogueMap implements ICDoc {
       }
 
       // Create shared plane deck with the designated plane
-      // In Rogue Commander, planeswalk triggers fire but we stay on the same plane
       List<PaperCard> sharedPlaneDeck = new java.util.ArrayList<>();
       if (designatedPlane != null) {
         sharedPlaneDeck.add(designatedPlane);
@@ -345,51 +344,36 @@ public enum CSubmenuRogueMap implements ICDoc {
 
       // Create human player with persistent life
       RegisteredPlayer human = RegisteredPlayer.forVariants(
-          2,                   // player count
-          appliedVariants,                // applied variants
-          currentRun.getCurrentDeck(),    // player's deck
-          null,                           // schemes (not used)
-          false,                          // is archenemy
-          sharedPlaneDeck,                // shared plane deck
-          null                            // vanguard avatar
+          2, appliedVariants, currentRun.getCurrentDeck(),
+          null, false, sharedPlaneDeck, null
       );
-
-      // Override starting life with persistent life from run
       human.setStartingLife(currentRun.getCurrentLife());
 
-      // Use the singleton lobbyPlayer for consistent player identification
-      // This ensures isMatchWonBy() works correctly in RogueWinLoseController
       LobbyPlayer lobbyPlayer = GamePlayerUtil.getGuiPlayer();
       lobbyPlayer.setName(currentRun.getSelectedRogueDeck().getName());
       lobbyPlayer.setAvatarIndex(currentRun.getSelectedRogueDeck().getAvatarIndex());
       lobbyPlayer.setSleeveIndex(currentRun.getSelectedRogueDeck().getSleeveIndex());
       human.setPlayer(lobbyPlayer);
 
-      // Apply all match start effects (boons + descension)
-      RogueEffectComposite.INSTANCE.onMatchStart(human, currentRun);
-
       // Load Planebound deck
       Deck planeboundDeck = loadPlaneboundDeck(node.getRoguePlanebound().deckPath());
 
       // Create AI Planebound opponent
       RegisteredPlayer ai = RegisteredPlayer.forVariants(
-          2,                                    // player count
-          appliedVariants,                      // applied variants
-          planeboundDeck,                       // Planebound deck
-          null,                                  // schemes (not used)
-          false,                                 // is archenemy
-          sharedPlaneDeck,                      // shared plane deck
-          null                                   // vanguard avatar
+          2, appliedVariants, planeboundDeck,
+          null, false, sharedPlaneDeck, null
       );
       ai.setPlayer(GamePlayerUtil.createAiPlayer(
           node.getRoguePlanebound().planeboundName(),
           node.getRoguePlanebound().avatarIndex(),
           0));
 
-      // Calculate life based on Planebound rows (not total rows - Sanctum/Bazaar don't count)
+      // Calculate life based on Planebound rows
       int planeboundRowCount = currentRun.getPath().countPlaneboundRowsUpTo(node.getRowIndex());
-      int planeboundLife = 5 * planeboundRowCount;
-      ai.setStartingLife(planeboundLife);
+      ai.setStartingLife(5 * planeboundRowCount);
+
+      // Apply all match start effects AFTER AI creation (cursed effects need opponent)
+      RogueEffectComposite.INSTANCE.onMatchStart(human, ai, currentRun);
 
       // Start match
       List<RegisteredPlayer> players = Arrays.asList(human, ai);
@@ -412,28 +396,50 @@ public enum CSubmenuRogueMap implements ICDoc {
     SwingUtilities.invokeLater(SOverlayUtils::hideOverlay);
   }
 
-  private void handlePlaneboundWrathful(NodePlanebound node) {
+  private void handlePlaneboundBoons(NodePlanebound node) {
     int wrathfulCount = node.getWrathfulCount();
-    if (wrathfulCount > 0) {
-      ImageIcon flameIcon = NodePlaneboundPanel.createFlameIcon(14, 18);
-      FSkin.SkinnedPanel effectsPanel = new FSkin.SkinnedPanel(
-          new MigLayout("insets 5, gap 0, wrap", "[grow]"));
-      effectsPanel.setOpaque(false);
-      Set<Wrathful> usedWrathful = new HashSet<>();
-      for (int i = 0; i < wrathfulCount; i++) {
-        Wrathful w = Wrathful.getRandomExcluding(usedWrathful);
-        usedWrathful.add(w);
-        currentRun.addWrathful(w);
-        JLabel lbl = new JLabel(w.getDisplayName() + " - " + w.getDescription(), flameIcon, SwingConstants.LEFT);
-        lbl.setFont(FSkin.getRelativeFont(12).getBaseFont());
-        lbl.setForeground(FSkin.getColor(FSkin.Colors.CLR_TEXT).getColor());
-        lbl.setIconTextGap(5);
-        lbl.setOpaque(false);
-        effectsPanel.add(lbl, "growx, h 24px!, wrap");
-      }
-      FOptionPane.showOptionDialog("This Planebound is Wrathful!", "Wrathful Planebound", null, effectsPanel,
-          List.of("OK"), 0);
+    int cursedCount = node.getCursedCount();
+    if (wrathfulCount == 0 && cursedCount == 0) return;
+
+    ImageIcon flameIcon = NodePlaneboundPanel.createFlameIcon(14, 18);
+    ImageIcon pentagramIcon = NodePlaneboundPanel.createPentagramIcon(14, 18);
+    FSkin.SkinnedPanel effectsPanel = new FSkin.SkinnedPanel(
+        new MigLayout("insets 5, gap 0, wrap", "[grow]"));
+    effectsPanel.setOpaque(false);
+
+    Set<Wrathful> usedWrathful = new HashSet<>();
+    for (int i = 0; i < wrathfulCount; i++) {
+      Wrathful w = Wrathful.getRandomExcluding(usedWrathful);
+      usedWrathful.add(w);
+      currentRun.addWrathful(w);
+      JLabel lbl = new JLabel(w.getDisplayName() + " - " + w.getDescription(), flameIcon, SwingConstants.LEFT);
+      lbl.setFont(FSkin.getRelativeFont(12).getBaseFont());
+      lbl.setForeground(FSkin.getColor(FSkin.Colors.CLR_TEXT).getColor());
+      lbl.setIconTextGap(5);
+      lbl.setOpaque(false);
+      effectsPanel.add(lbl, "growx, h 24px!, wrap");
     }
+
+    Set<Cursed> usedCursed = new HashSet<>();
+    for (int i = 0; i < cursedCount; i++) {
+      Cursed c = Cursed.getRandomExcluding(usedCursed);
+      usedCursed.add(c);
+      currentRun.addCursed(c);
+      JLabel lbl = new JLabel(c.getDisplayName() + " - " + c.getDescription(), pentagramIcon, SwingConstants.LEFT);
+      lbl.setFont(FSkin.getRelativeFont(12).getBaseFont());
+      lbl.setForeground(FSkin.getColor(FSkin.Colors.CLR_TEXT).getColor());
+      lbl.setIconTextGap(5);
+      lbl.setOpaque(false);
+      effectsPanel.add(lbl, "growx, h 24px!, wrap");
+    }
+
+    boolean hasWrathful = wrathfulCount > 0;
+    boolean hasCursed = cursedCount > 0;
+    String title = hasWrathful && hasCursed ? "Wrathful & Cursed Planebound"
+        : hasCursed ? "Cursed Planebound" : "Wrathful Planebound";
+    String message = hasWrathful && hasCursed ? "This Planebound is Wrathful and Cursed!"
+        : hasCursed ? "This Planebound is Cursed!" : "This Planebound is Wrathful!";
+    FOptionPane.showOptionDialog(message, title, null, effectsPanel, List.of("OK"), 0);
   }
 
   private void handleSanctumNode(NodeSanctum sanctumNode) {

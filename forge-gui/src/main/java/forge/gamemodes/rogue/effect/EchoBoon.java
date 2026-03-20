@@ -1,7 +1,8 @@
 package forge.gamemodes.rogue.effect;
 
 import forge.game.player.RegisteredPlayer;
-import forge.gamemodes.rogue.*;
+import forge.gamemodes.rogue.AetherUpgrade;
+import forge.gamemodes.rogue.RogueRun;
 import forge.item.IPaperCard;
 import forge.item.PaperCard;
 import java.util.ArrayList;
@@ -102,7 +103,7 @@ public enum EchoBoon implements RogueEffect {
         new int[]{1, 2},           // Effect values: +1/+2 cards
         1, 1) {
         @Override
-        public void onMatchStart(RegisteredPlayer human, RogueRun run) {
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             int extra = getEffectValueAtRank(run.getRunBoonRank(getId()));
             if (extra > 0) human.setStartingHand(human.getStartingHand() + extra);
         }
@@ -125,7 +126,7 @@ public enum EchoBoon implements RogueEffect {
         new int[]{1, 2, 3},        // Effect values: 1/2/3 tapped lands
         2, 1) {
         @Override
-        public void onMatchStart(RegisteredPlayer human, RogueRun run) {
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             int count = getEffectValueAtRank(run.getRunBoonRank(getId()));
             if (count <= 0) return;
             List<PaperCard> basicLands = new ArrayList<>();
@@ -146,7 +147,7 @@ public enum EchoBoon implements RogueEffect {
         new int[]{1, 2, 3, 4},     // Effect values: {1}/{2}/{3}/{4} less
         3, 1) {
         @Override
-        public void onMatchStart(RegisteredPlayer human, RogueRun run) {
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             int reduction = getEffectValueAtRank(run.getRunBoonRank(getId()));
             if (reduction > 0) RogueEffect.addCustomCardToCommandZone("Echo - Fractured Binding " + reduction, human);
         }
@@ -171,14 +172,17 @@ public enum EchoBoon implements RogueEffect {
         this.requiredUpgradeLevel = requiredUpgradeLevel;
     }
 
+    @Override
     public String getId() {
         return id;
     }
 
+    @Override
     public String getDisplayName() {
         return displayName;
     }
 
+    @Override
     public String getDescription() {
         return description;
     }
@@ -243,30 +247,25 @@ public enum EchoBoon implements RogueEffect {
     public String getDescriptionWithAllRanks(int currentRank, int upgradeLevel) {
         String allValues = buildAllValuesString(currentRank, upgradeLevel);
 
-        switch (this) {
-            case VITAL_INFUSION:
-                return "<html>Begin each Run with +" + allValues + " Max Life.</html>";
-            case AETHER_MARKET:
-                return "<html>Gain +" + allValues + " starting Gold.</html>";
-            case LINGERING_AURA:
-                return "<html>Heal " + allValues + " Life after each match victory.</html>";
-            case FORESIGHT:
-                return "<html>Start each match with +" + allValues + " opening hand card.</html>";
-            case MYTHIC_COLLECTOR:
-                return "<html>+" + allValues + " more mythic cards in Rewards and Bazaar.</html>";
-            case LAST_SPARK:
-                return "<html>Survive defeat and revive with 5 life, " + allValues + " time(s).</html>";
-            case EXPANDED_MIND:
-                return "<html>Keep +" + allValues + " extra cards from Card Rewards.</html>";
-            case SPARK_KINDLE:
-                return "<html>Begin each match with " + allValues + " basic land(s) on battlefield.</html>";
-            case FRACTURED_BINDING:
-                return "<html>Your Commander costs " + allValues + " less to cast.</html>";
-            case SPECTRAL_RECALIBRATION:
-                return "<html>Gain " + allValues + " reroll(s) per Card Reward or Bazaar selection.</html>";
-            default:
-                return "<html>" + description + "</html>";
-        }
+      return switch (this) {
+        case VITAL_INFUSION -> "<html>Begin each Run with +" + allValues + " Max Life.</html>";
+        case AETHER_MARKET -> "<html>Gain +" + allValues + " starting Gold.</html>";
+        case LINGERING_AURA -> "<html>Heal " + allValues + " Life after each match victory.</html>";
+        case FORESIGHT ->
+            "<html>Start each match with +" + allValues + " opening hand card.</html>";
+        case MYTHIC_COLLECTOR ->
+            "<html>+" + allValues + " more mythic cards in Rewards and Bazaar.</html>";
+        case LAST_SPARK ->
+            "<html>Survive defeat and revive with 5 life, " + allValues + " time(s).</html>";
+        case EXPANDED_MIND -> "<html>Keep +" + allValues + " extra cards from Card Rewards.</html>";
+        case SPARK_KINDLE ->
+            "<html>Begin each match with " + allValues + " basic land(s) on battlefield.</html>";
+        case FRACTURED_BINDING ->
+            "<html>Your Commander costs " + allValues + " less to cast.</html>";
+        case SPECTRAL_RECALIBRATION ->
+            "<html>Gain " + allValues + " reroll(s) per Card Reward or Bazaar selection.</html>";
+        default -> "<html>" + description + "</html>";
+      };
     }
 
     /**

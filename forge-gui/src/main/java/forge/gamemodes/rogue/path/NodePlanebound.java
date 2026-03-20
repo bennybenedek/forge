@@ -12,6 +12,7 @@ public class NodePlanebound extends RoguePathNode {
 
     private RoguePlanebound roguePlanebound;
     private int wrathfulCount;
+    private int cursedCount;
 
     public NodePlanebound() {
         super();
@@ -37,6 +38,14 @@ public class NodePlanebound extends RoguePathNode {
 
     public void setWrathfulCount(int wrathfulCount) {
         this.wrathfulCount = wrathfulCount;
+    }
+
+    public int getCursedCount() {
+        return cursedCount;
+    }
+
+    public void setCursedCount(int cursedCount) {
+        this.cursedCount = cursedCount;
     }
 
     public RoguePlaneboundType getPlaneboundType() {

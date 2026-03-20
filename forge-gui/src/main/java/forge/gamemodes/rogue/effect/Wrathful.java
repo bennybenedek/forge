@@ -2,15 +2,15 @@ package forge.gamemodes.rogue.effect;
 
 import forge.game.player.RegisteredPlayer;
 import forge.gamemodes.rogue.RogueRun;
-import forge.util.MyRandom;
+import java.util.Set;
 
-public enum Wrathful implements RogueEffect {
+public enum Wrathful implements PlaneboundBoon {
 
     COMMANDER_BOOST("wrathful_commander_boost", "Might",
             "Planebound Commander gets +2/+2.",
             "Wrathful - Might") {
         @Override
-        public void onMatchStart(RegisteredPlayer human, RogueRun run) {
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             RogueEffect.addCustomCardToCommandZone(cardName, human);
             run.consumeEffect(getId());
         }
@@ -19,7 +19,7 @@ public enum Wrathful implements RogueEffect {
             "Planebound gains 1 life at the beginning of each of their upkeeps.",
             "Wrathful - Resilience") {
         @Override
-        public void onMatchStart(RegisteredPlayer human, RogueRun run) {
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             RogueEffect.addCustomCardToCommandZone(cardName, human);
             run.consumeEffect(getId());
         }
@@ -28,7 +28,7 @@ public enum Wrathful implements RogueEffect {
             "Planebound Commander costs {1} less to cast.",
             "Wrathful - Haste") {
         @Override
-        public void onMatchStart(RegisteredPlayer human, RogueRun run) {
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             RogueEffect.addCustomCardToCommandZone(cardName, human);
             run.consumeEffect(getId());
         }
@@ -47,11 +47,9 @@ public enum Wrathful implements RogueEffect {
     }
 
     @Override
-    public EffectType getEffectType() { return EffectType.CONSUME; }
+    public BoonCategory getCategory() { return BoonCategory.WRATHFUL; }
 
     @Override
-    public int getChargesForRank(int rank) { return 1; }
-
     public String getId() { return id; }
 
     @Override
@@ -60,18 +58,8 @@ public enum Wrathful implements RogueEffect {
     @Override
     public String getDescription() { return description; }
 
-    public static Wrathful getRandom() {
-        Wrathful[] vals = values();
-        return vals[MyRandom.getRandom().nextInt(vals.length)];
-    }
-
-    public static Wrathful getRandomExcluding(java.util.Set<Wrathful> exclude) {
-        java.util.List<Wrathful> candidates = new java.util.ArrayList<>();
-        for (Wrathful w : values()) {
-            if (!exclude.contains(w)) candidates.add(w);
-        }
-        if (candidates.isEmpty()) return getRandom();
-        return candidates.get(MyRandom.getRandom().nextInt(candidates.size()));
+    public static Wrathful getRandomExcluding(Set<Wrathful> exclude) {
+        return PlaneboundBoon.getRandomExcluding(values(), exclude);
     }
 
     public static Wrathful fromId(String id) {
