@@ -10,6 +10,7 @@ import forge.game.player.RegisteredPlayer;
 import forge.gamemodes.match.HostedMatch;
 import forge.gamemodes.rogue.*;
 import forge.gamemodes.rogue.effect.*;
+import forge.gamemodes.rogue.npc.*;
 import forge.gamemodes.rogue.path.*;
 import forge.gui.GuiBase;
 import forge.gui.SOverlayUtils;
@@ -515,14 +516,20 @@ public enum CSubmenuRogueMap implements ICDoc {
       return;
     }
 
-    CardSelectionContext bazaarCtx = new CardSelectionContext();
-    RogueEffectComposite.INSTANCE.onCardSelection(bazaarCtx, currentRun);
+    RogueMetaProgress progress = RogueMetaProgress.getInstance();
+
+    // NPC pre-bazaar: inject items, set price overrides/discounts
+    BazaarContext npcCtx = new BazaarContext();
+    NPCEncounterComposite.INSTANCE.onBeforeBazaar(npcCtx, progress);
+
+    CardSelectionContext selCtx = new CardSelectionContext();
+    RogueEffectComposite.INSTANCE.onCardSelection(selCtx, currentRun);
     int baseNonMythics = 8;
     int baseMythics = 2;
-    int totalNonMythics = Math.max(0, baseNonMythics - bazaarCtx.extraMythics);
-    int totalMythics = baseMythics + bazaarCtx.extraMythics;
+    int totalNonMythics = Math.max(0, baseNonMythics - selCtx.extraMythics);
+    int totalMythics = baseMythics + selCtx.extraMythics;
 
-    int rerollsRemaining = bazaarCtx.rerolls;
+    int rerollsRemaining = selCtx.rerolls;
     int currentGold = currentRun.getCurrentGold();
     Set<PaperCard> selectedCards;
     do {
@@ -535,17 +542,42 @@ public enum CSubmenuRogueMap implements ICDoc {
       inventory.addAll(nonMythicCards);
       inventory.addAll(mythicCards);
 
+      // Apply NPC discount to random card(s) without disrupting inventory order
+      if (npcCtx.discountCount > 0 && !inventory.isEmpty()) {
+        List<Integer> indices = new ArrayList<>();
+        for (int i = 0; i < inventory.size(); i++) indices.add(i);
+        java.util.Collections.shuffle(indices);
+        for (int i = 0; i < Math.min(npcCtx.discountCount, inventory.size()); i++) {
+          PaperCard card = inventory.get(indices.get(i));
+          int basePrice = BazaarPricing.getCardPrice(card);
+          int discounted = Math.max(1, basePrice - npcCtx.discountAmount);
+          npcCtx.priceOverrides.put(card.getName(), discounted);
+        }
+      }
+
+      // Inject NPC items (e.g. Gonti's curio replaces last card)
+      if (!npcCtx.injectedCards.isEmpty()) {
+        for (PaperCard injected : npcCtx.injectedCards) {
+          if (!inventory.isEmpty()) {
+            inventory.remove(inventory.size() - 1);
+          }
+          inventory.add(injected);
+        }
+      }
+
       if (inventory.isEmpty()) {
         System.err.println("ERROR: No cards available in reward pool for Bazaar.");
         return;
       }
 
       String rerollLabel = rerollsRemaining > 0 ? "Reroll" : null;
-      BazaarDialog dialog = new BazaarDialog(inventory, currentGold, rerollLabel);
+      BazaarDialog dialog = new BazaarDialog(inventory, currentGold, rerollLabel,
+          npcCtx.priceOverrides.isEmpty() ? null : npcCtx.priceOverrides);
       selectedCards = dialog.show();
 
       if (selectedCards == null) {
         rerollsRemaining--;
+        npcCtx.priceOverrides.clear(); // Recalculate discounts on reroll
       }
     } while (selectedCards == null && rerollsRemaining >= 0);
 
@@ -554,10 +586,31 @@ public enum CSubmenuRogueMap implements ICDoc {
     }
 
     if (!selectedCards.isEmpty()) {
-      currentRun.addCardsToRun(new ArrayList<>(selectedCards));
-      int totalCost = BazaarPricing.calculateTotalCost(selectedCards);
+      // Separate NPC items from real cards
+      Set<PaperCard> realCards = new HashSet<>();
+      for (PaperCard card : selectedCards) {
+        if (npcCtx.injectedCards.contains(card)) {
+          npcCtx.purchasedCards.add(card);
+        } else {
+          realCards.add(card);
+        }
+      }
+
+      // Add real cards to deck
+      if (!realCards.isEmpty()) {
+        currentRun.addCardsToRun(new ArrayList<>(realCards));
+        rogueDeck.removeFromRewardPool(new ArrayList<>(realCards));
+      }
+
+      // Deduct total cost (includes NPC items)
+      int totalCost = BazaarPricing.calculateTotalCost(selectedCards,
+          npcCtx.priceOverrides.isEmpty() ? null : npcCtx.priceOverrides);
       currentRun.setCurrentGold(currentGold - totalCost);
-      rogueDeck.removeFromRewardPool(new ArrayList<>(selectedCards));
+    }
+
+    // NPC post-bazaar: react to purchases (e.g. Gonti intro dialog)
+    for (NPCContext ctx : NPCEncounterComposite.INSTANCE.onAfterBazaarPurchase(npcCtx, progress)) {
+      new NPCDialog(ctx).show();
     }
   }
 

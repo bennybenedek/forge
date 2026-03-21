@@ -6,7 +6,8 @@ package forge.gamemodes.rogue.npc;
  */
 public enum NPC {
 
-    TYVAR("tyvar", "Tyvar Kell", 14);
+    TYVAR("tyvar", "Tyvar Kell", 14),
+    GONTI("gonti", "Gonti, Lord of Luxury", 121);
 
     public final String id;
     public final String name;

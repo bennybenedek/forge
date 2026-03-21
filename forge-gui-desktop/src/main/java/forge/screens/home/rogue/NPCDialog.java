@@ -41,8 +41,12 @@ public class NPCDialog {
         panel.add(txtFlavor, "w 100%!, ax center, gap 0 0 10px 20px, wrap");
 
         for (NPCChoice choice : ctx.choices()) {
-            FButton btn = new FButton("<html><div style='padding:6px 10px;'><center><font size=4>" + choice.label()
-                    + "</font><br><font size=3>" + choice.boon().getDescription() + "</font></center></div></html>");
+            String desc = choice.boon() != null ? choice.boon().getDescription() : "";
+            String buttonHtml = desc.isEmpty()
+                    ? "<html><div style='padding:6px 10px;'><center><font size=4>" + choice.label() + "</font></center></div></html>"
+                    : "<html><div style='padding:6px 10px;'><center><font size=4>" + choice.label()
+                      + "</font><br><font size=3>" + desc + "</font></center></div></html>";
+            FButton btn = new FButton(buttonHtml);
             btn.addActionListener(e -> {
                 selectedBoon = choice.boon();
                 optionPane.setResult(0);

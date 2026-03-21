@@ -21,4 +21,10 @@ public interface NPCEncounter {
 
     /** Fired once when a new run is created. Return non-null to show NPC dialog. */
     default NPCContext onRunStart() { return null; }
+
+    /** Fired before bazaar opens. Modify ctx to inject cards or override prices. */
+    default void onBeforeBazaar(BazaarContext ctx) {}
+
+    /** Fired after bazaar purchase. Return non-null to show NPC dialog. */
+    default NPCContext onAfterBazaarPurchase(BazaarContext ctx) { return null; }
 }

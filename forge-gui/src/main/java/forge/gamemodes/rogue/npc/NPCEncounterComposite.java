@@ -16,7 +16,8 @@ public enum NPCEncounterComposite {
 
     /** All registered NPC encounter constants. Add new NPCs here. */
     private static final NPCEncounter[] ALL_ENCOUNTERS = concat(
-        TyvarEncounter.values()
+        TyvarEncounter.values(),
+        GontiEncounter.values()
     );
 
     private static NPCEncounter[] concat(NPCEncounter[]... arrays) {
@@ -53,6 +54,21 @@ public enum NPCEncounterComposite {
         for (NPCEncounter enc : getEncountersForCurrentLevel(progress)) {
             NPCContext ctx = enc.onRunStart();
             if (ctx != null) results.add(ctx);
+        }
+        return results;
+    }
+
+    public void onBeforeBazaar(BazaarContext ctx, RogueMetaProgress progress) {
+        for (NPCEncounter enc : getEncountersForCurrentLevel(progress)) {
+            enc.onBeforeBazaar(ctx);
+        }
+    }
+
+    public List<NPCContext> onAfterBazaarPurchase(BazaarContext ctx, RogueMetaProgress progress) {
+        List<NPCContext> results = new ArrayList<>();
+        for (NPCEncounter enc : getEncountersForCurrentLevel(progress)) {
+            NPCContext npcCtx = enc.onAfterBazaarPurchase(ctx);
+            if (npcCtx != null) results.add(npcCtx);
         }
         return results;
     }

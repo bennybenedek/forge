@@ -14,6 +14,7 @@ import java.awt.*;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.swing.SwingConstants;
 import javax.swing.Timer;
@@ -37,6 +38,7 @@ public class BazaarDialog {
   private final List<PaperCard> availableCards;
   private final int availableGold;
   private final String rerollButtonLabel; // null = no reroll button
+  private final Map<String, Integer> priceOverrides; // card name → fixed price
   private final Set<PaperCard> selectedCards = new HashSet<>();
   private final FLabel lblGoldStatus;
 
@@ -53,20 +55,27 @@ public class BazaarDialog {
    * @param gold  Player's available gold
    */
   public BazaarDialog(List<PaperCard> cards, int gold) {
-    this(cards, gold, null);
+    this(cards, gold, null, null);
+  }
+
+  public BazaarDialog(List<PaperCard> cards, int gold, String rerollButtonLabel) {
+    this(cards, gold, rerollButtonLabel, null);
   }
 
   /**
-   * Create a Bazaar dialog with optional reroll button.
+   * Create a Bazaar dialog with optional reroll button and price overrides.
    *
    * @param cards            List of cards available for purchase
    * @param gold             Player's available gold
    * @param rerollButtonLabel Label for the reroll button, or null for no reroll
+   * @param priceOverrides   Card name → fixed price, or null for default pricing
    */
-  public BazaarDialog(List<PaperCard> cards, int gold, String rerollButtonLabel) {
+  public BazaarDialog(List<PaperCard> cards, int gold, String rerollButtonLabel,
+                      Map<String, Integer> priceOverrides) {
     this.availableCards = new ArrayList<>(cards);
     this.availableGold = gold;
     this.rerollButtonLabel = rerollButtonLabel;
+    this.priceOverrides = priceOverrides;
 
     // Create main panel
     panel = new MainPanel();
@@ -337,7 +346,7 @@ public class BazaarDialog {
     protected void toggleSelection() {
       // Check if we can afford to select this card
       if (!selected) {
-        int potentialCost = calculateTotalCost() + BazaarPricing.getCardPrice(card);
+        int potentialCost = calculateTotalCost() + BazaarPricing.getCardPrice(card, priceOverrides);
         if (potentialCost > availableGold) {
           // Can't afford this card
           return;
@@ -373,7 +382,9 @@ public class BazaarDialog {
      * Draw price label with coin icon below the card (no background box).
      */
     private void drawPriceLabel(Graphics2D g2d, int width, int height) {
-      int price = BazaarPricing.getCardPrice(card);
+      int price = BazaarPricing.getCardPrice(card, priceOverrides);
+      int basePrice = BazaarPricing.getCardPrice(card);
+      boolean isDiscounted = price < basePrice;
 
       // Calculate position in the space below the card image
       int labelY = cardImageHeight;
@@ -388,27 +399,45 @@ public class BazaarDialog {
       int iconY = labelY + (priceLabelHeight - iconSize) / 2;
       g2d.drawImage(coinIcon, iconX, iconY, iconSize, iconSize, null);
 
-      // Draw price text with shadow for visibility
-      g2d.setFont(new Font("Arial", Font.BOLD, fontSize));
+      Font priceFont = new Font("Arial", Font.BOLD, fontSize);
+      g2d.setFont(priceFont);
       FontMetrics fm = g2d.getFontMetrics();
-      String priceText = String.valueOf(price);
       int textX = iconX + iconSize + 8;
       int textY = labelY + (priceLabelHeight + fm.getAscent()) / 2 - 2;
 
-      // Draw shadow
-      g2d.setColor(Color.BLACK);
-      g2d.drawString(priceText, textX + 1, textY + 1);
+      if (isDiscounted) {
+        // Draw original price with strikethrough
+        String origText = String.valueOf(basePrice);
+        g2d.setColor(Color.GRAY);
+        g2d.drawString(origText, textX, textY);
+        int origWidth = fm.stringWidth(origText);
+        int strikeY = textY - fm.getAscent() / 3;
+        Stroke oldStroke = g2d.getStroke();
+        g2d.setStroke(new BasicStroke(2f));
+        g2d.drawLine(textX, strikeY, textX + origWidth, strikeY);
+        g2d.setStroke(oldStroke);
 
-      // Draw text
-      g2d.setColor(Color.YELLOW);
-      g2d.drawString(priceText, textX, textY);
+        // Draw discounted price next to it
+        int discountedX = textX + origWidth + 6;
+        String discText = String.valueOf(price);
+        g2d.setColor(Color.BLACK);
+        g2d.drawString(discText, discountedX + 1, textY + 1);
+        g2d.setColor(new Color(100, 255, 100));
+        g2d.drawString(discText, discountedX, textY);
+      } else {
+        // Draw normal price
+        g2d.setColor(Color.BLACK);
+        g2d.drawString(String.valueOf(price), textX + 1, textY + 1);
+        g2d.setColor(Color.YELLOW);
+        g2d.drawString(String.valueOf(price), textX, textY);
+      }
     }
 
     /**
      * Calculate total cost of selected cards using shared pricing.
      */
     private int calculateTotalCost() {
-      return BazaarPricing.calculateTotalCost(selectedCards);
+      return BazaarPricing.calculateTotalCost(selectedCards, priceOverrides);
     }
 
     /**
