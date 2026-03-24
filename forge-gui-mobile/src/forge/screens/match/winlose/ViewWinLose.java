@@ -273,7 +273,8 @@ public class ViewWinLose extends FOverlay implements IWinLoseView<FButton> {
     }
 
     @Override
-    public List<PaperCard> showCardRewardDialog(String title, List<PaperCard> cards, int maxSelections, boolean showReroll) {
+    public List<PaperCard> showCardRewardDialog(String title, List<PaperCard> cards, int maxSelections,
+                                                  String rerollLabel, boolean rerollEnabled, int gold) {
         return List.of();
     }
 }

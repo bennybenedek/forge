@@ -35,12 +35,16 @@ public class BazaarDialog {
 
   private final MainPanel panel;
   private CardUtil zoomUtil;
+  private FOptionPane optionPane;
   private final List<PaperCard> availableCards;
   private final int availableGold;
-  private final String rerollButtonLabel; // null = no reroll button
+  private final String rerollButtonLabel;
+  private boolean rerollEnabled = true;
   private final Map<String, Integer> priceOverrides; // card name → fixed price
   private final Set<PaperCard> selectedCards = new HashSet<>();
-  private final FLabel lblGoldStatus;
+  private final FLabel lblGold;
+  private final FLabel lblCost;
+  private final FLabel lblRemaining;
 
   // Computed card dimensions (may be scaled down)
   private int cardWidth;
@@ -88,12 +92,34 @@ public class BazaarDialog {
         .fontAlign(SwingConstants.CENTER)
         .build();
 
-    // Gold status label
-    lblGoldStatus = new FLabel.Builder()
-        .text("Available Gold: " + availableGold)
+    // Gold label (top-right, text before icon)
+    lblGold = new FLabel.Builder()
+        .text("Gold: " + availableGold)
+        .icon(FSkin.getIcon(FSkinProp.ICO_QUEST_COIN))
         .fontSize(14)
-        .fontAlign(SwingConstants.CENTER)
+        .fontAlign(SwingConstants.RIGHT)
         .build();
+    lblGold.setHorizontalTextPosition(SwingConstants.LEFT);
+
+    // Cost label (below gold, right-aligned)
+    lblCost = new FLabel.Builder()
+        .text("Cost: 0")
+        .icon(FSkin.getIcon(FSkinProp.ICO_QUEST_COIN))
+        .fontSize(14)
+        .fontAlign(SwingConstants.RIGHT)
+        .build();
+    lblCost.setHorizontalTextPosition(SwingConstants.LEFT);
+
+    // Separator + remaining label
+    SeparatorLine separator = new SeparatorLine();
+    lblRemaining = new FLabel.Builder()
+        .text("Remaining: " + availableGold)
+        .icon(FSkin.getIcon(FSkinProp.ICO_QUEST_COIN))
+        .fontSize(14)
+        .fontStyle(Font.BOLD)
+        .fontAlign(SwingConstants.RIGHT)
+        .build();
+    lblRemaining.setHorizontalTextPosition(SwingConstants.LEFT);
 
     // Description label
     FLabel lblDescription = new FLabel.Builder()
@@ -104,7 +130,10 @@ public class BazaarDialog {
 
     // Add components to panel (compact layout to maximize card space)
     panel.add(lblTitle, "w 100%!, h 28px!, ax center, wrap");
-    panel.add(lblGoldStatus, "w 100%!, h 22px!, ax center, wrap");
+    panel.add(lblGold, "pos (100%-160) 10, w 150!, h 20px!");
+    panel.add(lblCost, "pos (100%-160) 30, w 150!, h 20px!");
+    panel.add(separator, "pos (100%-155) 50, w 145!, h 1px!");
+    panel.add(lblRemaining, "pos (100%-160) 53, w 150!, h 20px!");
     panel.add(lblDescription, "w 100%!, h 20px!, ax center, gap 0 0 5px 10px, wrap");
 
     // Calculate layout: max 5 cards per row, max 2 rows
@@ -145,35 +174,49 @@ public class BazaarDialog {
     panel.setSize(dialogSize);
   }
 
+  public void setRerollEnabled(boolean enabled) {
+    this.rerollEnabled = enabled;
+  }
+
   /**
    * Show the dialog and return the selected cards.
-   * Returns null if the reroll button was clicked (only when constructed with a rerollButtonLabel).
+   * Returns null if the reroll button was clicked.
    *
    * @return Set of purchased cards, null if reroll was clicked, or empty set if skipped
    */
   public Set<PaperCard> show() {
     final Localizer localizer = Localizer.getInstance();
 
-    // Build button list: [Buy, Skip/Reroll, View Deck]
-    final List<String> buttons;
-    final int SECONDARY_OPTION = 1; // Skip or Reroll
-    final int VIEW_DECK_OPTION = 2;
-    if (rerollButtonLabel != null) {
-      buttons = List.of("Buy Selected Cards", rerollButtonLabel, "View Deck");
-    } else {
-      buttons = List.of("Buy Selected Cards", localizer.getMessage("lblSkip"), "View Deck");
-    }
+    // Build button list: [Buy, Reroll, Skip, View Deck]
+    final int BUY_OPTION = 0;
+    final int REROLL_OPTION = 1;
+    final int SKIP_OPTION = 2;
+    final int VIEW_DECK_OPTION = 3;
+    final List<String> buttons = List.of("Buy Selected Cards",
+        rerollButtonLabel != null ? rerollButtonLabel : "Reroll: 2",
+        localizer.getMessage("lblSkip"), "View Deck");
+
+    // Cache coin icon for reroll button
+    final javax.swing.Icon coinIcon = createCoinIcon();
 
     int result;
     do {
-      FOptionPane optionPane = new FOptionPane(
+      optionPane = new FOptionPane(
           null,
           "Bazaar",
           null,
           panel,
           buttons,
-          1  // Default to second button (Skip/Reroll)
+          SKIP_OPTION  // Default to Skip
       );
+
+      // Set coin icon on reroll button and enable/disable
+      optionPane.getButton(REROLL_OPTION).setIcon(coinIcon);
+      optionPane.getButton(REROLL_OPTION).setHorizontalTextPosition(SwingConstants.LEFT);
+      optionPane.getButton(REROLL_OPTION).setEnabled(rerollEnabled);
+
+      // Disable Buy until cards are selected
+      optionPane.getButton(BUY_OPTION).setEnabled(!selectedCards.isEmpty());
 
       // Setup zoom utility
       zoomUtil = new CardUtil(optionPane);
@@ -200,11 +243,29 @@ public class BazaarDialog {
       return selectedCards;
     }
     // Reroll clicked
-    if (rerollButtonLabel != null && result == SECONDARY_OPTION) {
+    if (result == REROLL_OPTION) {
       return null;
     }
     // Skip clicked
     return new HashSet<>();
+  }
+
+  private static javax.swing.Icon createCoinIcon() {
+    final javax.swing.Icon raw = FSkin.getImage(FSkinProp.ICO_QUEST_COIN).resize(16, 16).getIcon();
+    return new javax.swing.Icon() {
+      public int getIconWidth()  { return raw.getIconWidth(); }
+      public int getIconHeight() { return raw.getIconHeight(); }
+      public void paintIcon(java.awt.Component c, java.awt.Graphics g, int x, int y) {
+        raw.paintIcon(c, g, x, y - 2);
+      }
+    };
+  }
+
+  private static class SeparatorLine extends javax.swing.JPanel {
+    SeparatorLine() {
+      setOpaque(true);
+      setBackground(Color.GRAY);
+    }
   }
 
   private void showCurrentDeck() {
@@ -441,14 +502,15 @@ public class BazaarDialog {
     }
 
     /**
-     * Update the gold status label.
+     * Update the gold and cost labels.
      */
     private void updateGoldStatus() {
       int totalCost = calculateTotalCost();
-      int remaining = availableGold - totalCost;
-
-      lblGoldStatus.setText(
-          String.format("Gold: %d / %d (Cost: %d)", remaining, availableGold, totalCost));
+      lblCost.setText(totalCost > 0 ? "Cost: -" + totalCost : "Cost: 0");
+      lblRemaining.setText("Remaining: " + (availableGold - totalCost));
+      if (optionPane != null) {
+        optionPane.getButton(0).setEnabled(!selectedCards.isEmpty());
+      }
     }
   }
 }

@@ -54,14 +54,14 @@ public enum EchoBoon implements RogueEffect {
         }
     },
 
-    SPECTRAL_RECALIBRATION("spectral_recalibration", "Spectral Recalibration",
-        "Gain rerolls per Card Reward or Bazaar selection.",
-        new int[]{6, 12, 18},      // Echo costs (rank 1-3)
-        new int[]{1, 2, 3},        // Effect values: 1/2/3 rerolls per selection
-        2, 0) {
+    SPECTRAL_BARGAIN("spectral_bargain", "Spectral Bargain",
+        "Free rerolls in Card Rewards and Bazaar before gold costs apply.",
+        new int[]{2, 4, 8, 12},     // Echo costs (rank 1-3)
+        new int[]{1, 2, 3, 4},      // Effect values: 1/2/3 free rerolls
+        3, 0) {
         @Override
         public void onCardSelection(CardSelectionContext ctx, RogueRun run) {
-            ctx.rerolls += getEffectValueAtRank(run.getRunBoonRank(getId()));
+            ctx.freeRerolls += getEffectValueAtRank(run.getRunBoonRank(getId()));
         }
     },
 
@@ -262,8 +262,8 @@ public enum EchoBoon implements RogueEffect {
             "<html>Begin each match with " + allValues + " basic land(s) on battlefield.</html>";
         case FRACTURED_BINDING ->
             "<html>Your Commander costs " + allValues + " less to cast.</html>";
-        case SPECTRAL_RECALIBRATION ->
-            "<html>Gain " + allValues + " reroll(s) per Card Reward or Bazaar selection.</html>";
+        case SPECTRAL_BARGAIN ->
+            "<html>" + allValues + " free reroll(s) in Card Rewards and Bazaar.</html>";
         default -> "<html>" + description + "</html>";
       };
     }

@@ -63,12 +63,16 @@ public enum RogueTutorial {
       "After winning a battle, choose cards from your Reward Pool to add to your deck.\n" +
           "By default, 7 random cards are offered, from which 1 of them is guaranteed to be of mythic rarity.\n"
           +
+          "You can reroll for a new set of cards by spending Gold. The cost starts at 2 and increases by 2 for each reroll.\n"
+          +
           "For each card added, you will also gain a 'Removal Credit' to remove an unwanted non-basic Land card from your deck."
   ),
 
   BAZAAR(
       "The Bazaar",
       "Spend your hard-earned gold at the Bazaar to purchase new cards, price depending on Card rarity. "
+          +
+          "You can reroll for a new selection by spending Gold, starting at 2 and increasing by 2 each time.\n"
           +
           "Save gold for powerful cards that fit your strategy."
   ),

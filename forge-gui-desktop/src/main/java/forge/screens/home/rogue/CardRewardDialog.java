@@ -4,8 +4,10 @@ import com.google.common.collect.ImmutableList;
 import forge.deckchooser.FDeckViewer;
 import forge.gamemodes.rogue.RogueTutorial;
 import forge.item.PaperCard;
+import forge.localinstance.skin.FSkinProp;
 import forge.toolbox.FLabel;
 import forge.toolbox.FOptionPane;
+import forge.toolbox.FSkin;
 import forge.toolbox.FSkin.SkinnedPanel;
 import forge.util.Localizer;
 import forge.view.arcane.CardPanel;
@@ -35,12 +37,15 @@ public class CardRewardDialog {
 
   private final String title;
   private final int maxSelections;
-  private final boolean showReroll;
+  private final int gold;
+  private final String rerollLabel;
+  private final boolean rerollEnabled;
   private final Set<PaperCard> selectedCards;
   private final List<SelectableCardPanel> cardPanels;
   private final MainPanel panel;
   private final FLabel lblInfo;
   private final FLabel lblRewards;
+  private final FLabel lblGold;
   private FOptionPane optionPane;
   private CardUtil zoomUtil;
 
@@ -54,12 +59,17 @@ public class CardRewardDialog {
    * @param title            Dialog title
    * @param cards            List of cards to choose from
    * @param maxSelections    Maximum number of cards to select
-   * @param showReroll Whether to show a Reroll button instead of Cancel
+   * @param rerollLabel      Label for the reroll button (with cost)
+   * @param rerollEnabled    Whether the reroll button is enabled (false if can't afford)
+   * @param gold             Player's current gold (displayed in header)
    */
-  public CardRewardDialog(String title, List<PaperCard> cards, int maxSelections, boolean showReroll) {
+  public CardRewardDialog(String title, List<PaperCard> cards, int maxSelections,
+                          String rerollLabel, boolean rerollEnabled, int gold) {
     this.title = title;
     this.maxSelections = maxSelections;
-    this.showReroll = showReroll;
+    this.gold = gold;
+    this.rerollLabel = rerollLabel;
+    this.rerollEnabled = rerollEnabled;
     this.selectedCards = new HashSet<>();
     this.cardPanels = new ArrayList<>();
 
@@ -78,10 +88,20 @@ public class CardRewardDialog {
         .fontAlign(SwingConstants.CENTER)
         .build();
 
+    // Create gold label (top-right, text before icon)
+    lblGold = new FLabel.Builder()
+        .text("Gold: " + gold)
+        .icon(FSkin.getIcon(FSkinProp.ICO_QUEST_COIN))
+        .fontSize(14)
+        .fontAlign(SwingConstants.RIGHT)
+        .build();
+    lblGold.setHorizontalTextPosition(SwingConstants.LEFT);
+
     // Create main panel
     panel = new MainPanel();
     panel.add(lblRewards);
     panel.add(lblInfo);
+    panel.add(lblGold);
 
     // Create card panels
     for (PaperCard card : cards) {
@@ -153,15 +173,14 @@ public class CardRewardDialog {
   public List<PaperCard> show() {
     final Localizer localizer = Localizer.getInstance();
 
-    // Build button list: [OK, Reroll/Cancel, View Deck]
-    final int SECONDARY_OPTION = 1; // Either Reroll or Cancel
+    // Build button list: [OK, Reroll, View Deck]
+    final int REROLL_OPTION = 1;
     final int VIEW_DECK_OPTION = 2;
-    final ImmutableList<String> buttons;
-    if (showReroll) {
-      buttons = ImmutableList.of(localizer.getMessage("lblOK"), "Reroll", "View Deck");
-    } else {
-      buttons = ImmutableList.of(localizer.getMessage("lblOK"), localizer.getMessage("lblCancel"), "View Deck");
-    }
+    final ImmutableList<String> buttons = ImmutableList.of(
+        localizer.getMessage("lblOK"), rerollLabel, "View Deck");
+
+    // Cache coin icon for reroll button
+    final javax.swing.Icon coinIcon = createCoinIcon();
 
     int result;
     do {
@@ -173,6 +192,11 @@ public class CardRewardDialog {
           buttons,
           0
       );
+
+      // Set coin icon on reroll button and enable/disable
+      optionPane.getButton(REROLL_OPTION).setIcon(coinIcon);
+      optionPane.getButton(REROLL_OPTION).setHorizontalTextPosition(SwingConstants.LEFT);
+      optionPane.getButton(REROLL_OPTION).setEnabled(rerollEnabled);
 
       // Setup zoom utility
       zoomUtil = new CardUtil(optionPane);
@@ -205,7 +229,7 @@ public class CardRewardDialog {
     if (result == 0) {
       return new ArrayList<>(selectedCards);
     }
-    if (showReroll && result == SECONDARY_OPTION) {
+    if (result == REROLL_OPTION) {
       return null; // Reroll signal
     }
     return new ArrayList<>(); // Cancel
@@ -219,6 +243,17 @@ public class CardRewardDialog {
   private String getInfoText() {
     return String.format("Select up to %d cards (%d selected)", maxSelections,
         selectedCards.size());
+  }
+
+  private static javax.swing.Icon createCoinIcon() {
+    final javax.swing.Icon raw = FSkin.getImage(FSkinProp.ICO_QUEST_COIN).resize(16, 16).getIcon();
+    return new javax.swing.Icon() {
+      public int getIconWidth()  { return raw.getIconWidth(); }
+      public int getIconHeight() { return raw.getIconHeight(); }
+      public void paintIcon(java.awt.Component c, java.awt.Graphics g, int x, int y) {
+        raw.paintIcon(c, g, x, y - 2);
+      }
+    };
   }
 
   private void showCurrentDeck() {
@@ -260,6 +295,9 @@ public class CardRewardDialog {
 
       // Layout rewards label (compact)
       lblRewards.setBounds(PADDING, y, totalWidth - 2 * PADDING, 28);
+
+      // Layout gold label (top-right, same row as rewards)
+      lblGold.setBounds(totalWidth - PADDING - 150, y, 150, 28);
       y += 28 + 3;
 
       // Layout info label (compact)

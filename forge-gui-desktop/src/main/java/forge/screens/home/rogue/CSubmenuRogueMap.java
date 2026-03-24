@@ -529,8 +529,8 @@ public enum CSubmenuRogueMap implements ICDoc {
     int totalNonMythics = Math.max(0, baseNonMythics - selCtx.extraMythics);
     int totalMythics = baseMythics + selCtx.extraMythics;
 
-    int rerollsRemaining = selCtx.rerolls;
-    int currentGold = currentRun.getCurrentGold();
+    int freeRerolls = selCtx.freeRerolls;
+    int rerollCount = 0;
     Set<PaperCard> selectedCards;
     do {
       List<PaperCard> nonMythicCards = rogueDeck.drawRewardOptions(totalNonMythics,
@@ -550,7 +550,8 @@ public enum CSubmenuRogueMap implements ICDoc {
         for (int i = 0; i < Math.min(npcCtx.discountCount, inventory.size()); i++) {
           PaperCard card = inventory.get(indices.get(i));
           int basePrice = BazaarPricing.getCardPrice(card);
-          int discounted = Math.max(1, basePrice - npcCtx.discountAmount);
+          int discounted = Math.max(0, basePrice - npcCtx.discountAmount);
+          if (discounted == 0 && basePrice > 2) discounted = 1;
           npcCtx.priceOverrides.put(card.getName(), discounted);
         }
       }
@@ -570,20 +571,23 @@ public enum CSubmenuRogueMap implements ICDoc {
         return;
       }
 
-      String rerollLabel = rerollsRemaining > 0 ? "Reroll" : null;
-      BazaarDialog dialog = new BazaarDialog(inventory, currentGold, rerollLabel,
+      String rerollLabel = CardRewardHelper.buildRerollLabel(freeRerolls, rerollCount);
+      boolean rerollEnabled = CardRewardHelper.canAffordReroll(freeRerolls, rerollCount, currentRun.getCurrentGold());
+      BazaarDialog dialog = new BazaarDialog(inventory, currentRun.getCurrentGold(), rerollLabel,
           npcCtx.priceOverrides.isEmpty() ? null : npcCtx.priceOverrides);
+      dialog.setRerollEnabled(rerollEnabled);
       selectedCards = dialog.show();
 
       if (selectedCards == null) {
-        rerollsRemaining--;
+        // Deduct gold for paid rerolls
+        if (rerollCount >= freeRerolls) {
+          int cost = CardRewardHelper.getRerollCost(rerollCount - freeRerolls);
+          currentRun.setCurrentGold(currentRun.getCurrentGold() - cost);
+        }
+        rerollCount++;
         npcCtx.priceOverrides.clear(); // Recalculate discounts on reroll
       }
-    } while (selectedCards == null && rerollsRemaining >= 0);
-
-    if (selectedCards == null) {
-      selectedCards = new HashSet<>();
-    }
+    } while (selectedCards == null);
 
     if (!selectedCards.isEmpty()) {
       // Separate NPC items from real cards
@@ -605,7 +609,7 @@ public enum CSubmenuRogueMap implements ICDoc {
       // Deduct total cost (includes NPC items)
       int totalCost = BazaarPricing.calculateTotalCost(selectedCards,
           npcCtx.priceOverrides.isEmpty() ? null : npcCtx.priceOverrides);
-      currentRun.setCurrentGold(currentGold - totalCost);
+      currentRun.setCurrentGold(currentRun.getCurrentGold() - totalCost);
     }
 
     // NPC post-bazaar: react to purchases (e.g. Gonti intro dialog)
@@ -752,7 +756,7 @@ public enum CSubmenuRogueMap implements ICDoc {
       if (ctx.trigger == NodeResultContext.ActionTriggerType.CARD_REWARD
           || ctx.trigger == NodeResultContext.ActionTriggerType.MYTHIC_CARD_REWARD) {
         CardRewardHelper.runReward(currentRun,
-            (title, cards, max, reroll) -> new CardRewardDialog(title, cards, max, reroll).show(),
+            (title, cards, max, label, enabled, gold) -> new CardRewardDialog(title, cards, max, label, enabled, gold).show(),
             mythicOnly);
       }
     } else {

@@ -6,5 +6,5 @@ package forge.gamemodes.rogue.effect;
  */
 public class CardSelectionContext {
     public int extraMythics;
-    public int rerolls;
+    public int freeRerolls;
 }

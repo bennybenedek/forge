@@ -14,13 +14,42 @@ import java.util.List;
  */
 public class CardRewardHelper {
 
+    public static final int REROLL_BASE_COST = 2;
+    public static final int REROLL_COST_INCREMENT = 2;
+
     /**
      * Platform-agnostic callback for showing the card reward dialog.
      * Returns selected cards, or null if reroll was clicked.
      */
     @FunctionalInterface
     public interface RewardDialog {
-        List<PaperCard> show(String title, List<PaperCard> cards, int maxSelections, boolean showReroll);
+        List<PaperCard> show(String title, List<PaperCard> cards, int maxSelections,
+                             String rerollLabel, boolean rerollEnabled, int gold);
+    }
+
+    /**
+     * Calculate reroll gold cost for a given paid reroll index (0-indexed).
+     */
+    public static int getRerollCost(int paidRerollIndex) {
+        return REROLL_BASE_COST + paidRerollIndex * REROLL_COST_INCREMENT;
+    }
+
+    /**
+     * Build the reroll button label showing gold cost, or "Reroll (free)" if free.
+     */
+    public static String buildRerollLabel(int freeRerolls, int rerollCount) {
+        if (rerollCount < freeRerolls) {
+            return "Reroll: 0";
+        }
+        return "Reroll: " + getRerollCost(rerollCount - freeRerolls);
+    }
+
+    /**
+     * Check if the player can afford the next reroll.
+     */
+    public static boolean canAffordReroll(int freeRerolls, int rerollCount, int gold) {
+        if (rerollCount < freeRerolls) return true;
+        return gold >= getRerollCost(rerollCount - freeRerolls);
     }
 
     /**
@@ -35,13 +64,12 @@ public class CardRewardHelper {
         RogueDeck rogueDeck = run.getSelectedRogueDeck();
         if (rogueDeck == null) return null;
 
-
         CardRewardContext rewardCtx = new CardRewardContext(mythicOnly ? 1 : 3);
         RogueEffectComposite.INSTANCE.onCardReward(rewardCtx, run);
         CardSelectionContext selCtx = new CardSelectionContext();
         RogueEffectComposite.INSTANCE.onCardSelection(selCtx, run);
         int maxPicks = rewardCtx.maxPicks;
-        int rerollsRemaining = selCtx.rerolls;
+        int freeRerolls = selCtx.freeRerolls;
 
         int baseNonMythics;
         int baseMythics;
@@ -58,6 +86,7 @@ public class CardRewardHelper {
 
         List<PaperCard> rewardOptions;
         List<PaperCard> chosenCards;
+        int rerollCount = 0;
         do {
             List<PaperCard> nonMythicCards = baseNonMythics > 0
                     ? rogueDeck.drawRewardOptions(baseNonMythics, PaperCardPredicates.IS_MYTHIC_RARE.negate())
@@ -71,10 +100,19 @@ public class CardRewardHelper {
 
             if (rewardOptions.isEmpty()) return null;
 
-            chosenCards = dialog.show(title, rewardOptions, maxPicks, rerollsRemaining > 0);
+            String rerollLabel = buildRerollLabel(freeRerolls, rerollCount);
+            boolean rerollEnabled = canAffordReroll(freeRerolls, rerollCount, run.getCurrentGold());
+            chosenCards = dialog.show(title, rewardOptions, maxPicks, rerollLabel, rerollEnabled, run.getCurrentGold());
 
-            if (chosenCards == null) rerollsRemaining--;
-        } while (chosenCards == null && rerollsRemaining >= 0);
+            if (chosenCards == null) {
+                // Deduct gold for paid rerolls
+                if (rerollCount >= freeRerolls) {
+                    int cost = getRerollCost(rerollCount - freeRerolls);
+                    run.setCurrentGold(run.getCurrentGold() - cost);
+                }
+                rerollCount++;
+            }
+        } while (chosenCards == null);
 
         // Remove only the final draw's options from pool
         rogueDeck.removeFromRewardPool(rewardOptions);
