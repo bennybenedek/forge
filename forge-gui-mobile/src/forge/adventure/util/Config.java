@@ -36,7 +36,6 @@ import java.util.*;
 public class Config {
     private static Config currentConfig;
     private final String commonDirectoryName = "common";
-    private final String incompleteDirectoryName = "incomplete";
     private final String prefix;
     private final String commonPrefix;
     private final HashMap<String, FileHandle> Cache = new HashMap<>();
@@ -60,7 +59,7 @@ public class Config {
 
     private Config() {
         String path = resPath();
-        FilenameFilter planesFilter = (file, s) -> (!s.contains(".") && !s.equals(commonDirectoryName) && !s.equals(incompleteDirectoryName));
+        FilenameFilter planesFilter = (file, s) -> (!s.contains(".") && !s.equals(commonDirectoryName));
 
         adventures = new File(GuiBase.isAndroid() ? ForgeConstants.ADVENTURE_DIR : path + "/res/adventure").list(planesFilter);
         try {
@@ -361,6 +360,16 @@ public class Config {
             adventures.set(i, "<user>" + adventures.get(i));
         }
         adventures.addAll(this.adventures);
+
+        // A hard-coded list of planes that are currently not finished and are considered to be in development
+        // (these planes will only appear in the choice box if Developer Mode is enabled in Forge)
+        // TODO: migrate this to an externally configurable ini or json file
+        if (!FModel.getPreferences().getPrefBoolean(ForgePreferences.FPref.DEV_MODE_ENABLED)) {
+            adventures.removeValue("Amonkhet", false);
+            adventures.removeValue("Innistrad", false);
+            adventures.removeValue("Crystal_Kingdoms", false);
+        }
+
         return adventures;
     }
 
