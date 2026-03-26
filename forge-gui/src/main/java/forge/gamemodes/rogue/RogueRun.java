@@ -73,9 +73,16 @@ public class RogueRun {
     private int matchesLost;                    // Loss counter
     private int removalCredits;                 // Credits for removing cards from deck (from rewards and Sanctum)
 
+    /** Transient snapshot of data from the most recent match. */
+    public record LastMatchData(int chaosCount, int planeswalkCount) {
+        public static final LastMatchData EMPTY = new LastMatchData(0, 0);
+    }
+
     // Transient (runtime only, not serialized)
     @XStreamOmitField
     private transient HostedMatch hostedMatch = null;
+    @XStreamOmitField
+    private transient LastMatchData lastMatchData = LastMatchData.EMPTY;
 
     // Constructors
     public RogueRun() {
@@ -230,6 +237,9 @@ public class RogueRun {
     public HostedMatch getHostedMatch() {
         return hostedMatch;
     }
+
+    public LastMatchData getLastMatchData() { return lastMatchData; }
+    public void setLastMatchData(LastMatchData data) { this.lastMatchData = data; }
 
     // Getters and Setters
     public String getName() {

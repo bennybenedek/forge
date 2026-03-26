@@ -22,6 +22,34 @@ Forge is an open-source Magic: The Gathering rules engine and game client writte
 2. **Reuse, don't reinvent** - If the codebase already has a way to do something (e.g., drawing icons, loading images, handling events), use that exact approach.
 3. **Minimal code** - Write the least amount of code needed. No verbose solutions when a simple one exists.
 4. **No over-engineering** - Don't add extra abstractions, helper methods, or "improvements" unless explicitly requested.
+5. **Always use imports, never FQN** - Never use fully qualified class names inline (e.g., `forge.gamemodes.rogue.RogueRun run`). Always add a proper `import` statement and use the short class name.
+6. **Group related fields into objects** - When adding multiple related fields to a class (especially transient/state fields), group them into a record or inner class instead of adding loose fields. Example: use `LastMatchData(chaosCount, planeswalkCount)` instead of separate `lastMatchChaosCount` + `lastMatchPlaneswalkCount` fields.
+7. **Extract shared code, but don't over-extract** - When 2+ methods share identical lines, extract into a helper. But if a guard is already idempotent (e.g., `loadRogueCards()` has an internal loaded-check), just always call it instead of adding boolean parameters to conditionally skip it.
+8. **Use clear, direct names** - Names should describe the action plainly. Prefer `loadCard` over `resolveCard`, `handleMatchData` over `persistMatchData`, `incrementNpcLevel` over inline `setNPCLevel(getId(), getLevel() + 1)`.
+
+## Important: Rogue Commander Effect & NPC Architecture
+
+The Rogue Commander mode uses two self-contained dispatch systems. **All game logic must stay inside these systems** — controllers only persist raw data and call trigger methods.
+
+### RogueEffect System (Boons, Wounds, Descension)
+- `RogueEffect` interface defines no-op default trigger methods (`onRunStart`, `onMatchStart`, `onMatchWin`, `onDefeat`, etc.)
+- Concrete enums (`EchoBoon`, `EventBoon`, `Wound`, `NPCBoon`, `DescensionLevel`, etc.) override only the triggers they need
+- `RogueEffectComposite` dispatches to all active effects for the current run
+- Controllers call one-line composite triggers: `RogueEffectComposite.INSTANCE.onMatchWin(run)`
+
+### NPCEncounter System (NPC progression & dialogs)
+- `NPCEncounter` interface defines no-op default triggers (`onRunStart`, `onAfterMatch`, `onBeforeBazaar`, etc.)
+- Concrete enums per NPC (`TyvarEncounter`, `GontiEncounter`, `NarsetEncounter`) implement level-gated encounters
+- `NPCEncounterComposite` selects the highest qualifying encounter per NPC and dispatches triggers
+- Encounters return `NPCContext` (flavor text + choices) or `null` to skip
+- Shared utilities live as default methods on `NPCEncounter` (e.g., `buildContext`, `incrementNpcLevel`)
+
+### Controller Rules
+- **DO NOT put effect/NPC-specific logic in controllers.** Controllers should only:
+  1. Persist raw match data to `RogueRun` (e.g., life total, planar die counts)
+  2. Call composite trigger methods (e.g., `NPCEncounterComposite.INSTANCE.onAfterMatch(run, progress)`)
+  3. Display returned `NPCContext` dialogs
+- **Never dig into game state for effect-specific purposes from a controller.** If an effect needs game data, persist it generically on `RogueRun` first, then let the effect read it self-contained.
 
 ## Build Commands
 

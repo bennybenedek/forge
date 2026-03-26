@@ -66,14 +66,25 @@ public interface RogueEffect {
     /** Fired for both card reward and bazaar selections. */
     default void onCardSelection(CardSelectionContext ctx, RogueRun run) {}
 
-    /**
-     * Loads custom rogue card scripts and adds the named card to the command zone.
-     * Use this instead of calling FModel.getMagicDb() directly for rogue-specific cards.
-     */
-    static void addCustomCardToCommandZone(String cardName, RegisteredPlayer human) {
+    /** Resolves a card by name (ensures rogue card scripts are loaded). */
+    static PaperCard loadCard(String cardName) {
         RogueConfig.loadRogueCards();
-        PaperCard card = FModel.getMagicDb().getCommonCards().getCard(cardName);
+        return FModel.getMagicDb().getCommonCards().getCard(cardName);
+    }
+
+    static void addCustomCardToCommandZone(String cardName, RegisteredPlayer human) {
+        PaperCard card = loadCard(cardName);
         if (card != null) human.addExtraCardsInCommandZone(Collections.singletonList(card));
+    }
+
+    static void addRealCardToBattlefield(String cardName, RegisteredPlayer human) {
+        PaperCard card = loadCard(cardName);
+        if (card != null) human.addExtraCardsOnBattlefield(Collections.singletonList(card));
+    }
+
+    static void addCustomCardToBattlefield(String cardName, RegisteredPlayer human) {
+        PaperCard card = loadCard(cardName);
+        if (card != null) human.addExtraCardsOnBattlefield(Collections.singletonList(card));
     }
 
     /**

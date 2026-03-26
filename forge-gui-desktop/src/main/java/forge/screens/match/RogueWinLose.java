@@ -2,9 +2,12 @@ package forge.screens.match;
 
 import forge.game.GameView;
 import forge.gamemodes.rogue.RogueWinLoseController;
+import forge.gamemodes.rogue.npc.NPCContext;
+import forge.gamemodes.rogue.npc.NPCEncounterComposite;
 import forge.gui.framework.EDocID;
 import forge.screens.home.CHomeUI;
 import forge.screens.home.rogue.CSubmenuRogueMap;
+import forge.screens.home.rogue.NPCDialog;
 
 /**
  * Win/Lose handler for Rogue Commander mode.
@@ -56,6 +59,13 @@ public class RogueWinLose extends ControlWinLose {
         // Clear hosted match so new matches can be started
         if (currentRun != null) {
             currentRun.setHostedMatch(null);
+        }
+
+        // Check NPC after-match progression (e.g. Narset chaos tracking)
+        if (currentRun != null) {
+            for (NPCContext ctx : NPCEncounterComposite.INSTANCE.onAfterMatch(currentRun)) {
+                new NPCDialog(ctx).show();
+            }
         }
 
         if (currentRun != null && (currentRun.isRunFailed() || currentRun.isRunWon())) {

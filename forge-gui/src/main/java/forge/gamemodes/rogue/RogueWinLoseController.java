@@ -1,8 +1,9 @@
 package forge.gamemodes.rogue;
 
 import forge.LobbyPlayer;
+import forge.game.Game;
 import forge.game.GameView;
-import forge.game.player.PlayerView;
+import forge.game.player.Player;
 import forge.gamemodes.rogue.effect.DefeatContext;
 import forge.gamemodes.rogue.effect.RewardContext;
 import forge.gamemodes.rogue.effect.RogueEffectComposite;
@@ -78,7 +79,7 @@ public class RogueWinLoseController {
         currentRun.recordMatchResult(true);
 
         // Persist life total from match (before meta progress so stats see current life)
-        persistLifeTotal();
+        handleMatchData();
 
         // Check if this was the last node (run completed)
         boolean isLastNode = currentRun.getCurrentNodeIndex() >= currentRun.getPath().getNodeCount() - 1;
@@ -230,7 +231,7 @@ public class RogueWinLoseController {
         currentRun.recordMatchResult(false);
 
         // Persist life total from the lost match
-        persistLifeTotal();
+        handleMatchData();
 
         // Check revive effects (e.g. Last Spark) BEFORE marking run as failed
         DefeatContext defeatCtx = new DefeatContext();
@@ -283,20 +284,17 @@ public class RogueWinLoseController {
         return null;
     }
 
-    private void persistLifeTotal() {
-        // Get player's life total at end of match
+    private void handleMatchData() {
+        Game game = lastGame.getGame();
+        if (game == null) return;
         final LobbyPlayer humanLobbyPlayer = GamePlayerUtil.getGuiPlayer();
-        PlayerView humanPlayer = null;
-        for (final PlayerView p : lastGame.getPlayers()) {
-            if (p.isLobbyPlayer(humanLobbyPlayer)) {
-                humanPlayer = p;
+        for (Player p : game.getPlayers()) {
+            if (p.getLobbyPlayer() == humanLobbyPlayer) {
+                currentRun.setCurrentLife(p.getLife());
+                currentRun.setLastMatchData(new RogueRun.LastMatchData(
+                    p.getPlanarDieChaosThisGame(), p.getPlanarDiePlaneswalkThisGame()));
                 break;
             }
-        }
-
-        if (humanPlayer != null) {
-            int endingLife = humanPlayer.getLife();
-            currentRun.setCurrentLife(endingLife);
         }
     }
 

@@ -40,19 +40,29 @@ public class NPCDialog {
         panel.add(lblAvatar, "w 100px!, h 100px!, ax center, gap 0 0 10px 10px, wrap");
         panel.add(txtFlavor, "w 100%!, ax center, gap 0 0 10px 20px, wrap");
 
-        for (NPCChoice choice : ctx.choices()) {
-            String desc = choice.boon() != null ? choice.boon().getDescription() : "";
-            String buttonHtml = desc.isEmpty()
-                    ? "<html><div style='padding:6px 10px;'><center><font size=4>" + choice.label() + "</font></center></div></html>"
-                    : "<html><div style='padding:6px 10px;'><center><font size=4>" + choice.label()
-                      + "</font><br><font size=3>" + desc + "</font></center></div></html>";
-            FButton btn = new FButton(buttonHtml);
+        if (ctx.choices().isEmpty()) {
+            // Informational dialog — single Continue button
+            FButton btn = new FButton("<html><div style='padding:6px 10px;'><center><font size=4>Continue</font></center></div></html>");
             btn.addActionListener(e -> {
-                selectedBoon = choice.boon();
                 optionPane.setResult(0);
                 optionPane.setVisible(false);
             });
             panel.add(btn, "w 80%!, ax center, gap 0 0 10px 10px, wrap");
+        } else {
+            for (NPCChoice choice : ctx.choices()) {
+                String desc = choice.boon() != null ? choice.boon().getDescription() : "";
+                String buttonHtml = desc.isEmpty()
+                        ? "<html><div style='padding:6px 10px;'><center><font size=4>" + choice.label() + "</font></center></div></html>"
+                        : "<html><div style='padding:6px 10px;'><center><font size=4>" + choice.label()
+                          + "</font><br><font size=3>" + desc + "</font></center></div></html>";
+                FButton btn = new FButton(buttonHtml);
+                btn.addActionListener(e -> {
+                    selectedBoon = choice.boon();
+                    optionPane.setResult(0);
+                    optionPane.setVisible(false);
+                });
+                panel.add(btn, "w 80%!, ax center, gap 0 0 10px 10px, wrap");
+            }
         }
 
         Dimension dialogSize = new Dimension(DIALOG_WIDTH, DIALOG_HEIGHT);

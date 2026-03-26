@@ -90,6 +90,10 @@ public enum PlanarDice {
         if (res == Chaos) {
             runParams = AbilityKey.mapFromPlayer(roller);
             roller.getGame().getTriggerHandler().runTrigger(TriggerType.ChaosEnsues, runParams, false);
+            roller.incrementPlanarDieChaosThisGame();
+        }
+        if (res == Planeswalk) {
+            roller.incrementPlanarDiePlaneswalkThisGame();
         }
 
         return res;

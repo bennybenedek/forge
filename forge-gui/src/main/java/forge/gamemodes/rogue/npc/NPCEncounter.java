@@ -1,5 +1,7 @@
 package forge.gamemodes.rogue.npc;
 
+import forge.gamemodes.rogue.RogueMetaProgress;
+import forge.gamemodes.rogue.RogueRun;
 import java.util.List;
 
 /**
@@ -18,6 +20,15 @@ public interface NPCEncounter {
     default NPCContext buildContext(String flavorText, List<NPCContext.NPCChoice> choices) {
         return new NPCContext(getNpc(), flavorText, choices);
     }
+
+    /** Increments this NPC's level by 1. */
+    default void incrementNpcLevel() {
+        RogueMetaProgress p = RogueMetaProgress.getInstance();
+        p.setNPCLevel(getNpc().id, p.getNPCLevel(getNpc().id) + 1);
+    }
+
+    /** Fired after each match. Return non-null to show NPC dialog. */
+    default NPCContext onAfterMatch(RogueRun run) { return null; }
 
     /** Fired once when a new run is created. Return non-null to show NPC dialog. */
     default NPCContext onRunStart() { return null; }

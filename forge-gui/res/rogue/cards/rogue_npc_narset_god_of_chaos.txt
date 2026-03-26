@@ -1,0 +1,6 @@
+Name:NPC Narset - God of Chaos
+ManaCost:no cost
+Types:Enchantment
+R:Event$ PlanarDiceResult | ActiveZones$ Command | ValidRoll$ Planeswalk | ReplaceWith$ REChaos | Description$ If you would roll Planeswalk on the planar die, roll Chaos instead.
+SVar:REChaos:DB$ ReplaceEffect | VarName$ Result | VarValue$ Chaos | VarType$ PlanarDice
+Oracle:If you would roll Planeswalk on the planar die, roll Chaos instead.

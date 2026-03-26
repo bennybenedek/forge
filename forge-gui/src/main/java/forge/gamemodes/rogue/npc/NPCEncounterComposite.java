@@ -1,6 +1,7 @@
 package forge.gamemodes.rogue.npc;
 
 import forge.gamemodes.rogue.RogueMetaProgress;
+import forge.gamemodes.rogue.RogueRun;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -17,7 +18,8 @@ public enum NPCEncounterComposite {
     /** All registered NPC encounter constants. Add new NPCs here. */
     private static final NPCEncounter[] ALL_ENCOUNTERS = concat(
         TyvarEncounter.values(),
-        GontiEncounter.values()
+        GontiEncounter.values(),
+        NarsetEncounter.values()
     );
 
     private static NPCEncounter[] concat(NPCEncounter[]... arrays) {
@@ -47,6 +49,16 @@ public enum NPCEncounterComposite {
             }
         }
         return new ArrayList<>(encounterPerNpc.values());
+    }
+
+    public List<NPCContext> onAfterMatch(RogueRun run) {
+        RogueMetaProgress progress = RogueMetaProgress.getInstance();
+        List<NPCContext> results = new ArrayList<>();
+        for (NPCEncounter enc : getEncountersForCurrentLevel(progress)) {
+            NPCContext ctx = enc.onAfterMatch(run);
+            if (ctx != null) results.add(ctx);
+        }
+        return results;
     }
 
     public List<NPCContext> onRunStart(RogueMetaProgress progress) {

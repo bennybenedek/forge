@@ -1,8 +1,7 @@
-package forge.gamemodes.rogue.npc;
+package forge.gamemodes.rogue.effect;
 
 import forge.game.player.RegisteredPlayer;
 import forge.gamemodes.rogue.RogueRun;
-import forge.gamemodes.rogue.effect.RogueEffect;
 
 /**
  * NPC boons that add command zone cards on match start.
@@ -19,14 +18,14 @@ public enum NPCBoon implements RogueEffect {
 
     // Narset boons
     NARSET_TRAVELER("npc_narset_traveler", "Traveler",
-            "Start with Fractured Powerstone on the battlefield. ({T}: Add {C}. {T}: Roll the planar die.)", "Fractured Powerstone") {
+            "Start each match with a Fractured Powerstone on the battlefield.", "Fractured Powerstone") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             RogueEffect.addRealCardToBattlefield(cardName, human);
         }
     },
     NARSET_ALCHEMIST("npc_narset_alchemist", "Alchemist",
-            "Start with Ichor Elixir on the battlefield. (Roll an extra planar die and ignore one. {T}: Add {C}{C}.)", "Ichor Elixir") {
+            "Start each match with an Ichor Elixir on the battlefield.", "Ichor Elixir") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             RogueEffect.addRealCardToBattlefield(cardName, human);

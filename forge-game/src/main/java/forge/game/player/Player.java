@@ -111,6 +111,8 @@ public class Player extends GameEntity implements Comparable<Player> {
     private int committedCrimeThisTurn;
     private int numFlipsThisTurn;
     private int numRollsThisTurn;
+    private int planarDieChaosThisGame;
+    private int planarDiePlaneswalkThisGame;
     private List<Integer> diceRollsThisTurn = Lists.newArrayList();
     private int expentThisTurn;
     private int numLibrarySearchedOwn; //The number of times this player has searched his library
@@ -1408,6 +1410,11 @@ public class Player extends GameEntity implements Comparable<Player> {
     public void roll() {
         numRollsThisTurn++;
     }
+
+    public int getPlanarDieChaosThisGame() { return planarDieChaosThisGame; }
+    public void incrementPlanarDieChaosThisGame() { planarDieChaosThisGame++; }
+    public int getPlanarDiePlaneswalkThisGame() { return planarDiePlaneswalkThisGame; }
+    public void incrementPlanarDiePlaneswalkThisGame() { planarDiePlaneswalkThisGame++; }
 
     public final void resetNumFlipsThisTurn() {
         numFlipsThisTurn = 0;

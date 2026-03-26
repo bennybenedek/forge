@@ -1,7 +1,6 @@
 package forge.gamemodes.rogue.npc;
 
 import forge.gamemodes.rogue.RogueConfig;
-import forge.gamemodes.rogue.RogueMetaProgress;
 import forge.item.PaperCard;
 import forge.model.FModel;
 import forge.util.MyRandom;
@@ -34,7 +33,7 @@ public enum GontiEncounter implements NPCEncounter {
             boolean boughtCurio = ctx.purchasedCards.stream()
                     .anyMatch(c -> c.getName().equals(CURIO_CARD_NAME));
             if (!boughtCurio) return null;
-            RogueMetaProgress.getInstance().setNPCLevel(NPC.GONTI.id, 1);
+            incrementNpcLevel();
             return buildContext(
                 "A figure steps out from behind the bazaar stall, eyes wide with both disbelief and fascination. " +
                 "\"You... you actually bought it? Ha!! That thing has been sitting there for ages! " +
