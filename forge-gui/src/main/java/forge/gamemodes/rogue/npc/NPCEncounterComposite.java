@@ -2,7 +2,9 @@ package forge.gamemodes.rogue.npc;
 
 import forge.gamemodes.rogue.RogueMetaProgress;
 import forge.gamemodes.rogue.RogueRun;
+import forge.util.MyRandom;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -66,6 +68,10 @@ public enum NPCEncounterComposite {
         for (NPCEncounter enc : getEncountersForCurrentLevel(progress)) {
             NPCContext ctx = enc.onRunStart();
             if (ctx != null) results.add(ctx);
+        }
+        // Only one NPC offers boons per run — pick one at random
+        if (results.size() > 1) {
+            return Collections.singletonList(results.get(MyRandom.getRandom().nextInt(results.size())));
         }
         return results;
     }
