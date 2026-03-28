@@ -6,6 +6,7 @@ import forge.gamemodes.rogue.effect.EchoBoon;
 import forge.gui.framework.DragCell;
 import forge.gui.framework.DragTab;
 import forge.gui.framework.EDocID;
+import forge.localinstance.properties.ForgePreferences;
 import forge.localinstance.skin.FSkinProp;
 import forge.screens.home.EMenuGroup;
 import forge.screens.home.IVSubmenu;
@@ -65,6 +66,8 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
 
   private final FButton btnBack;
   private final FButton btnResetBoons;
+  private final FButton btnDevMaxAether = new FButton("[Dev] Max Aether");
+  private final FButton btnDevGainEchoes = new FButton("[Dev] +10 Echoes");
 
   VSubmenuRogueAether() {
     lblTitle.setBackground(FSkin.getColor(FSkin.Colors.CLR_THEME2));
@@ -150,6 +153,10 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
     buttonPanel.setOpaque(false);
     buttonPanel.add(btnBack, "w 180px!, h 40px!");
     buttonPanel.add(btnResetBoons, "w 180px!, h 40px!");
+    if (ForgePreferences.DEV_MODE) {
+      buttonPanel.add(btnDevMaxAether, "w 180px!, h 40px!");
+      buttonPanel.add(btnDevGainEchoes, "w 180px!, h 40px!");
+    }
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(buttonPanel, "ax center, gap 0 0 10px 10px");
 
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().repaintSelf();
@@ -223,6 +230,14 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
 
   public JButton getBtnResetBoons() {
     return btnResetBoons;
+  }
+
+  public JButton getBtnDevMaxAether() {
+    return btnDevMaxAether;
+  }
+
+  public JButton getBtnDevGainEchoes() {
+    return btnDevGainEchoes;
   }
 
   public AetherUpgradeCard getUpgradeCard() {

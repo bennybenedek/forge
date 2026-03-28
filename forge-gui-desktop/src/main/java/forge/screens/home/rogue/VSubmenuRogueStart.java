@@ -3,6 +3,7 @@ package forge.screens.home.rogue;
 import forge.gui.framework.DragCell;
 import forge.gui.framework.DragTab;
 import forge.gui.framework.EDocID;
+import forge.localinstance.properties.ForgePreferences;
 import forge.localinstance.skin.FSkinProp;
 import forge.screens.home.EMenuGroup;
 import forge.screens.home.IVSubmenu;
@@ -75,6 +76,9 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
   private final FButton btnStats;
   private final FButton btnAether;
   private final FButton btnHistory;
+
+  // Dev buttons
+  private final FButton btnDevUnlockAll = new FButton("[Dev] Unlock All");
 
   // Descension UI
   private final FCheckBox chkDescension = new FCheckBox("Descension Mode");
@@ -232,6 +236,9 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
     buttonPanel.add(btnAether, "w 150px!, h 40px!");
     buttonPanel.add(btnHistory, "w 150px!, h 40px!");
     buttonPanel.add(btnStats, "w 150px!, h 40px!");
+    if (ForgePreferences.DEV_MODE) {
+      buttonPanel.add(btnDevUnlockAll, "w 150px!, h 40px!");
+    }
     panel.add(buttonPanel, "cell 0 5, span 2, alignx center");
 
     return panel;
@@ -290,6 +297,10 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
 
   public JButton getBtnHistory() {
     return btnHistory;
+  }
+
+  public JButton getBtnDevUnlockAll() {
+    return btnDevUnlockAll;
   }
 
   public JCheckBox getChkDescension() {

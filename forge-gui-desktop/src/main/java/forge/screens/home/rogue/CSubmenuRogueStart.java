@@ -9,6 +9,7 @@ import forge.gamemodes.rogue.npc.NPCEncounterComposite;
 import forge.gamemodes.rogue.path.RoguePathGenerator;
 import forge.gui.framework.EDocID;
 import forge.gui.framework.ICDoc;
+import forge.localinstance.properties.ForgePreferences;
 import forge.screens.home.CHomeUI;
 import forge.toolbox.FOptionPane;
 import java.util.Comparator;
@@ -39,6 +40,9 @@ public enum CSubmenuRogueStart implements ICDoc {
     view.getChkDescension().addItemListener(e -> onDescensionToggled());
     view.getBtnDescensionDown().addActionListener(e -> changeDescensionLevel(-1));
     view.getBtnDescensionUp().addActionListener(e -> changeDescensionLevel(1));
+    if (ForgePreferences.DEV_MODE) {
+      view.getBtnDevUnlockAll().addActionListener(e -> devToggleUnlockAll());
+    }
   }
 
   private void openStats() {
@@ -51,6 +55,14 @@ public enum CSubmenuRogueStart implements ICDoc {
 
   private void openHistory() {
     CHomeUI.SINGLETON_INSTANCE.itemClick(EDocID.HOME_ROGUEHISTORY);
+  }
+
+  private void devToggleUnlockAll() {
+    RogueMetaProgress progress = RogueMetaProgress.getInstance();
+    boolean newState = !progress.isDevUnlockAll();
+    progress.setDevUnlockAll(newState);
+    view.getBtnDevUnlockAll().setText(newState ? "[Dev] Lock Commanders" : "[Dev] Unlock All");
+    loadAvailableCommanders();
   }
 
   @Override

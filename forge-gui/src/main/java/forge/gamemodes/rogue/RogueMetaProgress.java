@@ -6,6 +6,12 @@ import com.thoughtworks.xstream.security.NullPermission;
 import com.thoughtworks.xstream.security.PrimitiveTypePermission;
 import forge.gamemodes.rogue.effect.DescensionLevel;
 import forge.gamemodes.rogue.effect.EchoBoon;
+import forge.gui.GuiBase;
+import forge.item.PaperCard;
+import forge.localinstance.properties.ForgeConstants;
+import forge.localinstance.skin.FSkinProp;
+import forge.localinstance.skin.ISkinImage;
+import forge.model.FModel;
 import forge.util.IgnoringXStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -45,13 +51,16 @@ public class RogueMetaProgress {
     private Map<String, Integer> npcLevels;
 
     // Unlock notification tracking - which unlocks have been shown to the player
-    private Set<String> notifiedUnlocks;
+    private Set<String> notifiedCommanderUnlocks;
 
     // Tutorial tracking - which tutorials have been shown
     private Set<String> seenTutorials;
 
     // Run history
     private List<RogueRunHistoryEntry> runHistory;
+
+    // Dev-only: bypass all commander unlock checks (not serialized)
+    private transient boolean devUnlockAll;
 
     // Private constructor for singleton
     private RogueMetaProgress() {
@@ -65,7 +74,7 @@ public class RogueMetaProgress {
         activeEchoBoons = new HashSet<>();
 
         // Initialize unlock notification tracking
-        notifiedUnlocks = new HashSet<>();
+        notifiedCommanderUnlocks = new HashSet<>();
 
         // Initialize tutorial tracking
         seenTutorials = new HashSet<>();
@@ -103,7 +112,7 @@ public class RogueMetaProgress {
         aetherUpgradeLevel = 0;
         boonRanks = new HashMap<>();
         activeEchoBoons = new HashSet<>();
-        notifiedUnlocks = new HashSet<>();
+        notifiedCommanderUnlocks = new HashSet<>();
         npcLevels = new HashMap<>();
 
         // Reset run history
@@ -156,7 +165,7 @@ public class RogueMetaProgress {
      * Check for new unlocks relevant to the given stat.
      */
     void checkForNewUnlocks(RogueStats stat) {
-        if (notifiedUnlocks == null) notifiedUnlocks = new HashSet<>();
+        if (notifiedCommanderUnlocks == null) notifiedCommanderUnlocks = new HashSet<>();
         String key = stat.getConditionKey();
 
         boolean changed = false;
@@ -165,18 +174,17 @@ public class RogueMetaProgress {
             if (!deck.getUnlockCondition().hasCondition(key)) continue;
 
             String name = deck.getCommanderCardName();
-            if (deck.isUnlocked() && !notifiedUnlocks.contains(name)) {
-                notifiedUnlocks.add(name);
+            if (deck.isUnlocked() && !notifiedCommanderUnlocks.contains(name)) {
+                notifiedCommanderUnlocks.add(name);
                 changed = true;
 
-                forge.item.PaperCard card = forge.model.FModel.getMagicDb()
-                    .getCommonCards().getCard(name);
-                forge.localinstance.skin.ISkinImage image = forge.gui.GuiBase.getInterface()
-                    .createLayeredImage(card, forge.localinstance.skin.FSkinProp.IMG_SPECIAL_TROPHY,
-                        forge.localinstance.properties.ForgeConstants.CACHE_ACHIEVEMENTS_DIR
+                PaperCard card = FModel.getMagicDb().getCommonCards().getCard(name);
+                ISkinImage image = GuiBase.getInterface()
+                    .createLayeredImage(card, FSkinProp.IMG_SPECIAL_TROPHY,
+                        ForgeConstants.CACHE_ACHIEVEMENTS_DIR
                             + "/unlock_" + name.replace(" ", "_") + ".png", 1f);
                 String unlockDesc = deck.getUnlockCondition().getDescription();
-                forge.gui.GuiBase.getInterface().showImageDialog(image,
+                GuiBase.getInterface().showImageDialog(image,
                     name + "\n" + unlockDesc,
                     "Commander Unlocked!");
             }
@@ -185,10 +193,10 @@ public class RogueMetaProgress {
         // Check global Descension Mode unlock when runs are won
         if (stat == RogueStats.RUNS_WON) {
             final String descensionKey = "DESCENSION_MODE";
-            if (isDescensionModeUnlocked() && !notifiedUnlocks.contains(descensionKey)) {
-                notifiedUnlocks.add(descensionKey);
+            if (isDescensionModeUnlocked() && !notifiedCommanderUnlocks.contains(descensionKey)) {
+                notifiedCommanderUnlocks.add(descensionKey);
                 changed = true;
-                forge.gui.GuiBase.getInterface().showImageDialog(null,
+                GuiBase.getInterface().showImageDialog(null,
                     "You have won Runs with 3 different Commanders!\n" +
                         "Descension Mode is now unlocked.",
                     "Descension Mode Unlocked!");
@@ -319,6 +327,9 @@ public class RogueMetaProgress {
         return getDistinctCommandersWon() >= 3;
     }
 
+    public boolean isDevUnlockAll() { return devUnlockAll; }
+    public void setDevUnlockAll(boolean value) { devUnlockAll = value; }
+
     // ==================== Aether System - Echo Management ====================
 
     public int getTotalEchoes() {
@@ -335,6 +346,11 @@ public class RogueMetaProgress {
 
     public int getAetherUpgradeLevel() {
         return aetherUpgradeLevel;
+    }
+
+    public void setAetherUpgradeLevel(int level) {
+        aetherUpgradeLevel = level;
+        save();
     }
 
     /**

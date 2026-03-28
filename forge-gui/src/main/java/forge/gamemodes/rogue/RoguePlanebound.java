@@ -46,4 +46,16 @@ public class RoguePlanebound {
     public String toString() {
         return planeName + " (" + planeboundName + ")";
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof RoguePlanebound other)) return false;
+        return deckPath.equals(other.deckPath);
+    }
+
+    @Override
+    public int hashCode() {
+        return deckPath.hashCode();
+    }
 }

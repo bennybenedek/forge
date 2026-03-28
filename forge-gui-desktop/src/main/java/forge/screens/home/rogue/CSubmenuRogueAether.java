@@ -6,6 +6,7 @@ import forge.gamemodes.rogue.RogueTutorial;
 import forge.gamemodes.rogue.effect.EchoBoon;
 import forge.gui.framework.EDocID;
 import forge.gui.framework.ICDoc;
+import forge.localinstance.properties.ForgePreferences;
 import forge.screens.home.CHomeUI;
 import forge.toolbox.FOptionPane;
 import java.util.EnumMap;
@@ -36,6 +37,14 @@ public enum CSubmenuRogueAether implements ICDoc {
     view.getBtnBack().addActionListener(e -> goBack());
     view.getBtnResetBoons().addActionListener(e -> confirmResetBoons());
     view.getUpgradeCard().getBtnUpgrade().addActionListener(e -> purchaseNextUpgrade());
+
+    if (ForgePreferences.DEV_MODE) {
+      view.getBtnDevMaxAether().addActionListener(e -> devMaxAether());
+      view.getBtnDevGainEchoes().addActionListener(e -> {
+        RogueMetaProgress.getInstance().addEchoes(10);
+        refreshDisplay();
+      });
+    }
 
     // Setup listeners for each boon panel
     for (Map.Entry<EchoBoon, VSubmenuRogueAether.BoonPanel> entry : view.getBoonPanels()
@@ -109,6 +118,16 @@ public enum CSubmenuRogueAether implements ICDoc {
     } else {
       progress.deactivateBoon(type);
     }
+    refreshDisplay();
+  }
+
+  private void devMaxAether() {
+    RogueMetaProgress progress = RogueMetaProgress.getInstance();
+    int maxLevel = AetherUpgrade.getMaxLevel();
+    boolean isMaxed = progress.getAetherUpgradeLevel() >= maxLevel;
+    progress.setAetherUpgradeLevel(isMaxed ? 0 : maxLevel);
+    view.getBtnDevMaxAether().setText(isMaxed ? "[Dev] Max Aether" : "[Dev] Reset Aether");
+    view.populate();
     refreshDisplay();
   }
 

@@ -10,7 +10,9 @@ import forge.game.player.RegisteredPlayer;
 import forge.gamemodes.match.HostedMatch;
 import forge.gamemodes.rogue.*;
 import forge.gamemodes.rogue.effect.*;
-import forge.gamemodes.rogue.npc.*;
+import forge.gamemodes.rogue.npc.BazaarContext;
+import forge.gamemodes.rogue.npc.NPCContext;
+import forge.gamemodes.rogue.npc.NPCEncounterComposite;
 import forge.gamemodes.rogue.path.*;
 import forge.gui.GuiBase;
 import forge.gui.SOverlayUtils;
@@ -30,10 +32,7 @@ import forge.toolbox.FSkin;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.*;
-import javax.swing.ImageIcon;
-import javax.swing.JLabel;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
+import javax.swing.*;
 import net.miginfocom.swing.MigLayout;
 
 /**
@@ -318,9 +317,18 @@ public enum CSubmenuRogueMap implements ICDoc {
       SOverlayUtils.showOverlay();
     });
 
+    // DEV: allow picking which planebound to test
+    if (ForgePreferences.DEV_MODE) {
+      RoguePlanebound picked = (RoguePlanebound) JOptionPane.showInputDialog(
+          null, "Override planebound:", "[DEV] Pick Planebound",
+          JOptionPane.PLAIN_MESSAGE, null,
+          RogueConfig.loadPlanebounds().toArray(), node.getRoguePlanebound());
+      if (picked != null) node.setRoguePlanebound(picked);
+    }
+
     try {
       // Get all plane cards from the centralized cache
-      CardPool allPlanes = forge.gamemodes.rogue.RogueConfig.getAllPlanes();
+      CardPool allPlanes = RogueConfig.getAllPlanes();
 
       // Find the designated plane for this node
       String cardPlaneName = node.getRoguePlanebound().planeName();
@@ -630,9 +638,9 @@ public enum CSubmenuRogueMap implements ICDoc {
 
     // DEV: allow picking which event to test
     if (ForgePreferences.DEV_MODE) {
-      RogueEvent picked = (RogueEvent) javax.swing.JOptionPane.showInputDialog(
+      RogueEvent picked = (RogueEvent) JOptionPane.showInputDialog(
           null, "Override event:", "[DEV] Pick Event",
-          javax.swing.JOptionPane.PLAIN_MESSAGE, null,
+          JOptionPane.PLAIN_MESSAGE, null,
           RogueEvent.values(), event);
       if (picked != null) event = picked;
     }
@@ -738,9 +746,9 @@ public enum CSubmenuRogueMap implements ICDoc {
 
     // DEV: allow picking which loot to test
     if (ForgePreferences.DEV_MODE) {
-      ChestLoot picked = (ChestLoot) javax.swing.JOptionPane.showInputDialog(
+      ChestLoot picked = (ChestLoot) JOptionPane.showInputDialog(
           null, "Override chest loot:", "[DEV] Pick Loot",
-          javax.swing.JOptionPane.PLAIN_MESSAGE, null,
+          JOptionPane.PLAIN_MESSAGE, null,
           ChestLoot.values(), loot);
       if (picked != null) loot = picked;
     }
@@ -799,8 +807,10 @@ public enum CSubmenuRogueMap implements ICDoc {
 
     node.setCompleted(true);
     var progress = RogueMetaProgress.getInstance();
-    if (node instanceof NodePlanebound) {
+    if (node instanceof NodePlanebound nodePlanebound) {
       RogueStats.fireOnMatchCompleted(currentRun, progress, true);
+      currentRun.setCurrentGold(currentRun.getCurrentGold() + nodePlanebound.getGoldReward());
+      progress.addEchoes(nodePlanebound.getEchoReward());
     } else {
       RogueStats.fireOnSideNodeCompleted(currentRun, progress);
     }
