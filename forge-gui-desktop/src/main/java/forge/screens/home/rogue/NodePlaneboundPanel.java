@@ -357,6 +357,8 @@ public class NodePlaneboundPanel extends NodePanel implements ImageFetcher.Callb
       System.out.println(
           "New image size: " + originalImage.getWidth() + "x" + originalImage.getHeight());
       BufferedImage rotatedImage = rotateImage90Clockwise(originalImage);
+      // Update revealImage so the flip animation uses the real image, not the fallback
+      revealImage = rotatedImage;
       cardImage.setItem(rotatedImage);
       cardImage.revalidate();
       cardImage.repaint();

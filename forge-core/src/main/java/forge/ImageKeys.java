@@ -198,6 +198,15 @@ public final class ImageKeys {
                 }
             }
             //try fullborder...
+            // Plane/phenomenon cards don't have ".full" in their key, but the
+            // fetcher may save them as ".fullborder.jpg" — try that variant too.
+            if (!filename.contains(".full")) {
+                file = findFile(dir, filename + ".fullborder");
+                if (file != null) {
+                    cachedCards.put(filename, file);
+                    return file;
+                }
+            }
             if (filename.contains(".full")) {
                 String fullborderFile = TextUtil.fastReplace(filename, ".full", ".fullborder");
                 file = findFile(dir, fullborderFile);
