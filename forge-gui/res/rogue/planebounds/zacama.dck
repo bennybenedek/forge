@@ -7,16 +7,12 @@ type=0
 1 Zacama, Primal Calamity|LCC|1
 [Main]
 1 Arid Mesa|MH2|1
-1 Beast Within|LCC|1
-1 Canopy Vista|CMM|1
-1 Cinder Glade|LCC|1
 1 Command Tower|LCC|1
 1 Cultivate|LCC|1
 1 Etali, Primal Conqueror|MOM|1
 1 Etali, Primal Storm|LCC|1
-1 Forest|LCI|2
+3 Forest|LCI|2
 1 Garruk's Uprising|FDN|1
-1 Generous Gift|LCC|1
 1 Ghalta and Mavren|MOM|1
 1 Ghalta, Primal Hunger|CMM|1
 1 Gishath, Sun's Avatar|LCI|1
@@ -26,17 +22,20 @@ type=0
 1 Knight of the Stampede|RIX|1
 1 Kodama's Reach|LCC|1
 1 Marauding Raptor|LCC|1
-1 Mountain|LCI|2
+2 Mountain|LCI|2
 1 Naya Charm|DMC|1
 1 Otepec Huntmaster|LCC|1
 1 Overgrown Farmland|TDC|1
-1 Plains|LCI|2
+1 Path to Exile|LCC|1
+2 Plains|LCI|2
 1 Rampant Growth|LCC|1
 1 Regal Behemoth|LCC|1
 1 Regisaur Alpha|LCC|1
+1 Rockfall Vale|TDC|1
 1 Rootbound Crag|ECC|1
 1 Sacred Foundry|EOE|1
 1 Skyshroud Claim|CMM|1
+1 Sol Ring|LCC|1
 1 Stomping Ground|EOE|1
 1 Sunpetal Grove|TDC|1
 1 Swords to Plowshares|LCC|1
