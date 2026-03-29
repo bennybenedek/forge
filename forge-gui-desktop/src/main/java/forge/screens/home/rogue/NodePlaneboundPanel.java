@@ -40,6 +40,7 @@ public class NodePlaneboundPanel extends NodePanel implements ImageFetcher.Callb
   private final JLabel lblLifeTotal;
   private final PaperCard currentPlaneCard;
   private final boolean isFaceDown;
+  private boolean awaitingFlip;
 
   // Zoom utility
   private CardUtil zoomUtil; // Lazily initialized on first zoom
@@ -61,6 +62,7 @@ public class NodePlaneboundPanel extends NodePanel implements ImageFetcher.Callb
       boolean animateReveal) {
     super(node);
     this.isFaceDown = isFaceDown;
+    this.awaitingFlip = animateReveal;
     this.flipAnimation = new CardUtil.FlipAnimation(this);
 
     // Card image (plane card) - rotated 90 degrees clockwise for horizontal display
@@ -170,6 +172,7 @@ public class NodePlaneboundPanel extends NodePanel implements ImageFetcher.Callb
     if (flipAnimation.isAnimating() || revealImage == null) {
       return;
     }
+    awaitingFlip = false;
     flipAnimation.start(() -> {
       cardImage.setItem(revealImage);
       lblPlaneboundName.setText(((NodePlanebound) node).getRoguePlanebound().planeboundName());
@@ -359,9 +362,12 @@ public class NodePlaneboundPanel extends NodePanel implements ImageFetcher.Callb
       BufferedImage rotatedImage = rotateImage90Clockwise(originalImage);
       // Update revealImage so the flip animation uses the real image, not the fallback
       revealImage = rotatedImage;
-      cardImage.setItem(rotatedImage);
-      cardImage.revalidate();
-      cardImage.repaint();
+      // Only update cardImage if the card is already face-up (not waiting for flip animation)
+      if (!awaitingFlip) {
+        cardImage.setItem(rotatedImage);
+        cardImage.revalidate();
+        cardImage.repaint();
+      }
     }
   }
 
