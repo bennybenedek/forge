@@ -83,7 +83,23 @@ public class RogueRun {
 
     /** A card the player carries between matches (castable from command zone).
      *  sourceId links to the boon that granted it (null if purchased/rewarded). */
-    public record CarryCard(String cardName, CarryCardType type, String sourceId) {}
+    public static class CarryCard {
+        private String cardName;
+        private CarryCardType type;
+        private String sourceId;
+
+        public CarryCard() {} // XStream
+
+        public CarryCard(String cardName, CarryCardType type, String sourceId) {
+            this.cardName = cardName;
+            this.type = type;
+            this.sourceId = sourceId;
+        }
+
+        public String cardName() { return cardName; }
+        public CarryCardType type() { return type; }
+        public String sourceId() { return sourceId; }
+    }
 
     // Carry cards (items/companions that persist across matches in the command zone)
     private List<CarryCard> carryCards;

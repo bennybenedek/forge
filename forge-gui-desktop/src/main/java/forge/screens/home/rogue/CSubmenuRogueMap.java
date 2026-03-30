@@ -9,6 +9,8 @@ import forge.game.GameType;
 import forge.game.player.RegisteredPlayer;
 import forge.gamemodes.match.HostedMatch;
 import forge.gamemodes.rogue.*;
+import forge.gamemodes.rogue.RogueRun.CarryCard;
+import forge.gamemodes.rogue.RogueRun.CarryCardType;
 import forge.gamemodes.rogue.effect.*;
 import forge.gamemodes.rogue.npc.BazaarContext;
 import forge.gamemodes.rogue.npc.NPCContext;
@@ -364,6 +366,20 @@ public enum CSubmenuRogueMap implements ICDoc {
       lobbyPlayer.setSleeveIndex(currentRun.getSelectedRogueDeck().getSleeveIndex());
       human.setPlayer(lobbyPlayer);
 
+      // Add carry cards (items/companions) to command zone with their enablers
+      if (!currentRun.getCarryCards().isEmpty()) {
+        RogueTutorialHelper.showIfNotSeen(RogueTutorial.CARRY_CARDS);
+      }
+      if (currentRun.hasCarryCardOfType(CarryCardType.ITEM)) {
+        RogueEffect.addCardToCommandZone("Rogue - Item Enabler", human);
+      }
+      if (currentRun.hasCarryCardOfType(CarryCardType.COMPANION)) {
+        RogueEffect.addCardToCommandZone("Rogue - Companion Enabler", human);
+      }
+      for (CarryCard card : currentRun.getCarryCards()) {
+        RogueEffect.addCardToCommandZone(card.cardName(), human);
+      }
+
       // Load Planebound deck
       Deck planeboundDeck = loadPlaneboundDeck(node.getRoguePlanebound().deckPath());
 
@@ -383,17 +399,6 @@ public enum CSubmenuRogueMap implements ICDoc {
 
       // Apply all match start effects AFTER AI creation (cursed effects need opponent)
       RogueEffectComposite.INSTANCE.onMatchStart(human, ai, currentRun);
-
-      // Add carry cards (items/companions) to command zone with their enablers
-      if (currentRun.hasCarryCardOfType(RogueRun.CarryCardType.ITEM)) {
-          RogueEffect.addCardToCommandZone("Rogue - Item Enabler", human);
-      }
-      if (currentRun.hasCarryCardOfType(RogueRun.CarryCardType.COMPANION)) {
-          RogueEffect.addCardToCommandZone("Rogue - Companion Enabler", human);
-      }
-      for (RogueRun.CarryCard card : currentRun.getCarryCards()) {
-          RogueEffect.addCardToCommandZone(card.cardName(), human);
-      }
 
       // Start match
       List<RegisteredPlayer> players = Arrays.asList(human, ai);

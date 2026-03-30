@@ -124,6 +124,15 @@ public enum RogueTutorial {
       "You have won Runs with 3 different Commanders - Descension Mode is now unlocked!\n" +
           "Descension Mode adds stacking difficulty modifiers to your Runs. Select a Commander you have already won with to enable it.\n" +
           "Winning at a Descension Level unlocks the next level for that Commander, and earns you a Spark. Sparks can be used to unlock special upgrades in the Aether."
+  ),
+
+  CARRY_CARDS(
+      "Items & Companions",
+      "You have acquired a carry card! Carry cards persist across matches and can be cast from your command zone.\n" +
+          "There are two types:\n" +
+          "- Items: Artifacts such as equipment and relics.\n" +
+          "- Companions: Creatures that fight alongside you.\n" +
+          "If a carry card is neither in the command zone nor on the battlefield after a match (e.g. destroyed, exiled, returned to hand), it is lost permanently!"
   );
 
   private final String title;

@@ -5,6 +5,8 @@ import forge.game.Game;
 import forge.game.GameView;
 import forge.game.player.Player;
 import forge.game.zone.ZoneType;
+import forge.gamemodes.rogue.RogueRun.CarryCard;
+import forge.gamemodes.rogue.RogueRun.CarryCardType;
 import forge.gamemodes.rogue.effect.DefeatContext;
 import forge.gamemodes.rogue.effect.RewardContext;
 import forge.gamemodes.rogue.effect.RogueEffectComposite;
@@ -34,6 +36,9 @@ public class RogueWinLoseController {
     private final IWinLoseView<? extends IButton> view;
     private final boolean wonMatch;
     private final RogueRun currentRun;
+
+    // Carry cards lost during the match (set by handleMatchData, shown by both victory/defeat)
+    private List<CarryCard> lostCarryCards = List.of();
 
     public RogueWinLoseController(final GameView game0, final IWinLoseView<? extends IButton> view0, final RogueRun currentRun0) {
         this.lastGame = game0;
@@ -80,11 +85,8 @@ public class RogueWinLoseController {
         // Record the victory (this also marks the node as completed)
         currentRun.recordMatchResult(true);
 
-        // Persist life total from match (before meta progress so stats see current life)
-        List<RogueRun.CarryCard> lostCards = handleMatchData();
-
-        // Show lost carry card message
-        showLostCarryCards(lostCards);
+        // Persist life total and check carry card survival
+        handleMatchData();
 
         // Check if this was the last node (run completed)
         boolean isLastNode = currentRun.getCurrentNodeIndex() >= currentRun.getPath().getNodeCount() - 1;
@@ -145,6 +147,9 @@ public class RogueWinLoseController {
             boolean isElite = planeboundNode.getPlaneboundType() == RoguePlaneboundType.ELITE;
             awardCardRewards(isElite, goldReward, echoReward);
         }
+
+        // Show lost carry card message
+        showLostCarryCards();
 
         // Track meta progress for match
         RogueStats.fireOnMatchCompleted(currentRun, progress, true);
@@ -235,11 +240,8 @@ public class RogueWinLoseController {
         // Record the match loss (node stays incomplete for retry)
         currentRun.recordMatchResult(false);
 
-        // Persist life total from the lost match
-        List<RogueRun.CarryCard> lostCards = handleMatchData();
-
-        // Show lost carry card message
-        showLostCarryCards(lostCards);
+        // Persist life total and check carry card survival
+        handleMatchData();
 
         // Check revive effects (e.g. Last Spark) BEFORE marking run as failed
         DefeatContext defeatCtx = new DefeatContext();
@@ -292,50 +294,48 @@ public class RogueWinLoseController {
         return null;
     }
 
-    private void showLostCarryCards(List<RogueRun.CarryCard> lostCards) {
-        if (lostCards.isEmpty()) return;
+    private void showLostCarryCards() {
+        if (lostCarryCards.isEmpty()) return;
         StringBuilder sb = new StringBuilder("You lost: ");
-        for (int i = 0; i < lostCards.size(); i++) {
+        for (int i = 0; i < lostCarryCards.size(); i++) {
             if (i > 0) sb.append(", ");
-            RogueRun.CarryCard card = lostCards.get(i);
+            RogueRun.CarryCard card = lostCarryCards.get(i);
             sb.append(card.cardName())
               .append(" (")
-              .append(card.type() == RogueRun.CarryCardType.ITEM ? "item" : "companion")
+              .append(card.type() == CarryCardType.ITEM ? "item" : "companion")
               .append(")");
         }
-        view.showMessage(sb.toString(), "Lost Equipment", FSkinProp.ICO_QUEST_GEAR);
+        view.showMessage(sb.toString(), "Lost Equipment", FSkinProp.ICO_QUEST_MINUS);
     }
 
-    private List<RogueRun.CarryCard> handleMatchData() {
-        List<RogueRun.CarryCard> lostCards = List.of();
+    private void handleMatchData() {
         Game game = lastGame.getGame();
-        if (game == null) return lostCards;
+        if (game == null) return;
         final LobbyPlayer humanLobbyPlayer = GamePlayerUtil.getGuiPlayer();
         for (Player p : game.getPlayers()) {
             if (p.getLobbyPlayer() == humanLobbyPlayer) {
                 currentRun.setCurrentLife(p.getLife());
                 currentRun.setLastMatchData(new RogueRun.LastMatchData(
                     p.getPlanarDieChaosThisGame(), p.getPlanarDiePlaneswalkThisGame()));
-                lostCards = checkCarryCardSurvival(p);
+                checkCarryCardSurvival(p);
                 break;
             }
         }
-        return lostCards;
     }
 
-    private List<RogueRun.CarryCard> checkCarryCardSurvival(Player human) {
-        List<RogueRun.CarryCard> lost = new ArrayList<>();
-        for (RogueRun.CarryCard card : currentRun.getCarryCards()) {
+    private void checkCarryCardSurvival(Player human) {
+        List<CarryCard> lost = new ArrayList<>();
+        for (CarryCard card : currentRun.getCarryCards()) {
             boolean survived = human.getZone(ZoneType.Command).getCards().stream()
                     .anyMatch(c -> c.getName().equals(card.cardName()))
                 || human.getZone(ZoneType.Battlefield).getCards().stream()
                     .anyMatch(c -> c.getName().equals(card.cardName()));
             if (!survived) lost.add(card);
         }
-        for (RogueRun.CarryCard card : lost) {
+        for (CarryCard card : lost) {
             currentRun.removeCarryCard(card.cardName());
         }
-        return lost;
+        this.lostCarryCards = lost;
     }
 
     public void actionOnQuit() {
