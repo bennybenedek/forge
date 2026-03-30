@@ -164,7 +164,7 @@ public enum EventBoon implements RogueEffect {
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
             RogueMetaProgress progress = RogueMetaProgress.getInstance();
             if (progress.getNPCLevel(NPC.TYVAR.id) < 1) {
-                progress.setNPCLevel(NPC.TYVAR.id, 1);
+                progress.setNPCLevelIfHigher(NPC.TYVAR.id, 1);
             }
         }
     },

@@ -79,6 +79,7 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
 
   // Dev buttons
   private final FButton btnDevUnlockAll = new FButton("[Dev] Unlock All");
+  private final FButton btnDevNPCProgress = new FButton("[Dev] NPC Progress");
 
   // Descension UI
   private final FCheckBox chkDescension = new FCheckBox("Descension Mode");
@@ -238,6 +239,7 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
     buttonPanel.add(btnStats, "w 150px!, h 40px!");
     if (ForgePreferences.DEV_MODE) {
       buttonPanel.add(btnDevUnlockAll, "w 150px!, h 40px!");
+      buttonPanel.add(btnDevNPCProgress, "w 150px!, h 40px!");
     }
     panel.add(buttonPanel, "cell 0 5, span 2, alignx center");
 
@@ -301,6 +303,10 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
 
   public JButton getBtnDevUnlockAll() {
     return btnDevUnlockAll;
+  }
+
+  public JButton getBtnDevNPCProgress() {
+    return btnDevNPCProgress;
   }
 
   public JCheckBox getChkDescension() {

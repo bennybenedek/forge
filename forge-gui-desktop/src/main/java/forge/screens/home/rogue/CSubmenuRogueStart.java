@@ -5,6 +5,7 @@ import forge.gamemodes.rogue.effect.DescensionLevel;
 import forge.gamemodes.rogue.effect.NPCBoon;
 import forge.gamemodes.rogue.effect.RogueEffectComposite;
 import forge.gamemodes.rogue.npc.NPCContext;
+import forge.gamemodes.rogue.npc.NPC;
 import forge.gamemodes.rogue.npc.NPCEncounterComposite;
 import forge.gamemodes.rogue.path.RoguePathGenerator;
 import forge.gui.framework.EDocID;
@@ -14,6 +15,7 @@ import forge.screens.home.CHomeUI;
 import forge.toolbox.FOptionPane;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import javax.swing.SwingUtilities;
 
 /**
@@ -42,6 +44,7 @@ public enum CSubmenuRogueStart implements ICDoc {
     view.getBtnDescensionUp().addActionListener(e -> changeDescensionLevel(1));
     if (ForgePreferences.DEV_MODE) {
       view.getBtnDevUnlockAll().addActionListener(e -> devToggleUnlockAll());
+      view.getBtnDevNPCProgress().addActionListener(e -> devEditNPCProgress());
     }
   }
 
@@ -63,6 +66,20 @@ public enum CSubmenuRogueStart implements ICDoc {
     progress.setDevUnlockAll(newState);
     view.getBtnDevUnlockAll().setText(newState ? "[Dev] Lock Commanders" : "[Dev] Unlock All");
     loadAvailableCommanders();
+  }
+
+  private void devEditNPCProgress() {
+    Map<NPC, Integer> updatedLevels = new NPCProgressDialog(RogueMetaProgress.getInstance()).show();
+    if (updatedLevels == null) {
+      return;
+    }
+
+    RogueMetaProgress progress = RogueMetaProgress.getInstance();
+    for (Map.Entry<NPC, Integer> entry : updatedLevels.entrySet()) {
+      progress.setNPCLevel(entry.getKey().id, entry.getValue());
+    }
+
+    FOptionPane.showMessageDialog("NPC progression levels updated.", "Dev NPC Progress");
   }
 
   @Override

@@ -614,12 +614,25 @@ public class RogueMetaProgress {
         return npcLevels.getOrDefault(id, 0);
     }
 
-    public void setNPCLevel(String id, int level) {
+    public void setNPCLevelIfHigher(String id, int level) {
         if (npcLevels == null) npcLevels = new HashMap<>();
         if (level > npcLevels.getOrDefault(id, 0)) {
             npcLevels.put(id, level);
             save();
         }
+    }
+
+    /**
+     * Sets the stored NPC progression level directly.
+     */
+    public void setNPCLevel(String id, int level) {
+        if (npcLevels == null) npcLevels = new HashMap<>();
+        if (level <= 0) {
+            npcLevels.remove(id);
+        } else {
+            npcLevels.put(id, level);
+        }
+        save();
     }
 
     // ==================== Persistence ====================

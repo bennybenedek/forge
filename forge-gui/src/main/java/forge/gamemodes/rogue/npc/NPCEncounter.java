@@ -24,7 +24,7 @@ public interface NPCEncounter {
     /** Increments this NPC's level by 1. */
     default void incrementNpcLevel() {
         RogueMetaProgress p = RogueMetaProgress.getInstance();
-        p.setNPCLevel(getNpc().id, p.getNPCLevel(getNpc().id) + 1);
+        p.setNPCLevelIfHigher(getNpc().id, p.getNPCLevel(getNpc().id) + 1);
     }
 
     /** Fired after each match. Return non-null to show NPC dialog. */
