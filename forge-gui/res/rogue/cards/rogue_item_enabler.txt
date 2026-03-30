@@ -1,0 +1,5 @@
+Name:Rogue - Item Enabler
+ManaCost:no cost
+Types:Rogue Modifier
+S:Mode$ Continuous | EffectZone$ Command | MayPlay$ True | Affected$ Artifact.YouOwn | AffectedZone$ Command | Description$ You may cast item artifacts you own from the command zone.
+Oracle:You may cast item artifacts you own from the command zone.

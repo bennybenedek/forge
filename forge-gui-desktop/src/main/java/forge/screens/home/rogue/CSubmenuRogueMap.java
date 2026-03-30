@@ -384,6 +384,17 @@ public enum CSubmenuRogueMap implements ICDoc {
       // Apply all match start effects AFTER AI creation (cursed effects need opponent)
       RogueEffectComposite.INSTANCE.onMatchStart(human, ai, currentRun);
 
+      // Add carry cards (items/companions) to command zone with their enablers
+      if (currentRun.hasCarryCardOfType(RogueRun.CarryCardType.ITEM)) {
+          RogueEffect.addCardToCommandZone("Rogue - Item Enabler", human);
+      }
+      if (currentRun.hasCarryCardOfType(RogueRun.CarryCardType.COMPANION)) {
+          RogueEffect.addCardToCommandZone("Rogue - Companion Enabler", human);
+      }
+      for (RogueRun.CarryCard card : currentRun.getCarryCards()) {
+          RogueEffect.addCardToCommandZone(card.cardName(), human);
+      }
+
       // Start match
       List<RegisteredPlayer> players = Arrays.asList(human, ai);
       HostedMatch hostedMatch = GuiBase.getInterface().hostMatch();

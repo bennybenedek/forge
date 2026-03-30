@@ -16,7 +16,7 @@ public enum Cursed implements PlaneboundBoon {
             "Cursed - Bargain") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            RogueEffect.addCustomCardToCommandZone(cardName, human);
+            RogueEffect.addCardToCommandZone(cardName, human);
             run.consumeEffect(getId());
         }
     },
@@ -25,7 +25,7 @@ public enum Cursed implements PlaneboundBoon {
             "Cursed - Foresight") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            RogueEffect.addCustomCardToCommandZone(cardName, human);
+            RogueEffect.addCardToCommandZone(cardName, human);
             run.consumeEffect(getId());
         }
     },

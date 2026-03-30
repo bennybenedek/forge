@@ -5,7 +5,7 @@ import forge.gamemodes.rogue.RogueRun;
 
 /**
  * NPC boons that add command zone cards on match start.
- * Each constant maps to a rogue card script loaded via RogueEffect.addCustomCardToCommandZone.
+ * Each constant maps to a rogue card script loaded via RogueEffect.addCardToCommandZone.
  */
 public enum NPCBoon implements RogueEffect {
 
@@ -21,21 +21,21 @@ public enum NPCBoon implements RogueEffect {
             "Start each match with a Fractured Powerstone on the battlefield.", "Fractured Powerstone") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            RogueEffect.addRealCardToBattlefield(cardName, human);
+            RogueEffect.addCardToBattlefield(cardName, human);
         }
     },
     NARSET_ALCHEMIST("npc_narset_alchemist", "Alchemist",
-            "Start each match with an Ichor Elixir on the battlefield.", "Ichor Elixir") {
+            "Start each match with the item 'Ichor Elixir' in the command zone.", "Ichor Elixir") {
         @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            RogueEffect.addRealCardToBattlefield(cardName, human);
+        public void onGranted(RogueRun run) {
+            run.addCarryCard(cardName, RogueRun.CarryCardType.ITEM, getId());
         }
     },
     NARSET_CHAOSBOUND("npc_narset_chaosbound", "Chaosbound",
             "Start each match with an artifact you can sacrifice to trigger Chaos.", "NPC Narset - Chaosbound") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            RogueEffect.addCustomCardToBattlefield(cardName, human);
+            RogueEffect.addCardToBattlefield(cardName, human);
         }
     },
     NARSET_GOD_OF_CHAOS("npc_narset_god_of_chaos", "God of Chaos",
@@ -67,7 +67,7 @@ public enum NPCBoon implements RogueEffect {
 
     @Override
     public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-        RogueEffect.addCustomCardToCommandZone(cardName, human);
+        RogueEffect.addCardToCommandZone(cardName, human);
     }
 
     public static NPCBoon fromId(String id) {

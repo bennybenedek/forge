@@ -11,7 +11,7 @@ public enum Wrathful implements PlaneboundBoon {
             "Wrathful - Might") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            RogueEffect.addCustomCardToCommandZone(cardName, human);
+            RogueEffect.addCardToCommandZone(cardName, human);
             run.consumeEffect(getId());
         }
     },
@@ -20,7 +20,7 @@ public enum Wrathful implements PlaneboundBoon {
             "Wrathful - Resilience") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            RogueEffect.addCustomCardToCommandZone(cardName, human);
+            RogueEffect.addCardToCommandZone(cardName, human);
             run.consumeEffect(getId());
         }
     },
@@ -29,7 +29,7 @@ public enum Wrathful implements PlaneboundBoon {
             "Wrathful - Haste") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            RogueEffect.addCustomCardToCommandZone(cardName, human);
+            RogueEffect.addCardToCommandZone(cardName, human);
             run.consumeEffect(getId());
         }
     };

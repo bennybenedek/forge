@@ -1,6 +1,6 @@
 package forge.screens.home.rogue;
 
-import forge.gamemodes.rogue.npc.NPCBoon;
+import forge.gamemodes.rogue.effect.NPCBoon;
 import forge.gamemodes.rogue.npc.NPCContext;
 import forge.gamemodes.rogue.npc.NPCContext.NPCChoice;
 import forge.toolbox.*;

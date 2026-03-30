@@ -9,7 +9,7 @@ public enum Wound implements RogueEffect {
             EffectType.PERMANENT) {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            RogueEffect.addCustomCardToCommandZone("Wound - Leg", human);
+            RogueEffect.addCardToCommandZone("Wound - Leg", human);
         }
     },
     HEAD("head", "Head", "Start each match with 1 less card in hand.",

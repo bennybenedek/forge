@@ -2,8 +2,8 @@ package forge.screens.home.rogue;
 
 import forge.gamemodes.rogue.*;
 import forge.gamemodes.rogue.effect.DescensionLevel;
+import forge.gamemodes.rogue.effect.NPCBoon;
 import forge.gamemodes.rogue.effect.RogueEffectComposite;
-import forge.gamemodes.rogue.npc.NPCBoon;
 import forge.gamemodes.rogue.npc.NPCContext;
 import forge.gamemodes.rogue.npc.NPCEncounterComposite;
 import forge.gamemodes.rogue.path.RoguePathGenerator;

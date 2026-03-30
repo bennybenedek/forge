@@ -30,7 +30,8 @@
       "Bash(pdftotext:*)",
       "Bash(python3:*)",
       "Bash(pip install:*)",
-      "Skill(commitMessage)"
+      "Skill(commitMessage)",
+      "Bash(xargs head:*)"
     ],
     "deny": [],
     "ask": []

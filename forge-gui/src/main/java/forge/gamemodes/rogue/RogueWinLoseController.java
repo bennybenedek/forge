@@ -4,6 +4,7 @@ import forge.LobbyPlayer;
 import forge.game.Game;
 import forge.game.GameView;
 import forge.game.player.Player;
+import forge.game.zone.ZoneType;
 import forge.gamemodes.rogue.effect.DefeatContext;
 import forge.gamemodes.rogue.effect.RewardContext;
 import forge.gamemodes.rogue.effect.RogueEffectComposite;
@@ -16,6 +17,7 @@ import forge.item.PaperCard;
 import forge.localinstance.achievements.RogueCommanderAchievements;
 import forge.localinstance.skin.FSkinProp;
 import forge.player.GamePlayerUtil;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -79,7 +81,10 @@ public class RogueWinLoseController {
         currentRun.recordMatchResult(true);
 
         // Persist life total from match (before meta progress so stats see current life)
-        handleMatchData();
+        List<RogueRun.CarryCard> lostCards = handleMatchData();
+
+        // Show lost carry card message
+        showLostCarryCards(lostCards);
 
         // Check if this was the last node (run completed)
         boolean isLastNode = currentRun.getCurrentNodeIndex() >= currentRun.getPath().getNodeCount() - 1;
@@ -231,7 +236,10 @@ public class RogueWinLoseController {
         currentRun.recordMatchResult(false);
 
         // Persist life total from the lost match
-        handleMatchData();
+        List<RogueRun.CarryCard> lostCards = handleMatchData();
+
+        // Show lost carry card message
+        showLostCarryCards(lostCards);
 
         // Check revive effects (e.g. Last Spark) BEFORE marking run as failed
         DefeatContext defeatCtx = new DefeatContext();
@@ -284,18 +292,50 @@ public class RogueWinLoseController {
         return null;
     }
 
-    private void handleMatchData() {
+    private void showLostCarryCards(List<RogueRun.CarryCard> lostCards) {
+        if (lostCards.isEmpty()) return;
+        StringBuilder sb = new StringBuilder("You lost: ");
+        for (int i = 0; i < lostCards.size(); i++) {
+            if (i > 0) sb.append(", ");
+            RogueRun.CarryCard card = lostCards.get(i);
+            sb.append(card.cardName())
+              .append(" (")
+              .append(card.type() == RogueRun.CarryCardType.ITEM ? "item" : "companion")
+              .append(")");
+        }
+        view.showMessage(sb.toString(), "Lost Equipment", FSkinProp.ICO_QUEST_GEAR);
+    }
+
+    private List<RogueRun.CarryCard> handleMatchData() {
+        List<RogueRun.CarryCard> lostCards = List.of();
         Game game = lastGame.getGame();
-        if (game == null) return;
+        if (game == null) return lostCards;
         final LobbyPlayer humanLobbyPlayer = GamePlayerUtil.getGuiPlayer();
         for (Player p : game.getPlayers()) {
             if (p.getLobbyPlayer() == humanLobbyPlayer) {
                 currentRun.setCurrentLife(p.getLife());
                 currentRun.setLastMatchData(new RogueRun.LastMatchData(
                     p.getPlanarDieChaosThisGame(), p.getPlanarDiePlaneswalkThisGame()));
+                lostCards = checkCarryCardSurvival(p);
                 break;
             }
         }
+        return lostCards;
+    }
+
+    private List<RogueRun.CarryCard> checkCarryCardSurvival(Player human) {
+        List<RogueRun.CarryCard> lost = new ArrayList<>();
+        for (RogueRun.CarryCard card : currentRun.getCarryCards()) {
+            boolean survived = human.getZone(ZoneType.Command).getCards().stream()
+                    .anyMatch(c -> c.getName().equals(card.cardName()))
+                || human.getZone(ZoneType.Battlefield).getCards().stream()
+                    .anyMatch(c -> c.getName().equals(card.cardName()));
+            if (!survived) lost.add(card);
+        }
+        for (RogueRun.CarryCard card : lost) {
+            currentRun.removeCarryCard(card.cardName());
+        }
+        return lost;
     }
 
     public void actionOnQuit() {

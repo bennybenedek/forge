@@ -39,6 +39,9 @@ public interface RogueEffect {
     /** Number of charges for CONSUME effects at the given rank. -1 = permanent (default). */
     default int getChargesForRank(int rank) { return -1; }
 
+    /** Fired when this effect is added to a run. Use to initialize carry cards, etc. */
+    default void onGranted(RogueRun run) {}
+
     /** Fired once when a new run is created. Adjust starting life, gold, etc. */
     default void onRunStart(RogueRun run) {}
 
@@ -72,17 +75,12 @@ public interface RogueEffect {
         return FModel.getMagicDb().getCommonCards().getCard(cardName);
     }
 
-    static void addCustomCardToCommandZone(String cardName, RegisteredPlayer human) {
+    static void addCardToCommandZone(String cardName, RegisteredPlayer human) {
         PaperCard card = loadCard(cardName);
         if (card != null) human.addExtraCardsInCommandZone(Collections.singletonList(card));
     }
 
-    static void addRealCardToBattlefield(String cardName, RegisteredPlayer human) {
-        PaperCard card = loadCard(cardName);
-        if (card != null) human.addExtraCardsOnBattlefield(Collections.singletonList(card));
-    }
-
-    static void addCustomCardToBattlefield(String cardName, RegisteredPlayer human) {
+    static void addCardToBattlefield(String cardName, RegisteredPlayer human) {
         PaperCard card = loadCard(cardName);
         if (card != null) human.addExtraCardsOnBattlefield(Collections.singletonList(card));
     }

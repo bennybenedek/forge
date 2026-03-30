@@ -10,7 +10,7 @@ import forge.gamemodes.rogue.effect.EventBoon;
 import forge.gamemodes.rogue.effect.RogueEffect;
 import forge.gamemodes.rogue.effect.Wound;
 import forge.gamemodes.rogue.effect.Wrathful;
-import forge.gamemodes.rogue.npc.NPCBoon;
+import forge.gamemodes.rogue.effect.NPCBoon;
 import forge.gamemodes.rogue.path.RoguePath;
 import forge.gamemodes.rogue.path.RoguePathNode;
 import forge.item.PaperCard;
@@ -77,6 +77,16 @@ public class RogueRun {
     public record LastMatchData(int chaosCount, int planeswalkCount) {
         public static final LastMatchData EMPTY = new LastMatchData(0, 0);
     }
+
+    /** Type of card carried between matches in the command zone. */
+    public enum CarryCardType { ITEM, COMPANION }
+
+    /** A card the player carries between matches (castable from command zone).
+     *  sourceId links to the boon that granted it (null if purchased/rewarded). */
+    public record CarryCard(String cardName, CarryCardType type, String sourceId) {}
+
+    // Carry cards (items/companions that persist across matches in the command zone)
+    private List<CarryCard> carryCards;
 
     // Transient (runtime only, not serialized)
     @XStreamOmitField
@@ -218,6 +228,30 @@ public class RogueRun {
      */
     public void addRemovalCredits(int count) {
         removalCredits += count;
+    }
+
+    // Carry card management (items/companions in command zone)
+    public void addCarryCard(String cardName, CarryCardType type, String sourceId) {
+        if (carryCards == null) carryCards = new ArrayList<>();
+        carryCards.add(new CarryCard(cardName, type, sourceId));
+    }
+
+    public void removeCarryCard(String cardName) {
+        if (carryCards == null) return;
+        carryCards.removeIf(c -> c.cardName().equals(cardName));
+    }
+
+    public void removeCarryCardsBySource(String sourceId) {
+        if (carryCards == null || sourceId == null) return;
+        carryCards.removeIf(c -> sourceId.equals(c.sourceId()));
+    }
+
+    public List<CarryCard> getCarryCards() {
+        return carryCards != null ? carryCards : List.of();
+    }
+
+    public boolean hasCarryCardOfType(CarryCardType type) {
+        return getCarryCards().stream().anyMatch(c -> c.type() == type);
     }
 
     // Life management
@@ -367,7 +401,7 @@ public class RogueRun {
     public void addWound(Wound wound)           { activeWounds = addEffect(activeWounds, wound); }
     public void addWrathful(Wrathful wrathful)  { activeWrathful = addEffect(activeWrathful, wrathful); }
     public void addCursed(Cursed cursed)        { activeCursed = addEffect(activeCursed, cursed); }
-    public void addNPCBoon(NPCBoon boon)       { activeNPCBoons = addEffect(activeNPCBoons, boon); }
+    public void addNPCBoon(NPCBoon boon)       { activeNPCBoons = addEffect(activeNPCBoons, boon); boon.onGranted(this); }
 
     private List<RogueRunBoon> addEffect(List<RogueRunBoon> list, RogueEffect effect) {
         if (list == null) list = new ArrayList<>();
@@ -404,6 +438,7 @@ public class RogueRun {
             RogueRunBoon rb = it.next();
             if (rb.getId().equals(id) && rb.consumeCharge()) {
                 it.remove();
+                removeCarryCardsBySource(id);
                 return;
             }
         }

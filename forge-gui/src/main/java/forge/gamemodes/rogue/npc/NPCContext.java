@@ -1,5 +1,6 @@
 package forge.gamemodes.rogue.npc;
 
+import forge.gamemodes.rogue.effect.NPCBoon;
 import java.util.List;
 
 /**

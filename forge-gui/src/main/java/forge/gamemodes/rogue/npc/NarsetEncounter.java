@@ -2,6 +2,7 @@ package forge.gamemodes.rogue.npc;
 
 import forge.gamemodes.rogue.RogueMetaProgress;
 import forge.gamemodes.rogue.RogueRun;
+import forge.gamemodes.rogue.effect.NPCBoon;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

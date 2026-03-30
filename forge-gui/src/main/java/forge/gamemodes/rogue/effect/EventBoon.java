@@ -175,7 +175,7 @@ public enum EventBoon implements RogueEffect {
             EffectType.PERMANENT) {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            RogueEffect.addCustomCardToCommandZone("Event - Commander's Might", human);
+            RogueEffect.addCardToCommandZone("Event - Commander's Might", human);
         }
     },
 
@@ -188,7 +188,7 @@ public enum EventBoon implements RogueEffect {
 
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            RogueEffect.addCustomCardToCommandZone("Event - Lost Connection", human);
+            RogueEffect.addCardToCommandZone("Event - Lost Connection", human);
             run.consumeEffect(getId());
         }
     },
