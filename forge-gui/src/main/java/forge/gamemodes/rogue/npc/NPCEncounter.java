@@ -33,6 +33,9 @@ public interface NPCEncounter {
     /** Fired once when a new run is created. Return non-null to show NPC dialog. */
     default NPCContext onRunStart() { return null; }
 
+    /** Fired before an event starts. May replace the event through the context. */
+    default void onBeforeEvent(EventContext ctx) {}
+
     /** Fired before bazaar opens. Modify ctx to inject cards or override prices. */
     default void onBeforeBazaar(BazaarContext ctx) {}
 

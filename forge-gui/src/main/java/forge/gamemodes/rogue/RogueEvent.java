@@ -1,7 +1,6 @@
 package forge.gamemodes.rogue;
 
 import forge.gamemodes.rogue.effect.EventBoon;
-import forge.gamemodes.rogue.npc.NPC;
 import java.util.List;
 
 /**
@@ -117,7 +116,7 @@ public enum RogueEvent {
         )) {
         @Override
         public boolean isAvailable() {
-            return RogueMetaProgress.getInstance().getNPCLevel(NPC.TYVAR.id) < 1;
+            return false;
         }
     };
 

@@ -15,7 +15,7 @@ import java.util.List;
 public enum GontiEncounter implements NPCEncounter {
 
     /** Increment level on every bazaar entry (no relic, no discount). */
-    LEVEL_0(0) {
+    BEFORE_REVEAL(0) {
         @Override
         public void onBeforeBazaar(BazaarContext ctx) {
             // Increment Gonti's level each time the bazaar opens.
@@ -24,7 +24,7 @@ public enum GontiEncounter implements NPCEncounter {
     },
 
     /** Level 2 – always inject the Tarnished Relic. Promotion occurs only if the relic is bought. */
-    LEVEL_2(2) {
+    OFFERING_TARNISHED_RELIC(2) {
         private static final String CURIO_CARD_NAME = "Tarnished Relic";
         private static final int CURIO_PRICE = 10;
 
@@ -63,7 +63,7 @@ public enum GontiEncounter implements NPCEncounter {
     },
 
     /** Level 3 – apply discount after the relic has been purchased. */
-    LEVEL_3(3) {
+    OFFERING_DISCOUNT(3) {
         private static final int DISCOUNT_AMOUNT = 4;
 
         @Override

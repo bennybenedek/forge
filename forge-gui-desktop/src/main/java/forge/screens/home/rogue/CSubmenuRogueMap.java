@@ -13,6 +13,7 @@ import forge.gamemodes.rogue.RogueRun.CarryCard;
 import forge.gamemodes.rogue.RogueRun.CarryCardType;
 import forge.gamemodes.rogue.effect.*;
 import forge.gamemodes.rogue.npc.BazaarContext;
+import forge.gamemodes.rogue.npc.EventContext;
 import forge.gamemodes.rogue.npc.NPCContext;
 import forge.gamemodes.rogue.npc.NPCEncounterComposite;
 import forge.gamemodes.rogue.path.*;
@@ -645,11 +646,17 @@ public enum CSubmenuRogueMap implements ICDoc {
   private void handleEventNode(NodeEvent eventNode) {
     if (currentRun == null) return;
 
-    RogueEvent event = eventNode.getEvent();
+    EventContext npcCtx = new EventContext(eventNode.getEvent());
+    NPCEncounterComposite.INSTANCE.onBeforeEvent(npcCtx, RogueMetaProgress.getInstance());
+
+    RogueEvent event = npcCtx.getResolvedEvent();
     if (event == null) {
       currentRun.nextNode();
       updateView();
       return;
+    }
+    if (npcCtx.eventOverride != null) {
+      eventNode.setEvent(event);
     }
 
     // DEV: allow picking which event to test

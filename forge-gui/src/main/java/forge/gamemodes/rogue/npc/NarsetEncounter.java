@@ -15,7 +15,7 @@ import java.util.List;
 public enum NarsetEncounter implements NPCEncounter {
 
     /** Levels 0–1: silently increment NPC level when chaos was rolled. */
-    LEVEL_0(0) {
+    BEFORE_REVEAL(0) {
         @Override
         public NPCContext onAfterMatch(RogueRun run) {
             if (run.getLastMatchData().chaosCount() <= 0) return null;
@@ -27,7 +27,7 @@ public enum NarsetEncounter implements NPCEncounter {
     },
 
     /** Level 2: Narset reveals herself on the 3rd chaos match. */
-    LEVEL_2(2) {
+    REVEAL(2) {
         @Override
         public NPCContext onAfterMatch(RogueRun run) {
             if (run.getLastMatchData().chaosCount() <= 0) return null;
@@ -41,7 +41,7 @@ public enum NarsetEncounter implements NPCEncounter {
     },
 
     /** Level 3+: offer boons at run start. */
-    LEVEL_3(3) {
+    OFFERING_BOONS(3) {
         @Override
         public NPCContext onRunStart() {
             List<NPCBoon> pool = new ArrayList<>(List.of(

@@ -1,31 +1,61 @@
 package forge.gamemodes.rogue.npc;
 
+import forge.gamemodes.rogue.RogueMetaProgress;
+import forge.gamemodes.rogue.RogueEvent;
 import forge.gamemodes.rogue.effect.NPCBoon;
 import java.util.List;
 
 /**
  * Tyvar Kell — Commander Trainer NPC.
- * Each enum constant represents a progression level with its own flavor text and choices.
+ * Progresses by entering events, then replaces the reveal event before offering boons on future runs.
  */
 public enum TyvarEncounter implements NPCEncounter {
 
-    LEVEL_1(1,
-            "Tyvar Kell steps from the shadows, his elven features lit by the glow of his Planeswalker spark. " +
-            "\"I've watched you fight, and I see potential. Let me train your Commander.\"",
-            List.of(
-                new NPCContext.NPCChoice("Might", NPCBoon.TYVAR_MIGHT),
-                new NPCContext.NPCChoice("Efficiency", NPCBoon.TYVAR_DISCOUNT),
-                new NPCContext.NPCChoice("Fury", NPCBoon.TYVAR_HASTE)
-            ));
+    /** Hidden buildup phase: each entered event advances Tyvar's reveal progress. */
+    BEFORE_REVEAL(0) {
+        @Override
+        public void onBeforeEvent(EventContext ctx) {
+            int currentLevel = getProgress().getNPCLevel(getNpc().id);
+            if (currentLevel >= REVEAL.getRequiredLevel()) {
+                return;
+            }
+            incrementNpcLevel();
+        }
+    },
+
+    /** On the third event, Tyvar replaces the planned event with his reveal event. */
+    REVEAL(2) {
+        @Override
+        public void onBeforeEvent(EventContext ctx) {
+            int currentLevel = getProgress().getNPCLevel(getNpc().id);
+            if (currentLevel > getRequiredLevel()) {
+                return;
+            }
+            incrementNpcLevel();
+            ctx.eventOverride = RogueEvent.MEET_TYVAR;
+        }
+    },
+
+    /** After being met, Tyvar offers Commander training boons at the start of runs. */
+    OFFERING_BOONS(3) {
+        @Override
+        public NPCContext onRunStart() {
+            return buildContext(
+                "Tyvar Kell steps from the shadows, his elven features lit by the glow of his Planeswalker spark. " +
+                "\"I've watched you fight, and I see potential. Let me train your Commander.\"",
+                List.of(
+                    new NPCContext.NPCChoice("Might", NPCBoon.TYVAR_MIGHT),
+                    new NPCContext.NPCChoice("Efficiency", NPCBoon.TYVAR_DISCOUNT),
+                    new NPCContext.NPCChoice("Fury", NPCBoon.TYVAR_HASTE)
+                )
+            );
+        }
+    };
 
     private final int requiredLevel;
-    private final String flavorText;
-    private final List<NPCContext.NPCChoice> choices;
 
-    TyvarEncounter(int requiredLevel, String flavorText, List<NPCContext.NPCChoice> choices) {
+    TyvarEncounter(int requiredLevel) {
         this.requiredLevel = requiredLevel;
-        this.flavorText = flavorText;
-        this.choices = choices;
     }
 
     @Override
@@ -34,8 +64,7 @@ public enum TyvarEncounter implements NPCEncounter {
     @Override
     public int getRequiredLevel() { return requiredLevel; }
 
-    @Override
-    public NPCContext onRunStart() {
-        return buildContext(flavorText, choices);
+    private static RogueMetaProgress getProgress() {
+        return RogueMetaProgress.getInstance();
     }
 }

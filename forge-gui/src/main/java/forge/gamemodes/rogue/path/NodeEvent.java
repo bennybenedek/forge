@@ -22,6 +22,7 @@ public class NodeEvent extends RoguePathNode {
     }
 
     public RogueEvent getEvent() { return event; }
+    public void setEvent(RogueEvent event) { this.event = event; }
 
     public RoguePlanebound getEventPlanebound() { return eventPlanebound; }
     public void setEventPlanebound(RoguePlanebound pb) { this.eventPlanebound = pb; }
