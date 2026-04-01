@@ -88,7 +88,7 @@ public enum CSubmenuRogueMap implements ICDoc {
       RogueTutorialHelper.showIfNotSeen(RogueTutorial.POST_BATTLE);
     }
 
-    // Check node types of current row and show tutorials if not seen yet
+    // Check node types of current row and show battle tutorials if not seen yet
     int currentRow = currentRun.getCurrentNode().getRowIndex();
     for (RoguePathNode node : currentRun.getPath().getNodesInRow(currentRow)) {
       if (node instanceof NodePlanebound planebound
@@ -96,14 +96,6 @@ public enum CSubmenuRogueMap implements ICDoc {
         RogueTutorialHelper.showIfNotSeen(RogueTutorial.ELITE_ENCOUNTER);
       } else if (node instanceof NodePlanebound) {
         RogueTutorialHelper.showIfNotSeen(RogueTutorial.PRE_BATTLE);
-      } else if (node instanceof NodeSanctum) {
-        RogueTutorialHelper.showIfNotSeen(RogueTutorial.SANCTUM);
-      } else if (node instanceof NodeBazaar) {
-        RogueTutorialHelper.showIfNotSeen(RogueTutorial.BAZAAR);
-      } else if (node instanceof NodeEvent) {
-        RogueTutorialHelper.showIfNotSeen(RogueTutorial.EVENT);
-      } else if (node instanceof NodeChest) {
-        RogueTutorialHelper.showIfNotSeen(RogueTutorial.CHEST);
       }
     }
   }
@@ -473,6 +465,8 @@ public enum CSubmenuRogueMap implements ICDoc {
       return;
     }
 
+    RogueTutorialHelper.showIfNotSeen(RogueTutorial.SANCTUM);
+
     // Get current and max life
     int healAmount = sanctumNode.getHealAmount();
     int freeRemoves = sanctumNode.getFreeRemoves();
@@ -506,7 +500,7 @@ public enum CSubmenuRogueMap implements ICDoc {
     // Track stats and check for unlocks
     RogueStats.fireOnSideNodeCompleted(currentRun, RogueMetaProgress.getInstance());
 
-    // Save run and update view (use update() to trigger tutorials for next row)
+    // Save run and update view
     RogueIO.saveRun(currentRun);
     update();
   }
@@ -528,13 +522,15 @@ public enum CSubmenuRogueMap implements ICDoc {
     // Track stats and check for unlocks
     RogueStats.fireOnSideNodeCompleted(currentRun, RogueMetaProgress.getInstance());
 
-    // Save run and update view (use update() to trigger tutorials for next row)
+    // Save run and update view
     RogueIO.saveRun(currentRun);
     update();
   }
 
   /** Run Bazaar shopping UI and apply purchases. Reusable by Event triggers. */
   private void runBazaarShopping() {
+    RogueTutorialHelper.showIfNotSeen(RogueTutorial.BAZAAR);
+
     RogueDeck rogueDeck = currentRun.getSelectedRogueDeck();
     if (rogueDeck == null) {
       System.err.println("ERROR: Could not find rogue deck for current run.");
@@ -668,6 +664,8 @@ public enum CSubmenuRogueMap implements ICDoc {
       if (picked != null) event = picked;
     }
 
+    RogueTutorialHelper.showIfNotSeen(RogueTutorial.EVENT);
+
     EventDialog eventDialog = new EventDialog(event);
     RogueEvent.EventChoice choice = eventDialog.show();
 
@@ -775,6 +773,8 @@ public enum CSubmenuRogueMap implements ICDoc {
           ChestLoot.values(), loot);
       if (picked != null) loot = picked;
     }
+
+    RogueTutorialHelper.showIfNotSeen(RogueTutorial.CHEST);
 
     // Show chest dialog (same structure as EventDialog)
     new ChestDialog(loot).show();
