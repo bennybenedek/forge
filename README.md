@@ -30,8 +30,9 @@ Join the **Forge community** on [Discord](https://discord.gg/HcPJNyD66a)!
 
 ### 📥 Desktop Installation
 1. **Latest Releases:** Download the latest version [here](https://github.com/bennybenedek/forge/releases/tag/rogue-commander-latest).
-2. **Snapshot Build:** For the latest development version, grab the `forge-gui-desktop` tarball from our [Snapshot Build](https://github.com/bennybenedek/forge/releases/tag/rogue-commander-latest).
-   - **Tip:** Extract to a new folder to prevent version conflicts.
+2. **Snapshot Build:** For the latest development version, download the `forge-installer-<version>.jar` installer from our [Snapshot Build](https://github.com/bennybenedek/forge/releases/tag/rogue-commander-latest).
+   - Run it with `java -jar forge-installer-<version>.jar` if double-clicking does not start the installer.
+   - The `.tar.bz2` archive is only a manual fallback if you do not want to use the installer.
 3. **User Data Management:** Previous players' data is preserved during upgrades.
 4. **Java Requirement:** Ensure you have **Java 17 or later** installed.
 
