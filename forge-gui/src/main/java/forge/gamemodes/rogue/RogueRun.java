@@ -288,8 +288,13 @@ public class RogueRun {
         return hostedMatch;
     }
 
-    public LastMatchData getLastMatchData() { return lastMatchData; }
-    public void setLastMatchData(LastMatchData data) { this.lastMatchData = data; }
+    public LastMatchData getLastMatchData() {
+        return lastMatchData != null ? lastMatchData : LastMatchData.EMPTY;
+    }
+
+    public void setLastMatchData(LastMatchData data) {
+        this.lastMatchData = data != null ? data : LastMatchData.EMPTY;
+    }
 
     // Getters and Setters
     public String getName() {
