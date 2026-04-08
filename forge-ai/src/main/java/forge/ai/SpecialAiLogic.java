@@ -30,6 +30,8 @@ import java.util.List;
  */
 
 public class SpecialAiLogic {
+    private static final int RIOT_REDUNDANT_COUNTER_THRESHOLD = 4;
+
     // A logic for cards like Pongify, Crib Swap, Angelic Ascension
     public static boolean doPongifyLogic(final Player ai, final SpellAbility sa) {
         Card source = sa.getHostCard();
@@ -391,6 +393,11 @@ public class SpecialAiLogic {
         game.getAction().checkStaticAbilities(false, Sets.newHashSet(copy), preList);
         // reset again?
         game.getAction().checkStaticAbilities(false);
+        final boolean hasEnteringRiot = sa.isKeyword(Keyword.RIOT) || ComputerUtil.hasEnteringRiot(host, player);
+
+        if (!hasEnteringRiot) {
+            return false;
+        }
 
         // can't gain counters, use Haste
         if (!copy.canReceiveCounters(CounterEnumType.P1P1)) {
@@ -410,6 +417,13 @@ public class SpecialAiLogic {
         // not before Combat
         if (!game.getPhaseHandler().getPhase().isBefore(PhaseType.COMBAT_DECLARE_ATTACKERS)) {
             return false;
+        }
+
+        // If the creature is already expected to enter with several +1/+1 counters,
+        // Riot's extra counter is usually less valuable than immediate haste.
+        final int predictedCounters = ComputerUtil.predictEnteringP1P1Counters(copy, player);
+        if (predictedCounters >= RIOT_REDUNDANT_COUNTER_THRESHOLD) {
+            return true;
         }
 
         // TODO check other opponents too if able

@@ -80,6 +80,7 @@ jobs:
         run: |
           mkdir release-artifacts
           cp artifacts/*.jar release-artifacts/ || true
+          cp artifacts/*.tar.bz2 release-artifacts/ || true
           cp artifacts/build.txt release-artifacts/ || true
           cp artifacts/version.txt release-artifacts/ || true
           ls -lh release-artifacts/

@@ -6,8 +6,8 @@ type=2
 [Commander]
 1 Korvold, Fae-Cursed King|ELD|1
 [Main]
+1 Beetleback Chief|TDC|1
 1 Birds of Paradise|GK2|1
-1 Blood Crypt|ECL|1
 1 Bloodstained Mire|MH3|1
 1 Chandra's Ignition|M3C|1
 1 Command Tower|ELD|1
@@ -30,12 +30,12 @@ type=2
 1 Krenko, Mob Boss|FDN|1
 1 Krenko, Tin Street Kingpin|MOC|1
 1 Krenko's Command|J25|1
-1 Mogg War Marshal|DMR|1
 8 Mountain|ELD|1
 1 Murderous Redcap|UMA|1
 1 Muxus, Goblin Grandee|J22|1
 1 Overgrown Tomb|ECL|1
 1 Rogue's Passage|CMM|1
+1 Rhythm of the Wild|LCC|1
 1 Siege-Gang Commander|TDC|1
 1 Sling-Gang Lieutenant|J22|1
 1 Sol Ring|WOC|1
@@ -43,7 +43,7 @@ type=2
 1 Spikeshot Goblin|CMM|1
 1 Stomping Ground|EOE|1
 1 Swamp|ELD|1
-1 Terminate|M3C|1
+1 Swiftfoot Boots|TDC|1
 1 Verdant Catacombs|MH2|1
 1 Wooded Foothills|MH3|1
 1 Ziatora, the Incinerator|M3C|1

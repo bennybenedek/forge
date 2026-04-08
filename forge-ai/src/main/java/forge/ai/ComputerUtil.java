@@ -75,7 +75,6 @@ import java.util.stream.Collectors;
  * @version $Id$
  */
 public class ComputerUtil {
-    private static final boolean DEBUG_DEVOUR_SAC = true;
     private static final double DEVOUR_SACRIFICE_VALUE_FACTOR = 0.8;
 
     public static boolean handlePlayingSpellAbility(final Player ai, SpellAbility sa, Runnable chooseTargets) {
@@ -911,29 +910,30 @@ public class ComputerUtil {
     private static CardCollection chooseDevourSacrifices(final SpellAbility source, final CardCollection remaining,
             final Player ai, final int amount, final int considerSacThreshold) {
         final Card host = source.getHostCard();
+        return chooseDevourSacrifices(host, source, remaining, ai, amount, considerSacThreshold,
+                getDevourAmount(source, host));
+    }
+
+    private static CardCollection chooseDevourSacrifices(final Card host, final SpellAbility source,
+            final CardCollection remaining, final Player ai, final int amount, final int considerSacThreshold,
+            final int devourAmount) {
         final CardCollection candidates = filterOptionalSacrificeCandidates(source, remaining, ai, considerSacThreshold);
         final CardCollection sacrificed = new CardCollection();
 
         if (!host.isCreature() || candidates.isEmpty()) {
-            logDevour(ai, host, "No sacrifices: hostIsCreature=" + host.isCreature() + ", candidates=" + formatCards(candidates));
             return sacrificed;
         }
 
-        final int devourAmount = getDevourAmount(source, host);
         if (devourAmount <= 0) {
-            logDevour(ai, host, "No sacrifices: devour amount resolved to " + devourAmount);
             return sacrificed;
         }
 
         int currentScore = ComputerUtilCard.evaluateCreature(host, true, false);
         final int max = Math.min(candidates.size(), amount);
-        logDevour(ai, host, "Start amount=" + devourAmount + ", currentScore=" + currentScore + ", max=" + max
-                + ", candidates=" + formatCards(candidates));
 
         for (int i = 0; i < max && !candidates.isEmpty(); ) {
             final Card next = chooseCardToSacrifice(source, candidates, ai, false);
             if (next == null || !next.isCreature()) {
-                logDevour(ai, host, "Stop at step " + (i + 1) + ": next candidate is " + next);
                 break;
             }
 
@@ -941,12 +941,7 @@ public class ComputerUtil {
             final int sacrificedScore = ComputerUtilCard.evaluateCreature(next, true, false);
             final int devourGain = nextScore - currentScore;
             final double requiredGain = sacrificedScore * DEVOUR_SACRIFICE_VALUE_FACTOR;
-            logDevour(ai, host, "Step " + (i + 1) + ": consider " + next + " sacScore=" + sacrificedScore
-                    + ", currentScore=" + currentScore + ", nextScore=" + nextScore
-                    + ", devourGain=" + devourGain + ", requiredGain=" + requiredGain);
             if (devourGain < requiredGain) {
-                logDevour(ai, host, "Reject " + next + ": devourGain " + devourGain
-                        + " < requiredGain " + requiredGain);
                 candidates.remove(next);
                 continue;
             }
@@ -955,10 +950,8 @@ public class ComputerUtil {
             sacrificed.add(next);
             currentScore = nextScore;
             i++;
-            logDevour(ai, host, "Accept " + next + ", newScore=" + currentScore);
         }
 
-        logDevour(ai, host, "Chosen sacrifices=" + formatCards(sacrificed));
         return sacrificed;
     }
 
@@ -970,7 +963,7 @@ public class ComputerUtil {
     }
 
     private static int getDevourAmount(final SpellAbility source, final Card host) {
-        if (source.getKeyword() != null && source.getKeyword().getKeyword() == Keyword.DEVOUR) {
+        if (source != null && source.getKeyword() != null && source.getKeyword().getKeyword() == Keyword.DEVOUR) {
             final int amount = source.getKeyword().getAmount();
             if (amount > 0) {
                 return amount;
@@ -979,14 +972,113 @@ public class ComputerUtil {
         return host.getKeywordMagnitude(Keyword.DEVOUR);
     }
 
-    private static void logDevour(final Player ai, final Card host, final String message) {
-        if (DEBUG_DEVOUR_SAC) {
-            System.out.println("[AI DEVOUR] [" + ai.getName() + "] [" + host + "] " + message);
+    private static int getEnteringDevourAmount(final Card host, final Player ai) {
+        int amount = host.getKeywordMagnitude(Keyword.DEVOUR);
+        final CardCollection all = new CardCollection(ai.getCardsIn(Lists.newArrayList(ZoneType.Battlefield, ZoneType.Command)));
+
+        for (final Card sourceCard : all) {
+            for (final Trigger trigger : sourceCard.getTriggers()) {
+                final Map<String, String> params = trigger.getMapParams();
+                if (!"SpellCast".equals(params.get("Mode")) || !params.containsKey("ValidCard")) {
+                    continue;
+                }
+                if (!host.isValid(params.get("ValidCard").split(","), ai, sourceCard, null)) {
+                    continue;
+                }
+                if (params.containsKey("ValidActivatingPlayer")
+                        && !ai.isValid(params.get("ValidActivatingPlayer").split(","), ai, sourceCard, null)) {
+                    continue;
+                }
+
+                final SpellAbility triggerSa = trigger.ensureAbility();
+                String keywordText = null;
+                if (triggerSa != null && triggerSa.getApi() == ApiType.Animate) {
+                    keywordText = triggerSa.getParam("Keywords");
+                }
+                if (keywordText == null && params.containsKey("Execute")) {
+                    final String execute = sourceCard.getSVar(params.get("Execute"));
+                    if (execute != null && execute.contains("Keywords$")) {
+                        keywordText = extractParamValue(execute, "Keywords$");
+                    }
+                }
+
+                amount += extractKeywordAmount(keywordText, "Devour");
+            }
         }
+        return amount;
     }
 
-    private static String formatCards(final CardCollectionView cards) {
-        return cards.stream().map(Card::toString).collect(Collectors.joining(", ", "[", "]"));
+    private static String extractParamValue(final String script, final String key) {
+        for (final String part : script.split("\\|")) {
+            final String trimmed = part.trim();
+            if (trimmed.startsWith(key)) {
+                return trimmed.substring(key.length()).trim();
+            }
+        }
+        return null;
+    }
+
+    private static int extractKeywordAmount(final String keywordText, final String keywordName) {
+        if (keywordText == null) {
+            return 0;
+        }
+        for (final String keyword : keywordText.split(" & ")) {
+            final String trimmed = keyword.trim();
+            if (trimmed.startsWith(keywordName + ":")) {
+                final String[] parts = trimmed.split(":", 3);
+                if (parts.length > 1 && StringUtils.isNumeric(parts[1])) {
+                    return Integer.parseInt(parts[1]);
+                }
+            }
+        }
+        return 0;
+    }
+
+    static int predictEnteringP1P1Counters(final Card host, final Player ai) {
+        int totalCounters = 0;
+        boolean foundDevour = false;
+        for (final ReplacementEffect re : host.getReplacementEffects()) {
+            final SpellAbility sa = re.ensureAbility();
+            if (sa == null) {
+                continue;
+            }
+
+            if (sa.isKeyword(Keyword.DEVOUR)) {
+                foundDevour = true;
+                final CardCollection availableCreatures = new CardCollection(ai.getCreaturesInPlay());
+                final CardCollection sacrifices = chooseDevourSacrifices(host, sa, availableCreatures, ai,
+                        availableCreatures.size(), -1, getDevourAmount(sa, host));
+                final int devourCounters = getDevourAmount(sa, host) * sacrifices.size();
+                totalCounters += devourCounters;
+                continue;
+            }
+
+            if (sa.isKeyword(Keyword.RIOT) || sa.getApi() != ApiType.PutCounter) {
+                continue;
+            }
+            if (!CounterEnumType.P1P1.name().equals(sa.getParam("CounterType"))) {
+                continue;
+            }
+
+            final String defined = sa.getParamOrDefault("Defined", "Self");
+            if (!"Self".equals(defined) && !"ReplacedCard".equals(defined)) {
+                continue;
+            }
+
+            final int addedCounters = AbilityUtils.calculateAmount(host, sa.getParamOrDefault("CounterNum", "0"), sa);
+            totalCounters += addedCounters;
+        }
+        if (!foundDevour) {
+            final int enteringDevourAmount = getEnteringDevourAmount(host, ai);
+            if (enteringDevourAmount > 0) {
+                final CardCollection availableCreatures = new CardCollection(ai.getCreaturesInPlay());
+                final CardCollection sacrifices = chooseDevourSacrifices(host, null, availableCreatures, ai,
+                        availableCreatures.size(), -1, enteringDevourAmount);
+                final int devourCounters = enteringDevourAmount * sacrifices.size();
+                totalCounters += devourCounters;
+            }
+        }
+        return totalCounters;
     }
 
     private static CardCollection filterOptionalSacrificeCandidates(final SpellAbility source, final CardCollection remaining,
@@ -994,7 +1086,7 @@ public class ComputerUtil {
         return CardLists.filter(remaining, c -> {
             int sacThreshold = 190;
 
-            String logic = source.getParamOrDefault("AILogic", "");
+            String logic = source == null ? "" : source.getParamOrDefault("AILogic", "");
             if (logic.startsWith("SacForDamage")) {
                 final int damageAmt = logic.contains("cmc") ? c.getManaCost().getCMC() : c.getNetPower();
                 if (damageAmt <= 0) {
@@ -1013,7 +1105,8 @@ public class ComputerUtil {
                 sacThreshold = considerSacThreshold;
             }
 
-            if (c.hasSVar("SacMe") || ComputerUtilCard.evaluateCreature(c) < sacThreshold) {
+            final int eval = ComputerUtilCard.evaluateCreature(c);
+            if (c.hasSVar("SacMe") || eval < sacThreshold) {
                 return true;
             }
 
@@ -1048,7 +1141,7 @@ public class ComputerUtil {
             }
         }
 
-        if (source.isEmerge() || source.isOffering()) {
+        if (source != null && (source.isEmerge() || source.isOffering())) {
             // don't sac when cost wouldn't be reduced
             remaining = CardLists.filter(remaining, CardPredicates.greaterCMC(1));
         }
@@ -1280,7 +1373,8 @@ public class ComputerUtil {
             return true;
         }
 
-        if (cardState.hasKeyword(Keyword.RIOT) && SpecialAiLogic.preferHasteForRiot(sa, ai)) {
+        final boolean preferHasteForRiot = SpecialAiLogic.preferHasteForRiot(sa, ai);
+        if (preferHasteForRiot) {
             // Planning to choose Haste for Riot, so do this in Main 1
             return true;
         }
@@ -1303,7 +1397,7 @@ public class ComputerUtil {
         }
 
         if (card.isCreature() && !cardState.hasKeyword(Keyword.DEFENDER)
-                && (cardState.hasKeyword(Keyword.HASTE) || hasACardGivingHaste(ai, true) || sa.isDash())) {
+                && (hasEnteringKeyword(card, ai, Keyword.HASTE) || hasACardGivingHaste(ai, true) || sa.isDash())) {
             return true;
         }
 
@@ -1607,6 +1701,54 @@ public class ComputerUtil {
         return false;
     }
 
+    public static boolean hasEnteringKeyword(final Card card, final Player ai, final Keyword keyword) {
+        if (card.hasKeyword(keyword)) {
+            return true;
+        }
+
+        final Game game = card.getGame();
+        final Card copy = CardCopyService.getLKICopy(card);
+        copy.setLastKnownZone(ai.getZone(ZoneType.Battlefield));
+
+        final CardCollection preList = new CardCollection(copy);
+        game.getAction().checkStaticAbilities(false, Sets.newHashSet(copy), preList);
+        game.getAction().checkStaticAbilities(false);
+
+        return copy.hasKeyword(keyword);
+    }
+
+    public static boolean hasEnteringRiot(final Card card, final Player ai) {
+        if (card.hasKeyword(Keyword.RIOT)) {
+            return true;
+        }
+
+        final CardCollection all = new CardCollection(ai.getCardsIn(Lists.newArrayList(ZoneType.Battlefield, ZoneType.Command)));
+        for (final Card c : all) {
+            for (StaticAbility stAb : c.getStaticAbilities()) {
+                if (!stAb.checkMode(StaticAbilityMode.Continuous) || !stAb.hasParam("AddKeyword")
+                        || !stAb.getParam("AddKeyword").contains("Riot")) {
+                    continue;
+                }
+
+                if (c.isEquipment() && c.getEquipping() == null) {
+                    return true;
+                }
+
+                final String affected = stAb.getParamOrDefault("Affected", "");
+                if (!affected.contains("Creature")) {
+                    continue;
+                }
+                if (affected.contains("YouCtrl") || !affected.contains(".")) {
+                    if (card.isToken() && (affected.contains("!token") || affected.contains("nonToken"))) {
+                        continue;
+                    }
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public static boolean hasAFogEffect(final Player defender, final Player ai, boolean checkingOther) {
         final CardCollection all = new CardCollection(defender.getCardsIn(ZoneType.Battlefield));
 
@@ -1836,11 +1978,7 @@ public class ComputerUtil {
         if (threatApi == ApiType.DealDamage || threatApi == ApiType.DamageAll) {
             // If PredictDamage is >= Lethal Damage
             final int dmg = AbilityUtils.calculateAmount(source, topStack.getParam("NumDmg"), topStack);
-            final SpellAbility sub = topStack.getSubAbility();
-            boolean noRegen = false;
-            if (sub != null && sub.getApi() == ApiType.Effect && sub.hasParam("AILogic") && sub.getParam("AILogic").equals("CantRegenerate")) {
-                noRegen = true;
-            }
+            final boolean noRegen = hasNoRegenSubAbility(topStack);
             for (final Object o : objects) {
                 if (o instanceof Card c) {
                     // indestructible
@@ -1914,6 +2052,38 @@ public class ComputerUtil {
                     } else if (ComputerUtilCombat.predictDamageTo(p, dmg, source, false) >= p.getLife()) {
                         threatened.add(p);
                     }
+                }
+            }
+        }
+        // EachDamage (e.g. fight-like spells where defined damagers deal their power to a target)
+        else if (threatApi == ApiType.EachDamage
+                && (saviourApi == ApiType.Regenerate || saviourApi == ApiType.ChangeZone
+                || saviourApi == ApiType.Pump || saviourApi == ApiType.PumpAll
+                || saviourApi == ApiType.Protection || saviourApi == null)) {
+            final String numDmg = topStack.getParamOrDefault("NumDmg", "0");
+            final boolean noRegen = hasNoRegenSubAbility(topStack);
+            CardCollectionView damagers;
+            if (topStack.hasParam("DefinedDamagers")) {
+                damagers = AbilityUtils.getDefinedCards(source, topStack.getParam("DefinedDamagers"), topStack);
+            } else {
+                CardCollectionView battlefield = aiPlayer.getGame().getCardsIn(ZoneType.Battlefield);
+                damagers = topStack.hasParam("ValidCards")
+                        ? CardLists.getValidCards(battlefield, topStack.getParam("ValidCards"), source.getController(), source, topStack)
+                        : battlefield;
+            }
+            int totalDmg = 0;
+            for (final Card damager : damagers) {
+                totalDmg += AbilityUtils.calculateAmount(damager, numDmg, topStack);
+            }
+            for (final Object o : objects) {
+                if (!(o instanceof Card c)) continue;
+                if (c.hasKeyword(Keyword.INDESTRUCTIBLE)) continue;
+                if (c.getCounters(CounterEnumType.SHIELD) > 0) continue;
+                if (c.getShieldCount() > 0) continue;
+                if (saviourApi == ApiType.Regenerate && (!c.canBeShielded() || noRegen)) continue;
+                if (saviourApi == ApiType.ChangeZone && (c.getOwner().isOpponentOf(aiPlayer) || c.isToken())) continue;
+                if (ComputerUtilCombat.predictDamageTo(c, totalDmg, source, false) >= ComputerUtilCombat.getDamageToKill(c, false)) {
+                    threatened.add(c);
                 }
             }
         }
@@ -2085,6 +2255,12 @@ public class ComputerUtil {
 
         predictThreatenedObjects(aiPlayer, saviour, topStack.getSubAbility()).forEach(threatened::add);
         return threatened;
+    }
+
+    private static boolean hasNoRegenSubAbility(SpellAbility sa) {
+        final SpellAbility sub = sa.getSubAbility();
+        return sub != null && sub.getApi() == ApiType.Effect
+                && sub.hasParam("AILogic") && sub.getParam("AILogic").equals("CantRegenerate");
     }
 
     /**

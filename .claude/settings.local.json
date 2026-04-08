@@ -31,7 +31,9 @@
       "Bash(python3:*)",
       "Bash(pip install:*)",
       "Skill(commitMessage)",
-      "Bash(xargs head:*)"
+      "Bash(xargs head:*)",
+      "Skill(areWeHappy)",
+      "Skill(areWeHappy:*)"
     ],
     "deny": [],
     "ask": []
