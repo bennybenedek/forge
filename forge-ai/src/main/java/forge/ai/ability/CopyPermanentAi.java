@@ -12,6 +12,7 @@ import forge.game.phase.PhaseType;
 import forge.game.player.Player;
 import forge.game.player.PlayerActionConfirmMode;
 import forge.game.player.PlayerCollection;
+import forge.game.keyword.Keyword;
 import forge.game.spellability.SpellAbility;
 import forge.game.zone.ZoneType;
 
@@ -21,6 +22,7 @@ import java.util.Map;
 import java.util.function.Predicate;
 
 public class CopyPermanentAi extends SpellAbilityAi {
+
     @Override
     protected AiAbilityDecision checkApiLogic(Player aiPlayer, SpellAbility sa) {
         Card source = sa.getHostCard();
@@ -62,8 +64,8 @@ public class CopyPermanentAi extends SpellAbilityAi {
             }
         }
 
-        if (sa.isEmbalm() || sa.isEternalize()) {
-            // E.g. Vizier of Many Faces: check to make sure it makes sense to make the token now
+        if (sa.isEmbalm() || sa.isEternalize() || isEncore(sa)) {
+            // E.g. Vizier of Many Faces or Encore: check to make sure it makes sense to make the token now
             AiPlayDecision decision = ComputerUtilCard.checkNeedsToPlayReqs(sa.getHostCard(), sa);
 
             if (decision != AiPlayDecision.WillPlay) {
@@ -249,6 +251,10 @@ public class CopyPermanentAi extends SpellAbilityAi {
         final String filter = canCopyLegendary ? "Permanent" : "Permanent.YouDontCtrl,Permanent.nonLegendary";
         // TODO add filter to not select Legendary from Other Player when ai already have a Legendary with that name
         return CardLists.getValidCards(options, filter, ctrl, host, sa);
+    }
+
+    private static boolean isEncore(final SpellAbility sa) {
+        return sa.isKeyword(Keyword.ENCORE);
     }
 
     @Override

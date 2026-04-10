@@ -6,6 +6,7 @@ type=2
 [Commander]
 1 Korvold, Fae-Cursed King|ELD|1
 [Main]
+1 Assassin's Trophy|MKM|1
 1 Beetleback Chief|TDC|1
 1 Birds of Paradise|GK2|1
 1 Bloodstained Mire|MH3|1
@@ -22,15 +23,13 @@ type=2
 1 Goblin Instigator|JMP|1
 1 Goblin Matron|DMR|1
 1 Goblin Warchief|DOM|1
-1 Heroic Intervention|CMM|1
 1 Hordeling Outburst|J22|1
 1 Ignoble Hierarch|M3C|1
 1 Impulsive Pilferer|OTC|1
-1 Kazuul's Fury|ZNR|1
 1 Krenko, Mob Boss|FDN|1
 1 Krenko, Tin Street Kingpin|MOC|1
 1 Krenko's Command|J25|1
-8 Mountain|ELD|1
+9 Mountain|ELD|1
 1 Murderous Redcap|UMA|1
 1 Muxus, Goblin Grandee|J22|1
 1 Overgrown Tomb|ECL|1
@@ -44,6 +43,7 @@ type=2
 1 Stomping Ground|EOE|1
 1 Swamp|ELD|1
 1 Swiftfoot Boots|TDC|1
+1 Terminate|M3C|1
 1 Verdant Catacombs|MH2|1
 1 Wooded Foothills|MH3|1
 1 Ziatora, the Incinerator|M3C|1

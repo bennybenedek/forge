@@ -3481,6 +3481,7 @@ public class CardFactoryUtil {
                     "| SpellDescription$ (" + inst.getReminderText() + ")" + extra;
 
             final SpellAbility sa = AbilityFactory.getAbility(effect, card);
+            sa.setKeyword(inst);
 
             final String repeatStr = "DB$ RepeatEach | DefinedCards$ Remembered | UseImprinted$ True";
             final AbilitySub repeatSub = (AbilitySub) AbilityFactory.getAbility(repeatStr, card);

@@ -2,9 +2,10 @@ Name:Impulsive Pilferer
 ManaCost:R
 Types:Creature Goblin Pirate
 PT:1/1
-K:Encore:3 R
+K:Encore:3 R:NeedsToPlayVar$ NumOpps GE2
 T:Mode$ ChangesZone | ValidCard$ Card.Self | Origin$ Battlefield | Destination$ Graveyard | Execute$ TrigToken | TriggerDescription$ When CARDNAME dies, create a Treasure token. (It's an artifact with "{T}, Sacrifice this artifact: Add one mana of any color.")
 SVar:TrigToken:DB$ Token | TokenScript$ c_a_treasure_sac
+SVar:NumOpps:PlayerCountOpponents$Amount
 SVar:SacMe:1
 DeckHas:Ability$Token
 DeckHints:Ability$Sacrifice

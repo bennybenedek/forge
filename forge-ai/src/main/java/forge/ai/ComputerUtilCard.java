@@ -56,6 +56,7 @@ import forge.game.zone.ZoneType;
 import forge.item.PaperCard;
 
 public class ComputerUtilCard {
+
     public static Card getMostExpensivePermanentAI(final CardCollectionView list, final SpellAbility spell, final boolean targeted) {
         CardCollectionView all = list;
         if (targeted) {
@@ -1910,6 +1911,8 @@ public class ComputerUtilCard {
         boolean isRightSplit = sa != null && sa.getCardState().getStateName() == CardStateName.RightSplit;
         String needsToPlayName = isRightSplit ? "SplitNeedsToPlay" : "NeedsToPlay";
         String needsToPlayVarName = isRightSplit ? "SplitNeedsToPlayVar" : "NeedsToPlayVar";
+        String needsToPlay = sa != null && sa.hasParam("NeedsToPlay") ? sa.getParam("NeedsToPlay") : null;
+        String needsToPlayVar = sa != null && sa.hasParam("NeedsToPlayVar") ? sa.getParam("NeedsToPlayVar") : null;
 
         // TODO: if there are ever split cards with Evoke or Kicker, factor in the right split option above
         if (sa != null) {
@@ -1937,8 +1940,10 @@ public class ComputerUtilCard {
             }
         }
 
-        if (card.hasSVar(needsToPlayName)) {
-            final String needsToPlay = card.getSVar(needsToPlayName);
+        if (needsToPlay == null && card.hasSVar(needsToPlayName)) {
+            needsToPlay = card.getSVar(needsToPlayName);
+        }
+        if (needsToPlay != null) {
 
             // A special case which checks that this creature will attack if it's the AI's turn
             if (needsToPlay.equalsIgnoreCase("WillAttack")) {
@@ -1957,10 +1962,12 @@ public class ComputerUtilCard {
                 return AiPlayDecision.MissingNeededCards;
             }
         }
-        if (card.getSVar(needsToPlayVarName).length() > 0) {
-            final String needsToPlay = card.getSVar(needsToPlayVarName);
-            String sVar = needsToPlay.split(" ")[0];
-            String comparator = needsToPlay.split(" ")[1];
+        if (needsToPlayVar == null && card.getSVar(needsToPlayVarName).length() > 0) {
+            needsToPlayVar = card.getSVar(needsToPlayVarName);
+        }
+        if (needsToPlayVar != null && !needsToPlayVar.isEmpty()) {
+            String sVar = needsToPlayVar.split(" ")[0];
+            String comparator = needsToPlayVar.split(" ")[1];
             String compareTo = comparator.substring(2);
             int x = AbilityUtils.calculateAmount(card, sVar, sa);
             int y = AbilityUtils.calculateAmount(card, compareTo, sa);

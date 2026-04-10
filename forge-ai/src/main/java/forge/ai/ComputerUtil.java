@@ -1396,9 +1396,19 @@ public class ComputerUtil {
             }
         }
 
+        final boolean entersWithHaste = hasEnteringKeyword(card, ai, Keyword.HASTE);
+        final boolean hasOtherHasteSource = hasACardGivingHaste(ai, true);
+        final boolean hasDash = sa.isDash();
         if (card.isCreature() && !cardState.hasKeyword(Keyword.DEFENDER)
-                && (hasEnteringKeyword(card, ai, Keyword.HASTE) || hasACardGivingHaste(ai, true) || sa.isDash())) {
-            return true;
+                && (entersWithHaste || hasOtherHasteSource || hasDash)) {
+            final Card enteringCopy = CardCopyService.getLKICopy(card);
+            enteringCopy.setLastKnownZone(ai.getZone(ZoneType.Battlefield));
+
+            final CardCollection preList = new CardCollection(enteringCopy);
+            ai.getGame().getAction().checkStaticAbilities(false, Sets.newHashSet(enteringCopy), preList);
+            ai.getGame().getAction().checkStaticAbilities(false);
+
+            return hasteHasImmediateValue(ai, enteringCopy);
         }
 
         //cast equipment in Main1 when there are creatures to equip and no other unequipped equipment
@@ -1714,7 +1724,59 @@ public class ComputerUtil {
         game.getAction().checkStaticAbilities(false, Sets.newHashSet(copy), preList);
         game.getAction().checkStaticAbilities(false);
 
-        return copy.hasKeyword(keyword);
+        if (copy.hasKeyword(keyword)) {
+            return true;
+        }
+
+        if (hasStaticAbilityGrantingKeyword(copy, copy, keyword)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private static boolean hasStaticAbilityGrantingKeyword(final Card enteringCard, final Card source, final Keyword keyword) {
+        for (final StaticAbility stAb : source.getStaticAbilities()) {
+            if (!stAb.checkMode(StaticAbilityMode.Continuous) || !stAb.hasParam("AddKeyword")) {
+                continue;
+            }
+
+            if (!stAb.getParam("AddKeyword").contains(keyword.toString())) {
+                continue;
+            }
+
+            final String affected = stAb.getParamOrDefault("Affected", "");
+            if (affected.isEmpty()) {
+                continue;
+            }
+
+            if (enteringCard.isValid(affected.split(","), source.getController(), source, null)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean hasteHasImmediateValue(final Player player, final Card card) {
+        card.setSickness(false);
+
+        if (ComputerUtilCard.doesSpecifiedCreatureAttackAI(player, card)) {
+            return true;
+        }
+
+        final AiController ai = ((PlayerControllerAi) player.getController()).getAi();
+        for (final SpellAbility ability : card.getSpellAbilities()) {
+            if (!ability.isAbility() || ability.isManaAbility() || ability.getPayCosts() == null
+                    || !ability.getPayCosts().hasTapCost()) {
+                continue;
+            }
+            final SpellAbility testAbility = ability.copy(player);
+            if (ai.canPlaySa(testAbility).willingToPlay()) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public static boolean hasEnteringRiot(final Card card, final Player ai) {

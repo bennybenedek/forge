@@ -422,7 +422,7 @@ public class SpecialAiLogic {
         // If the creature is already expected to enter with several +1/+1 counters,
         // Riot's extra counter is usually less valuable than immediate haste.
         final int predictedCounters = ComputerUtil.predictEnteringP1P1Counters(copy, player);
-        if (predictedCounters >= RIOT_REDUNDANT_COUNTER_THRESHOLD) {
+        if (predictedCounters >= RIOT_REDUNDANT_COUNTER_THRESHOLD && ComputerUtil.hasteHasImmediateValue(player, copy)) {
             return true;
         }
 
