@@ -19,6 +19,8 @@ jobs:
     permissions:
       contents: write
       packages: write
+    outputs:
+      version: ${{ steps.read_version.outputs.version }}
 
     steps:
       - uses: actions/checkout@v3
@@ -75,6 +77,13 @@ jobs:
           echo "Renamed JAR to: forge-installer-${VERSION}.jar"
           ls -lh artifacts/
 
+      - name: Read version for downstream jobs
+        id: read_version
+        if: github.ref == 'refs/heads/rogueCommander'
+        run: |
+          VERSION=$(cat artifacts/version.txt)
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
       - name: Prepare Rogue Commander release assets
         if: github.ref == 'refs/heads/rogueCommander'
         run: |
@@ -127,18 +136,142 @@ jobs:
             Commit: ${{ github.sha }}
 
             **Download Instructions:**
+
+            **Windows (recommended):**
+            Download `forge-rogue-commander-setup.exe` and double-click it. It will automatically download and launch the Forge installer for you. No Java required for installation — but Java 17 is still needed to run Forge afterwards (the installer will guide you if it is missing).
+
+            **All platforms (Java required):**
             1. Java Requirement: Ensure you have Java 17 or later installed. You can download it from [Adoptium](https://adoptium.net/de/temurin/releases?version=17&os=any&arch=any).
             2. Download the `forge-installer-*.jar` file below.
             3. Run the installer:
                - Windows: Double-click the `.jar` file. If that does not work, run `java -jar forge-installer-*.jar` in PowerShell.
-               - macOS/Linux: Run `java -jar forge-installer-*.jar` in Terminal.
+               - macOS: Right-click → Open (required to bypass Gatekeeper), or run `java -jar forge-installer-*.jar` in Terminal.
+               - Linux: Run `java -jar forge-installer-*.jar` in Terminal.
             4. Choose an install folder and let the installer unpack all required files for you.
             5. Launch Forge from the installed folder:
                - Windows: `forge.exe`
                - macOS/Linux: `./forge.sh`
             6. In the main menu (left side), select "Rogue Commander" and click "Start New Run" to begin the game mode.
 
-            The `.tar.bz2` archive is still produced by CI as a manual fallback, but the installer `.jar` is the recommended one-file download.
-
-            This is a development build for playtesting the new Rogue Commander game mode, which is still a work in progress.   
+            This is a development build for playtesting the new Rogue Commander game mode, which is still a work in progress.
             For general information on how to use the Forge app and gameplay basics, see the [official Forge User Guide](https://github.com/Card-Forge/forge/wiki/User-Guide#gameplay).
+
+  build-windows-setup:
+    needs: [build]
+    if: github.ref == 'refs/heads/rogueCommander'
+    runs-on: windows-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Download Temurin 17 JRE (Windows x64)
+        shell: pwsh
+        run: |
+          $jreUrl = "https://api.adoptium.net/v3/binary/latest/17/ga/windows/x64/jre/hotspot/normal/eclipse"
+          Write-Host "Downloading Temurin 17 JRE from Adoptium..."
+          Invoke-WebRequest -Uri $jreUrl -OutFile jre.zip -UseBasicParsing
+          Write-Host "Download complete. Extracting..."
+          Expand-Archive -Path jre.zip -DestinationPath jre-raw
+          $extracted = Get-ChildItem jre-raw | Where-Object { $_.PSIsContainer } | Select-Object -First 1
+          Write-Host "Extracted folder: $($extracted.Name) — renaming to jre17"
+          Rename-Item $extracted.FullName -NewName "jre17"
+          if (-not (Test-Path "jre-raw\jre17\bin\java.exe")) { throw "java.exe not found at expected path" }
+          $jreSize = [math]::Round((Get-ChildItem "jre-raw\jre17" -Recurse | Measure-Object -Property Length -Sum).Sum / 1MB, 1)
+          Write-Host "JRE ready at jre-raw\jre17 ($jreSize MB total)"
+
+      - name: Generate Inno Setup script
+        shell: pwsh
+        env:
+          FORGE_VERSION: ${{ needs.build.outputs.version }}
+          JAR_URL: https://github.com/bennybenedek/forge/releases/download/rogue-commander-latest/forge-installer-${{ needs.build.outputs.version }}.jar
+        run: |
+          $version = $env:FORGE_VERSION
+          $jarUrl  = $env:JAR_URL
+          Write-Host "Generating ISS for version: $version"
+          Write-Host "JAR URL: $jarUrl"
+
+          $iss = @"
+          [Setup]
+          AppId={{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}
+          AppName=Forge Rogue Commander Installer
+          AppVersion=$version
+          AppPublisherURL=https://github.com/bennybenedek/forge
+          DefaultDirName={localappdata}\ForgeRogueCommander\bootstrap
+          DisableDirPage=yes
+          DisableProgramGroupPage=yes
+          OutputBaseFilename=forge-rogue-commander-setup
+          OutputDir=.
+          Compression=lzma2/ultra64
+          SolidCompression=yes
+          PrivilegesRequired=lowest
+          ArchitecturesInstallIn64BitMode=x64
+          WizardStyle=modern
+          CreateUninstallRegKey=no
+          Uninstallable=no
+
+          [Languages]
+          Name: "english"; MessagesFile: "compiler:Default.isl"
+
+          [Files]
+          ; JRE extracted to {tmp}\forge-bootstrap\jre17 before [Code] runs
+          Source: "jre-raw\jre17\*"; DestDir: "{tmp}\forge-bootstrap\jre17"; Flags: recursesubdirs createallsubdirs ignoreversion
+
+          [Code]
+          const
+            JarUrl = '$jarUrl';
+
+          procedure CurStepChanged(CurStep: TSetupStep);
+          var
+            JarPath:    String;
+            JavaExe:    String;
+            ResultCode: Integer;
+          begin
+            if CurStep = ssPostInstall then begin
+              JarPath := ExpandConstant('{tmp}\forge-bootstrap\forge-installer.jar');
+              JavaExe := ExpandConstant('{tmp}\forge-bootstrap\jre17\bin\java.exe');
+
+              WizardForm.StatusLabel.Caption := 'Downloading Forge installer (~500 MB, please wait)...';
+              if not DownloadTemporaryFile(JarUrl, 'forge-bootstrap\forge-installer.jar', '', nil) then begin
+                MsgBox('Failed to download the Forge installer.' + #13#10 +
+                       'Please check your internet connection and try again.' + #13#10 +
+                       'URL: ' + JarUrl, mbError, MB_OK);
+                Abort();
+              end;
+
+              WizardForm.StatusLabel.Caption := 'Launching Forge installer wizard...';
+              if not Exec(JavaExe, '-jar "' + JarPath + '"', '', SW_SHOW, ewWaitUntilTerminated, ResultCode) then begin
+                MsgBox('Could not launch the Forge installer wizard.' + #13#10 +
+                       'Java: ' + JavaExe + #13#10 +
+                       'JAR: ' + JarPath, mbError, MB_OK);
+              end;
+
+              DeleteFile(JarPath);
+            end;
+          end;
+          "@
+
+          [System.IO.File]::WriteAllText("$PWD\forge-bootstrapper.iss", $iss, [System.Text.UTF8Encoding]::new($false))
+          Write-Host "--- Generated forge-bootstrapper.iss ---"
+          Get-Content forge-bootstrapper.iss
+
+      - name: Compile Inno Setup script
+        shell: pwsh
+        run: |
+          $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
+          Write-Host "Compiling with ISCC: $iscc"
+          & $iscc forge-bootstrapper.iss
+          if ($LASTEXITCODE -ne 0) { throw "ISCC failed with exit code $LASTEXITCODE" }
+          if (-not (Test-Path "forge-rogue-commander-setup.exe")) { throw "EXE not produced — check ISCC output above" }
+          $mb = [math]::Round((Get-Item "forge-rogue-commander-setup.exe").Length / 1MB, 1)
+          Write-Host "forge-rogue-commander-setup.exe produced ($mb MB)"
+
+      - name: Upload EXE to Rogue Commander release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: rogue-commander-latest
+          allowUpdates: true
+          omitBodyDuringUpdate: true
+          omitNameDuringUpdate: true
+          removeArtifacts: false
+          artifacts: forge-rogue-commander-setup.exe
+          token: ${{ secrets.GITHUB_TOKEN }}
