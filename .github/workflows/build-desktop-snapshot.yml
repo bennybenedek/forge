@@ -231,7 +231,7 @@ jobs:
               JavaExe := ExpandConstant('{tmp}\forge-bootstrap\jre17\bin\java.exe');
 
               WizardForm.StatusLabel.Caption := 'Downloading Forge installer (~500 MB, please wait)...';
-              if not DownloadTemporaryFile(JarUrl, 'forge-bootstrap\forge-installer.jar', '', nil) then begin
+              if not DownloadTemporaryFile(JarUrl, 'forge-bootstrap\forge-installer.jar', '') then begin
                 MsgBox('Failed to download the Forge installer.' + #13#10 +
                        'Please check your internet connection and try again.' + #13#10 +
                        'URL: ' + JarUrl, mbError, MB_OK);
