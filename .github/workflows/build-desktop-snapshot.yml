@@ -196,7 +196,7 @@ jobs:
           AppName=Forge Rogue Commander Installer
           AppVersion=$version
           AppPublisherURL=https://github.com/bennybenedek/forge
-          DefaultDirName={localappdata}\ForgeRogueCommander\bootstrap
+          DefaultDirName={tmp}\forge-bootstrap
           DisableDirPage=yes
           DisableProgramGroupPage=yes
           OutputBaseFilename=forge-rogue-commander-setup
@@ -213,41 +213,11 @@ jobs:
           Name: "english"; MessagesFile: "compiler:Default.isl"
 
           [Files]
-          ; JRE extracted to {tmp}\forge-bootstrap\jre17 before [Code] runs
           Source: "jre-raw\jre17\*"; DestDir: "{tmp}\forge-bootstrap\jre17"; Flags: recursesubdirs createallsubdirs ignoreversion
 
-          [Code]
-          const
-            JarUrl = '$jarUrl';
-
-          procedure CurStepChanged(CurStep: TSetupStep);
-          var
-            JarPath:    String;
-            JavaExe:    String;
-            ResultCode: Integer;
-          begin
-            if CurStep = ssPostInstall then begin
-              JarPath := ExpandConstant('{tmp}\forge-bootstrap\forge-installer.jar');
-              JavaExe := ExpandConstant('{tmp}\forge-bootstrap\jre17\bin\java.exe');
-
-              WizardForm.StatusLabel.Caption := 'Downloading Forge installer (~500 MB, please wait)...';
-              if not DownloadTemporaryFile(JarUrl, 'forge-bootstrap\forge-installer.jar', '') then begin
-                MsgBox('Failed to download the Forge installer.' + #13#10 +
-                       'Please check your internet connection and try again.' + #13#10 +
-                       'URL: ' + JarUrl, mbError, MB_OK);
-                Abort();
-              end;
-
-              WizardForm.StatusLabel.Caption := 'Launching Forge installer wizard...';
-              if not Exec(JavaExe, '-jar "' + JarPath + '"', '', SW_SHOW, ewWaitUntilTerminated, ResultCode) then begin
-                MsgBox('Could not launch the Forge installer wizard.' + #13#10 +
-                       'Java: ' + JavaExe + #13#10 +
-                       'JAR: ' + JarPath, mbError, MB_OK);
-              end;
-
-              DeleteFile(JarPath);
-            end;
-          end;
+          [Run]
+          Filename: "powershell.exe"; Parameters: "-NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ""`$ProgressPreference='SilentlyContinue'; Invoke-WebRequest -Uri '$jarUrl' -OutFile '{tmp}\forge-installer.jar' -UseBasicParsing"""; StatusMsg: "Downloading Forge installer (~500 MB, please wait)..."; Flags: runhidden waituntilterminated
+          Filename: "{tmp}\forge-bootstrap\jre17\bin\java.exe"; Parameters: "-jar ""{tmp}\forge-installer.jar"""; StatusMsg: "Launching Forge installer wizard..."; Flags: waituntilterminated
           "@
 
           [System.IO.File]::WriteAllText("$PWD\forge-bootstrapper.iss", $iss, [System.Text.UTF8Encoding]::new($false))
