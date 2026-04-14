@@ -137,11 +137,12 @@ jobs:
 
             **Download Instructions:**
 
-            **Windows (recommended):**
-            Download `forge-rogue-commander-setup.exe` and double-click it. It will automatically download and launch the Forge installer for you. No Java required for installation — but Java 17 is still needed to run Forge afterwards (the installer will guide you if it is missing).
+            **Windows (recommended — no Java required):**
+            Download `forge-rogue-commander.msi` and double-click it. Java is bundled — no separate installation needed.
+            After installation, launch `forge.exe` from the install folder.
 
-            **All platforms (Java required):**
-            1. Java Requirement: Ensure you have Java 17 or later installed. You can download it from [Adoptium](https://adoptium.net/de/temurin/releases?version=17&os=any&arch=any).
+            **All platforms (Java 17 required):**
+            1. Ensure you have Java 17 or later installed. You can download it from [Adoptium](https://adoptium.net/de/temurin/releases?version=17&os=any&arch=any).
             2. Download the `forge-installer-*.jar` file below.
             3. Run the installer:
                - Windows: Double-click the `.jar` file. If that does not work, run `java -jar forge-installer-*.jar` in PowerShell.
@@ -156,7 +157,7 @@ jobs:
             This is a development build for playtesting the new Rogue Commander game mode, which is still a work in progress.
             For general information on how to use the Forge app and gameplay basics, see the [official Forge User Guide](https://github.com/Card-Forge/forge/wiki/User-Guide#gameplay).
 
-  build-windows-setup:
+  build-windows-msi:
     needs: [build]
     if: github.ref == 'refs/heads/rogueCommander'
     runs-on: windows-latest
@@ -164,6 +165,37 @@ jobs:
       contents: write
 
     steps:
+      - name: Download Forge distribution from release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          Write-Host "Downloading tar.bz2 from rogue-commander-latest release..."
+          gh release download rogue-commander-latest --pattern "*.tar.bz2" --dir .
+          $tarball = Get-ChildItem "*.tar.bz2" | Select-Object -First 1
+          if (-not $tarball) { throw "No tar.bz2 found in release" }
+          Write-Host "Downloaded: $($tarball.Name) ($([math]::Round($tarball.Length / 1MB, 1)) MB)"
+
+          Write-Host "Extracting to staging directory..."
+          New-Item -ItemType Directory -Path staging -Force | Out-Null
+          tar -xjf $tarball.Name -C staging
+          Write-Host "Extracted. Contents:"
+          Get-ChildItem staging | ForEach-Object { Write-Host "  $($_.Name)" }
+
+          # If tar.bz2 has a single top-level directory, move contents up
+          $dirs = Get-ChildItem staging -Directory
+          $files = Get-ChildItem staging -File
+          if ($dirs.Count -eq 1 -and $files.Count -eq 0) {
+            Write-Host "Unwrapping single top-level directory: $($dirs[0].Name)"
+            Get-ChildItem $dirs[0].FullName | Move-Item -Destination staging
+            Remove-Item $dirs[0].FullName
+          }
+
+          # Verify forge.exe exists
+          if (-not (Test-Path "staging\forge.exe")) { throw "forge.exe not found in staging" }
+          Write-Host "Forge distribution ready."
+
       - name: Download Temurin 17 JRE (Windows x64)
         shell: pwsh
         run: |
@@ -173,69 +205,89 @@ jobs:
           Write-Host "Download complete. Extracting..."
           Expand-Archive -Path jre.zip -DestinationPath jre-raw
           $extracted = Get-ChildItem jre-raw | Where-Object { $_.PSIsContainer } | Select-Object -First 1
-          Write-Host "Extracted folder: $($extracted.Name) — renaming to jre17"
-          Rename-Item $extracted.FullName -NewName "jre17"
-          if (-not (Test-Path "jre-raw\jre17\bin\java.exe")) { throw "java.exe not found at expected path" }
-          $jreSize = [math]::Round((Get-ChildItem "jre-raw\jre17" -Recurse | Measure-Object -Property Length -Sum).Sum / 1MB, 1)
-          Write-Host "JRE ready at jre-raw\jre17 ($jreSize MB total)"
+          Write-Host "Extracted folder: $($extracted.Name)"
+          # Move JRE into staging as jre17 subfolder (matches Launch4j <path>jre17</path>)
+          Move-Item $extracted.FullName "staging\jre17"
+          if (-not (Test-Path "staging\jre17\bin\java.exe")) { throw "java.exe not found" }
+          $jreSize = [math]::Round((Get-ChildItem "staging\jre17" -Recurse | Measure-Object -Property Length -Sum).Sum / 1MB, 1)
+          Write-Host "JRE added to staging\jre17 ($jreSize MB)"
 
-      - name: Generate Inno Setup script
+      - name: Build MSI with WiX v3
         shell: pwsh
         env:
           FORGE_VERSION: ${{ needs.build.outputs.version }}
-          JAR_URL: https://github.com/bennybenedek/forge/releases/download/rogue-commander-latest/forge-installer-${{ needs.build.outputs.version }}.jar
         run: |
+          $wixBin = "C:\Program Files (x86)\WiX Toolset v3.14\bin"
+          if (-not (Test-Path "$wixBin\candle.exe")) {
+            # Fallback: try v3.11
+            $wixBin = "C:\Program Files (x86)\WiX Toolset v3.11\bin"
+          }
+          if (-not (Test-Path "$wixBin\candle.exe")) { throw "WiX Toolset not found on runner" }
+          Write-Host "Using WiX at: $wixBin"
+
           $version = $env:FORGE_VERSION
-          $jarUrl  = $env:JAR_URL
-          Write-Host "Generating ISS for version: $version"
-          Write-Host "JAR URL: $jarUrl"
+          # WiX requires X.Y.Z.W format — extract digits only
+          $parts = ($version -replace '[^0-9.]','').Split('.') | Where-Object { $_ -ne '' }
+          while ($parts.Count -lt 4) { $parts += '0' }
+          $msiVersion = ($parts[0..3]) -join '.'
+          Write-Host "Version: $version -> MSI version: $msiVersion"
 
-          $iss = @"
-          [Setup]
-          AppId={{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}
-          AppName=Forge Rogue Commander Installer
-          AppVersion=$version
-          AppPublisherURL=https://github.com/bennybenedek/forge
-          DefaultDirName={tmp}\forge-bootstrap
-          DisableDirPage=yes
-          DisableProgramGroupPage=yes
-          OutputBaseFilename=forge-rogue-commander-setup
-          OutputDir=.
-          Compression=lzma2/ultra64
-          SolidCompression=yes
-          PrivilegesRequired=lowest
-          ArchitecturesInstallIn64BitMode=x64
-          WizardStyle=modern
-          CreateUninstallRegKey=no
-          Uninstallable=no
+          # Step 1: Harvest staging directory into WiX fragment
+          Write-Host "Harvesting files with heat.exe..."
+          & "$wixBin\heat.exe" dir staging `
+            -cg ForgeFiles -dr INSTALLDIR -srd -ag -sfrag `
+            -template fragment -out files.wxs
+          if ($LASTEXITCODE -ne 0) { throw "heat.exe failed: $LASTEXITCODE" }
+          Write-Host "Generated files.wxs"
 
-          [Languages]
-          Name: "english"; MessagesFile: "compiler:Default.isl"
+          # Step 2: Write product.wxs
+          $productWxs = @"
+          <?xml version="1.0" encoding="UTF-8"?>
+          <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+            <Product Id="*"
+                     Name="Forge Rogue Commander"
+                     Language="1033"
+                     Version="$msiVersion"
+                     Manufacturer="Forge Developers"
+                     UpgradeCode="B7E3F1A2-9C4D-4E5F-8A6B-1234567890AB">
+              <Package InstallerVersion="500" Compressed="yes" InstallPrivileges="limited" />
+              <MajorUpgrade DowngradeErrorMessage="A newer version of Forge Rogue Commander is already installed." />
+              <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
 
-          [Files]
-          Source: "jre-raw\jre17\*"; DestDir: "{tmp}\forge-bootstrap\jre17"; Flags: recursesubdirs createallsubdirs ignoreversion
+              <Directory Id="TARGETDIR" Name="SourceDir">
+                <Directory Id="LocalAppDataFolder">
+                  <Directory Id="INSTALLDIR" Name="ForgeRogueCommander" />
+                </Directory>
+              </Directory>
 
-          [Run]
-          Filename: "powershell.exe"; Parameters: "-NoProfile -NonInteractive -ExecutionPolicy Bypass -Command ""`$ProgressPreference='SilentlyContinue'; Invoke-WebRequest -Uri '$jarUrl' -OutFile '{tmp}\forge-installer.jar' -UseBasicParsing"""; StatusMsg: "Downloading Forge installer (~500 MB, please wait)..."; Flags: runhidden waituntilterminated
-          Filename: "{tmp}\forge-bootstrap\jre17\bin\java.exe"; Parameters: "-jar ""{tmp}\forge-installer.jar"""; StatusMsg: "Launching Forge installer wizard..."; Flags: waituntilterminated
+              <Feature Id="MainFeature" Title="Forge Rogue Commander" Level="1">
+                <ComponentGroupRef Id="ForgeFiles" />
+              </Feature>
+
+              <UIRef Id="WixUI_InstallDir" />
+              <Property Id="WIXUI_INSTALLDIR" Value="INSTALLDIR" />
+            </Product>
+          </Wix>
           "@
+          [System.IO.File]::WriteAllText("$PWD\product.wxs", $productWxs, [System.Text.UTF8Encoding]::new($false))
+          Write-Host "Generated product.wxs"
 
-          [System.IO.File]::WriteAllText("$PWD\forge-bootstrapper.iss", $iss, [System.Text.UTF8Encoding]::new($false))
-          Write-Host "--- Generated forge-bootstrapper.iss ---"
-          Get-Content forge-bootstrapper.iss
+          # Step 3: Compile
+          Write-Host "Compiling with candle.exe..."
+          & "$wixBin\candle.exe" product.wxs files.wxs -dSourceDir=staging
+          if ($LASTEXITCODE -ne 0) { throw "candle.exe failed: $LASTEXITCODE" }
 
-      - name: Compile Inno Setup script
-        shell: pwsh
-        run: |
-          $iscc = "C:\Program Files (x86)\Inno Setup 6\ISCC.exe"
-          Write-Host "Compiling with ISCC: $iscc"
-          & $iscc forge-bootstrapper.iss
-          if ($LASTEXITCODE -ne 0) { throw "ISCC failed with exit code $LASTEXITCODE" }
-          if (-not (Test-Path "forge-rogue-commander-setup.exe")) { throw "EXE not produced — check ISCC output above" }
-          $mb = [math]::Round((Get-Item "forge-rogue-commander-setup.exe").Length / 1MB, 1)
-          Write-Host "forge-rogue-commander-setup.exe produced ($mb MB)"
+          # Step 4: Link
+          Write-Host "Linking with light.exe..."
+          & "$wixBin\light.exe" product.wixobj files.wixobj `
+            -ext WixUIExtension -o forge-rogue-commander.msi -spdb
+          if ($LASTEXITCODE -ne 0) { throw "light.exe failed: $LASTEXITCODE" }
 
-      - name: Upload EXE to Rogue Commander release
+          if (-not (Test-Path "forge-rogue-commander.msi")) { throw "MSI not produced" }
+          $mb = [math]::Round((Get-Item "forge-rogue-commander.msi").Length / 1MB, 1)
+          Write-Host "forge-rogue-commander.msi produced ($mb MB)"
+
+      - name: Upload MSI to Rogue Commander release
         uses: ncipollo/release-action@v1
         with:
           tag: rogue-commander-latest
@@ -243,5 +295,5 @@ jobs:
           omitBodyDuringUpdate: true
           omitNameDuringUpdate: true
           removeArtifacts: false
-          artifacts: forge-rogue-commander-setup.exe
+          artifacts: forge-rogue-commander.msi
           token: ${{ secrets.GITHUB_TOKEN }}

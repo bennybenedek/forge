@@ -93,6 +93,7 @@
                                 <preCp>anything</preCp>
                             </classPath>
                             <jre>
+                                <path>jre17</path>
                                 <minVersion>17</minVersion>
                                 <requiresJdk>true</requiresJdk>
                                 <maxHeapSize>4096</maxHeapSize>

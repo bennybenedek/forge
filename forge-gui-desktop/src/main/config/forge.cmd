@@ -2,6 +2,13 @@
 
 pushd %~dp0
 
+:: Check for bundled JRE first
+if exist "%~dp0jre17\bin\java.exe" (
+  set "JAVA_CMD=%~dp0jre17\bin\java.exe"
+  goto :run
+)
+
+:: Fall back to system Java
 java -version 1>nul 2>nul || (
    echo no java installed
    popd
@@ -15,10 +22,9 @@ if %jver% LEQ 16 (
    exit /b 2
 )
 
-if %jver% GEQ 17 (
-  java $mandatory.java.args$ -jar $project.build.finalName$
-  popd
-  exit /b 0
-)
+set "JAVA_CMD=java"
 
+:run
+"%JAVA_CMD%" $mandatory.java.args$ -jar $project.build.finalName$
 popd
+exit /b 0
