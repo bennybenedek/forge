@@ -236,6 +236,7 @@ jobs:
           Write-Host "Harvesting files with heat.exe..."
           & "$wixBin\heat.exe" dir staging `
             -cg ForgeFiles -dr INSTALLDIR -srd -ag -sfrag `
+            -var var.SourceDir -sw5150 `
             -template fragment -out files.wxs
           if ($LASTEXITCODE -ne 0) { throw "heat.exe failed: $LASTEXITCODE" }
           Write-Host "Generated files.wxs"
@@ -280,7 +281,8 @@ jobs:
           # Step 4: Link
           Write-Host "Linking with light.exe..."
           & "$wixBin\light.exe" product.wixobj files.wixobj `
-            -ext WixUIExtension -o forge-rogue-commander.msi -spdb
+            -ext WixUIExtension -o forge-rogue-commander.msi -spdb `
+            -sice:ICE38 -sice:ICE43 -sice:ICE57 -sice:ICE64 -sice:ICE91
           if ($LASTEXITCODE -ne 0) { throw "light.exe failed: $LASTEXITCODE" }
 
           if (-not (Test-Path "forge-rogue-commander.msi")) { throw "MSI not produced" }
