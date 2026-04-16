@@ -274,6 +274,15 @@ jobs:
           [System.IO.File]::WriteAllText("$PWD\product.wxs", $productWxs, [System.Text.UTF8Encoding]::new($false))
           Write-Host "Generated product.wxs"
 
+          # Step 2b: Write forge.wxl to force UTF-8 database code page
+          # (Product/@Codepage is unreliable in WiX 3.x; WixLocalization/@Codepage is authoritative)
+          $wxl = @"
+          <?xml version="1.0" encoding="utf-8"?>
+          <WixLocalization Culture="en-us" Codepage="65001" xmlns="http://schemas.microsoft.com/wix/2006/localization" />
+          "@
+          [System.IO.File]::WriteAllText("$PWD\forge.wxl", $wxl, [System.Text.UTF8Encoding]::new($false))
+          Write-Host "Generated forge.wxl"
+
           # Step 3: Compile
           Write-Host "Compiling with candle.exe..."
           & "$wixBin\candle.exe" product.wxs files.wxs -dSourceDir=staging
@@ -282,7 +291,8 @@ jobs:
           # Step 4: Link
           Write-Host "Linking with light.exe..."
           & "$wixBin\light.exe" product.wixobj files.wixobj `
-            -ext WixUIExtension -o forge-rogue-commander.msi -spdb `
+            -ext WixUIExtension -loc forge.wxl `
+            -o forge-rogue-commander.msi -spdb `
             -sice:ICE38 -sice:ICE43 -sice:ICE57 -sice:ICE64 -sice:ICE91
           if ($LASTEXITCODE -ne 0) { throw "light.exe failed: $LASTEXITCODE" }
 
