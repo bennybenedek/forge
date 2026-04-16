@@ -248,10 +248,11 @@ jobs:
             <Product Id="*"
                      Name="Forge Rogue Commander"
                      Language="1033"
+                     Codepage="65001"
                      Version="$msiVersion"
                      Manufacturer="Forge Developers"
                      UpgradeCode="B7E3F1A2-9C4D-4E5F-8A6B-1234567890AB">
-              <Package InstallerVersion="500" Compressed="yes" InstallPrivileges="limited" />
+              <Package InstallerVersion="500" Compressed="yes" InstallPrivileges="limited" SummaryCodepage="65001" />
               <MajorUpgrade DowngradeErrorMessage="A newer version of Forge Rogue Commander is already installed." />
               <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
 
