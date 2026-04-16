@@ -252,7 +252,7 @@ jobs:
                      Version="$msiVersion"
                      Manufacturer="Forge Developers"
                      UpgradeCode="B7E3F1A2-9C4D-4E5F-8A6B-1234567890AB">
-              <Package InstallerVersion="500" Compressed="yes" InstallPrivileges="limited" SummaryCodepage="65001" />
+              <Package InstallerVersion="500" Compressed="yes" InstallPrivileges="limited" />
               <MajorUpgrade DowngradeErrorMessage="A newer version of Forge Rogue Commander is already installed." />
               <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
 
