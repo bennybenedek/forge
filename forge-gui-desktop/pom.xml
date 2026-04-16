@@ -95,7 +95,7 @@
                             <jre>
                                 <path>jre17</path>
                                 <minVersion>17</minVersion>
-                                <requiresJdk>true</requiresJdk>
+                                <requiresJdk>false</requiresJdk>
                                 <maxHeapSize>4096</maxHeapSize>
                                 <opts>
                                     <opt>${mandatory.java.args}</opt>
