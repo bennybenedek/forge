@@ -2,6 +2,7 @@ package forge.screens.home.rogue;
 
 import forge.ImageCache;
 import forge.ImageKeys;
+import forge.game.card.CardView;
 import forge.gui.CardPicturePanel;
 import forge.gui.GuiBase;
 import forge.item.PaperCard;
@@ -129,10 +130,9 @@ public abstract class SelectableCardPanelBase extends SkinnedPanel implements
    */
   protected void updateCardDisplay() {
     if (faceDown) {
-      // Show card back
-      BufferedImage cardBack = ImageCache.getOriginalImage(
-          ImageKeys.getTokenKey(ImageKeys.HIDDEN_CARD), true, null);
-      cardPicture.setItem(cardBack);
+      cardPicture.setCard(CardView.getCardForUi(card).getCurrentState(), false);
+      GuiBase.getInterface().getImageFetcher().fetchImage(
+          ImageKeys.getTokenKey(ImageKeys.HIDDEN_CARD), cardPicture);
     } else if (showingAltFace && hasBackFace) {
       // Show alternate face - check if we need to fetch the image
       String altImageKey = card.getImageKey(true);

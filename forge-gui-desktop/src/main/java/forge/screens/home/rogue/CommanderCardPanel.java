@@ -1,7 +1,6 @@
 package forge.screens.home.rogue;
 
-import forge.ImageCache;
-import forge.ImageKeys;
+import forge.game.card.CardView;
 import forge.gamemodes.rogue.RogueDeck;
 import forge.gui.CardPicturePanel;
 import forge.item.PaperCard;
@@ -9,7 +8,6 @@ import forge.toolbox.FSkin.SkinnedPanel;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.awt.image.BufferedImage;
 import java.util.function.Consumer;
 
 /**
@@ -17,7 +15,6 @@ import java.util.function.Consumer;
  * single selection. For locked commanders, shows a card back with a lock indicator.
  */
 public class CommanderCardPanel extends SkinnedPanel {
-
   private final RogueDeck commander;
   private final PaperCard commanderCard;
   private final CardPicturePanel cardPicture;
@@ -41,9 +38,7 @@ public class CommanderCardPanel extends SkinnedPanel {
 
     // Display commander card or card back for locked commanders
     if (locked) {
-      BufferedImage cardBack = ImageCache.getOriginalImage(
-          ImageKeys.getTokenKey(ImageKeys.HIDDEN_CARD), true, null);
-      cardPicture.setItem(cardBack);
+      cardPicture.setCard(CardView.getCardForUi(commanderCard).getCurrentState(), false);
     } else {
       cardPicture.setItem(commanderCard);
     }
@@ -110,6 +105,12 @@ public class CommanderCardPanel extends SkinnedPanel {
 
   public boolean isLocked() {
     return locked;
+  }
+
+  public void refreshHiddenCardImage() {
+    if (locked) {
+      cardPicture.onImageFetched();
+    }
   }
 
   @Override

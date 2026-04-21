@@ -1,5 +1,7 @@
 package forge.screens.home.rogue;
 
+import forge.ImageCache;
+import forge.ImageKeys;
 import forge.gamemodes.rogue.*;
 import forge.gamemodes.rogue.effect.DescensionLevel;
 import forge.gamemodes.rogue.effect.NPCBoon;
@@ -8,6 +10,7 @@ import forge.gamemodes.rogue.npc.NPCContext;
 import forge.gamemodes.rogue.npc.NPC;
 import forge.gamemodes.rogue.npc.NPCEncounterComposite;
 import forge.gamemodes.rogue.path.RoguePathGenerator;
+import forge.gui.GuiBase;
 import forge.gui.framework.EDocID;
 import forge.gui.framework.ICDoc;
 import forge.localinstance.properties.ForgePreferences;
@@ -24,6 +27,7 @@ import javax.swing.SwingUtilities;
  */
 public enum CSubmenuRogueStart implements ICDoc {
   SINGLETON_INSTANCE;
+  private static final String HIDDEN_CARD_KEY = ImageKeys.getTokenKey(ImageKeys.HIDDEN_CARD);
 
   private final VSubmenuRogueStart view = VSubmenuRogueStart.SINGLETON_INSTANCE;
   private RogueDeck selectedDeck;
@@ -134,6 +138,8 @@ public enum CSubmenuRogueStart implements ICDoc {
       }
     }
 
+    requestHiddenCardImageForLockedPanels();
+
     // Select first unlocked commander by default
     if (firstUnlockedPanel != null) {
       firstUnlockedPanel.setSelected(true);
@@ -160,6 +166,26 @@ public enum CSubmenuRogueStart implements ICDoc {
     // Refresh layout
     view.getCommanderGridPanel().revalidate();
     view.getCommanderGridPanel().repaint();
+  }
+
+  private void requestHiddenCardImageForLockedPanels() {
+    boolean hasLockedPanels = view.getCommanderPanels().stream().anyMatch(CommanderCardPanel::isLocked);
+    if (!hasLockedPanels) {
+      return;
+    }
+
+    if (ImageCache.getOriginalImage(HIDDEN_CARD_KEY, false, null) != null) {
+      refreshLockedCommanderPanels();
+      return;
+    }
+
+    GuiBase.getInterface().getImageFetcher().fetchImage(HIDDEN_CARD_KEY, this::refreshLockedCommanderPanels);
+  }
+
+  private void refreshLockedCommanderPanels() {
+    for (CommanderCardPanel panel : view.getCommanderPanels()) {
+      panel.refreshHiddenCardImage();
+    }
   }
 
   private void onCommanderSelected(CommanderCardPanel clickedPanel) {

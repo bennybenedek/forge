@@ -78,9 +78,12 @@ public class NodePlaneboundPanel extends NodePanel implements ImageFetcher.Callb
       // Show card back
       BufferedImage cardBack = ImageCache.getOriginalImage(
           ImageKeys.getTokenKey(ImageKeys.HIDDEN_CARD), true, null);
-      if (cardBack != null) {
-        cardImage.setItem(rotateImage90Clockwise(cardBack));
-      }
+      GuiBase.getInterface().getImageFetcher().fetchImage(
+          ImageKeys.getTokenKey(ImageKeys.HIDDEN_CARD), () -> {
+            setHiddenCardBackImage(ImageCache.getOriginalImage(
+                ImageKeys.getTokenKey(ImageKeys.HIDDEN_CARD), true, null));
+          });
+      setHiddenCardBackImage(cardBack);
     }
 
     if (!isFaceDown && planeCard != null) {
@@ -270,6 +273,15 @@ public class NodePlaneboundPanel extends NodePanel implements ImageFetcher.Callb
     g2d.dispose();
 
     return rotated;
+  }
+
+  private void setHiddenCardBackImage(BufferedImage cardBack) {
+    if (cardBack == null) {
+      return;
+    }
+    cardImage.setItem(rotateImage90Clockwise(cardBack));
+    cardImage.revalidate();
+    cardImage.repaint();
   }
 
   /**

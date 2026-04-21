@@ -19,6 +19,7 @@ This repository is a Java 17+ multi-module Maven project (Forge / Rogue Commande
 - Keep changes lean and localized; prefer existing patterns over new abstractions.
 - Check nearby code before editing; match the established approach in that package/module.
 - Reuse existing mechanisms for UI, loading, events, persistence, and rendering before adding helpers.
+- Avoid changes to shared/core Forge code (`forge-core`, `forge-game`, and generic shared desktop infrastructure) when a Rogue Commander-local fix can solve the issue. Only touch shared/core code when there is no reasonable Rogue-scoped solution, and call that out explicitly.
 - Use the least code that correctly solves the task; avoid speculative cleanup or side improvements.
 - Do not add one-time migrations by default. Ask the user for permission before adding any migration, especially if it was not part of the original plan.
 - Use proper imports rather than fully qualified names in code.
