@@ -65,6 +65,8 @@ public enum RogueTutorial {
           +
           "You can reroll for a new set of cards by spending Gold. The cost starts at 2 and increases by 2 for each reroll.\n"
           +
+          "Unchosen or rerolled cards leave the active Reward Pool and only return when there are not enough cards left to offer.\n"
+          +
           "For each card added, you will also gain a 'Removal Credit' to remove an unwanted non-basic Land card from your deck."
   ),
 
@@ -73,6 +75,8 @@ public enum RogueTutorial {
       "Spend your hard-earned gold at the Bazaar to purchase new cards, price depending on Card rarity. "
           +
           "You can reroll for a new selection by spending Gold, starting at 2 and increasing by 2 each time.\n"
+          +
+          "Unbought or rerolled cards leave the active Reward Pool and only return when there are not enough cards left to offer.\n"
           +
           "Save gold for powerful cards that fit your strategy."
   ),

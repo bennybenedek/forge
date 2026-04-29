@@ -598,7 +598,9 @@ public enum CSubmenuRogueMap implements ICDoc {
           npcCtx.priceOverrides.isEmpty() ? null : npcCtx.priceOverrides);
       dialog.setRerollEnabled(rerollEnabled);
       selectedCards = dialog.show();
+      rogueDeck.discardRewardOptions(getRewardPoolCards(inventory, npcCtx.injectedCards));
 
+      // selectedCards == null -> reroll was selected
       if (selectedCards == null) {
         // Deduct gold for paid rerolls
         if (rerollCount >= freeRerolls) {
@@ -611,20 +613,17 @@ public enum CSubmenuRogueMap implements ICDoc {
     } while (selectedCards == null);
 
     if (!selectedCards.isEmpty()) {
-      // Separate NPC items from real cards
-      Set<PaperCard> realCards = new HashSet<>();
+      List<PaperCard> realCards = getRewardPoolCards(selectedCards, npcCtx.injectedCards);
       for (PaperCard card : selectedCards) {
         if (npcCtx.injectedCards.contains(card)) {
           npcCtx.purchasedCards.add(card);
-        } else {
-          realCards.add(card);
         }
       }
 
       // Add real cards to deck
       if (!realCards.isEmpty()) {
-        currentRun.addCardsToRun(new ArrayList<>(realCards));
-        rogueDeck.removeFromRewardPool(new ArrayList<>(realCards));
+        currentRun.addCardsToRun(realCards);
+        rogueDeck.removeFromCardPools(realCards);
       }
 
       // Deduct total cost (includes NPC items)
@@ -637,6 +636,17 @@ public enum CSubmenuRogueMap implements ICDoc {
     for (NPCContext ctx : NPCEncounterComposite.INSTANCE.onAfterBazaarPurchase(npcCtx, progress)) {
       new NPCDialog(ctx).show();
     }
+  }
+
+  private static List<PaperCard> getRewardPoolCards(Collection<PaperCard> cards,
+      Set<PaperCard> injectedCards) {
+    List<PaperCard> rewardPoolCards = new ArrayList<>();
+    for (PaperCard card : cards) {
+      if (!injectedCards.contains(card)) {
+        rewardPoolCards.add(card);
+      }
+    }
+    return rewardPoolCards;
   }
 
   private void handleEventNode(NodeEvent eventNode) {
@@ -712,7 +722,7 @@ public enum CSubmenuRogueMap implements ICDoc {
               RogueDeck rd = currentRun.getSelectedRogueDeck();
               List<PaperCard> added = rd.drawRewardOptions(ctx.drawCount, null);
               currentRun.addCardsToRun(added);
-              rd.removeFromRewardPool(added);
+              rd.removeFromCardPools(added);
               ctx.addedCards = added;
             }
             break;

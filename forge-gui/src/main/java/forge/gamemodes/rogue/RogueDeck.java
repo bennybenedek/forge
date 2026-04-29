@@ -17,6 +17,7 @@ public class RogueDeck {
     private String commanderCardName;       // Commander card name
     private Deck startDeck;                 // 40-45 card starting deck (includes commander)
     private CardPool rewardPool;            // ~100 card pool for rewards during run
+    private CardPool discardedRewardPool;   // Shown reward cards that can return on reshuffle
     private String description;             // Flavor text for UI
     private String themeDescription;        // Theme/archetype (e.g., "Instants/Sorceries matter")
     private int avatarIndex;                // Avatar image index
@@ -27,6 +28,7 @@ public class RogueDeck {
     // Constructors
     public RogueDeck() {
         this.rewardPool = new CardPool();
+        this.discardedRewardPool = new CardPool();
     }
 
     /**
@@ -36,14 +38,21 @@ public class RogueDeck {
      * @return List of random cards (may be less than count if pool is small)
      */
     public List<PaperCard> drawRewardOptions(int count, Predicate<PaperCard> filter) {
-        if (rewardPool == null || rewardPool.isEmpty()) {
-            return new ArrayList<>();
-        }
+        ensureCardPools();
+        if (count <= 0) return new ArrayList<>();
 
         // Use filtered pool if filter provided, otherwise use full pool
         CardPool poolToUse = (filter != null) ? rewardPool.getFilteredPool(filter) : rewardPool;
+        if (poolToUse.countAll() < count && !discardedRewardPool.isEmpty()) {
+            rewardPool.addAll(discardedRewardPool);
+            discardedRewardPool.clear();
+            poolToUse = (filter != null) ? rewardPool.getFilteredPool(filter) : rewardPool;
+        }
 
         List<PaperCard> allCards = poolToUse.toFlatList();
+        if (allCards.isEmpty()) {
+            return new ArrayList<>();
+        }
         if (allCards.size() <= count) {
             return new ArrayList<>(allCards);
         }
@@ -51,18 +60,41 @@ public class RogueDeck {
         // Shuffle and take first 'count' cards
         List<PaperCard> result = new ArrayList<>(allCards);
         java.util.Collections.shuffle(result);
-        return result.subList(0, Math.min(count, result.size()));
+        return new ArrayList<>(result.subList(0, Math.min(count, result.size())));
     }
 
     /**
-     * Remove cards from the reward pool (used when cards are selected as rewards).
+     * Move shown cards out of the active reward pool so they only return after a reshuffle.
+     * @param cards Cards that were shown to the player
+     */
+    public void discardRewardOptions(Iterable<PaperCard> cards) {
+        ensureCardPools();
+        for (PaperCard card : cards) {
+            if (rewardPool.remove(card)) {
+                discardedRewardPool.add(card);
+            }
+        }
+    }
+
+    /**
+     * Remove cards from the reward pool / discard pool
+     * (used when cards are selected as rewards or given in other ways).
      * @param cards Cards to remove
      */
-    public void removeFromRewardPool(Iterable<PaperCard> cards) {
-        if (rewardPool != null) {
-            for (PaperCard card : cards) {
-                rewardPool.remove(card);
-            }
+    public void removeFromCardPools(Iterable<PaperCard> cards) {
+        ensureCardPools();
+        for (PaperCard card : cards) {
+            rewardPool.remove(card);
+            discardedRewardPool.remove(card);
+        }
+    }
+
+    private void ensureCardPools() {
+        if (rewardPool == null) {
+            rewardPool = new CardPool();
+        }
+        if (discardedRewardPool == null) {
+            discardedRewardPool = new CardPool();
         }
     }
 
@@ -93,6 +125,9 @@ public class RogueDeck {
 
     public void setRewardPool(CardPool rewardPool) {
         this.rewardPool = rewardPool;
+        if (discardedRewardPool == null) {
+            discardedRewardPool = new CardPool();
+        }
     }
 
     public String getDescription() {

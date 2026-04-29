@@ -53,20 +53,6 @@ public class BazaarDialog {
   private int priceLabelHeight;
 
   /**
-   * Create a Bazaar dialog.
-   *
-   * @param cards List of cards available for purchase
-   * @param gold  Player's available gold
-   */
-  public BazaarDialog(List<PaperCard> cards, int gold) {
-    this(cards, gold, null, null);
-  }
-
-  public BazaarDialog(List<PaperCard> cards, int gold, String rerollButtonLabel) {
-    this(cards, gold, rerollButtonLabel, null);
-  }
-
-  /**
    * Create a Bazaar dialog with optional reroll button and price overrides.
    *
    * @param cards            List of cards available for purchase

@@ -15,6 +15,7 @@ This repository is a Java 17+ multi-module Maven project (Forge / Rogue Commande
 ## High-priority operating rules
 
 - Do not compile or run builds/tests unless the user explicitly asks.
+- Do not add unit tests by default. Only add tests when the user explicitly asks for them, or when test additions are part of the agreed implementation plan.
 - Do not implement beyond explicit user requirements; if ambiguous, ask one focused question.
 - Keep changes lean and localized; prefer existing patterns over new abstractions.
 - Check nearby code before editing; match the established approach in that package/module.
@@ -61,24 +62,39 @@ Run from repository root unless noted.
 - `mvn -pl forge-gui-desktop -am clean install` - desktop module with required dependencies.
 - `mvn -pl forge-gui-android -am clean install` - android module with dependencies.
 - `mvn -pl forge-game -am test` - test a specific module and upstream modules.
+- Preferred default when explicitly asked to run tests from an IntelliJ PowerShell terminal:
+  `mvn --% -pl forge-gui-desktop -am -U -B clean test`
 
 ### Run a single test class (important)
 
-- `mvn -pl forge-gui-desktop -Dtest=GameEventSerializationTest test`
-- `mvn -pl forge-game -Dtest=ManaCostBeingPaidTest test`
-- If module resolution is needed: add `-am`.
-- If Maven complains about no matching tests in a selected module: add `-DfailIfNoTests=false`.
+- Direct single-class execution in this repo can be unreliable with the current TestNG/PowerMock setup, especially from IntelliJ's built-in TestNG runner.
+- Prefer the module-scoped default above unless the user specifically asks for narrower targeting.
+- If narrowing to a class from a PowerShell terminal, start from:
+  `mvn --% -pl forge-gui-desktop -am -Dtest=GameEventSerializationTest -Dsurefire.failIfNoSpecifiedTests=false test`
 
 ### Run a single test method (important)
 
-- `mvn -pl forge-gui-desktop -Dtest=GameEventSerializationTest#testAllGameEventFieldsAreSerializable test`
-- `mvn -pl forge-game -Dtest=ManaCostBeingPaidTest#testName test`
+- If method-level targeting is explicitly requested from a PowerShell terminal, start from:
+  `mvn --% -pl forge-gui-desktop -am -Dtest=GameEventSerializationTest#testAllGameEventFieldsAreSerializable -Dsurefire.failIfNoSpecifiedTests=false test`
 
 ### Test framework notes
 
 - Tests use TestNG annotations (`org.testng.annotations.Test`) in this codebase.
 - Surefire is configured in root `pom.xml` and adds required JVM `--add-opens` flags.
 - CI runs `mvn -U -B clean test` (see `.github/workflows/test-build.yaml`).
+- IntelliJ's built-in TestNG runner may fail to discover or execute some Forge tests; prefer Maven/Surefire-based runs from the terminal.
+
+### Test placement and scope
+
+- Existing tests are concentrated in `forge-gui-desktop/src/test/java`.
+- Current distribution is heavily skewed toward `forge-gui-desktop`; `forge-gui` currently has no test tree, and `forge-game` only has a very small number of tests.
+- When adding tests for logic in `forge-gui` or Rogue Commander code, prefer placing them in `forge-gui-desktop/src/test/java` unless there is already a stronger module-local test pattern in the touched module.
+- Mirror the production package in the test package when possible (for example `forge.gamemodes.rogue.*` tests under `forge-gui-desktop/src/test/java/forge/gamemodes/rogue/`).
+- Many files under `src/test/java` are shared test infrastructure or harness utilities, not standalone test classes; do not assume every file there should contain `@Test` methods.
+- The existing suite mainly covers simulation/integration flows, AI behavior, card database loading/mocking, deck parsing/generation, helper/logic classes, and contract-style checks such as serialization.
+- Direct Swing/UI coverage exists, but it is sparse and not the dominant pattern; do not default to button-click or window-visibility tests when a logic-level test would cover the change more reliably.
+- Minimal-logic or data-oriented classes are usually tested only when they protect an important contract or regression surface (for example serialization/network behavior), not by default just because a class exists.
+- If a test needs loaded cards, `FModel`, or card database access, prefer extending the existing card test bases such as `CardMockTestCase` or `CardDbCardMockTestCase` instead of building custom bootstrap code.
 
 ### Running the application
 

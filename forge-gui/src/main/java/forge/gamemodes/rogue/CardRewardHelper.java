@@ -103,7 +103,9 @@ public class CardRewardHelper {
             String rerollLabel = buildRerollLabel(freeRerolls, rerollCount);
             boolean rerollEnabled = canAffordReroll(freeRerolls, rerollCount, run.getCurrentGold());
             chosenCards = dialog.show(title, rewardOptions, maxPicks, rerollLabel, rerollEnabled, run.getCurrentGold());
+            rogueDeck.discardRewardOptions(rewardOptions);
 
+            // chosenCards null -> reroll was selected
             if (chosenCards == null) {
                 // Deduct gold for paid rerolls
                 if (rerollCount >= freeRerolls) {
@@ -114,12 +116,10 @@ public class CardRewardHelper {
             }
         } while (chosenCards == null);
 
-        // Remove only the final draw's options from pool
-        rogueDeck.removeFromRewardPool(rewardOptions);
-
         if (chosenCards == null) chosenCards = new ArrayList<>();
 
         if (!chosenCards.isEmpty()) {
+            rogueDeck.removeFromCardPools(chosenCards);
             run.addCardsToRun(chosenCards);
         }
 
