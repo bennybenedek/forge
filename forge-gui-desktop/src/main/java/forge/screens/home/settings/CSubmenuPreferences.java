@@ -157,6 +157,7 @@ public enum CSubmenuPreferences implements ICDoc {
         lstControls.add(Pair.of(view.getCbOpenPacksIndiv(), FPref.UI_OPEN_PACKS_INDIV));
         lstControls.add(Pair.of(view.getCbTokensInSeparateRow(), FPref.UI_TOKENS_IN_SEPARATE_ROW));
         lstControls.add(Pair.of(view.getCbStackCreatures(), FPref.UI_STACK_CREATURES));
+        lstControls.add(Pair.of(view.getCbSeparateCombatStacks(), FPref.UI_SEPARATE_COMBAT_STACKS));
         lstControls.add(Pair.of(view.getCbManaLostPrompt(), FPref.UI_MANA_LOST_PROMPT));
         lstControls.add(Pair.of(view.getCbEscapeEndsTurn(), FPref.UI_ALLOW_ESC_TO_END_TURN));
         lstControls.add(Pair.of(view.getCbDetailedPaymentDesc(), FPref.UI_DETAILED_SPELLDESC_IN_PROMPT));
@@ -568,7 +569,12 @@ public enum CSubmenuPreferences implements ICDoc {
     }
 
     private void initializeAutoYieldModeComboBox() {
-        final String[] elems = {ForgeConstants.AUTO_YIELD_PER_ABILITY, ForgeConstants.AUTO_YIELD_PER_CARD};
+        final String[] elems = {
+            ForgeConstants.AUTO_YIELD_PER_CARD,
+            ForgeConstants.AUTO_YIELD_PER_ABILITY,
+            ForgeConstants.AUTO_YIELD_PER_ABILITY_SESSION,
+            ForgeConstants.AUTO_YIELD_PER_ABILITY_INSTALL,
+        };
         final FPref userSetting = FPref.UI_AUTO_YIELD_MODE;
         final FComboBoxPanel<String> panel = this.view.getAutoYieldModeComboBoxPanel();
         final FComboBox<String> comboBox = createComboBox(elems, userSetting);

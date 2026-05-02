@@ -29,6 +29,7 @@ import forge.game.keyword.KeywordInterface;
 import forge.game.mana.Mana;
 import forge.game.mana.ManaConversionMatrix;
 import forge.game.mana.ManaCostBeingPaid;
+import forge.game.phase.PhaseType;
 import forge.game.player.*;
 import forge.game.player.actions.SelectCardAction;
 import forge.game.player.actions.SelectPlayerAction;
@@ -70,6 +71,7 @@ import forge.trackable.TrackableCollection;
 import forge.util.*;
 import forge.util.collect.FCollection;
 import forge.util.collect.FCollectionView;
+
 import io.sentry.Sentry;
 import org.apache.commons.lang3.Range;
 import org.apache.commons.lang3.StringUtils;
@@ -95,9 +97,19 @@ public class PlayerControllerHuman extends PlayerController implements IGameCont
      * library.
      */
     private boolean mayLookAtAllCards = false;
-    private boolean disableAutoYields = false;
 
     private IGuiGame gui;
+
+    // Inlined server-side mirror used only when this controller serves a remote network
+    // player (gui instanceof RemoteClientGuiGame). Two scope buckets so the host doesn't
+    // need to know the client's UI_AUTO_YIELD_MODE: the client tells us which bucket via
+    // the isAbilityScope flag on setShouldAutoYield.
+    private final Set<String> remoteCardYields = Sets.newHashSet();
+    private final Set<String> remoteAbilityYields = Sets.newHashSet();
+    private final Map<Integer, Boolean> remoteTriggerDecisions = Maps.newTreeMap();
+    private boolean remoteAutoYieldsDisabled;
+    // Empty/missing entry returns false (don't skip), matching a fresh UI's conservative default
+    private final Map<PlayerView, EnumSet<PhaseType>> remoteSkipPhases = Maps.newHashMap();
 
     protected final InputQueue inputQueue;
     protected final InputProxy inputProxy;
@@ -137,13 +149,6 @@ public class PlayerControllerHuman extends PlayerController implements IGameCont
 
     public PlayerView getLocalPlayerView() {
         return player == null ? null : player.getView();
-    }
-
-    public boolean getDisableAutoYields() {
-        return disableAutoYields;
-    }
-    public void setDisableAutoYields(final boolean disableAutoYields0) {
-        disableAutoYields = disableAutoYields0;
     }
 
     @Override
@@ -777,10 +782,10 @@ public class PlayerControllerHuman extends PlayerController implements IGameCont
     public boolean confirmTrigger(final WrappedAbility wrapper) {
         final SpellAbility sa = wrapper.getWrappedAbility();
         final Trigger regtrig = wrapper.getTrigger();
-        if (getGui().shouldAlwaysAcceptTrigger(regtrig.getId())) {
+        if (shouldAlwaysAcceptTrigger(regtrig.getId())) {
             return true;
         }
-        if (getGui().shouldAlwaysDeclineTrigger(regtrig.getId())) {
+        if (shouldAlwaysDeclineTrigger(regtrig.getId())) {
             return false;
         }
 
@@ -818,9 +823,7 @@ public class PlayerControllerHuman extends PlayerController implements IGameCont
                 cardView = wrapper.getCardView();
             return this.getGui().confirm(cardView, buildQuestion.toString().replaceAll("\n", " "));
         } else {
-            final InputConfirm inp = new InputConfirm(this, buildQuestion.toString(), wrapper);
-            inp.showAndWait();
-            return inp.getResult();
+            return InputConfirm.confirm(this, wrapper, buildQuestion.toString());
         }
     }
 
@@ -835,7 +838,7 @@ public class PlayerControllerHuman extends PlayerController implements IGameCont
 
         if (getGame().getPlayers().size() == 2) {
             prompt += "\n\n" + localizer.getMessage("lblWouldYouLiketoPlayorDraw");
-            final InputConfirm inp = new InputConfirm(this, prompt, localizer.getMessage("lblPlay"), localizer.getMessage("lblDraw"));
+            final InputConfirm inp = new InputConfirm(this, prompt, localizer.getMessage("lblPlay"), localizer.getMessage("lblDraw"), true);
             inp.showAndWait();
             return inp.getResult() ? this.player : this.player.getOpponents().get(0);
         }
@@ -1025,8 +1028,7 @@ public class PlayerControllerHuman extends PlayerController implements IGameCont
 
             tempShowCard(c);
             getGui().setCard(view);
-            boolean result = false;
-            result = InputConfirm.confirm(this, view, localizer.getMessage("lblPutCardsOnTheTopLibraryOrGraveyard", CardTranslation.getTranslatedName(view.getName())),
+            boolean result = InputConfirm.confirm(this, view, localizer.getMessage("lblPutCardsOnTheTopLibraryOrGraveyard", CardTranslation.getTranslatedName(view.getName())),
                     true, ImmutableList.of(localizer.getMessage("lblLibrary"), localizer.getMessage("lblGraveyard")));
             if (result) {
                 toTop = topN;
@@ -1063,8 +1065,7 @@ public class PlayerControllerHuman extends PlayerController implements IGameCont
         tempShowCard(c);
         getGui().setCard(c.getView());
 
-        boolean result = false;
-        result = InputConfirm.confirm(this, view, localizer.getMessage("lblPutCardOnTopOrBottomLibrary", CardTranslation.getTranslatedName(view.getName())),
+        boolean result = InputConfirm.confirm(this, view, localizer.getMessage("lblPutCardOnTopOrBottomLibrary", CardTranslation.getTranslatedName(view.getName())),
                 true, ImmutableList.of(localizer.getMessage("lblTop"), localizer.getMessage("lblBottom")));
 
         endTempShowCards();
@@ -1452,9 +1453,7 @@ public class PlayerControllerHuman extends PlayerController implements IGameCont
                 cardView = effectSA == null ? null : effectSA.getCardView();
             return this.getGui().confirm(cardView, question.replaceAll("\n", " "));
         } else {
-            final InputConfirm inp = new InputConfirm(this, question, effectSA);
-            inp.showAndWait();
-            return inp.getResult();
+            return InputConfirm.confirm(this, effectSA, question);
         }
     }
 
@@ -1510,7 +1509,7 @@ public class PlayerControllerHuman extends PlayerController implements IGameCont
             int delay = 0;
             if (stack.isEmpty()) {
                 // make sure to briefly pause at phases you're not set up to skip
-                if (!getGui().isUiSetToSkipPhase(getGame().getPhaseHandler().getPlayerTurn().getView(),
+                if (!isUiSetToSkipPhase(getGame().getPhaseHandler().getPlayerTurn().getView(),
                         getGame().getPhaseHandler().getPhase())) {
                     delay = FControlGamePlayback.phasesDelay;
                 }
@@ -1530,7 +1529,7 @@ public class PlayerControllerHuman extends PlayerController implements IGameCont
         }
 
         if (stack.isEmpty()) {
-            if (getGui().isUiSetToSkipPhase(getGame().getPhaseHandler().getPlayerTurn().getView(),
+            if (isUiSetToSkipPhase(getGame().getPhaseHandler().getPlayerTurn().getView(),
                     getGame().getPhaseHandler().getPhase())) {
                 netLog.trace("Returning null (skipPhase) for player {}", player.getName());
                 return null; // avoid prompt for input if stack is empty and
@@ -1538,7 +1537,7 @@ public class PlayerControllerHuman extends PlayerController implements IGameCont
             }
         } else {
             final SpellAbility ability = stack.peekAbility();
-            if (ability != null && ability.isAbility() && getGui().shouldAutoYield(ability.yieldKey())) {
+            if (ability != null && ability.isAbility() && shouldAutoYield(ability.yieldKey())) {
                 // avoid prompt for input if top ability of stack is set to auto-yield
                 try {
                     Thread.sleep(FControlGamePlayback.resolveDelay);
@@ -1721,14 +1720,12 @@ public class PlayerControllerHuman extends PlayerController implements IGameCont
                     cardView = CardView.getCardForUi(iPaperCard);
                 else
                     cardView = sa.getHostCard().getView();
-                getGui().confirm(cardView, message, ImmutableList.of(localizer.getMessage("lblOK")));
+                getGui().confirm(cardView, message, true, ImmutableList.of(localizer.getMessage("lblOK")));
             } else {
                 getGui().message(message, sa == null || sa.getHostCard() == null ? "" : CardView.get(sa.getHostCard()).toString());
             }
         }
     }
-
-    // end of not related candidates for move.
 
     /*
      * (non-Javadoc)
@@ -1888,9 +1885,7 @@ public class PlayerControllerHuman extends PlayerController implements IGameCont
             }
             return this.getGui().confirm(cardView, question.replaceAll("\n", " "));
         } else {
-            final InputConfirm inp = new InputConfirm(this, question, sa);
-            inp.showAndWait();
-            return inp.getResult();
+            return InputConfirm.confirm(this, sa, question);
         }
     }
 
@@ -2395,12 +2390,6 @@ public class PlayerControllerHuman extends PlayerController implements IGameCont
         inputProxy.selectButtonCancel();
     }
 
-    public void confirm() {
-        if (inputQueue.getInput() instanceof InputConfirm) {
-            selectButtonOk();
-        }
-    }
-
     @Override
     public void passPriority() {
         passPriority(false);
@@ -2810,7 +2799,7 @@ public class PlayerControllerHuman extends PlayerController implements IGameCont
             }
             final Player player = gameCachePlayer.get(pv);
 
-            final Integer life = getGui().getInteger(localizer.getMessage("lblSetLifetoWhat"), 0);
+            final Integer life = getGui().getInteger(localizer.getMessage("lblSetLifetoWhat"), 0, Integer.MAX_VALUE, false);
             if (life == null) {
                 return;
             }
@@ -3344,6 +3333,15 @@ public class PlayerControllerHuman extends PlayerController implements IGameCont
         if (player != null) {
             player.concede();
             getGame().getAction().checkGameOverCondition();
+            if (getGame().isGameOver()) {
+                // Remote-client controllers on the server have no FControlGameEventHandler,
+                // so their input queues won't be released by the normal event path
+                for (Player p : getGame().getPlayers()) {
+                    if (p.getController() instanceof PlayerControllerHuman pch) {
+                        pch.getInputQueue().onGameOver(true);
+                    }
+                }
+            }
         }
     }
 
@@ -3481,4 +3479,140 @@ public class PlayerControllerHuman extends PlayerController implements IGameCont
         // No-op for local games - resync is only used for network play
     }
 
+    private boolean isRemoteClient() {
+        return gui instanceof forge.gamemodes.net.server.RemoteClientGuiGame;
+    }
+
+    private AutoYieldStore localStore() {
+        return ((LobbyPlayerHuman) getLobbyPlayer()).getYieldStore();
+    }
+
+    private boolean activeModeIsInstall() {
+        return ForgeConstants.AUTO_YIELD_PER_ABILITY_INSTALL.equals(FModel.getPreferences().getPref(FPref.UI_AUTO_YIELD_MODE));
+    }
+
+    private AutoYieldStore.Tier activeTier() {
+        String mode = FModel.getPreferences().getPref(FPref.UI_AUTO_YIELD_MODE);
+        if (ForgeConstants.AUTO_YIELD_PER_CARD.equals(mode))            return AutoYieldStore.Tier.GAME;
+        if (ForgeConstants.AUTO_YIELD_PER_ABILITY_SESSION.equals(mode)) return AutoYieldStore.Tier.SESSION;
+        return AutoYieldStore.Tier.MATCH;
+    }
+
+    @Override
+    public boolean shouldAutoYield(final String key) {
+        if (isRemoteClient()) {
+            if (remoteAutoYieldsDisabled) return false;
+            if (remoteCardYields.contains(key)) return true;
+            return remoteAbilityYields.contains(AutoYieldStore.abilitySuffix(key));
+        }
+        if (localStore().isDisabled()) return false;
+        if (activeModeIsInstall()) {
+            return PersistentYieldStore.get().contains(AutoYieldStore.abilitySuffix(key));
+        }
+        boolean abilityScope = activeTier() != AutoYieldStore.Tier.GAME;
+        String storageKey = abilityScope ? AutoYieldStore.abilitySuffix(key) : key;
+        return localStore().shouldYield(activeTier(), storageKey);
+    }
+
+    @Override
+    public void setShouldAutoYield(final String key, final boolean autoYield, final boolean isAbilityScope) {
+        if (isRemoteClient()) {
+            Set<String> bucket = isAbilityScope ? remoteAbilityYields : remoteCardYields;
+            if (autoYield) bucket.add(key);
+            else bucket.remove(key);
+            return;
+        }
+        String storageKey = isAbilityScope ? AutoYieldStore.abilitySuffix(key) : key;
+        if (activeModeIsInstall()) {
+            PersistentYieldStore.get().setYield(storageKey, autoYield);
+            return;
+        }
+        localStore().setYield(activeTier(), storageKey, autoYield);
+    }
+
+    @Override
+    public Iterable<String> getAutoYields() {
+        if (isRemoteClient()) {
+            return Iterables.concat(remoteCardYields, remoteAbilityYields);
+        }
+        if (activeModeIsInstall()) return PersistentYieldStore.get().getYields();
+        return localStore().getYields(activeTier());
+    }
+
+    @Override
+    public void clearAutoYields() {
+        if (isRemoteClient()) {
+            remoteCardYields.clear();
+            remoteAbilityYields.clear();
+            remoteTriggerDecisions.clear();
+            return;
+        }
+        localStore().onGameEnd(getGame() == null || getGame().getView().isMatchOver());
+    }
+
+    @Override
+    public boolean getDisableAutoYields() {
+        return isRemoteClient() ? remoteAutoYieldsDisabled : localStore().isDisabled();
+    }
+
+    @Override
+    public void setDisableAutoYields(final boolean disable) {
+        if (isRemoteClient()) remoteAutoYieldsDisabled = disable;
+        else localStore().setDisabled(disable);
+    }
+
+    @Override
+    public boolean shouldAlwaysAcceptTrigger(final int trigger) {
+        if (isRemoteClient()) return Boolean.TRUE.equals(remoteTriggerDecisions.get(trigger));
+        return localStore().getTriggerDecision(trigger) == AutoYieldStore.TriggerDecision.ACCEPT;
+    }
+
+    @Override
+    public boolean shouldAlwaysDeclineTrigger(final int trigger) {
+        if (isRemoteClient()) return Boolean.FALSE.equals(remoteTriggerDecisions.get(trigger));
+        return localStore().getTriggerDecision(trigger) == AutoYieldStore.TriggerDecision.DECLINE;
+    }
+
+    @Override
+    public void setShouldAlwaysAcceptTrigger(final int trigger) {
+        if (isRemoteClient()) remoteTriggerDecisions.put(trigger, Boolean.TRUE);
+        else localStore().setTriggerDecision(trigger, AutoYieldStore.TriggerDecision.ACCEPT);
+        if (isPromptingForTrigger(trigger)) selectButtonOk();
+    }
+
+    @Override
+    public void setShouldAlwaysDeclineTrigger(final int trigger) {
+        if (isRemoteClient()) remoteTriggerDecisions.put(trigger, Boolean.FALSE);
+        else localStore().setTriggerDecision(trigger, AutoYieldStore.TriggerDecision.DECLINE);
+        if (isPromptingForTrigger(trigger)) selectButtonCancel();
+    }
+
+    private boolean isPromptingForTrigger(final int trigger) {
+        if (!(inputQueue.getInput() instanceof InputConfirm)) return false;
+        final SpellAbilityStackInstance top = getGame().getStack().peek();
+        return top != null && top.isStateTrigger(trigger);
+    }
+
+    @Override
+    public void setShouldAlwaysAskTrigger(final int trigger) {
+        if (isRemoteClient()) remoteTriggerDecisions.remove(trigger);
+        else localStore().setTriggerDecision(trigger, AutoYieldStore.TriggerDecision.ASK);
+    }
+
+    public boolean isUiSetToSkipPhase(final PlayerView turnPlayer, final PhaseType phase) {
+        if (isRemoteClient()) {
+            EnumSet<PhaseType> set = remoteSkipPhases.get(turnPlayer);
+            return set != null && set.contains(phase);
+        }
+        return getGui().isUiSetToSkipPhase(turnPlayer, phase);
+    }
+
+    @Override
+    public void setUiShouldSkipPhase(final PlayerView turnPlayer, final PhaseType phase, final boolean shouldSkip) {
+        if (!isRemoteClient()) return;
+        EnumSet<PhaseType> set = remoteSkipPhases.computeIfAbsent(turnPlayer,
+                k -> EnumSet.noneOf(PhaseType.class));
+        if (shouldSkip) set.add(phase);
+        else set.remove(phase);
+    }
 }

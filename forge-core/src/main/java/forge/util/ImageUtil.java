@@ -234,25 +234,8 @@ public class ImageUtil {
         String faceParam = "";
 
         if (cp.getRules().getSplitType() == CardSplitType.Meld) {
-            String collectorNumberSuffix = "";
             if (face.equals("back")) {
-                PaperCard meldBasePc = cp.getMeldBaseCard();
-                cardCollectorNumber = meldBasePc.getCollectorNumber();
-
-                if (cardCollectorNumber.endsWith("a")) {
-                    cardCollectorNumber = cardCollectorNumber.substring(0, cardCollectorNumber.length() - 1);
-                } else if (cardCollectorNumber.endsWith("as")) {
-                    cardCollectorNumber = cardCollectorNumber.substring(0, cardCollectorNumber.length() - 2);
-                    collectorNumberSuffix = "s";
-                } else if (cardCollectorNumber.endsWith("ap")) {
-                    cardCollectorNumber = cardCollectorNumber.substring(0, cardCollectorNumber.length() - 2);
-                    collectorNumberSuffix = "p";
-                } else if (cp.getCollectorNumber().endsWith("a")) {
-                    // SIR
-                    cardCollectorNumber = cp.getCollectorNumber().substring(0, cp.getCollectorNumber().length() - 1);
-                }
-
-                cardCollectorNumber += "b" + collectorNumberSuffix;
+                cardCollectorNumber = cp.getMeldBaseCard().getCollectorNumber().replaceAll("(\\d+)([sp]?)", "$1b$2");
             } else {
                 // Front face - also strip "a" suffix for Scryfall
                 if (cardCollectorNumber.endsWith("as")) {

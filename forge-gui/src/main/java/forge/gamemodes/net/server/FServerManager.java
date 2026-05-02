@@ -1,6 +1,5 @@
 package forge.gamemodes.net.server;
 
-import com.google.common.collect.ImmutableList;
 import forge.ai.LobbyPlayerAi;
 import forge.ai.PlayerControllerAi;
 import forge.game.Game;
@@ -9,6 +8,7 @@ import forge.gamemodes.match.HostedMatch;
 import forge.gamemodes.match.LobbySlot;
 import forge.gamemodes.match.LobbySlotType;
 import forge.gamemodes.match.input.InputSynchronized;
+import forge.gamemodes.net.ChatMessage;
 import forge.gamemodes.net.CompatibleObjectDecoder;
 import forge.gamemodes.net.CompatibleObjectEncoder;
 import forge.gamemodes.net.NetworkLogConfig;
@@ -61,6 +61,9 @@ import java.util.function.Predicate;
 public final class FServerManager implements IHasForgeLog {
 
     static final int HEARTBEAT_TIMEOUT_SECONDS = Integer.getInteger("forge.net.heartbeatTimeout", 45);
+
+    private static final int OUTBOUND_BUFFER_LOW_WATER = 64 * 1024;
+    private static final int OUTBOUND_BUFFER_HIGH_WATER = 1024 * 1024;
     private static final int RECONNECT_TIMEOUT_SECONDS = 300;
 
     private static FServerManager instance = null;
@@ -140,12 +143,15 @@ public final class FServerManager implements IHasForgeLog {
                     .childHandler(new ChannelInitializer<SocketChannel>() {
                         @Override
                         public void initChannel(final SocketChannel ch) throws Exception {
+                            ch.config().setWriteBufferWaterMark(
+                                    new WriteBufferWaterMark(OUTBOUND_BUFFER_LOW_WATER, OUTBOUND_BUFFER_HIGH_WATER));
                             final ChannelPipeline p = ch.pipeline();
                             p.addLast(
                                     new CompatibleObjectEncoder(byteTracker),
                                     new CompatibleObjectDecoder(9766 * 1024, ClassResolvers.cacheDisabled(null)),
                                     new IdleStateHandler(HEARTBEAT_TIMEOUT_SECONDS, 0, 0, TimeUnit.SECONDS),
                                     new MessageHandler(),
+                                    new SaturationLoggingHandler(),
                                     new RegisterClientHandler(),
                                     new LobbyInputHandler(),
                                     new DeregisterClientHandler(),
@@ -178,7 +184,7 @@ public final class FServerManager implements IHasForgeLog {
         switch (SOptionPane.showOptionDialog(localizer.getMessageorUseDefault("lblUPnPQuestion", String.format("Attempt to open port %d automatically?", port), port),
                 localizer.getMessageorUseDefault("lblUPnPTitle", "UPnP option"),
                 null,
-                ImmutableList.of(localizer.getMessageorUseDefault("lblJustOnce", "Just Once"),
+                List.of(localizer.getMessageorUseDefault("lblJustOnce", "Just Once"),
                         localizer.getMessageorUseDefault("lblNotNow", "Not Now"),
                         localizer.getMessageorUseDefault("lblAlways", "Always"),
                         localizer.getMessageorUseDefault("lblNever", "Never")), 0)) {
@@ -253,7 +259,7 @@ public final class FServerManager implements IHasForgeLog {
 
     public void broadcast(final NetEvent event) {
         if (event instanceof MessageEvent msgEvent) {
-            lobbyListener.message(msgEvent.getSource(), msgEvent.getMessage());
+            lobbyListener.message(msgEvent.getSource(), msgEvent.getMessage(), msgEvent.getType());
         }
         broadcastTo(event, clients.values());
     }
@@ -372,8 +378,8 @@ public final class FServerManager implements IHasForgeLog {
 
     public void unsetReady() {
         if (this.localLobby != null && this.localLobby.getSlot(0) != null) {
-                this.localLobby.getSlot(0).setIsReady(false);
-                updateLobbyState();
+            this.localLobby.getSlot(0).setIsReady(false);
+            updateLobbyState();
         }
     }
 
@@ -484,6 +490,107 @@ public final class FServerManager implements IHasForgeLog {
         }
     }
 
+    /**
+     * Returns all usable IPv4 addresses from all network interfaces.
+     * Each entry maps a friendly display name to its IPv4 address.
+     * Results are ordered: routable address first, then others alphabetically.
+     */
+    public static LinkedHashMap<String, String> getAllLocalAddresses() {
+        final LinkedHashMap<String, String> result = new LinkedHashMap<>();
+        final String routableAddress = getLocalAddress();
+
+        try {
+            final Enumeration<NetworkInterface> interfaces = NetworkInterface.getNetworkInterfaces();
+            final TreeMap<String, String> sorted = new TreeMap<>();
+
+            while (interfaces.hasMoreElements()) {
+                final NetworkInterface iface = interfaces.nextElement();
+                if (!iface.isUp() || iface.isLoopback()) {
+                    continue;
+                }
+                final Enumeration<InetAddress> addresses = iface.getInetAddresses();
+                while (addresses.hasMoreElements()) {
+                    final InetAddress addr = addresses.nextElement();
+                    if (addr instanceof Inet4Address && !addr.isLoopbackAddress()) {
+                        final String ip = addr.getHostAddress();
+                        final String name = getFriendlyInterfaceName(iface.getName(), iface.getDisplayName(), ip);
+                        if (ip.equals(routableAddress)) {
+                            result.put(name, ip);
+                        } else {
+                            sorted.put(name, ip);
+                        }
+                    }
+                }
+            }
+            result.putAll(sorted);
+        } catch (final SocketException e) {
+            netLog.error(e, "Failed to enumerate network interfaces");
+        }
+
+        if (result.isEmpty()) {
+            result.put("Default", routableAddress);
+        }
+        return result;
+    }
+
+    private static String getFriendlyInterfaceName(final String ifName, final String displayName, final String ip) {
+        final String lower = ifName.toLowerCase();
+        final String lowerDisplay = displayName.toLowerCase();
+
+        if (lower.startsWith("ham") || lowerDisplay.contains("hamachi")) {
+            return "Hamachi";
+        }
+        if (lower.startsWith("zt") || lowerDisplay.contains("zerotier")) {
+            return "ZeroTier";
+        }
+        if (isTailscaleAddress(ip)) {
+            return "Tailscale";
+        }
+        if (lower.startsWith("wg")) {
+            return "WireGuard";
+        }
+        if ((lower.startsWith("tun") && !lower.startsWith("utun")) || lower.startsWith("tap")) {
+            return "VPN (" + ifName + ")";
+        }
+        if (lower.startsWith("utun")) {
+            return "VPN Tunnel";
+        }
+        if (lower.startsWith("feth")) {
+            return "Virtual Network";
+        }
+        if (lower.startsWith("en")) {
+            if (lowerDisplay.contains("wi-fi") || lowerDisplay.contains("wifi") || lowerDisplay.contains("airport")) {
+                return "Wi-Fi";
+            }
+            if (lowerDisplay.contains("thunderbolt") || lowerDisplay.contains("ethernet")) {
+                return "Ethernet";
+            }
+            return "LAN (" + ifName + ")";
+        }
+        if (lower.startsWith("eth") || lower.startsWith("ens") || lower.startsWith("enp")) {
+            return "Ethernet";
+        }
+        if (lower.startsWith("wl")) {
+            return "Wi-Fi";
+        }
+        if (lowerDisplay.contains("radmin")) {
+            return "Radmin VPN";
+        }
+        return displayName;
+    }
+
+    private static boolean isTailscaleAddress(final String ip) {
+        try {
+            final String[] parts = ip.split("\\.");
+            if (parts.length == 4) {
+                final int first = Integer.parseInt(parts[0]);
+                final int second = Integer.parseInt(parts[1]);
+                return first == 100 && second >= 64 && second <= 127;
+            }
+        } catch (final NumberFormatException ignored) { }
+        return false;
+    }
+
     public static String getExternalAddress() {
         BufferedReader in = null;
         try {
@@ -543,7 +650,7 @@ public final class FServerManager implements IHasForgeLog {
             ? localizer.getMessage("lblUPnPSuccess", String.valueOf(port))
             : localizer.getMessage("lblUPnPFailed", String.valueOf(port));
         if (lobbyListener != null) {
-            broadcast(new MessageEvent(msg));
+            broadcast(success ? new MessageEvent(msg) : MessageEvent.warning(msg));
         }
     }
 
@@ -724,7 +831,7 @@ public final class FServerManager implements IHasForgeLog {
         // Reset lobby slot
         localLobby.disconnectPlayer(client.getIndex());
 
-        broadcast(new MessageEvent(String.format("%s did not reconnect in time. AI has taken over.", username)));
+        broadcast(MessageEvent.warning(String.format("%s did not reconnect in time. AI has taken over.", username)));
     }
 
     public void convertToAI(final int slotIndex, final String username) {
@@ -772,6 +879,28 @@ public final class FServerManager implements IHasForgeLog {
                 broadcast(new MessageEvent(username, text));
             }
             super.channelRead(ctx, msg);
+        }
+    }
+
+    private class SaturationLoggingHandler extends ChannelInboundHandlerAdapter {
+        @Override
+        public void channelWritabilityChanged(final ChannelHandlerContext ctx) throws Exception {
+            final RemoteClient client = clients.get(ctx.channel());
+            if (client != null) {
+                if (!ctx.channel().isWritable()) {
+                    client.saturationStartMs = System.currentTimeMillis();
+                    client.sendsDuringSaturation.set(0);
+                    netLog.warn("Outbound buffer saturated for {} (pending {} bytes)",
+                            client.getUsername(), ctx.channel().bytesBeforeWritable());
+                } else if (client.saturationStartMs > 0L) {
+                    long durationMs = System.currentTimeMillis() - client.saturationStartMs;
+                    int sends = client.sendsDuringSaturation.get();
+                    client.saturationStartMs = 0L;
+                    netLog.info("{} recovered after {}.{}s outbound buffer saturation ({} server sends)",
+                            client.getUsername(), durationMs / 1000, (durationMs % 1000) / 100, sends);
+                }
+            }
+            super.channelWritabilityChanged(ctx);
         }
     }
 
@@ -858,12 +987,12 @@ public final class FServerManager implements IHasForgeLog {
                         final String clientVersion = event.getVersion();
                         final String hostVersion = BuildInfo.getVersionString();
                         if (clientVersion == null) {
-                            broadcast(new MessageEvent(String.format(
+                            broadcast(MessageEvent.warning(String.format(
                                 "Warning: Could not determine %s's Forge version. "
                                 + "Please use the same version as the host to avoid network compatibility issues.",
                                 event.getUsername())));
                         } else if (!clientVersion.equals(hostVersion)) {
-                            broadcast(new MessageEvent(String.format(
+                            broadcast(MessageEvent.warning(String.format(
                                 "Warning: %s is using Forge version %s (host: %s). "
                                 + "Please use the same version as the host to avoid network compatibility issues.",
                                 event.getUsername(), clientVersion, hostVersion)));
@@ -890,7 +1019,7 @@ public final class FServerManager implements IHasForgeLog {
                 final String msg = name + " timed out after " + HEARTBEAT_TIMEOUT_SECONDS
                     + " seconds without a network response. Closing connection.";
                 netLog.warn(msg);
-                broadcast(new MessageEvent(msg));
+                broadcast(MessageEvent.warning(msg));
                 ctx.close();
                 return;
             }
@@ -941,15 +1070,19 @@ public final class FServerManager implements IHasForgeLog {
                     }
                 }, 30_000L, 30_000L);
 
-                broadcast(new MessageEvent(
+                broadcast(MessageEvent.warning(
                     String.format("%s disconnected. Waiting %s for reconnect...", username, formatTime(RECONNECT_TIMEOUT_SECONDS))));
-                lobbyListener.message(null, "(Host can use /skipreconnect to replace disconnected player with AI, or /skiptimeout to wait indefinitely.)");
+                lobbyListener.message(null, "(Host can use /skipreconnect to replace disconnected player with AI, or /skiptimeout to wait indefinitely.)", ChatMessage.MessageType.SYSTEM);
                 netLog.info("[Disconnect] Player disconnected mid-game: {} (slot {}). Waiting for reconnect.", username, playerIndex);
-            } else {
-                // Normal disconnect (lobby or no valid slot)
+            } else if (client.hasValidSlot()) {
+                // Peer completed registration but match isn't active (or slot was freed earlier)
                 localLobby.disconnectPlayer(playerIndex);
                 broadcast(new MessageEvent(String.format("%s left the lobby.", username)));
                 broadcast(new LogoutEvent(username));
+            } else {
+                // Peer disconnected before completing registration — probe, crashed handshake, or rejection
+                netLog.info("[Disconnect] Unregistered peer disconnected from {}",
+                    ctx.channel().remoteAddress());
             }
             super.channelInactive(ctx);
         }
