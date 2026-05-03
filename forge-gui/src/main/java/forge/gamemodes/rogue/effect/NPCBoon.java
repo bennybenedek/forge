@@ -47,7 +47,7 @@ public enum NPCBoon implements RogueEffect {
             RogueEffect.addCardToBattlefield("NPC Narset - Chaosbound", human);
         }
     },
-    NARSET_GOD_OF_CHAOS("npc_narset_god_of_chaos", "God of Chaos", "All Planeswalk die results become Chaos instead.") {
+    NARSET_GOD_OF_CHAOS("npc_narset_god_of_chaos", "God of Chaos", "If you would planeswalk as a result of rolling the planar die, chaos ensues instead.") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             RogueEffect.addCardToCommandZone("NPC Narset - God of Chaos", human);
