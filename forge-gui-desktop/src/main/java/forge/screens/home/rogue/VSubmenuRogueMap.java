@@ -54,7 +54,7 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
       .build();
 
   private final FLabel lblLife = new FLabel.Builder()
-      .text("♥ Life: 20")
+      .text("\u2665 Life: 20 / 20")
       .fontSize(14)
       .fontStyle(Font.BOLD)
       .build();
@@ -125,7 +125,7 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
     if (run != null) {
       lblCommanderName.setText(run.getSelectedRogueDeck().getCommanderCardName());
       lblCommanderAvatar.setIcon(FSkin.getAvatars().get(run.getSelectedRogueDeck().getAvatarIndex()));
-      lblLife.setText("♥ Life: " + run.getCurrentLife());
+      lblLife.setText("\u2665 Life: " + run.getCurrentLife() + " / " + run.getStartingLife());
       lblGold.setText("Gold: " + run.getCurrentGold());
       lblRemovalCredits.setText("Removal Credits: " + run.getRemovalCredits());
       int descLevel = run.getDescensionLevel();
@@ -156,7 +156,7 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
     } else {
       lblCommanderName.setText("");
       lblCommanderAvatar.setIcon(FSkin.getIcon(FSkinProp.ICO_MINUS));
-      lblLife.setText("♥ Life: 20");
+      lblLife.setText("\u2665 Life: 20 / 20");
       lblGold.setText("Gold: 0");
       lblRemovalCredits.setText("Removal Credits: 0");
       lblDescension.setVisible(false);

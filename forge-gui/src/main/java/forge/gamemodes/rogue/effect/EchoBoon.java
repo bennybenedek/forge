@@ -42,15 +42,15 @@ public enum EchoBoon implements RogueEffect {
     },
 
     LINGERING_AURA("lingering_aura", "Lingering Aura",
-        "Heal Life after each Plane match victory.",
+        "Gain life after each Plane match victory.",
         new int[]{2, 4, 8, 16},     // Echo costs per rank
-        new int[]{2, 4, 6, 8},      // Effect values: heal 2/4/6/8
+        new int[]{2, 4, 6, 8},      // Effect values: gain 2/4/6/8 life
         3, 0) {
         @Override
         public void onMatchWin(RogueRun run) {
             if (run.getCurrentLife() >= run.getStartingLife()) return;
             int heal = getEffectValueAtRank(run.getRunBoonRank(getId()));
-            if (heal > 0) run.healLife(heal);
+            if (heal > 0) run.gainLifeUpToMax(heal);
         }
     },
 
@@ -250,7 +250,7 @@ public enum EchoBoon implements RogueEffect {
       return switch (this) {
         case VITAL_INFUSION -> "<html>Begin each Run with +" + allValues + " Max Life.</html>";
         case AETHER_MARKET -> "<html>Gain +" + allValues + " starting Gold.</html>";
-        case LINGERING_AURA -> "<html>Heal " + allValues + " Life after each match victory.</html>";
+        case LINGERING_AURA -> "<html>Gain " + allValues + " life after each match victory.</html>";
         case FORESIGHT ->
             "<html>Start each match with +" + allValues + " opening hand card.</html>";
         case MYTHIC_COLLECTOR ->

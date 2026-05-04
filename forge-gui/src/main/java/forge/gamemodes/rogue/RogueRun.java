@@ -109,6 +109,8 @@ public class RogueRun {
     private transient HostedMatch hostedMatch = null;
     @XStreamOmitField
     private transient LastMatchData lastMatchData = LastMatchData.EMPTY;
+    @XStreamOmitField
+    private transient Integer lastMatchRawLife = null;
 
     // Constructors
     public RogueRun() {
@@ -212,6 +214,7 @@ public class RogueRun {
                 runState = RogueRunState.STARTED;
             }
         }
+        clampCurrentLifeToMax();
         return this;
     }
 
@@ -271,12 +274,24 @@ public class RogueRun {
     }
 
     // Life management
-    public void healLife(int amount) {
+    public void gainLifeUpToMax(int amount) {
         currentLife = Math.min(currentLife + amount, startingLife);
     }
 
-    public void gainLife(int amount) {
-        currentLife = currentLife + amount;
+    public void clampCurrentLifeToMax() {
+        if (startingLife > 0) {
+            currentLife = Math.min(currentLife, startingLife);
+        }
+    }
+
+    public void persistMatchLife(int life) {
+        lastMatchRawLife = life;
+        currentLife = life;
+        clampCurrentLifeToMax();
+    }
+
+    public int getLastMatchRawLife() {
+        return lastMatchRawLife != null ? lastMatchRawLife : currentLife;
     }
 
     // Match hosting (transient)

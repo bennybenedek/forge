@@ -478,8 +478,8 @@ public enum CSubmenuRogueMap implements ICDoc {
     // Handle player's choice
     switch (choice) {
       case HEAL:
-        // Heal player and cure all wounds
-        currentRun.gainLife(healAmount);
+        // Gain life up to max and cure all wounds
+        currentRun.gainLifeUpToMax(healAmount);
         currentRun.clearWounds();
         break;
 

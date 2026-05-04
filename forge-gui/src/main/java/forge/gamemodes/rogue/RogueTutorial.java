@@ -48,7 +48,9 @@ public enum RogueTutorial {
           +
           "Your won Echoes can be spent on Boons, which are permanent upgrades that apply to all future Runs, and are not lost at the end of a Run.\n"
           +
-          "The cards you earned were added to your Rogue deck. You can view your deck at any time by clicking 'Edit Rogue Deck'."
+          "The cards you earned were added to your Rogue deck. You can view your deck at any time by clicking 'Edit Rogue Deck'.\n"
+          +
+          "If you gained life above your Run's Max Life during the battle, it will reset back to your Max Life after the battle."
   ),
 
   ELITE_ENCOUNTER(

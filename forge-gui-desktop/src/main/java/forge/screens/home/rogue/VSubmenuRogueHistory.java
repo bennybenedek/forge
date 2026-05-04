@@ -138,7 +138,6 @@ public enum VSubmenuRogueHistory implements IVSubmenu<CSubmenuRogueHistory> {
     private final FLabel lblDetail;
     private final FLabel lblTimestamp;
     private final FTextArea txtPath;
-    private final FLabel lblStats;
     private final FLabel lblDescension; // null if descensionLevel == 0
     private final FLabel lblBoons;      // null if no active boons
     private final FButton btnViewDeck;
@@ -225,12 +224,6 @@ public enum VSubmenuRogueHistory implements IVSubmenu<CSubmenuRogueHistory> {
         txtPath = null;
       }
 
-      // Stats
-      String stats = "Life: " + entry.getFinalLife() + "  |  Gold: " + entry.getFinalGold();
-      lblStats = new FLabel.Builder().text(stats).fontSize(12)
-          .fontAlign(SwingConstants.LEFT).build();
-      add(lblStats);
-
       // Descension level (optional)
       if (entry.getDescensionLevel() > 0) {
         lblDescension = new FLabel.Builder()
@@ -296,22 +289,19 @@ public enum VSubmenuRogueHistory implements IVSubmenu<CSubmenuRogueHistory> {
       lblTimestamp.setBounds(rightSideX, y, rightSideW, rowH);
       y += rowH + ROW_GAP;
 
-      // Row 2: Path (left width only)
+      // Row 2: Path (left) + View Deck button (far right)
+      int pathH = 0;
       if (txtPath != null) {
         txtPath.setSize(leftW, Short.MAX_VALUE);
-        int pathH = txtPath.getPreferredSize().height;
+        pathH = txtPath.getPreferredSize().height;
         txtPath.setBounds(contentX, y, leftW, pathH);
-        y += pathH + ROW_GAP;
       }
-
-      // Row 3: Stats (left) + View Deck button (far right)
       if (btnViewDeck != null) {
-        lblStats.setBounds(contentX, y, leftW, BTN_HEIGHT);
-        btnViewDeck.setBounds(rightSideX, y, BTN_WIDTH, BTN_HEIGHT);
-        y += BTN_HEIGHT + ROW_GAP;
-      } else {
-        lblStats.setBounds(contentX, y, leftW, rowH);
-        y += rowH + ROW_GAP;
+        int buttonY = y + Math.max(0, (pathH - BTN_HEIGHT) / 2);
+        btnViewDeck.setBounds(rightSideX, buttonY, BTN_WIDTH, BTN_HEIGHT);
+      }
+      if (txtPath != null || btnViewDeck != null) {
+        y += Math.max(pathH, btnViewDeck != null ? BTN_HEIGHT : 0) + ROW_GAP;
       }
 
       y += INSET; // bottom padding
@@ -343,11 +333,14 @@ public enum VSubmenuRogueHistory implements IVSubmenu<CSubmenuRogueHistory> {
       int y = INSET;
       y += 20 + ROW_GAP; // row 0
       y += 20 + ROW_GAP; // row 1
+      int pathH = 0;
       if (txtPath != null) {
         txtPath.setSize(Math.max(leftW, 100), Short.MAX_VALUE);
-        y += txtPath.getPreferredSize().height + ROW_GAP;
+        pathH = txtPath.getPreferredSize().height;
       }
-      y += (btnViewDeck != null ? BTN_HEIGHT : 20) + ROW_GAP;
+      if (txtPath != null || btnViewDeck != null) {
+        y += Math.max(pathH, btnViewDeck != null ? BTN_HEIGHT : 0) + ROW_GAP;
+      }
       y += INSET;
       return new Dimension(w, y);
     }

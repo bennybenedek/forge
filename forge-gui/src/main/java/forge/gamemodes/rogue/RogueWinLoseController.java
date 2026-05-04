@@ -95,9 +95,9 @@ public class RogueWinLoseController {
         if (!isLastNode) {
             int lifeBefore = currentRun.getCurrentLife();
             RogueEffectComposite.INSTANCE.onMatchWin(currentRun);
-            int healed = currentRun.getCurrentLife() - lifeBefore;
-            if (healed > 0) {
-                view.showMessage("Healed " + healed + " life.", "Boon Effect", FSkinProp.ICO_QUEST_CHARM);
+            int gainedLife = currentRun.getCurrentLife() - lifeBefore;
+            if (gainedLife > 0) {
+                view.showMessage("Gained " + gainedLife + " life.", "Boon Effect", FSkinProp.ICO_QUEST_CHARM);
             }
 
             // Won the match but life is still <= 0 (e.g. "can't lose the game" effect) — run is lost
@@ -314,7 +314,7 @@ public class RogueWinLoseController {
         final LobbyPlayer humanLobbyPlayer = GamePlayerUtil.getGuiPlayer();
         for (Player p : game.getPlayers()) {
             if (p.getLobbyPlayer() == humanLobbyPlayer) {
-                currentRun.setCurrentLife(p.getLife());
+                currentRun.persistMatchLife(p.getLife());
                 currentRun.setLastMatchData(new RogueRun.LastMatchData(
                     p.getPlanarDieChaosThisGame(), p.getPlanarDiePlaneswalkThisGame()));
                 checkCarryCardSurvival(p);

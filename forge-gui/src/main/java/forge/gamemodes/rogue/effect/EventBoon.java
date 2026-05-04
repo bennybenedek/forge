@@ -15,7 +15,7 @@ public enum EventBoon implements RogueEffect {
             EffectType.ONESHOT) {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
-            run.setCurrentLife(run.getCurrentLife() + 8);
+            run.gainLifeUpToMax(8);
             run.setCurrentGold(run.getCurrentGold() - 5);
         }
     },

@@ -13,14 +13,11 @@ import java.util.Set;
  */
 public enum RogueStats {
 
-    // --- Max-value stats: fire on match + side node ---
+    // --- Max-value stats: fire on match and/or side node as needed ---
 
     MAX_LIFE("MaxLife", "Have %s+ life after any match.") {
-        @Override public int evaluate(RogueRun run, RogueMetaProgress p) { return run.getCurrentLife(); }
+        @Override public int evaluate(RogueRun run, RogueMetaProgress p) { return run.getLastMatchRawLife(); }
         @Override public void onMatchCompleted(RogueRun run, RogueMetaProgress p, boolean won) {
-            p.updateStat(this, evaluate(run, p));
-        }
-        @Override public void onSideNodeCompleted(RogueRun run, RogueMetaProgress p) {
             p.updateStat(this, evaluate(run, p));
         }
     },
