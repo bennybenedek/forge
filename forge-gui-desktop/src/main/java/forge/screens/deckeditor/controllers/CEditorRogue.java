@@ -17,6 +17,7 @@
  */
 package forge.screens.deckeditor.controllers;
 
+import java.awt.event.ActionListener;
 import forge.Singletons;
 import forge.deck.CardPool;
 import forge.deck.Deck;
@@ -41,7 +42,12 @@ import forge.screens.home.rogue.CSubmenuRogueMap;
 import forge.screens.home.rogue.RogueTutorialHelper;
 import forge.screens.match.controllers.CDetailPicture;
 import forge.util.ItemPool;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
+import org.eclipse.jetty.util.StringUtil;
 
 /**
  * Deck editor for Rogue Commander mode.
@@ -52,9 +58,13 @@ import java.util.Map.Entry;
  */
 public final class CEditorRogue extends CDeckEditor<Deck> {
 
+    private static final String FALLBACK_LAND_SET = "M3C";
+    private static final String WASTES = "Wastes";
     private static final String REMOVAL_CREDITS = "Removal Credits";
     private final DeckController<Deck> controller;
+    private final List<DeckSection> allSections = new ArrayList<>();
     private final ItemPool<PaperCard> basicLandPool;
+    private final ItemPool<PaperCard> emptyCatalogPool = new ItemPool<>(PaperCard.class);
     private RogueRun rogueRun;
 
     // Rogue-specific UI elements
@@ -83,6 +93,8 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
     public CEditorRogue(final RogueRun rogueRun0, final FScreen screen0, final CDetailPicture cDetailPicture0) {
         super(screen0, cDetailPicture0, GameType.RogueCommander);
         this.rogueRun = rogueRun0;
+        allSections.add(DeckSection.Main);
+        allSections.add(DeckSection.Commander);
 
         // Create infinite pool of basic lands from the commander's edition
         basicLandPool = new ItemPool<>(PaperCard.class);
@@ -91,30 +103,23 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
         String commanderName = rogueRun0.getSelectedRogueDeck().getCommanderCardName();
         PaperCard commanderCard = FModel.getMagicDb().getCommonCards().getCard(commanderName);
 
-        // Add basic lands from desired set (deck meta data) or commander's edition
+        // Add basic lands from desired set (deck meta data) or commander's edition if not specified
+        // or no edition found
+        String selectedEdition = FALLBACK_LAND_SET;
         String deckEdition = rogueRun.getSelectedRogueDeck().getLandEdition();
         String commanderEdition = (commanderCard != null) ? commanderCard.getEdition() : null;
 
-        int landsAdded = 0;
-        for (Entry<PaperCard, Integer> entry : FModel.getAllCardsNoAlt()) {
-            PaperCard card = entry.getKey();
-            if (card.getRules().getType().isBasicLand() && (
-                card.getEdition().equals(deckEdition)
-                    || card.getEdition().equals(commanderEdition)))  {
-                    basicLandPool.add(card);
-                    landsAdded++;
-            }
+        if (!StringUtil.isBlank(deckEdition)) {
+            selectedEdition = deckEdition;
+        } else if (!StringUtil.isBlank(commanderEdition)) {
+            selectedEdition = commanderEdition;
         }
 
-        // Fallback 2: If less than 5 lands added, add all basic lands
-        if (landsAdded < 5) {
-            for (Entry<PaperCard, Integer> entry : FModel.getAllCardsNoAlt()) {
-                PaperCard card = entry.getKey();
-                if (card.getRules().getType().isBasicLand()) {
-                    basicLandPool.add(card);
-                }
-            }
-        }
+        List<PaperCard> preferredSetBasics = getBasicLandsFromEdition(selectedEdition);
+        List<PaperCard> filteredCandidates = new ArrayList<>(
+            rogueRun.filterCardsByCommanderColorIdentity(preferredSetBasics));
+        addBasicLandsToPool(filteredCandidates);
+        ensureRequiredBasicLandsPresent(filteredCandidates);
 
         // Create managers with empty catalog (no cards to add except basic lands)
         final CardManager catalogManager = new CardManager(cDetailPicture0, false, false, false);
@@ -159,7 +164,7 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
 
     @Override
     protected void onAddItems(Iterable<Entry<PaperCard, Integer>> items, boolean toAlternate) {
-        if (toAlternate) { return; }
+        if (toAlternate || sectionMode != DeckSection.Main) { return; }
 
         // Only allow adding if all items are basic lands
         for (Entry<PaperCard, Integer> entry : items) {
@@ -191,7 +196,7 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
 
     @Override
     protected void onRemoveItems(Iterable<Entry<PaperCard, Integer>> items, boolean toAlternate) {
-        if (toAlternate) { return; }
+        if (toAlternate || sectionMode != DeckSection.Main) { return; }
 
         // Count how many non-basic lands are being removed
         int nonBasicLandsToRemove = 0;
@@ -237,30 +242,29 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
 
     @Override
     protected void buildAddContextMenu(EditorContextMenuBuilder cmb) {
+        if (sectionMode != DeckSection.Main) {
+            return;
+        }
         cmb.addMoveItems("Add", "to deck");
     }
 
     @Override
     protected void buildRemoveContextMenu(EditorContextMenuBuilder cmb) {
+        if (sectionMode != DeckSection.Main) {
+            return;
+        }
         // Standard remove context menu
         cmb.addMoveItems("Remove", null);
     }
 
     @Override
     public void resetTables() {
-        Deck deck = this.rogueRun.getCurrentDeck();
-
-        // Set catalog to infinite basic lands pool (makes a copy, which is fine)
-        this.getCatalogManager().setPool(basicLandPool, true);
-
-        // Set deck to current run's deck BY REFERENCE
-        // IMPORTANT: Use single-parameter setPool() to work by reference!
-        // The two-parameter version setPool(pool, false) creates a COPY which breaks persistence
-        if (deck != null) {
-            this.getDeckManager().setPool(deck.getMain());
-        } else {
-            this.getDeckManager().setPool(new CardPool());
+        DeckSection selectedSection = (DeckSection) getCbxSection().getSelectedItem();
+        if (selectedSection == null) {
+            selectedSection = DeckSection.Main;
+            getCbxSection().setSelectedItem(selectedSection);
         }
+        setEditorMode(selectedSection);
     }
 
     @Override
@@ -299,6 +303,7 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
         // Set title
         VCurrentDeck.SINGLETON_INSTANCE.getLblTitle().setText("Rogue Commander Deck:");
         VCardCatalog.SINGLETON_INSTANCE.getTabLabel().setText("Rogue Commander");
+        getCbxSection().setVisible(true);
 
         // Add Rogue-specific UI elements to deck manager button panel
         // These will automatically be isolated to this editor instance (not shared)
@@ -383,10 +388,21 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
         // Clear undo stack for new editing session
         undoStack.clear();
 
-        resetUI();
-        resetTables();
-
         this.getDeckController().setModel(rogueRun.getCurrentDeck());
+
+        resetUI();
+        getCbxSection().removeAllItems();
+        for (DeckSection section : allSections) {
+            getCbxSection().addItem(section);
+        }
+        for (ActionListener listener : getCbxSection().getActionListeners()) {
+            getCbxSection().removeActionListener(listener);
+        }
+        getCbxSection().addActionListener(actionEvent -> {
+            DeckSection ds = (DeckSection) getCbxSection().getSelectedItem();
+            setEditorMode(ds);
+        });
+        resetTables();
 
         // Set deck name
         if (rogueRun.getCurrentDeck() != null) {
@@ -411,6 +427,105 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
         return additions;
     }
 
+    private void setEditorMode(DeckSection sectionMode) {
+        Deck deck = rogueRun.getCurrentDeck();
+        if (deck == null || sectionMode == null) {
+            return;
+        }
+
+        switch (sectionMode) {
+        case Commander:
+            getCatalogManager().setup(ItemManagerConfig.CARD_CATALOG);
+            getCatalogManager().setPool(emptyCatalogPool, true);
+            getDeckManager().setPool(deck.getOrCreate(DeckSection.Commander));
+            getBtnRemove().setVisible(false);
+            getBtnRemove4().setVisible(false);
+            break;
+        case Main:
+        default:
+            getCatalogManager().setup(ItemManagerConfig.CARD_CATALOG);
+            getCatalogManager().setPool(basicLandPool, true);
+            getDeckManager().setPool(deck.getMain());
+            getBtnRemove().setVisible(true);
+            getBtnRemove4().setVisible(false);
+            break;
+        }
+
+        this.sectionMode = sectionMode;
+        updateRemovalCreditsLabel();
+        this.getDeckController().updateCaptions();
+    }
+
+    private List<PaperCard> getBasicLandsFromEdition(String edition) {
+        List<PaperCard> candidates = new ArrayList<>();
+        if (StringUtil.isBlank(edition)) {
+            return candidates;
+        }
+
+        for (Entry<PaperCard, Integer> entry : FModel.getAllCardsNoAlt()) {
+            PaperCard card = entry.getKey();
+            if (card.getRules().getType().isBasicLand() && edition.equals(card.getEdition())) {
+                candidates.add(card);
+            }
+        }
+        return candidates;
+    }
+
+    private void addBasicLandsToPool(List<PaperCard> cards) {
+        for (PaperCard card : cards) {
+            basicLandPool.add(card);
+        }
+    }
+
+    private void ensureRequiredBasicLandsPresent(List<PaperCard> preferredCandidates) {
+        Set<String> presentBasicLandTypes = new LinkedHashSet<>();
+        for (PaperCard card : preferredCandidates) {
+            presentBasicLandTypes.add(card.getName());
+        }
+
+        for (String requiredBasicLandType : getRequiredBasicLandTypes()) {
+            if (presentBasicLandTypes.contains(requiredBasicLandType)) {
+                continue;
+            }
+
+            PaperCard fallbackCard = FModel.getMagicDb().getCommonCards().getCard(
+                requiredBasicLandType, FALLBACK_LAND_SET);
+            if (fallbackCard != null) {
+                basicLandPool.add(fallbackCard);
+                presentBasicLandTypes.add(requiredBasicLandType);
+            }
+        }
+    }
+
+    private Set<String> getRequiredBasicLandTypes() {
+        Set<String> requiredBasicLandTypes = new LinkedHashSet<>(getCommanderColoredBasicLandTypes());
+        if (shouldRequireWastes()) {
+            requiredBasicLandTypes.add(WASTES);
+        }
+        return requiredBasicLandTypes;
+    }
+
+    private Set<String> getCommanderColoredBasicLandTypes() {
+        Set<String> coloredBasicLandTypes = new LinkedHashSet<>();
+        List<PaperCard> canonicalBasics = getBasicLandsFromEdition(FALLBACK_LAND_SET);
+        List<PaperCard> coloredBasics = new ArrayList<>();
+        for (PaperCard card : canonicalBasics) {
+            if (!WASTES.equals(card.getName())) {
+                coloredBasics.add(card);
+            }
+        }
+
+        for (PaperCard card : rogueRun.filterCardsByCommanderColorIdentity(coloredBasics)) {
+            coloredBasicLandTypes.add(card.getName());
+        }
+        return coloredBasicLandTypes;
+    }
+
+    private boolean shouldRequireWastes() {
+        return rogueRun.getCommanderColorIdentityMask() == 0 ||
+            rogueRun.getSelectedRogueDeck().shouldIncludeColorlessBasics();
+    }
+
     /**
      * Updates the removal credits label to show available removals.
      */
@@ -421,7 +536,7 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
 
             // Update undo button state
             if (btnUndo != null) {
-                btnUndo.setEnabled(!undoStack.isEmpty());
+                btnUndo.setEnabled(sectionMode == DeckSection.Main && !undoStack.isEmpty());
             }
         }
     }

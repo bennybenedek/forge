@@ -471,17 +471,25 @@ public enum CSubmenuRogueMap implements ICDoc {
 
     RogueTutorialHelper.showIfNotSeen(RogueTutorial.SANCTUM);
 
-    int healAmount = sanctumNode.getHealAmount();
+    int baseHealAmount = sanctumNode.getHealAmount();
+    int missingLife = Math.max(0, currentRun.getStartingLife() - currentRun.getCurrentLife());
+    int effectiveHealAmount = Math.min(baseHealAmount, missingLife);
+    boolean hasWounds = !currentRun.getActiveWounds().isEmpty();
+    boolean restEnabled = effectiveHealAmount > 0 || hasWounds;
+    String restDisabledReason = restEnabled
+        ? null
+        : "You are already at maximum life and have no wounds to cure.";
 
     // Show Sanctum dialog
-    SanctumDialog dialog = new SanctumDialog(healAmount);
+    SanctumDialog dialog = new SanctumDialog(
+        effectiveHealAmount, restEnabled, restDisabledReason);
     SanctumDialog.SanctumChoice choice = dialog.show();
 
     // Handle player's choice
     switch (choice) {
       case HEAL:
         // Gain life up to max and cure all wounds
-        currentRun.gainLifeUpToMax(healAmount);
+        currentRun.gainLifeUpToMax(baseHealAmount);
         currentRun.clearWounds();
         break;
 

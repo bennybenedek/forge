@@ -23,6 +23,7 @@ public class RogueDeck {
     private int avatarIndex;                // Avatar image index
     private int sleeveIndex;                // Sleeve image index
     private String landEdition;             // Land edition code for basic lands in Deck Editor (optional)
+    private boolean includeColorlessBasics; // Adds Wastes support for decks that need explicit {C} sources
     private RogueUnlockCondition rogueUnlockCondition;  // Unlock condition
 
     // Constructors
@@ -168,6 +169,14 @@ public class RogueDeck {
 
     public void setLandEdition(String landEdition) {
         this.landEdition = landEdition;
+    }
+
+    public boolean shouldIncludeColorlessBasics() {
+        return includeColorlessBasics;
+    }
+
+    public void setIncludeColorlessBasics(boolean includeColorlessBasics) {
+        this.includeColorlessBasics = includeColorlessBasics;
     }
 
     public RogueUnlockCondition getUnlockCondition() {

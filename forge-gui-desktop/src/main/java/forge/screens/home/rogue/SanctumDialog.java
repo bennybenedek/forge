@@ -11,7 +11,7 @@ import javax.swing.SwingConstants;
 import net.miginfocom.swing.MigLayout;
 
 /**
- * Dialog for Sanctum node interaction. Allows player to heal life or craft a carry item.
+ * Dialog for Sanctum node interaction. Allows player to rest or craft a carry item.
  */
 public class SanctumDialog {
 
@@ -31,9 +31,11 @@ public class SanctumDialog {
   /**
    * Create a Sanctum dialog.
    *
-   * @param healAmount Amount of life to heal (up to max)
+   * @param effectiveHealAmount Actual life gain the player would receive right now
+   * @param restEnabled Whether REST should be selectable
+   * @param restDisabledReason Tooltip shown when REST is disabled
    */
-  public SanctumDialog(int healAmount) {
+  public SanctumDialog(int effectiveHealAmount, boolean restEnabled, String restDisabledReason) {
     panel = new MainPanel();
 
     FLabel lblTitle = new FLabel.Builder()
@@ -50,12 +52,16 @@ public class SanctumDialog {
         .build();
 
     FButton btnRest = new FButton(buildChoiceHtml(
-        "REST", "Gain " + healAmount + " Life & Cure All Wounds"));
+        "REST", "Gain " + effectiveHealAmount + " Life & Cure All Wounds"));
     btnRest.addActionListener(e -> {
       choice = SanctumChoice.HEAL;
       optionPane.setResult(0);
       optionPane.setVisible(false);
     });
+    btnRest.setEnabled(restEnabled);
+    if (!restEnabled && restDisabledReason != null && !restDisabledReason.isEmpty()) {
+      btnRest.setToolTipText(restDisabledReason);
+    }
 
     FButton btnCook = new FButton(buildChoiceHtml(
         "COOK", "Craft a random Food item"));

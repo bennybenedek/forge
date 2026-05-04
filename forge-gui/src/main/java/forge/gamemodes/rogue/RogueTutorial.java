@@ -96,8 +96,8 @@ public enum RogueTutorial {
 
   SANCTUM(
       "The Sanctum",
-      "The Sanctum offers two services: healing and cooking. " +
-          "Gain life and cure all wounds, or craft a random Food item " +
+      "The Sanctum offers two services: resting and cooking. " +
+          "Gain life (up until your Max. Life) and cure all wounds, or craft a random Food item " +
           "that will persist as a carry card for future matches."
   ),
 

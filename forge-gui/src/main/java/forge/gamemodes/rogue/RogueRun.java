@@ -300,6 +300,14 @@ public class RogueRun {
         return filtered;
     }
 
+    public int getCommanderColorIdentityMask() {
+        int colorIdentityMask = 0;
+        for (PaperCard commander : getActiveCommanders()) {
+            colorIdentityMask |= commander.getRules().getColorIdentity().getColor();
+        }
+        return colorIdentityMask;
+    }
+
     private List<PaperCard> getActiveCommanders() {
         if (currentDeck != null) {
             List<PaperCard> commanders = currentDeck.getCommanders();

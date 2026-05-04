@@ -3,4 +3,5 @@ theme=Tribal, Shapeshifters, Colorless
 avatarIndex=94
 sleeveIndex=1
 landEdition=ECL
+includeColorlessBasics=true
 unlock=LegendaryPermanents$ 15
