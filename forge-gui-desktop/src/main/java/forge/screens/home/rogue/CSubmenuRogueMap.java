@@ -26,12 +26,14 @@ import forge.item.PaperCard;
 import forge.localinstance.achievements.RogueCommanderAchievements;
 import forge.localinstance.properties.ForgeConstants;
 import forge.localinstance.properties.ForgePreferences;
+import forge.model.FModel;
 import forge.player.GamePlayerUtil;
 import forge.screens.deckeditor.CDeckEditorUI;
 import forge.screens.deckeditor.controllers.CEditorRogue;
 import forge.screens.home.CHomeUI;
 import forge.toolbox.FOptionPane;
 import forge.toolbox.FSkin;
+import forge.util.Aggregates;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.*;
@@ -45,6 +47,8 @@ import net.miginfocom.swing.MigLayout;
  */
 public enum CSubmenuRogueMap implements ICDoc {
   SINGLETON_INSTANCE;
+
+  private static final String SANCTUM_COOK_SOURCE_ID = "sanctum_cook";
 
   private final ActionListener actEnterNode = arg0 -> enterNode();
   private final ActionListener actEditDeck = arg0 -> editDeck();
@@ -467,12 +471,10 @@ public enum CSubmenuRogueMap implements ICDoc {
 
     RogueTutorialHelper.showIfNotSeen(RogueTutorial.SANCTUM);
 
-    // Get current and max life
     int healAmount = sanctumNode.getHealAmount();
-    int freeRemoves = sanctumNode.getFreeRemoves();
 
     // Show Sanctum dialog
-    SanctumDialog dialog = new SanctumDialog(healAmount, freeRemoves);
+    SanctumDialog dialog = new SanctumDialog(healAmount);
     SanctumDialog.SanctumChoice choice = dialog.show();
 
     // Handle player's choice
@@ -483,9 +485,22 @@ public enum CSubmenuRogueMap implements ICDoc {
         currentRun.clearWounds();
         break;
 
-      case REMOVE_CARDS:
-        // Add removal credits (allows removing cards from deck later)
-        currentRun.addRemovalCredits(freeRemoves);
+      case COOK:
+        PaperCard craftedFood = craftSanctumFood();
+        if (craftedFood == null) {
+          FOptionPane.showMessageDialog(
+              "No Food items matching your commander's color identity were available to craft.",
+              "Sanctum");
+          break;
+        }
+        currentRun.addCarryCard(craftedFood.getName(), CarryCardType.ITEM, SANCTUM_COOK_SOURCE_ID);
+        showNodeResultDialog(
+            "Sanctum",
+            "You crafted:",
+            List.of(new NodeResultPanel.CardSection(null, List.of(craftedFood))),
+            900,
+            700,
+            NodeResultPanel.MessageAlignment.CENTER);
         break;
 
       case SKIP:
@@ -503,6 +518,13 @@ public enum CSubmenuRogueMap implements ICDoc {
     // Save run and update view
     RogueIO.saveRun(currentRun);
     update();
+  }
+
+  private PaperCard craftSanctumFood() {
+    List<PaperCard> foods = FModel.getMagicDb().getCommonCards().getAllCardsNoAlt(
+        card -> card.getRules().getType().hasSubtype("Food"));
+    foods = currentRun.filterCardsByCommanderColorIdentity(foods);
+    return foods.isEmpty() ? null : Aggregates.random(foods);
   }
 
   private void handleBazaarNode(NodeBazaar bazaarNode) {
@@ -749,12 +771,7 @@ public enum CSubmenuRogueMap implements ICDoc {
         resultText = "You already bear all wounds.";
       }
 
-      NodeResultPanel resultPanel = new NodeResultPanel(resultText, sections);
-      FOptionPane optionPane = new FOptionPane(null, "Event Completed", null, resultPanel,
-          List.of("OK"), 0);
-      resultPanel.initZoom(optionPane);
-      optionPane.setVisible(true);
-      optionPane.dispose();
+      showNodeResultDialog("Event Completed", resultText, sections);
     }
 
     eventNode.setCompleted(true);
@@ -762,6 +779,27 @@ public enum CSubmenuRogueMap implements ICDoc {
     RogueStats.fireOnSideNodeCompleted(currentRun, RogueMetaProgress.getInstance());
     RogueIO.saveRun(currentRun);
     update();
+  }
+
+  private void showNodeResultDialog(String title, String message,
+                                    List<NodeResultPanel.CardSection> sections) {
+    NodeResultPanel resultPanel = new NodeResultPanel(message, sections);
+    FOptionPane optionPane = new FOptionPane(null, title, null, resultPanel, List.of("OK"), 0);
+    resultPanel.initZoom(optionPane);
+    optionPane.setVisible(true);
+    optionPane.dispose();
+  }
+
+  private void showNodeResultDialog(String title, String message,
+                                    List<NodeResultPanel.CardSection> sections,
+                                    int minWidth, int minHeight,
+                                    NodeResultPanel.MessageAlignment messageAlignment) {
+    NodeResultPanel resultPanel = new NodeResultPanel(
+        message, sections, minWidth, minHeight, messageAlignment);
+    FOptionPane optionPane = new FOptionPane(null, title, null, resultPanel, List.of("OK"), 0);
+    resultPanel.initZoom(optionPane);
+    optionPane.setVisible(true);
+    optionPane.dispose();
   }
 
   private void handleChestNode(NodeChest chestNode) {

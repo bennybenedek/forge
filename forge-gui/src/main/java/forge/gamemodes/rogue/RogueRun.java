@@ -1,6 +1,7 @@
 package forge.gamemodes.rogue;
 
 import com.thoughtworks.xstream.annotations.XStreamOmitField;
+import forge.deck.DeckFormat;
 import forge.deck.Deck;
 import forge.gamemodes.match.HostedMatch;
 import forge.gamemodes.rogue.effect.ChestLoot;
@@ -21,6 +22,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * Main container for a Rogue Commander run state.
@@ -271,6 +273,47 @@ public class RogueRun {
 
     public boolean hasCarryCardOfType(CarryCardType type) {
         return getCarryCards().stream().anyMatch(c -> c.type() == type);
+    }
+
+    /**
+     * Filter candidate cards to only those legal under the active run commander's color identity.
+     * Uses Forge's commander-conformance predicate to stay aligned with deck legality rules.
+     */
+    public List<PaperCard> filterCardsByCommanderColorIdentity(List<PaperCard> cards) {
+        if (cards == null || cards.isEmpty()) {
+            return List.of();
+        }
+
+        List<PaperCard> commanders = getActiveCommanders();
+        if (commanders.isEmpty()) {
+            return List.of();
+        }
+
+        Predicate<PaperCard> predicate =
+            DeckFormat.RogueCommander.isLegalCardForCommanderPredicate(commanders);
+        List<PaperCard> filtered = new ArrayList<>();
+        for (PaperCard card : cards) {
+            if (predicate.test(card)) {
+                filtered.add(card);
+            }
+        }
+        return filtered;
+    }
+
+    private List<PaperCard> getActiveCommanders() {
+        if (currentDeck != null) {
+            List<PaperCard> commanders = currentDeck.getCommanders();
+            if (!commanders.isEmpty()) {
+                return commanders;
+            }
+        }
+        if (selectedRogueDeck != null && selectedRogueDeck.getStartDeck() != null) {
+            List<PaperCard> commanders = selectedRogueDeck.getStartDeck().getCommanders();
+            if (!commanders.isEmpty()) {
+                return commanders;
+            }
+        }
+        return List.of();
     }
 
     // Life management

@@ -5,7 +5,7 @@ import java.awt.*;
 
 /**
  * Visual representation of a Sanctum node in the Rogue Commander path. Sanctums allow the player to
- * heal and remove cards from their deck. Displays as a small circular node with a heart icon.
+ * heal and cook a carry item. Displays as a small circular node with a heart icon.
  */
 public class NodeSanctumPanel extends NodeCircularPanel {
 
@@ -19,7 +19,7 @@ public class NodeSanctumPanel extends NodeCircularPanel {
   public NodeSanctumPanel(NodeSanctum node) {
     super(node);
     this.sanctumNode = node;
-    setToolTipText("Sanctum: Gain life and cure all wounds, or remove cards from your deck.");
+    setToolTipText("Sanctum: Gain life and cure all wounds, or craft a random Food item.");
   }
 
   @Override

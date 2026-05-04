@@ -96,15 +96,15 @@ public enum RogueTutorial {
 
   SANCTUM(
       "The Sanctum",
-      "The Sanctum offers two services: healing and card removal credits. " +
-          "Gain life and cure all wounds, or get more removal credits to remove unwanted cards " +
-          "to streamline your deck and draw your best cards more consistently."
+      "The Sanctum offers two services: healing and cooking. " +
+          "Gain life and cure all wounds, or craft a random Food item " +
+          "that will persist as a carry card for future matches."
   ),
 
   DECK_EDITOR(
       "Deck Editor",
       "Review your current deck at any time. Keep track of your cards, " +
-          "mana curve, and strategy. You can always add and remove as many basic lands as needed, but other cards can only be added as rewards during the Run, and can only be removed with Removal Credits earned by adding cards or by visiting a Sanctum.\n" +
+          "mana curve, and strategy. You can always add and remove as many basic lands as needed, but other cards can only be added as rewards during the Run, and can only be removed with Removal Credits earned by adding cards.\n" +
           "Changes to your deck will be saved automatically and persist for the rest of the Run, but will be reset at the end of the Run regardless of win or loss."
   ),
 

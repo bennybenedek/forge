@@ -3,12 +3,13 @@ package forge.screens.home.rogue;
 import forge.item.PaperCard;
 import forge.toolbox.FLabel;
 import forge.toolbox.FSkin.SkinnedPanel;
-import forge.toolbox.FTextArea;
+import forge.toolbox.FTextPane;
 import forge.view.arcane.CardPanel;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
+import javax.swing.text.StyleConstants;
 import net.miginfocom.swing.MigLayout;
 
 /**
@@ -20,31 +21,51 @@ public class NodeResultPanel extends SkinnedPanel {
     private static final int CARD_WIDTH = 180;
     private static final int CARD_HEIGHT = Math.round(CARD_WIDTH * CardPanel.ASPECT_RATIO);
     private static final int CARD_SPACING = 12;
+    private static final int DEFAULT_MIN_WIDTH = 650;
 
     private final List<ReadOnlyCardPanel> allCardPanels = new ArrayList<>();
     private CardUtil zoomUtil;
 
     public record CardSection(String label, List<PaperCard> cards) {}
 
+    public enum MessageAlignment {
+        LEFT(StyleConstants.ALIGN_LEFT),
+        CENTER(StyleConstants.ALIGN_CENTER);
+
+        private final int styleConstant;
+
+        MessageAlignment(int styleConstant) {
+            this.styleConstant = styleConstant;
+        }
+    }
+
     public NodeResultPanel(String message, List<CardSection> sections) {
+        this(message, sections, DEFAULT_MIN_WIDTH, 0, MessageAlignment.LEFT);
+    }
+
+    public NodeResultPanel(String message, List<CardSection> sections, int minWidth, int minHeight,
+                           MessageAlignment messageAlignment) {
         super(new MigLayout("insets 10, gap 0, wrap", "[grow, center]", ""));
         setOpaque(false);
 
         // Result text
-        FTextArea txtMessage = new FTextArea(message);
+        FTextPane txtMessage = new FTextPane(message);
         txtMessage.setFont(txtMessage.getFont().deriveFont(14f));
+        txtMessage.setTextAlignment(messageAlignment.styleConstant);
         add(txtMessage, "w 100%!, ax center, gap 0 0 0 10px, wrap");
 
         // Card sections
         for (CardSection section : sections) {
             if (section.cards() == null || section.cards().isEmpty()) continue;
 
-            FLabel lblSection = new FLabel.Builder()
-                    .text(section.label())
-                    .fontSize(13)
-                    .fontStyle(Font.BOLD)
-                    .build();
-            add(lblSection, "w 100%!, h 22px!, gap 5px 0 5px 3px, wrap");
+            if (hasLabel(section)) {
+                FLabel lblSection = new FLabel.Builder()
+                        .text(section.label())
+                        .fontSize(13)
+                        .fontStyle(Font.BOLD)
+                        .build();
+                add(lblSection, "w 100%!, h 22px!, gap 5px 0 5px 3px, wrap");
+            }
 
             // Card row panel
             int rowWidth = section.cards().size() * (CARD_WIDTH + CARD_SPACING) - CARD_SPACING;
@@ -69,17 +90,19 @@ public class NodeResultPanel extends SkinnedPanel {
                 .mapToInt(s -> s.cards().size())
                 .max().orElse(0);
         int desiredWidth = hasCards
-                ? Math.max(650, maxCardsInRow * (CARD_WIDTH + CARD_SPACING) - CARD_SPACING + 40)
-                : 650;
+                ? Math.max(DEFAULT_MIN_WIDTH, maxCardsInRow * (CARD_WIDTH + CARD_SPACING) - CARD_SPACING + 40)
+                : DEFAULT_MIN_WIDTH;
         int desiredHeight = 50; // message + padding
         for (CardSection section : sections) {
             if (section.cards() != null && !section.cards().isEmpty()) {
-                desiredHeight += 25 + CARD_HEIGHT + 10; // label + cards + gap
+                desiredHeight += (hasLabel(section) ? 25 : 0) + CARD_HEIGHT + 10;
             }
         }
         if (!hasCards) {
             desiredHeight = 50; // text-only
         }
+        desiredWidth = Math.max(desiredWidth, minWidth);
+        desiredHeight = Math.max(desiredHeight, minHeight);
 
         // Cap to usable screen space (same approach as CardRewardDialog)
         GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment()
@@ -94,6 +117,10 @@ public class NodeResultPanel extends SkinnedPanel {
                 Math.min(desiredHeight, maxHeight));
         setPreferredSize(size);
         setMinimumSize(size);
+    }
+
+    private static boolean hasLabel(CardSection section) {
+        return section.label() != null && !section.label().isBlank();
     }
 
     /**

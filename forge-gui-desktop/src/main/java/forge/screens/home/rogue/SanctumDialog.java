@@ -1,12 +1,9 @@
 package forge.screens.home.rogue;
 
-import forge.localinstance.skin.FSkinProp;
 import forge.toolbox.FButton;
 import forge.toolbox.FLabel;
 import forge.toolbox.FOptionPane;
-import forge.toolbox.FSkin;
 import forge.toolbox.FSkin.SkinnedPanel;
-import forge.util.Localizer;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.util.List;
@@ -14,16 +11,16 @@ import javax.swing.SwingConstants;
 import net.miginfocom.swing.MigLayout;
 
 /**
- * Dialog for Sanctum node interaction. Allows player to heal life or gain card removal credits.
+ * Dialog for Sanctum node interaction. Allows player to heal life or craft a carry item.
  */
 public class SanctumDialog {
 
-  private static final int DIALOG_WIDTH = 500;
-  private static final int DIALOG_HEIGHT = 300;
+  private static final int DIALOG_WIDTH = 600;
+  private static final int DIALOG_HEIGHT = 380;
 
   public enum SanctumChoice {
     HEAL,
-    REMOVE_CARDS,
+    COOK,
     SKIP
   }
 
@@ -34,15 +31,11 @@ public class SanctumDialog {
   /**
    * Create a Sanctum dialog.
    *
-   * @param healAmount  Amount of life to heal (up to max)
-   * @param freeRemoves Number of free card removals offered
+   * @param healAmount Amount of life to heal (up to max)
    */
-  public SanctumDialog(int healAmount, int freeRemoves) {
-
-    // Create main panel
+  public SanctumDialog(int healAmount) {
     panel = new MainPanel();
 
-    // Title label
     FLabel lblTitle = new FLabel.Builder()
         .text("Sanctum")
         .fontSize(20)
@@ -50,35 +43,40 @@ public class SanctumDialog {
         .fontAlign(SwingConstants.CENTER)
         .build();
 
-    // Description label
     FLabel lblDescription = new FLabel.Builder()
-        .text("Choose your blessing:")
+        .text("Choose your action:")
         .fontSize(14)
         .fontAlign(SwingConstants.CENTER)
         .build();
 
-    // Heal button
-    FButton btnHeal = new FButton("♥ Gain " + healAmount + " Life & Cure All Wounds");
-    btnHeal.addActionListener(e -> {
+    FButton btnRest = new FButton(buildChoiceHtml(
+        "REST", "Gain " + healAmount + " Life & Cure All Wounds"));
+    btnRest.addActionListener(e -> {
       choice = SanctumChoice.HEAL;
       optionPane.setResult(0);
       optionPane.setVisible(false);
     });
 
-    // Remove cards button
-    FButton btnRemove = new FButton("Gain " + freeRemoves + " Card Removal Credits");
-    btnRemove.setIcon(FSkin.getIcon(FSkinProp.ICO_CARD_IMAGE));
-    btnRemove.addActionListener(e -> {
-      choice = SanctumChoice.REMOVE_CARDS;
+    FButton btnCook = new FButton(buildChoiceHtml(
+        "COOK", "Craft a random Food item"));
+    btnCook.addActionListener(e -> {
+      choice = SanctumChoice.COOK;
       optionPane.setResult(0);
       optionPane.setVisible(false);
     });
 
-    // Add components to panel
+    FButton btnSkip = new FButton(buildChoiceHtml("SKIP", ""));
+    btnSkip.addActionListener(e -> {
+      choice = SanctumChoice.SKIP;
+      optionPane.setResult(0);
+      optionPane.setVisible(false);
+    });
+
     panel.add(lblTitle, "w 100%!, h 60px!, ax center, gap 0 0 20px 10px, wrap");
     panel.add(lblDescription, "w 100%!, h 30px!, ax center, gap 0 0 10px 20px, wrap");
-    panel.add(btnHeal, "w 70%!, h 50px!, ax center, gap 0 0 10px 10px, wrap");
-    panel.add(btnRemove, "w 70%!, h 50px!, ax center, gap 0 0 10px 10px");
+    panel.add(btnRest, "w 80%!, ax center, gap 0 0 10px 10px, wrap");
+    panel.add(btnCook, "w 80%!, ax center, gap 0 0 10px 10px, wrap");
+    panel.add(btnSkip, "w 80%!, ax center, gap 0 0 10px 10px, wrap");
 
     Dimension dialogSize = new Dimension(DIALOG_WIDTH, DIALOG_HEIGHT);
     panel.setPreferredSize(dialogSize);
@@ -88,18 +86,18 @@ public class SanctumDialog {
   /**
    * Show the dialog and return the player's choice.
    *
-   * @return The selected choice (HEAL, REMOVE_CARDS, or SKIP)
+   * @return The selected choice (HEAL, COOK, or SKIP)
    */
   public SanctumChoice show() {
-    final Localizer localizer = Localizer.getInstance();
     optionPane = new FOptionPane(
         null,
         "Sanctum",
         null,
         panel,
-        List.of(localizer.getMessage("lblSkip")),
+        List.of(),
         -1
     );
+    optionPane.getTitleBar().setVisible(false);
 
     panel.revalidate();
     panel.repaint();
@@ -108,6 +106,15 @@ public class SanctumDialog {
     optionPane.dispose();
 
     return choice;
+  }
+
+  private static String buildChoiceHtml(String title, String description) {
+    if (description == null || description.isEmpty()) {
+      return "<html><div style='padding:6px 10px;'><center><font size=4>" + title
+          + "</font></center></div></html>";
+    }
+    return "<html><div style='padding:6px 10px;'><center><font size=4>" + title
+        + "</font><br><font size=3>" + description + "</font></center></div></html>";
   }
 
   private static class MainPanel extends SkinnedPanel {

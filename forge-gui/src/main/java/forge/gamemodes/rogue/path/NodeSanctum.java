@@ -2,11 +2,12 @@ package forge.gamemodes.rogue.path;
 
 /**
  * Represents a Sanctum node in a Rogue Commander path.
- * Sanctums allow the player to heal life and remove cards from their deck.
+ * Sanctums allow the player to heal life and craft a carry item.
  */
 public class NodeSanctum extends RoguePathNode {
 
     private int healAmount;
+    // Legacy serialized field retained for backward compatibility with older saved runs.
     private int freeRemoves;
 
     public NodeSanctum() {
@@ -40,6 +41,6 @@ public class NodeSanctum extends RoguePathNode {
 
     @Override
     public String toString() {
-        return "Sanctum (Heal " + healAmount + ", Remove up to " + freeRemoves + ")";
+        return "Sanctum (Heal " + healAmount + ", Cook random Food)";
     }
 }
