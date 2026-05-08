@@ -325,8 +325,8 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
         this.getDeckManager().getPnlButtons().add(btnUndo, "w 12%!, h 30px!, gapx 60");
 
         btnBackToPath = new forge.toolbox.FLabel.Builder()
-            .text("Back To Path")
-            .tooltip("Return to the Rogue Commander path")
+            .text("Back To Map")
+            .tooltip("Return to the Rogue Commander map")
             .fontSize(14)
             .opaque(true)
             .hoverable(true)
