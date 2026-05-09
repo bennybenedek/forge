@@ -530,7 +530,8 @@ public enum CSubmenuRogueMap implements ICDoc {
 
   private PaperCard craftSanctumFood() {
     List<PaperCard> foods = FModel.getMagicDb().getCommonCards().getAllCardsNoAlt(
-        card -> card.getRules().getType().hasSubtype("Food"));
+        card -> card.getRules().getType().hasSubtype("Food")
+            && !card.getRules().isCustom());
     foods = currentRun.filterCardsByCommanderColorIdentity(foods);
     return foods.isEmpty() ? null : Aggregates.random(foods);
   }
