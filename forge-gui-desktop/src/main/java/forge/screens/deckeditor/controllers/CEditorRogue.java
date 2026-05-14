@@ -462,7 +462,7 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
             return candidates;
         }
 
-        for (Entry<PaperCard, Integer> entry : FModel.getAllCardsNoAlt()) {
+        for (Entry<PaperCard, Integer> entry : FModel.getAllCards()) {
             PaperCard card = entry.getKey();
             if (card.getRules().getType().isBasicLand() && edition.equals(card.getEdition())) {
                 candidates.add(card);

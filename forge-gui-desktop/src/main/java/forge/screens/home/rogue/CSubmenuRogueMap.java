@@ -26,7 +26,6 @@ import forge.item.PaperCard;
 import forge.localinstance.achievements.RogueCommanderAchievements;
 import forge.localinstance.properties.ForgeConstants;
 import forge.localinstance.properties.ForgePreferences;
-import forge.model.FModel;
 import forge.player.GamePlayerUtil;
 import forge.screens.deckeditor.CDeckEditorUI;
 import forge.screens.deckeditor.controllers.CEditorRogue;
@@ -504,7 +503,7 @@ public enum CSubmenuRogueMap implements ICDoc {
         currentRun.addCarryCard(craftedFood.getName(), CarryCardType.ITEM, SANCTUM_COOK_SOURCE_ID);
         showNodeResultDialog(
             "Sanctum",
-            "You crafted:",
+            "You cooked:",
             List.of(new NodeResultPanel.CardSection(null, List.of(craftedFood))),
             900,
             700,
@@ -529,9 +528,12 @@ public enum CSubmenuRogueMap implements ICDoc {
   }
 
   private PaperCard craftSanctumFood() {
-    List<PaperCard> foods = FModel.getMagicDb().getCommonCards().getAllCardsNoAlt(
-        card -> card.getRules().getType().hasSubtype("Food")
-            && !card.getRules().isCustom());
+    List<PaperCard> foods = new ArrayList<>();
+    for (PaperCard card : RogueConfig.getAllCards()) {
+      if (card.getRules().getType().hasSubtype("Food")) {
+        foods.add(card);
+      }
+    }
     foods = currentRun.filterCardsByCommanderColorIdentity(foods);
     return foods.isEmpty() ? null : Aggregates.random(foods);
   }

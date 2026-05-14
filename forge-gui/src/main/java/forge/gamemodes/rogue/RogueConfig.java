@@ -11,6 +11,7 @@ import forge.deck.DeckSection;
 import forge.deck.io.DeckSerializer;
 import forge.item.PaperCard;
 import forge.localinstance.properties.ForgeConstants;
+import forge.model.FModel;
 import forge.util.FileSection;
 import forge.util.FileUtil;
 import java.io.File;
@@ -18,10 +19,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * Configuration for Rogue Commander mode.
@@ -263,6 +261,13 @@ public class RogueConfig {
         String deckPath = "rogue/planebounds/" + deckFile.getName();
 
         return new RoguePlanebound(planeName, planeboundName, deckPath, avatarIndex, type);
+    }
+
+    // Helper method to get all unique cards from the database
+    public static Collection<PaperCard> getAllCards() {
+        return FModel.getMagicDb().getCommonCards().getUniqueCards().stream()
+                .filter(card -> !card.getRules().isCustom())
+                .toList();
     }
 
     // Helper method to get cards from the database
