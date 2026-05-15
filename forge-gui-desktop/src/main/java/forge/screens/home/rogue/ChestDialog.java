@@ -23,6 +23,7 @@ public class ChestDialog {
 
   private final MainPanel panel;
   private FOptionPane optionPane;
+  private final RogueCardPreviewPopup previewPopup = new RogueCardPreviewPopup();
 
   public ChestDialog(ChestLoot loot) {
     panel = new MainPanel();
@@ -33,12 +34,14 @@ public class ChestDialog {
 
     FTextArea txtDescription = new FTextArea(loot.getDescription());
     txtDescription.setFont(txtDescription.getFont().deriveFont(14f));
+    previewPopup.attachTo(txtDescription, loot.getPreviewCardName());
 
     panel.add(lblTitle, "w 100%!, h 60px!, ax center, gap 0 0 20px 10px, wrap");
     panel.add(txtDescription, "w 100%!, ax center, gap 0 0 10px 20px, wrap");
 
     FButton btn = new FButton("<html><div style='padding:6px 10px;'><center><font size=4>OK</font></center></div></html>");
     btn.addActionListener(e -> {
+      previewPopup.hide();
       optionPane.setResult(0);
       optionPane.setVisible(false);
     });
@@ -56,6 +59,7 @@ public class ChestDialog {
     panel.revalidate();
     panel.repaint();
     optionPane.setVisible(true);
+    previewPopup.hide();
     optionPane.dispose();
   }
 

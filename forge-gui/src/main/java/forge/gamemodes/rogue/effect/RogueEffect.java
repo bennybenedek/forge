@@ -4,6 +4,7 @@ import forge.deck.CardPool;
 import forge.game.player.RegisteredPlayer;
 import forge.gamemodes.rogue.RogueConfig;
 import forge.gamemodes.rogue.RogueRun;
+import forge.gamemodes.rogue.TextHelper;
 import forge.item.IPaperCard;
 import forge.item.PaperCard;
 import forge.model.FModel;
@@ -33,8 +34,14 @@ public interface RogueEffect {
     /** Display name for UI. Override in concrete types. */
     default String getDisplayName() { return ""; }
 
-    /** Description for tooltips. Override in concrete types. */
-    default String getDescription() { return ""; }
+    /** Raw description for preview-aware UI. Override in concrete types. */
+    default String getRawDescription() { return ""; }
+
+    /** Description for tooltips and display text. */
+    default String getDescription() { return TextHelper.stripCardMarkers(getRawDescription()); }
+
+    /** Optional preview card reference extracted from the raw description. */
+    default String getPreviewCardName() { return TextHelper.extractFirstCardName(getRawDescription()); }
 
     /** Number of charges for CONSUME effects at the given rank. -1 = permanent (default). */
     default int getChargesForRank(int rank) { return -1; }

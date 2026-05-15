@@ -9,7 +9,9 @@ import forge.toolbox.FTextArea;
 import forge.toolbox.FSkin.SkinnedPanel;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JComponent;
 import javax.swing.SwingConstants;
 import net.miginfocom.swing.MigLayout;
 
@@ -22,7 +24,9 @@ public class EventDialog {
   private static final int DIALOG_HEIGHT = 400;
 
   private final MainPanel panel;
+  private final List<PreviewTarget> previewTargets = new ArrayList<>();
   private FOptionPane optionPane;
+  private RogueCardPreviewPopup previewPopup;
   private EventChoice selectedChoice;
 
   public EventDialog(RogueEvent event) {
@@ -34,6 +38,7 @@ public class EventDialog {
 
     FTextArea txtDescription = new FTextArea(event.getDescription());
     txtDescription.setFont(txtDescription.getFont().deriveFont(14f));
+    previewTargets.add(new PreviewTarget(txtDescription, event.getPreviewCardName()));
 
     panel.add(lblTitle, "w 100%!, h 60px!, ax center, gap 0 0 20px 10px, wrap");
     panel.add(txtDescription, "w 100%!, ax center, gap 0 0 10px 20px, wrap");
@@ -42,10 +47,12 @@ public class EventDialog {
       FButton btn = new FButton("<html><div style='padding:6px 10px;'><center><font size=4>" + choice.label()
           + "</font><br><font size=3>" + choice.effect().getDescription() + "</font></center></div></html>");
       btn.addActionListener(e -> {
+        hidePreview();
         selectedChoice = choice;
         optionPane.setResult(0);
         optionPane.setVisible(false);
       });
+      previewTargets.add(new PreviewTarget(btn, choice.effect().getPreviewCardName()));
       panel.add(btn, "w 80%!, ax center, gap 0 0 10px 10px, wrap");
     }
 
@@ -59,12 +66,23 @@ public class EventDialog {
     optionPane = new FOptionPane(null, "Event", null, panel,
         List.of(), -1);
     optionPane.getTitleBar().setVisible(false);
+    previewPopup = new RogueCardPreviewPopup();
+    previewTargets.forEach(target -> previewPopup.attachTo(target.component(), target.cardName()));
     panel.revalidate();
     panel.repaint();
     optionPane.setVisible(true);
+    hidePreview();
     optionPane.dispose();
     return selectedChoice;
   }
+
+  private void hidePreview() {
+    if (previewPopup != null) {
+      previewPopup.hide();
+    }
+  }
+
+  private record PreviewTarget(JComponent component, String cardName) {}
 
   private static class MainPanel extends SkinnedPanel {
     private MainPanel() {

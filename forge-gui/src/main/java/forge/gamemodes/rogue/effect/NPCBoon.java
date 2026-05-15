@@ -29,13 +29,13 @@ public enum NPCBoon implements RogueEffect {
     },
 
     // Narset boons
-    NARSET_TRAVELER("npc_narset_traveler", "Traveler", "Start each match with a Fractured Powerstone on the battlefield.") {
+    NARSET_TRAVELER("npc_narset_traveler", "Traveler", "Start each match with a [[Fractured Powerstone]] on the battlefield.") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             RogueEffect.addCardToBattlefield("Fractured Powerstone", human);
         }
     },
-    NARSET_ALCHEMIST("npc_narset_alchemist", "Alchemist", "Start each match with the item 'Ichor Elixir' in the command zone.") {
+    NARSET_ALCHEMIST("npc_narset_alchemist", "Alchemist", "Start each match with the item [[Ichor Elixir]] in the command zone.") {
         @Override
         public void onGranted(RogueRun run) {
             run.addCarryCard("Ichor Elixir", RogueRun.CarryCardType.ITEM, getId());
@@ -65,16 +65,13 @@ public enum NPCBoon implements RogueEffect {
     }
 
     @Override
-    public EffectType getEffectType() { return EffectType.PERMANENT; }
-
-    @Override
     public String getId() { return id; }
 
     @Override
     public String getDisplayName() { return displayName; }
 
     @Override
-    public String getDescription() { return description; }
+    public String getRawDescription() { return description; }
 
     public static NPCBoon fromId(String id) {
         for (NPCBoon b : values())

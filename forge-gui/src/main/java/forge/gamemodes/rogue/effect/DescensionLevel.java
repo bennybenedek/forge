@@ -145,7 +145,7 @@ public enum DescensionLevel implements RogueEffect {
     public String getDisplayName() { return name; }
 
     @Override
-    public String getDescription() { return description; }
+    public String getRawDescription() { return description; }
 
     public static DescensionLevel forLevel(int level) {
         for (DescensionLevel dl : values()) {

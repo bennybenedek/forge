@@ -56,7 +56,7 @@ public enum Wrathful implements PlaneboundBoon {
     public String getDisplayName() { return displayName; }
 
     @Override
-    public String getDescription() { return description; }
+    public String getRawDescription() { return description; }
 
     public static Wrathful getRandomExcluding(Set<Wrathful> exclude) {
         return PlaneboundBoon.getRandomExcluding(values(), exclude);

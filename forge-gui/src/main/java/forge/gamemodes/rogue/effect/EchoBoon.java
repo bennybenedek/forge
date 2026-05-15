@@ -183,9 +183,7 @@ public enum EchoBoon implements RogueEffect {
     }
 
     @Override
-    public String getDescription() {
-        return description;
-    }
+    public String getRawDescription() { return description; }
 
     public int getMaxRank() {
         return maxRank;

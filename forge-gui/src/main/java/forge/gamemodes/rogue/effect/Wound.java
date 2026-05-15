@@ -49,7 +49,7 @@ public enum Wound implements RogueEffect {
     public String getDisplayName() { return displayName; }
 
     @Override
-    public String getDescription() { return description; }
+    public String getRawDescription() { return description; }
 
     public static Wound fromId(String id) {
         for (Wound w : values())

@@ -133,7 +133,9 @@ public enum RogueEvent {
     }
 
     public String getDisplayName() { return displayName; }
-    public String getDescription() { return description; }
+    public String getRawDescription() { return description; }
+    public String getDescription() { return TextHelper.stripCardMarkers(getRawDescription()); }
+    public String getPreviewCardName() { return TextHelper.extractFirstCardName(getRawDescription()); }
     public List<EventChoice> getChoices() { return choices; }
 
     /** Whether this event should appear in the event pool. Override for one-time events. */

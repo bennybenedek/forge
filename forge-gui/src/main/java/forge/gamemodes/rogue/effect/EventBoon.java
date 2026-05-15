@@ -228,7 +228,7 @@ public enum EventBoon implements RogueEffect {
     public String getDisplayName() { return displayName; }
 
     @Override
-    public String getDescription() { return description; }
+    public String getRawDescription() { return description; }
 
     public static EventBoon fromId(String id) {
         for (EventBoon eb : values())

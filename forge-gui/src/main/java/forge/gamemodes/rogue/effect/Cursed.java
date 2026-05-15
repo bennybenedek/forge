@@ -88,7 +88,7 @@ public enum Cursed implements PlaneboundBoon {
     public String getDisplayName() { return displayName; }
 
     @Override
-    public String getDescription() { return description; }
+    public String getRawDescription() { return description; }
 
     public static Cursed getRandomExcluding(Set<Cursed> exclude) {
         return PlaneboundBoon.getRandomExcluding(values(), exclude);
