@@ -17,10 +17,7 @@ import forge.gamemodes.rogue.path.RoguePathNode;
 import forge.item.PaperCard;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -231,6 +228,14 @@ public class RogueRun {
         } else {
             matchesLost++;
         }
+    }
+
+    public List<PaperCard> getAllCardsForActiveCommander() {
+        return getAllCardsForActiveCommander(null);
+    }
+
+    public List<PaperCard> getAllCardsForActiveCommander(Predicate<PaperCard> filter) {
+        return filterCardsByCommanderColorIdentity(RogueConfig.getAllCards(filter));
     }
 
     // Deck management

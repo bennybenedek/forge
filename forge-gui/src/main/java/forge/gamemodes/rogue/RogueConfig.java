@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.*;
+import java.util.function.Predicate;
 
 /**
  * Configuration for Rogue Commander mode.
@@ -27,6 +28,7 @@ import java.util.*;
  * Paths are generated for each run.
  */
 public class RogueConfig {
+    private static final Set<String> EXCLUDED_RANDOM_DRAW_SET_CODES = Set.of("UNK");
 
     private static final StaticData db = StaticData.instance();
 
@@ -264,9 +266,19 @@ public class RogueConfig {
     }
 
     // Helper method to get all unique cards from the database
-    public static Collection<PaperCard> getAllCards() {
+    public static List<PaperCard> getAllCards() {
+        return getAllCards(null);
+    }
+
+    public static List<PaperCard> getAllCards(Predicate<PaperCard> filter) {
+        Predicate<PaperCard> rogueBaseFilter =
+            card -> !card.getRules().isCustom()
+                && !EXCLUDED_RANDOM_DRAW_SET_CODES.contains(card.getEdition());
+        Predicate<PaperCard> effectiveFilter =
+            filter != null ? rogueBaseFilter.and(filter) : rogueBaseFilter;
+
         return FModel.getMagicDb().getCommonCards().getUniqueCards().stream()
-                .filter(card -> !card.getRules().isCustom())
+                .filter(effectiveFilter)
                 .toList();
     }
 

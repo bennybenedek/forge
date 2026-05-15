@@ -22,7 +22,9 @@ import forge.gui.SOverlayUtils;
 import forge.gui.framework.EDocID;
 import forge.gui.framework.FScreen;
 import forge.gui.framework.ICDoc;
+import forge.card.CardRulesPredicates;
 import forge.item.PaperCard;
+import forge.item.PaperCardPredicates;
 import forge.localinstance.achievements.RogueCommanderAchievements;
 import forge.localinstance.properties.ForgeConstants;
 import forge.localinstance.properties.ForgePreferences;
@@ -36,6 +38,7 @@ import forge.util.Aggregates;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.*;
+import java.util.function.Predicate;
 import javax.swing.*;
 import net.miginfocom.swing.MigLayout;
 
@@ -528,13 +531,9 @@ public enum CSubmenuRogueMap implements ICDoc {
   }
 
   private PaperCard craftSanctumFood() {
-    List<PaperCard> foods = new ArrayList<>();
-    for (PaperCard card : RogueConfig.getAllCards()) {
-      if (card.getRules().getType().hasSubtype("Food")) {
-        foods.add(card);
-      }
-    }
-    foods = currentRun.filterCardsByCommanderColorIdentity(foods);
+    Predicate<PaperCard> foodFilter = PaperCardPredicates.fromRules(
+        CardRulesPredicates.IS_ARTIFACT.and(CardRulesPredicates.subType("Food")));
+    List<PaperCard> foods = currentRun.getAllCardsForActiveCommander(foodFilter);
     return foods.isEmpty() ? null : Aggregates.random(foods);
   }
 
