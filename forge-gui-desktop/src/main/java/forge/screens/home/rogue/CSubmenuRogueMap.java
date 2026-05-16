@@ -744,7 +744,7 @@ public enum CSubmenuRogueMap implements ICDoc {
             deckCards.removeIf(c -> c.getName().equals(cmdName)
                 || c.getRules().getType().isBasicLand());
             CardSelectionDialog cardSelectionDialog = new CardSelectionDialog(
-                "Planar Sacrifice", "Choose " + ctx.removeCount + " cards to remove.",
+                "Card Removal", "Choose " + ctx.removeCount + " cards to remove.",
                 deckCards, ctx.removeCount);
             List<PaperCard> removed = cardSelectionDialog.show();
             for (PaperCard card : removed)
@@ -764,6 +764,10 @@ public enum CSubmenuRogueMap implements ICDoc {
 
       } else {
         currentRun.addEventBoon(boon);
+      }
+
+      if (checkSideNodeDefeat(event.getDisplayName())) {
+        return;
       }
 
       // Build result display with card sections if applicable
@@ -789,6 +793,39 @@ public enum CSubmenuRogueMap implements ICDoc {
     RogueStats.fireOnSideNodeCompleted(currentRun, RogueMetaProgress.getInstance());
     RogueIO.saveRun(currentRun);
     update();
+  }
+
+  private boolean checkSideNodeDefeat(String defeatedBy) {
+    if (currentRun == null || currentRun.getCurrentLife() > 0) {
+      return false;
+    }
+
+    DefeatContext defeatCtx = new DefeatContext();
+    RogueEffectComposite.INSTANCE.onDefeat(defeatCtx, currentRun);
+    if (defeatCtx.revived) {
+      currentRun.setCurrentLife(defeatCtx.reviveLife);
+      FOptionPane.showMessageDialog(
+          "Last Spark activated! You survived with " + defeatCtx.reviveLife + " life!",
+          "Last Spark!");
+      return false;
+    }
+
+    RogueWinLoseController.finalizeRunDefeat(currentRun, defeatedBy);
+    showSideNodeDefeatDialog(defeatedBy);
+    currentRun = null;
+    CHomeUI.SINGLETON_INSTANCE.itemClick(EDocID.HOME_ROGUESTART);
+    return true;
+  }
+
+  private void showSideNodeDefeatDialog(String defeatedBy) {
+    String message = defeatedBy == null || defeatedBy.isEmpty()
+        ? "You were defeated! Your Run has ended."
+        : "You were defeated by " + defeatedBy + "! Your Run has ended.";
+    NodeResultPanel resultPanel = new NodeResultPanel(message, List.of());
+    FOptionPane optionPane = new FOptionPane(null, "Defeat", null, resultPanel, List.of("OK"), 0);
+    resultPanel.initZoom(optionPane);
+    optionPane.setVisible(true);
+    optionPane.dispose();
   }
 
   private void showNodeResultDialog(String title, String message,

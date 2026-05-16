@@ -260,27 +260,36 @@ public class RogueWinLoseController {
     }
 
     private void handleRunDefeat() {
-        currentRun.setRunFailed(true);
+        finalizeRunDefeat(currentRun, getDefeatedByCurrentNode(currentRun));
+        view.getBtnQuit().setText(BTN_LOSE_RUN);
+        view.showMessage("You were defeated! Your Run has ended.", "Defeat", FSkinProp.ICO_QUEST_ZEP);
+    }
 
-        // Record run history - defeated by current node's planebound
+    public static void finalizeRunDefeat(RogueRun run, String defeatedBy) {
+        if (run == null) {
+            return;
+        }
+        run.setRunFailed(true);
+
+        var progress = RogueMetaProgress.getInstance();
+        progress.addRunHistoryEntry(RogueRunHistoryEntry.fromRun(run, "DEFEAT",
+                defeatedBy != null ? defeatedBy : ""));
+
+        RogueStats.fireOnRunCompleted(run, progress, false);
+        RogueCommanderAchievements.instance.evaluateRunAchievements(run);
+
+        RogueIO.saveRun(run);
+    }
+
+    private static String getDefeatedByCurrentNode(RogueRun run) {
         String defeatedBy = "";
-        RoguePathNode curNode = currentRun.getCurrentNode();
+        RoguePathNode curNode = run.getCurrentNode();
         if (curNode instanceof NodePlanebound pb && pb.getRoguePlanebound() != null) {
             defeatedBy = pb.getRoguePlanebound().planeboundName();
         } else if (curNode instanceof NodeEvent ev && ev.getEventPlanebound() != null) {
             defeatedBy = ev.getEventPlanebound().planeboundName();
         }
-
-        var progress = RogueMetaProgress.getInstance();
-        progress.addRunHistoryEntry(RogueRunHistoryEntry.fromRun(currentRun, "DEFEAT", defeatedBy));
-
-        RogueStats.fireOnRunCompleted(currentRun, progress, false);
-        RogueCommanderAchievements.instance.evaluateRunAchievements(currentRun);
-
-        RogueIO.saveRun(currentRun);
-
-        view.getBtnQuit().setText(BTN_LOSE_RUN);
-        view.showMessage("You were defeated! Your Run has ended.", "Defeat", FSkinProp.ICO_QUEST_ZEP);
+        return defeatedBy;
     }
 
     private NodePlanebound resolvePlanebound(RoguePathNode node) {

@@ -334,6 +334,10 @@ public class RogueRun {
         currentLife = Math.min(currentLife + amount, startingLife);
     }
 
+    public void loseLife(int amount) {
+        currentLife = currentLife - amount;
+    }
+
     public void clampCurrentLifeToMax() {
         if (startingLife > 0) {
             currentLife = Math.min(currentLife, startingLife);

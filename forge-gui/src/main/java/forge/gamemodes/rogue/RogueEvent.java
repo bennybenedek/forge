@@ -67,7 +67,9 @@ public enum RogueEvent {
         "The land itself rejects your presence. Thorns rise from the soil, leaving your footsteps stained with blood.",
         List.of(
             new EventChoice("Endure", "You suffer a wound.",
-                EventBoon.GAIN_WOUND)
+                EventBoon.GAIN_WOUND),
+            new EventChoice("Press On", "You lose 4 life.",
+                EventBoon.LOSE_4_LIFE)
         )),
 
     HORROR("Horror",

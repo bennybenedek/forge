@@ -128,6 +128,13 @@ public enum EventBoon implements RogueEffect {
             ctx.gainedWound = wound;
         }
     },
+    LOSE_4_LIFE("lose_4_life", "Lose 4 Life", "Lose 4 life.",
+            EffectType.ONESHOT) {
+        @Override
+        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+            run.loseLife(4);
+        }
+    },
     FIND_CHEST("find_chest", "Hidden Chest", "You find a hidden chest.",
             EffectType.ONESHOT) {
         @Override
