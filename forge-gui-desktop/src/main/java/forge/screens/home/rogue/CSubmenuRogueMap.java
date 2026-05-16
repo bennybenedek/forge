@@ -585,11 +585,12 @@ public enum CSubmenuRogueMap implements ICDoc {
     int freeRerolls = selCtx.freeRerolls;
     int rerollCount = 0;
     Set<PaperCard> selectedCards;
+    Predicate<PaperCard> notAlreadyOwned = currentRun.getNotAlreadyInDeckPredicate();
     do {
       List<PaperCard> nonMythicCards = rogueDeck.drawRewardOptions(totalNonMythics,
-          forge.item.PaperCardPredicates.IS_MYTHIC_RARE.negate());
+          CardRewardHelper.combineFilters(PaperCardPredicates.IS_MYTHIC_RARE.negate(), notAlreadyOwned));
       List<PaperCard> mythicCards = rogueDeck.drawRewardOptions(totalMythics,
-          forge.item.PaperCardPredicates.IS_MYTHIC_RARE);
+          CardRewardHelper.combineFilters(PaperCardPredicates.IS_MYTHIC_RARE, notAlreadyOwned));
 
       List<PaperCard> inventory = new ArrayList<>();
       inventory.addAll(nonMythicCards);

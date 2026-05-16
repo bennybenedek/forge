@@ -7,6 +7,7 @@ import forge.item.PaperCard;
 import forge.item.PaperCardPredicates;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * Shared card reward logic used by RogueWinLoseController (post-match rewards)
@@ -87,12 +88,14 @@ public class CardRewardHelper {
         List<PaperCard> rewardOptions;
         List<PaperCard> chosenCards;
         int rerollCount = 0;
+        Predicate<PaperCard> notAlreadyOwned = run.getNotAlreadyInDeckPredicate();
         do {
             List<PaperCard> nonMythicCards = baseNonMythics > 0
-                    ? rogueDeck.drawRewardOptions(baseNonMythics, PaperCardPredicates.IS_MYTHIC_RARE.negate())
+                    ? rogueDeck.drawRewardOptions(baseNonMythics,
+                        combineFilters(PaperCardPredicates.IS_MYTHIC_RARE.negate(), notAlreadyOwned))
                     : new ArrayList<>();
             List<PaperCard> mythicCards = rogueDeck.drawRewardOptions(baseMythics,
-                    PaperCardPredicates.IS_MYTHIC_RARE);
+                    combineFilters(PaperCardPredicates.IS_MYTHIC_RARE, notAlreadyOwned));
 
             rewardOptions = new ArrayList<>();
             rewardOptions.addAll(nonMythicCards);
@@ -124,5 +127,10 @@ public class CardRewardHelper {
         }
 
         return chosenCards;
+    }
+
+    public static <T> Predicate<T> combineFilters(Predicate<T> baseFilter,
+                                                  Predicate<T> extraFilter) {
+        return extraFilter == null ? baseFilter : baseFilter.and(extraFilter);
     }
 }

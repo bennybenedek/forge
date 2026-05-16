@@ -3,6 +3,8 @@ package forge.gamemodes.rogue;
 import com.thoughtworks.xstream.annotations.XStreamOmitField;
 import forge.deck.DeckFormat;
 import forge.deck.Deck;
+import forge.deck.DeckSection;
+import forge.deck.CardPool;
 import forge.gamemodes.match.HostedMatch;
 import forge.gamemodes.rogue.effect.ChestLoot;
 import forge.gamemodes.rogue.effect.Cursed;
@@ -235,7 +237,9 @@ public class RogueRun {
     }
 
     public List<PaperCard> getAllCardsForActiveCommander(Predicate<PaperCard> filter) {
-        return filterCardsByCommanderColorIdentity(RogueConfig.getAllCards(filter));
+        List<PaperCard> candidateCards = RogueConfig.getAllCards(filter);
+        List<PaperCard> commanderLegalCards = filterCardsByCommanderColorIdentity(candidateCards);
+        return filterDuplicateCards(commanderLegalCards);
     }
 
     // Deck management
@@ -305,6 +309,39 @@ public class RogueRun {
         return filtered;
     }
 
+    public List<PaperCard> filterDuplicateCards(Collection<PaperCard> cards) {
+        if (cards == null || cards.isEmpty()) {
+            return List.of();
+        }
+
+        Predicate<PaperCard> notAlreadyOwned = getNotAlreadyInDeckPredicate();
+        if (notAlreadyOwned == null) {
+            return new ArrayList<>(cards);
+        }
+
+        List<PaperCard> filtered = new ArrayList<>();
+        for (PaperCard card : cards) {
+            if (notAlreadyOwned.test(card)) {
+                filtered.add(card);
+            }
+        }
+        return filtered;
+    }
+
+    public Predicate<PaperCard> getNotAlreadyInDeckPredicate() {
+        Deck activeDeck = currentDeck != null
+            ? currentDeck
+            : selectedRogueDeck != null ? selectedRogueDeck.getStartDeck() : null;
+        if (activeDeck == null) {
+            return null;
+        }
+
+        Set<String> existingCardNames = new HashSet<>();
+        addExistingCardNames(existingCardNames, activeDeck.get(DeckSection.Main));
+        addExistingCardNames(existingCardNames, activeDeck.get(DeckSection.Commander));
+        return card -> !existingCardNames.contains(card.getRules().getNormalizedName());
+    }
+
     public int getCommanderColorIdentityMask() {
         int colorIdentityMask = 0;
         for (PaperCard commander : getActiveCommanders()) {
@@ -327,6 +364,15 @@ public class RogueRun {
             }
         }
         return List.of();
+    }
+
+    private static void addExistingCardNames(Set<String> existingCardNames, CardPool cardPool) {
+        if (cardPool == null) {
+            return;
+        }
+        for (Map.Entry<PaperCard, Integer> entry : cardPool) {
+            existingCardNames.add(entry.getKey().getRules().getNormalizedName());
+        }
     }
 
     // Life management
