@@ -16,7 +16,7 @@ import javax.swing.JScrollPane;
 import javax.swing.SwingConstants;
 
 /**
- * Dialog for selecting cards from the player's deck. Cards are shown face-up in a scrollable grid.
+ * Dialog for selecting cards from a provided list. Cards are shown face-up in a scrollable grid.
  * The player must select exactly N cards before confirming.
  */
 public class CardSelectionDialog {

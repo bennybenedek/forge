@@ -542,7 +542,7 @@ public enum CSubmenuRogueMap implements ICDoc {
       return;
     }
 
-    runBazaarShopping();
+    runBazaarShopping(null);
 
     // Mark node as completed and move to next
     bazaarNode.setCompleted(true);
@@ -559,116 +559,172 @@ public enum CSubmenuRogueMap implements ICDoc {
     update();
   }
 
-  /** Run Bazaar shopping UI and apply purchases. Reusable by Event triggers. */
-  private void runBazaarShopping() {
-    RogueTutorialHelper.showIfNotSeen(RogueTutorial.BAZAAR);
-
+  /** Run Bazaar shopping UI and apply purchases. Null context = ordinary Bazaar setup. */
+  private List<PaperCard> runBazaarShopping(BazaarContext ctx) {
+    boolean customBazaar = ctx != null;
     RogueDeck rogueDeck = currentRun.getSelectedRogueDeck();
     if (rogueDeck == null) {
       System.err.println("ERROR: Could not find rogue deck for current run.");
-      return;
+      return List.of();
     }
 
-    RogueMetaProgress progress = RogueMetaProgress.getInstance();
+    BazaarContext bazaarCtx = customBazaar ? ctx : createOrdinaryBazaarContext();
+    if (!customBazaar) {
+      RogueTutorialHelper.showIfNotSeen(RogueTutorial.BAZAAR);
+      NPCEncounterComposite.INSTANCE.onBeforeBazaar(bazaarCtx, RogueMetaProgress.getInstance());
+    }
 
-    // NPC pre-bazaar: inject items, set price overrides/discounts
-    BazaarContext npcCtx = new BazaarContext();
-    NPCEncounterComposite.INSTANCE.onBeforeBazaar(npcCtx, progress);
-
-    CardSelectionContext selCtx = new CardSelectionContext();
-    RogueEffectComposite.INSTANCE.onCardSelection(selCtx, currentRun);
-    int baseNonMythics = 8;
-    int baseMythics = 2;
-    int totalNonMythics = Math.max(0, baseNonMythics - selCtx.extraMythics);
-    int totalMythics = baseMythics + selCtx.extraMythics;
-
-    int freeRerolls = selCtx.freeRerolls;
+    CardSelectionContext selCtx = customBazaar ? null : createBazaarSelectionContext();
+    int freeRerolls = customBazaar ? 0 : selCtx.freeRerolls;
     int rerollCount = 0;
     Set<PaperCard> selectedCards;
-    Predicate<PaperCard> notAlreadyOwned = currentRun.getNotAlreadyInDeckPredicate();
     do {
-      List<PaperCard> nonMythicCards = rogueDeck.drawRewardOptions(totalNonMythics,
-          CardRewardHelper.combineFilters(PaperCardPredicates.IS_MYTHIC_RARE.negate(), notAlreadyOwned));
-      List<PaperCard> mythicCards = rogueDeck.drawRewardOptions(totalMythics,
-          CardRewardHelper.combineFilters(PaperCardPredicates.IS_MYTHIC_RARE, notAlreadyOwned));
+      List<PaperCard> inventory = customBazaar
+          ? buildCustomBazaarInventory(bazaarCtx)
+          : buildOrdinaryBazaarInventory(rogueDeck, selCtx);
 
-      List<PaperCard> inventory = new ArrayList<>();
-      inventory.addAll(nonMythicCards);
-      inventory.addAll(mythicCards);
-
-      // Apply NPC discount to random card(s) without disrupting inventory order
-      if (npcCtx.discountCount > 0 && !inventory.isEmpty()) {
-        List<Integer> indices = new ArrayList<>();
-        for (int i = 0; i < inventory.size(); i++) indices.add(i);
-        java.util.Collections.shuffle(indices);
-        for (int i = 0; i < Math.min(npcCtx.discountCount, inventory.size()); i++) {
-          PaperCard card = inventory.get(indices.get(i));
-          int basePrice = BazaarPricing.getCardPrice(card);
-          int discounted = Math.max(0, basePrice - npcCtx.discountAmount);
-          if (discounted == 0 && basePrice > 2) discounted = 1;
-          npcCtx.priceOverrides.put(card.getName(), discounted);
-        }
-      }
-
-      // Inject NPC items (e.g. Gonti's curio replaces last card)
-      if (!npcCtx.injectedCards.isEmpty()) {
-        for (PaperCard injected : npcCtx.injectedCards) {
-          if (!inventory.isEmpty()) {
-            inventory.remove(inventory.size() - 1);
-          }
-          inventory.add(injected);
-        }
-      }
+      applyBazaarDiscounts(bazaarCtx, inventory);
+      injectBazaarItems(bazaarCtx, inventory);
 
       if (inventory.isEmpty()) {
-        System.err.println("ERROR: No cards available in reward pool for Bazaar.");
-        return;
+        System.err.println("ERROR: No cards available in Bazaar inventory.");
+        return List.of();
       }
 
-      String rerollLabel = CardRewardHelper.buildRerollLabel(freeRerolls, rerollCount);
-      boolean rerollEnabled = CardRewardHelper.canAffordReroll(freeRerolls, rerollCount, currentRun.getCurrentGold());
-      BazaarDialog dialog = new BazaarDialog(inventory, currentRun.getCurrentGold(), rerollLabel,
-          npcCtx.priceOverrides.isEmpty() ? null : npcCtx.priceOverrides);
+      String rerollLabel = customBazaar ? null
+          : CardRewardHelper.buildRerollLabel(freeRerolls, rerollCount);
+      boolean rerollEnabled = !customBazaar
+          && CardRewardHelper.canAffordReroll(freeRerolls, rerollCount, currentRun.getCurrentGold());
+      BazaarDialog dialog = new BazaarDialog(
+          inventory,
+          currentRun.getCurrentGold(),
+          bazaarCtx.title,
+          rerollLabel,
+          bazaarCtx.priceOverrides.isEmpty() ? null : bazaarCtx.priceOverrides);
       dialog.setRerollEnabled(rerollEnabled);
       selectedCards = dialog.show();
-      rogueDeck.discardRewardOptions(getRewardPoolCards(inventory, npcCtx.injectedCards));
 
-      // selectedCards == null -> reroll was selected
-      if (selectedCards == null) {
-        // Deduct gold for paid rerolls
+      if (!customBazaar) {
+        rogueDeck.discardRewardOptions(getRewardPoolCards(inventory, bazaarCtx.injectedCards));
+      }
+
+      if (!customBazaar && selectedCards == null) {
         if (rerollCount >= freeRerolls) {
           int cost = CardRewardHelper.getRerollCost(rerollCount - freeRerolls);
           currentRun.setCurrentGold(currentRun.getCurrentGold() - cost);
         }
         rerollCount++;
-        npcCtx.priceOverrides.clear(); // Recalculate discounts on reroll
+        bazaarCtx.priceOverrides.clear();
       }
-    } while (selectedCards == null);
+    } while (!customBazaar && selectedCards == null);
 
-    if (!selectedCards.isEmpty()) {
-      List<PaperCard> realCards = getRewardPoolCards(selectedCards, npcCtx.injectedCards);
-      for (PaperCard card : selectedCards) {
-        if (npcCtx.injectedCards.contains(card)) {
-          npcCtx.purchasedCards.add(card);
-        }
+    List<PaperCard> purchasedCards = applyBazaarPurchases(rogueDeck, bazaarCtx, selectedCards, customBazaar);
+    if (!customBazaar) {
+      for (NPCContext npcContext : NPCEncounterComposite.INSTANCE.onAfterBazaarPurchase(
+          bazaarCtx, RogueMetaProgress.getInstance())) {
+        new NPCDialog(npcContext).show();
       }
+    }
+    return purchasedCards;
+  }
 
-      // Add real cards to deck
-      if (!realCards.isEmpty()) {
-        currentRun.addCardsToRun(realCards);
+  private BazaarContext createOrdinaryBazaarContext() {
+    BazaarContext bazaarCtx = new BazaarContext();
+    bazaarCtx.title = "Bazaar";
+    return bazaarCtx;
+  }
+
+  private CardSelectionContext createBazaarSelectionContext() {
+    CardSelectionContext selCtx = new CardSelectionContext();
+    RogueEffectComposite.INSTANCE.onCardSelection(selCtx, currentRun);
+    return selCtx;
+  }
+
+  private List<PaperCard> buildOrdinaryBazaarInventory(RogueDeck rogueDeck, CardSelectionContext selCtx) {
+    int baseNonMythics = 8;
+    int baseMythics = 2;
+    int totalNonMythics = Math.max(0, baseNonMythics - selCtx.extraMythics);
+    int totalMythics = baseMythics + selCtx.extraMythics;
+
+    Predicate<PaperCard> notAlreadyOwned = currentRun.getNotAlreadyInDeckPredicate();
+    List<PaperCard> nonMythicCards = rogueDeck.drawRewardOptions(totalNonMythics,
+        CardRewardHelper.combineFilters(PaperCardPredicates.IS_MYTHIC_RARE.negate(), notAlreadyOwned));
+    List<PaperCard> mythicCards = rogueDeck.drawRewardOptions(totalMythics,
+        CardRewardHelper.combineFilters(PaperCardPredicates.IS_MYTHIC_RARE, notAlreadyOwned));
+
+    List<PaperCard> inventory = new ArrayList<>();
+    inventory.addAll(nonMythicCards);
+    inventory.addAll(mythicCards);
+    return inventory;
+  }
+
+  private List<PaperCard> buildCustomBazaarInventory(BazaarContext bazaarCtx) {
+    List<PaperCard> inventory = new ArrayList<>(bazaarCtx.inventory);
+    if (inventory.size() <= BazaarDialog.MAX_DISPLAY_CARDS) {
+      return inventory;
+    }
+
+    Collections.shuffle(inventory);
+    return new ArrayList<>(inventory.subList(0, BazaarDialog.MAX_DISPLAY_CARDS));
+  }
+
+  private void applyBazaarDiscounts(BazaarContext bazaarCtx, List<PaperCard> inventory) {
+    if (bazaarCtx.discountCount <= 0 || inventory.isEmpty()) {
+      return;
+    }
+
+    List<Integer> indices = new ArrayList<>();
+    for (int i = 0; i < inventory.size(); i++) {
+      indices.add(i);
+    }
+    java.util.Collections.shuffle(indices);
+    for (int i = 0; i < Math.min(bazaarCtx.discountCount, inventory.size()); i++) {
+      PaperCard card = inventory.get(indices.get(i));
+      int basePrice = BazaarPricing.getCardPrice(card);
+      int discounted = Math.max(0, basePrice - bazaarCtx.discountAmount);
+      if (discounted == 0 && basePrice > 2) {
+        discounted = 1;
+      }
+      bazaarCtx.priceOverrides.put(card.getName(), discounted);
+    }
+  }
+
+  private void injectBazaarItems(BazaarContext bazaarCtx, List<PaperCard> inventory) {
+    if (bazaarCtx.injectedCards.isEmpty()) {
+      return;
+    }
+
+    for (PaperCard injected : bazaarCtx.injectedCards) {
+      if (!inventory.isEmpty()) {
+        inventory.remove(inventory.size() - 1);
+      }
+      inventory.add(injected);
+    }
+  }
+
+  private List<PaperCard> applyBazaarPurchases(RogueDeck rogueDeck, BazaarContext bazaarCtx,
+                                               Set<PaperCard> selectedCards, boolean customBazaar) {
+    if (selectedCards == null || selectedCards.isEmpty()) {
+      return List.of();
+    }
+
+    List<PaperCard> realCards = customBazaar
+        ? new ArrayList<>(selectedCards)
+        : getRewardPoolCards(selectedCards, bazaarCtx.injectedCards);
+    bazaarCtx.purchasedCards.clear();
+    bazaarCtx.purchasedCards.addAll(selectedCards);
+
+    if (!realCards.isEmpty()) {
+      currentRun.addCardsToRun(realCards);
+      if (!customBazaar) {
         rogueDeck.removeFromCardPools(realCards);
       }
-
-      // Deduct total cost (includes NPC items)
-      int totalCost = BazaarPricing.calculateTotalCost(selectedCards,
-          npcCtx.priceOverrides.isEmpty() ? null : npcCtx.priceOverrides);
-      currentRun.setCurrentGold(currentRun.getCurrentGold() - totalCost);
     }
 
-    // NPC post-bazaar: react to purchases (e.g. Gonti intro dialog)
-    for (NPCContext ctx : NPCEncounterComposite.INSTANCE.onAfterBazaarPurchase(npcCtx, progress)) {
-      new NPCDialog(ctx).show();
-    }
+    int totalCost = BazaarPricing.calculateTotalCost(selectedCards,
+        bazaarCtx.priceOverrides.isEmpty() ? null : bazaarCtx.priceOverrides);
+    currentRun.setCurrentGold(currentRun.getCurrentGold() - totalCost);
+    return realCards;
   }
 
   private static List<PaperCard> getRewardPoolCards(Collection<PaperCard> cards,
@@ -685,111 +741,196 @@ public enum CSubmenuRogueMap implements ICDoc {
   private void handleEventNode(NodeEvent eventNode) {
     if (currentRun == null) return;
 
-    EventContext npcCtx = new EventContext(eventNode.getEvent());
-    NPCEncounterComposite.INSTANCE.onBeforeEvent(npcCtx, RogueMetaProgress.getInstance());
-
-    RogueEvent event = npcCtx.getResolvedEvent();
+    RogueEvent event = resolveEvent(eventNode);
     if (event == null) {
       currentRun.nextNode();
       updateView();
       return;
     }
+
+    event = resolveDevEventOverride(event);
+    RogueTutorialHelper.showIfNotSeen(RogueTutorial.EVENT);
+
+    RogueEvent.EventChoice choice = new EventDialog(event).show();
+    if (choice != null && handleEventChoice(eventNode, event, choice)) {
+      return;
+    }
+
+    completeSideNode(eventNode);
+  }
+
+  private RogueEvent resolveEvent(NodeEvent eventNode) {
+    EventContext npcCtx = new EventContext(eventNode.getEvent());
+    NPCEncounterComposite.INSTANCE.onBeforeEvent(npcCtx, RogueMetaProgress.getInstance());
+
+    RogueEvent event = npcCtx.getResolvedEvent();
     if (npcCtx.eventOverride != null) {
       eventNode.setEvent(event);
     }
+    return event;
+  }
 
-    // DEV: allow picking which event to test
-    if (ForgePreferences.DEV_MODE) {
-      RogueEvent picked = (RogueEvent) JOptionPane.showInputDialog(
-          null, "Override event:", "[DEV] Pick Event",
-          JOptionPane.PLAIN_MESSAGE, null,
-          RogueEvent.values(), event);
-      if (picked != null) event = picked;
+  private RogueEvent resolveDevEventOverride(RogueEvent event) {
+    if (!ForgePreferences.DEV_MODE) {
+      return event;
     }
 
-    RogueTutorialHelper.showIfNotSeen(RogueTutorial.EVENT);
+    RogueEvent picked = (RogueEvent) JOptionPane.showInputDialog(
+        null, "Override event:", "[DEV] Pick Event",
+        JOptionPane.PLAIN_MESSAGE, null,
+        RogueEvent.values(), event);
+    return picked != null ? picked : event;
+  }
 
-    EventDialog eventDialog = new EventDialog(event);
-    RogueEvent.EventChoice choice = eventDialog.show();
-
-    if (choice != null) {
-      EventBoon boon = choice.effect();
-      NodeResultContext ctx = new NodeResultContext();
-      if (boon.getEffectType() == RogueEffect.EffectType.ONESHOT) {
-        boon.applyEffect(currentRun, ctx);
-
-        if (ctx.trigger != null) switch (ctx.trigger) {
-          case BAZAAR:
-            runBazaarShopping();
-            break;
-          case PLANEBOUND:
-            if (ctx.planebound != null) {
-              eventNode.setEventPlanebound(ctx.planebound);
-              NodePlanebound tempNode = new NodePlanebound(ctx.planebound);
-              tempNode.setRowIndex(eventNode.getRowIndex());
-              handlePlaneboundNode(tempNode);
-              return;  // win/lose controller handles completion
-            }
-            break;
-          case CHEST:
-            eventNode.setCompleted(true);
-            handleChestNode(new NodeChest());
-            return;
-          case SANCTUM:
-            eventNode.setCompleted(true);
-            handleSanctumNode(new NodeSanctum());
-            return;
-          case CARD_REMOVAL:
-            List<PaperCard> deckCards = currentRun.getCurrentDeck().getMain().toFlatList();
-            String cmdName = currentRun.getSelectedRogueDeck().getCommanderCardName();
-            deckCards.removeIf(c -> c.getName().equals(cmdName)
-                || c.getRules().getType().isBasicLand());
-            CardSelectionDialog cardSelectionDialog = new CardSelectionDialog(
-                "Card Removal", "Choose " + ctx.removeCount + " cards to remove.",
-                deckCards, ctx.removeCount);
-            List<PaperCard> removed = cardSelectionDialog.show();
-            for (PaperCard card : removed)
-              currentRun.getCurrentDeck().getMain().remove(card);
-            ctx.removedCards = removed;
-            if (ctx.drawCount > 0) {
-              RogueDeck rd = currentRun.getSelectedRogueDeck();
-              List<PaperCard> added = rd.drawRewardOptions(ctx.drawCount, null);
-              currentRun.addCardsToRun(added);
-              rd.removeFromCardPools(added);
-              ctx.addedCards = added;
-            }
-            break;
-          default:
-            break;
-        }
-
-      } else {
-        currentRun.addEventBoon(boon);
+  private boolean handleEventChoice(NodeEvent eventNode, RogueEvent event, RogueEvent.EventChoice choice) {
+    EventBoon boon = choice.effect();
+    NodeResultContext ctx = new NodeResultContext();
+    if (boon.getEffectType() == RogueEffect.EffectType.ONESHOT) {
+      boon.applyEffect(currentRun, ctx);
+      if (handleEventTrigger(eventNode, ctx)) {
+        return true;
       }
-
-      if (checkSideNodeDefeat(event.getDisplayName())) {
-        return;
-      }
-
-      // Build result display with card sections if applicable
-      List<NodeResultPanel.CardSection> sections = new ArrayList<>();
-      if (ctx.removedCards != null && !ctx.removedCards.isEmpty())
-        sections.add(new NodeResultPanel.CardSection("Cards removed:", ctx.removedCards));
-      if (ctx.addedCards != null && !ctx.addedCards.isEmpty())
-        sections.add(new NodeResultPanel.CardSection("Cards added:", ctx.addedCards));
-
-      String resultText = choice.resultText();
-      if (ctx.gainedWound != null) {
-        resultText += ": " + ctx.gainedWound.getDisplayName()
-            + " \u2014 " + ctx.gainedWound.getDescription();
-      } else if (choice.effect() == EventBoon.GAIN_WOUND) {
-        resultText = "You already bear all wounds.";
-      }
-
-      showNodeResultDialog("Event Completed", resultText, sections);
+    } else {
+      currentRun.addEventBoon(boon);
     }
 
-    eventNode.setCompleted(true);
+    if (checkSideNodeDefeat(event.getDisplayName())) {
+      return true;
+    }
+
+    showEventResult(choice, ctx);
+    return false;
+  }
+
+  private boolean handleEventTrigger(NodeEvent eventNode, NodeResultContext ctx) {
+    if (ctx.trigger == null) {
+      return false;
+    }
+
+    switch (ctx.trigger) {
+      case BAZAAR:
+        ctx.addedCards = runBazaarShopping(ctx.bazaarContext);
+        return false;
+      case PLANEBOUND:
+        return handleEventPlanebound(eventNode, ctx);
+      case CHEST:
+        eventNode.setCompleted(true);
+        handleChestNode(new NodeChest());
+        return true;
+      case SANCTUM:
+        eventNode.setCompleted(true);
+        handleSanctumNode(new NodeSanctum());
+        return true;
+      case CARD_REMOVAL:
+        handleEventCardRemoval(ctx);
+        return false;
+      case CARD_ADDITION:
+        handleEventCardAddition(ctx);
+        return false;
+      default:
+        return false;
+    }
+  }
+
+  private boolean handleEventPlanebound(NodeEvent eventNode, NodeResultContext ctx) {
+    if (ctx.planebound == null) {
+      return false;
+    }
+    eventNode.setEventPlanebound(ctx.planebound);
+    NodePlanebound tempNode = new NodePlanebound(ctx.planebound);
+    tempNode.setRowIndex(eventNode.getRowIndex());
+    handlePlaneboundNode(tempNode);
+    return true;  // win/lose controller handles completion
+  }
+
+  private void handleEventCardRemoval(NodeResultContext ctx) {
+    List<PaperCard> candidateCards = currentRun.getSelectableDeckCards();
+    int removeCount = Math.min(ctx.removeCount, candidateCards.size());
+    if (removeCount <= 0) {
+      return;
+    }
+
+    List<PaperCard> removed = showCardSelectionDialog(
+        "Card Removal",
+        "Choose " + removeCount + " cards to remove.",
+        candidateCards,
+        removeCount);
+    if (removed.isEmpty()) {
+      return;
+    }
+
+    for (PaperCard card : removed) {
+      currentRun.getCurrentDeck().getMain().remove(card);
+    }
+    ctx.removedCards = removed;
+
+    if (ctx.drawCount > 0) {
+      RogueDeck rd = currentRun.getSelectedRogueDeck();
+      List<PaperCard> added = rd.drawRewardOptions(ctx.drawCount, null);
+      currentRun.addCardsToRun(added);
+      rd.removeFromCardPools(added);
+      ctx.addedCards = added;
+    }
+  }
+
+  private void handleEventCardAddition(NodeResultContext ctx) {
+    int addCount = Math.min(ctx.addCount, getCandidateCardCount(ctx));
+    if (addCount <= 0) {
+      return;
+    }
+
+    List<PaperCard> added = showCardSelectionDialog(
+        "Card Addition",
+        "Choose " + addCount + " cards to add.",
+        ctx.candidateCards,
+        addCount);
+    if (added.isEmpty()) {
+      return;
+    }
+
+    currentRun.addCardsToRun(added);
+    ctx.addedCards = added;
+  }
+
+  private int getCandidateCardCount(NodeResultContext ctx) {
+    return ctx.candidateCards == null ? 0 : ctx.candidateCards.size();
+  }
+
+  private List<PaperCard> showCardSelectionDialog(String title, String subtitle,
+                                                  List<PaperCard> cards, int exactSelections) {
+    return new CardSelectionDialog(title, subtitle, cards, exactSelections).show();
+  }
+
+  private void showEventResult(RogueEvent.EventChoice choice, NodeResultContext ctx) {
+    showNodeResultDialog("Event Completed", getEventResultText(choice, ctx),
+        buildNodeResultSections(ctx));
+  }
+
+  private List<NodeResultPanel.CardSection> buildNodeResultSections(NodeResultContext ctx) {
+    List<NodeResultPanel.CardSection> sections = new ArrayList<>();
+    if (ctx.removedCards != null && !ctx.removedCards.isEmpty()) {
+      sections.add(new NodeResultPanel.CardSection("Cards removed:", ctx.removedCards));
+    }
+    if (ctx.addedCards != null && !ctx.addedCards.isEmpty()) {
+      sections.add(new NodeResultPanel.CardSection("Cards added:", ctx.addedCards));
+    }
+    return sections;
+  }
+
+  private String getEventResultText(RogueEvent.EventChoice choice, NodeResultContext ctx) {
+    String resultText = choice.resultText();
+    if (ctx.gainedWound != null) {
+      return resultText + ": " + ctx.gainedWound.getDisplayName()
+          + " \u2014 " + ctx.gainedWound.getDescription();
+    }
+    if (choice.effect() == EventBoon.GAIN_WOUND) {
+      return "You already bear all wounds.";
+    }
+    return resultText;
+  }
+
+  private void completeSideNode(RoguePathNode node) {
+    node.setCompleted(true);
     currentRun.nextNode();
     RogueStats.fireOnSideNodeCompleted(currentRun, RogueMetaProgress.getInstance());
     RogueIO.saveRun(currentRun);

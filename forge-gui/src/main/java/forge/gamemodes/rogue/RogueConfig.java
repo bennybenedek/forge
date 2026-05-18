@@ -34,6 +34,7 @@ public class RogueConfig {
 
     // Cache all plane cards to avoid reloading them repeatedly
     private static CardPool cachedPlanarPool = null;
+    private static List<PaperCard> cachedGamechangerCards = null;
 
     private static boolean rogueCardsLoaded = false;
 
@@ -193,6 +194,31 @@ public class RogueConfig {
             }
         }
         return cachedPlanarPool;
+    }
+
+    /**
+     * Load the shared Gamechanger card pool from res/rogue/util/gamechangers.dck.
+     * Returns a cached copy to avoid repeated deck file parsing.
+     */
+    public static List<PaperCard> getGamechangerCards() {
+        if (cachedGamechangerCards == null) {
+            File deckFile = new File(ForgeConstants.RES_DIR, "rogue/util/gamechangers.dck");
+            if (!deckFile.exists()) {
+                System.err.println("Warning: Gamechanger deck not found: "
+                    + deckFile.getAbsolutePath());
+                cachedGamechangerCards = List.of();
+            } else {
+                Deck deck = DeckSerializer.fromFile(deckFile);
+                if (deck == null) {
+                    System.err.println("Warning: Failed to load Gamechanger deck from "
+                        + deckFile.getAbsolutePath());
+                    cachedGamechangerCards = List.of();
+                } else {
+                    cachedGamechangerCards = new ArrayList<>(deck.getMain().toFlatList());
+                }
+            }
+        }
+        return new ArrayList<>(cachedGamechangerCards);
     }
 
     /**

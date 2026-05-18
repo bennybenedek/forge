@@ -242,6 +242,24 @@ public class RogueRun {
         return filterDuplicateCards(commanderLegalCards);
     }
 
+    public List<PaperCard> getGamechangerCardsForActiveCommander() {
+        List<PaperCard> candidateCards = RogueConfig.getGamechangerCards();
+        List<PaperCard> commanderLegalCards = filterCardsByCommanderColorIdentity(candidateCards);
+        return filterDuplicateCards(commanderLegalCards);
+    }
+
+    public List<PaperCard> getSelectableDeckCards() {
+        if (selectedRogueDeck == null || currentDeck == null) {
+            return List.of();
+        }
+
+        List<PaperCard> deckCards = new ArrayList<>(currentDeck.getMain().toFlatList());
+        String commanderName = selectedRogueDeck.getCommanderCardName();
+        deckCards.removeIf(c -> c.getName().equals(commanderName)
+                || c.getRules().getType().isBasicLand());
+        return deckCards;
+    }
+
     // Deck management
     public void addCardsToRun(List<PaperCard> cards) {
         if (currentDeck != null && cards != null) {

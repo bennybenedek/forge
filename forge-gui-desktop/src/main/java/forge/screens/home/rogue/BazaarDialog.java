@@ -21,10 +21,11 @@ import javax.swing.Timer;
 import net.miginfocom.swing.MigLayout;
 
 /**
- * Dialog for Bazaar node interaction. Allows player to purchase cards using gold based on rarity
- * pricing.
+ * Dialog for Bazaar-style shopping interactions.
+ * Allows the player to purchase cards using gold based on rarity pricing.
  */
 public class BazaarDialog {
+  static final int MAX_DISPLAY_CARDS = 10;
 
   private static final int BASE_CARD_WIDTH = 240;  // Desired card width
   private static final int PRICE_LABEL_HEIGHT = 40;  // Space for price label below card
@@ -38,6 +39,7 @@ public class BazaarDialog {
   private FOptionPane optionPane;
   private final List<PaperCard> availableCards;
   private final int availableGold;
+  private final String dialogTitle;
   private final String rerollButtonLabel;
   private boolean rerollEnabled = true;
   private final Map<String, Integer> priceOverrides; // card name → fixed price
@@ -57,13 +59,15 @@ public class BazaarDialog {
    *
    * @param cards            List of cards available for purchase
    * @param gold             Player's available gold
+   * @param title             Dialog title, or null for the default Bazaar title
    * @param rerollButtonLabel Label for the reroll button, or null for no reroll
-   * @param priceOverrides   Card name → fixed price, or null for default pricing
+   * @param priceOverrides    Card name → fixed price, or null for default pricing
    */
-  public BazaarDialog(List<PaperCard> cards, int gold, String rerollButtonLabel,
-                      Map<String, Integer> priceOverrides) {
+  public BazaarDialog(List<PaperCard> cards, int gold, String title,
+                      String rerollButtonLabel, Map<String, Integer> priceOverrides) {
     this.availableCards = new ArrayList<>(cards);
     this.availableGold = gold;
+    this.dialogTitle = title != null ? title : "Bazaar";
     this.rerollButtonLabel = rerollButtonLabel;
     this.priceOverrides = priceOverrides;
 
@@ -72,7 +76,7 @@ public class BazaarDialog {
 
     // Title label
     FLabel lblTitle = new FLabel.Builder()
-        .text("Bazaar")
+        .text(dialogTitle)
         .fontSize(20)
         .fontStyle(Font.BOLD)
         .fontAlign(SwingConstants.CENTER)
@@ -173,14 +177,19 @@ public class BazaarDialog {
   public Set<PaperCard> show() {
     final Localizer localizer = Localizer.getInstance();
 
-    // Build button list: [Buy, Reroll, Skip, View Deck]
+    // Build button list: [Buy, (optional Reroll), Skip, View Deck]
     final int BUY_OPTION = 0;
-    final int REROLL_OPTION = 1;
-    final int SKIP_OPTION = 2;
-    final int VIEW_DECK_OPTION = 3;
-    final List<String> buttons = List.of("Buy Selected Cards",
-        rerollButtonLabel != null ? rerollButtonLabel : "Reroll: 2",
-        localizer.getMessage("lblSkip"), "View Deck");
+    final boolean showReroll = rerollButtonLabel != null;
+    final int REROLL_OPTION = showReroll ? 1 : -1;
+    final int SKIP_OPTION = showReroll ? 2 : 1;
+    final int VIEW_DECK_OPTION = showReroll ? 3 : 2;
+    final List<String> buttons = new ArrayList<>();
+    buttons.add("Buy Selected Cards");
+    if (showReroll) {
+      buttons.add(rerollButtonLabel);
+    }
+    buttons.add(localizer.getMessage("lblSkip"));
+    buttons.add("View Deck");
 
     // Cache coin icon for reroll button
     final javax.swing.Icon coinIcon = createCoinIcon();
@@ -189,7 +198,7 @@ public class BazaarDialog {
     do {
       optionPane = new FOptionPane(
           null,
-          "Bazaar",
+          dialogTitle,
           null,
           panel,
           buttons,
@@ -197,9 +206,11 @@ public class BazaarDialog {
       );
 
       // Set coin icon on reroll button and enable/disable
-      optionPane.getButton(REROLL_OPTION).setIcon(coinIcon);
-      optionPane.getButton(REROLL_OPTION).setHorizontalTextPosition(SwingConstants.LEFT);
-      optionPane.getButton(REROLL_OPTION).setEnabled(rerollEnabled);
+      if (showReroll) {
+        optionPane.getButton(REROLL_OPTION).setIcon(coinIcon);
+        optionPane.getButton(REROLL_OPTION).setHorizontalTextPosition(SwingConstants.LEFT);
+        optionPane.getButton(REROLL_OPTION).setEnabled(rerollEnabled);
+      }
 
       // Disable Buy until cards are selected
       optionPane.getButton(BUY_OPTION).setEnabled(!selectedCards.isEmpty());
@@ -229,7 +240,7 @@ public class BazaarDialog {
       return selectedCards;
     }
     // Reroll clicked
-    if (result == REROLL_OPTION) {
+    if (showReroll && result == REROLL_OPTION) {
       return null;
     }
     // Skip clicked

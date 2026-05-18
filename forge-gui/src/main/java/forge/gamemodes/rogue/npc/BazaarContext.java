@@ -1,16 +1,24 @@
 package forge.gamemodes.rogue.npc;
 
 import forge.item.PaperCard;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 /**
- * Context passed to NPC encounters before and after bazaar shopping.
- * Encounters modify this to inject items, override prices, and react to purchases.
+ * Context for Bazaar-style shopping interactions.
+ * Used by both ordinary Bazaar nodes and custom event inventories.
  */
 public class BazaarContext {
+
+    /** Optional custom dialog title. Null = default Bazaar title. */
+    public String title;
+
+    /** Custom inventory for Bazaar-style shopping. Ordinary Bazaar setup leaves this empty. */
+    public List<PaperCard> inventory = new ArrayList<>();
 
     /** Card name → fixed price override. Used for both item pricing and card discounts. */
     public final Map<String, Integer> priceOverrides = new HashMap<>();

@@ -2,6 +2,7 @@ package forge.gamemodes.rogue.effect;
 
 import forge.game.player.RegisteredPlayer;
 import forge.gamemodes.rogue.*;
+import forge.gamemodes.rogue.npc.BazaarContext;
 import forge.gamemodes.rogue.npc.NPC;
 import forge.item.PaperCard;
 import forge.util.MyRandom;
@@ -38,6 +39,54 @@ public enum EventBoon implements RogueEffect {
             EffectType.ONESHOT) {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
+            ctx.trigger = NodeResultContext.ActionTriggerType.BAZAAR;
+        }
+    },
+    TRADE_GAMECHANGERS("trade_gamechangers", "Trade for Gamechangers",
+            "Remove 3 random cards from your deck and replace them with chosen cards from the Gamechanger list.",
+            EffectType.ONESHOT) {
+        @Override
+        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+            List<PaperCard> gamechangerCards = run.getGamechangerCardsForActiveCommander();
+            List<PaperCard> deckCards = run.getSelectableDeckCards();
+            int swapCount = Math.min(3, Math.min(deckCards.size(), gamechangerCards.size()));
+            if (swapCount <= 0) {
+                return;
+            }
+
+            Collections.shuffle(deckCards, MyRandom.getRandom());
+            List<PaperCard> removed = new ArrayList<>(deckCards.subList(0, swapCount));
+            for (PaperCard card : removed) {
+                run.getCurrentDeck().getMain().remove(card);
+            }
+
+            ctx.removedCards = removed;
+            ctx.candidateCards = gamechangerCards;
+            ctx.addCount = Math.min(swapCount, gamechangerCards.size());
+            if (ctx.addCount > 0) {
+                ctx.trigger = NodeResultContext.ActionTriggerType.CARD_ADDITION;
+            }
+        }
+    },
+    BROWSE_GAMECHANGERS("browse_gamechangers", "Browse Gamechangers",
+            "Shop from a selection of Gamechanger cards at doubled prices.",
+            EffectType.ONESHOT) {
+        @Override
+        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+            List<PaperCard> gamechangerCards = run.getGamechangerCardsForActiveCommander();
+            if (gamechangerCards.isEmpty()) {
+                return;
+            }
+
+            BazaarContext bazaarContext = new BazaarContext();
+            bazaarContext.title = "Gamechanger Shop";
+            bazaarContext.inventory.addAll(gamechangerCards);
+            for (PaperCard card : gamechangerCards) {
+                bazaarContext.priceOverrides.put(card.getName(),
+                    BazaarPricing.getCardPrice(card) * 2);
+            }
+
+            ctx.bazaarContext = bazaarContext;
             ctx.trigger = NodeResultContext.ActionTriggerType.BAZAAR;
         }
     },
@@ -95,14 +144,14 @@ public enum EventBoon implements RogueEffect {
             ctx.trigger = NodeResultContext.ActionTriggerType.PLANEBOUND;
         }
     },
-    PLANAR_EXCHANGE("planar_exchange", "Planar Sacrifice",
+    PLANAR_EXCHANGE("planar_exchange", "Planar Exchange",
             "Choose 3 cards to remove (excluding basic lands), then receive 3 random cards from your Reward Pool.",
             EffectType.ONESHOT) {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
             ctx.trigger = NodeResultContext.ActionTriggerType.CARD_REMOVAL;
             ctx.removeCount = 3;
-            ctx.drawCount = 3;
+            ctx.drawCount = ctx.removeCount;
         }
     },
     PLANAR_SACRIFICE("planar_sacrifice", "Planar Sacrifice",

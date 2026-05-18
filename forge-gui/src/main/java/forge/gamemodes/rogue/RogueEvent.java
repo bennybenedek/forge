@@ -63,6 +63,16 @@ public enum RogueEvent {
                 EventBoon.NOTHING)
         )),
 
+    GAMECHANGER("Gamechanger",
+        "A suspicious figure eyes your deck with open contempt. \"Worthless,\" they sneer. " +
+        "\"Once you change your game, you won't need half this library anymore.\"",
+        List.of(
+            new EventChoice("Trade", "The figure strips away your old tricks and offers you something far stronger.",
+                EventBoon.TRADE_GAMECHANGERS),
+            new EventChoice("Browse", "The figure reveals a forbidden stock of Gamechangers.",
+                EventBoon.BROWSE_GAMECHANGERS)
+        )),
+
     THORNS("Thorns",
         "The land itself rejects your presence. Thorns rise from the soil, leaving your footsteps stained with blood.",
         List.of(
