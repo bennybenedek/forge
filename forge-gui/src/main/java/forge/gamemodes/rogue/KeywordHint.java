@@ -1,0 +1,53 @@
+package forge.gamemodes.rogue;
+
+/**
+ * Shared hint catalog for keyword markers embedded in Rogue description text.
+ */
+public enum KeywordHint {
+    ITEM("Item",
+            "An Artifact added to your command zone as a carry card. It persists between matches unless it ends a match neither in the command zone nor on the battlefield."),
+    FELLOW("Fellow",
+        "A Creature added to your command zone as a carry card. It persists between matches unless it ends a match neither in the command zone nor on the battlefield."),
+    WOUND("Wound",
+            "A permanent negative effect that lasts for the rest of the Run unless treated at a Sanctum."),
+    WRATHFUL("Wrathful",
+            "For each instance of Wrathful, the Planebound gets a minor advantage for the match."),
+    CURSED("Cursed",
+            "For each instance of Cursed, the Planebound gets a powerful advantage for the match."),
+    BAZAAR("Bazaar",
+            "Spend your gold on cards and special offers."),
+    SANCTUM("Sanctum",
+            "Rest to regain life and cure alll wounds or cook a random food item.");
+
+    private final String token;
+    private final String hintText;
+
+    KeywordHint(String token, String hintText) {
+        this.token = token;
+        this.hintText = hintText;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public String getTitle() {
+        return token;
+    }
+
+    public String getHintText() {
+        return hintText;
+    }
+
+    public static KeywordHint fromToken(String token) {
+        if (token == null) {
+            return null;
+        }
+        for (KeywordHint hint : values()) {
+            if (hint.token.equals(token)) {
+                return hint;
+            }
+        }
+        return null;
+    }
+}

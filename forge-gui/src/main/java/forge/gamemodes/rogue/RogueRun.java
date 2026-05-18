@@ -80,7 +80,7 @@ public class RogueRun {
     }
 
     /** Type of card carried between matches in the command zone. */
-    public enum CarryCardType { ITEM, COMPANION }
+    public enum CarryCardType { ITEM, FELLOW}
 
     /** A card the player carries between matches (castable from command zone).
      *  sourceId links to the boon that granted it (null if purchased/rewarded). */
@@ -102,7 +102,7 @@ public class RogueRun {
         public String sourceId() { return sourceId; }
     }
 
-    // Carry cards (items/companions that persist across matches in the command zone)
+    // Carry cards (items/fellows that persist across matches in the command zone)
     private List<CarryCard> carryCards;
 
     // Transient (runtime only, not serialized)
@@ -260,7 +260,7 @@ public class RogueRun {
         removalCredits += count;
     }
 
-    // Carry card management (items/companions in command zone)
+    // Carry card management (items/fellows in command zone)
     public void addCarryCard(String cardName, CarryCardType type, String sourceId) {
         if (carryCards == null) carryCards = new ArrayList<>();
         carryCards.add(new CarryCard(cardName, type, sourceId));

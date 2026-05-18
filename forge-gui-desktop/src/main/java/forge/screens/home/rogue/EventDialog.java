@@ -1,5 +1,6 @@
 package forge.screens.home.rogue;
 
+import forge.gamemodes.rogue.PreviewReference;
 import forge.gamemodes.rogue.RogueEvent;
 import forge.gamemodes.rogue.RogueEvent.EventChoice;
 import forge.toolbox.FButton;
@@ -26,7 +27,7 @@ public class EventDialog {
   private final MainPanel panel;
   private final List<PreviewTarget> previewTargets = new ArrayList<>();
   private FOptionPane optionPane;
-  private RogueCardPreviewPopup previewPopup;
+  private RoguePreviewPopup previewPopup;
   private EventChoice selectedChoice;
 
   public EventDialog(RogueEvent event) {
@@ -38,7 +39,7 @@ public class EventDialog {
 
     FTextArea txtDescription = new FTextArea(event.getDescription());
     txtDescription.setFont(txtDescription.getFont().deriveFont(14f));
-    previewTargets.add(new PreviewTarget(txtDescription, event.getPreviewCardName()));
+    previewTargets.add(new PreviewTarget(txtDescription, event.getPreviewReferences()));
 
     panel.add(lblTitle, "w 100%!, h 60px!, ax center, gap 0 0 20px 10px, wrap");
     panel.add(txtDescription, "w 100%!, ax center, gap 0 0 10px 20px, wrap");
@@ -52,7 +53,7 @@ public class EventDialog {
         optionPane.setResult(0);
         optionPane.setVisible(false);
       });
-      previewTargets.add(new PreviewTarget(btn, choice.effect().getPreviewCardName()));
+      previewTargets.add(new PreviewTarget(btn, choice.effect().getPreviewReferences()));
       panel.add(btn, "w 80%!, ax center, gap 0 0 10px 10px, wrap");
     }
 
@@ -66,8 +67,8 @@ public class EventDialog {
     optionPane = new FOptionPane(null, "Event", null, panel,
         List.of(), -1);
     optionPane.getTitleBar().setVisible(false);
-    previewPopup = new RogueCardPreviewPopup();
-    previewTargets.forEach(target -> previewPopup.attachTo(target.component(), target.cardName()));
+    previewPopup = new RoguePreviewPopup();
+    previewTargets.forEach(target -> previewPopup.attachTo(target.component(), target.references()));
     panel.revalidate();
     panel.repaint();
     optionPane.setVisible(true);
@@ -82,7 +83,7 @@ public class EventDialog {
     }
   }
 
-  private record PreviewTarget(JComponent component, String cardName) {}
+  private record PreviewTarget(JComponent component, List<PreviewReference> references) {}
 
   private static class MainPanel extends SkinnedPanel {
     private MainPanel() {

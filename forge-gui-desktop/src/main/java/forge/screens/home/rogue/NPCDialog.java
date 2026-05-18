@@ -1,5 +1,6 @@
 package forge.screens.home.rogue;
 
+import forge.gamemodes.rogue.PreviewReference;
 import forge.gamemodes.rogue.effect.NPCBoon;
 import forge.gamemodes.rogue.npc.NPCContext;
 import forge.gamemodes.rogue.npc.NPCContext.NPCChoice;
@@ -24,7 +25,7 @@ public class NPCDialog {
     private final MainPanel panel;
     private final List<PreviewTarget> previewTargets = new ArrayList<>();
     private FOptionPane optionPane;
-    private RogueCardPreviewPopup previewPopup;
+    private RoguePreviewPopup previewPopup;
     private NPCBoon selectedBoon;
 
     public NPCDialog(NPCContext ctx) {
@@ -67,7 +68,8 @@ public class NPCDialog {
                     optionPane.setResult(0);
                     optionPane.setVisible(false);
                 });
-                previewTargets.add(new PreviewTarget(btn, choice.boon() == null ? null : choice.boon().getPreviewCardName()));
+                previewTargets.add(new PreviewTarget(btn,
+                        choice.boon() == null ? List.of() : choice.boon().getPreviewReferences()));
                 panel.add(btn, "w 80%!, ax center, gap 0 0 10px 10px, wrap");
             }
         }
@@ -82,8 +84,8 @@ public class NPCDialog {
         optionPane = new FOptionPane(null, "NPC Encounter", null, panel,
                 List.of(), -1);
         optionPane.getTitleBar().setVisible(false);
-        previewPopup = new RogueCardPreviewPopup();
-        previewTargets.forEach(target -> previewPopup.attachTo(target.component(), target.cardName()));
+        previewPopup = new RoguePreviewPopup();
+        previewTargets.forEach(target -> previewPopup.attachTo(target.component(), target.references()));
         panel.revalidate();
         panel.repaint();
         optionPane.setVisible(true);
@@ -98,7 +100,7 @@ public class NPCDialog {
         }
     }
 
-    private record PreviewTarget(JComponent component, String cardName) {}
+    private record PreviewTarget(JComponent component, List<PreviewReference> references) {}
 
     private static class MainPanel extends SkinnedPanel {
         private MainPanel() {

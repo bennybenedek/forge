@@ -34,7 +34,7 @@ public enum EventBoon implements RogueEffect {
             run.setCurrentGold(run.getCurrentGold() + 8);
         }
     },
-    BROWSE_WARES("browse_wares", "Browse Wares", "Opens a bazaar.",
+    BROWSE_WARES("browse_wares", "Browse Wares", "Opens a {{Bazaar}}.",
             EffectType.ONESHOT) {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
@@ -115,7 +115,7 @@ public enum EventBoon implements RogueEffect {
             ctx.drawCount = 0;
         }
     },
-    GAIN_WOUND("gain_wound", "Gain Wound", "Gain a random Wound.",
+    GAIN_WOUND("gain_wound", "Gain Wound", "Gain a random {{Wound}}.",
             EffectType.ONESHOT) {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
@@ -142,7 +142,7 @@ public enum EventBoon implements RogueEffect {
             ctx.trigger = NodeResultContext.ActionTriggerType.CHEST;
         }
     },
-    FIND_SANCTUM("find_sanctum", "Hidden Sanctum", "You discover a hidden Sanctum.",
+    FIND_SANCTUM("find_sanctum", "Hidden Sanctum", "You discover a hidden {{Sanctum}}.",
             EffectType.ONESHOT) {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {

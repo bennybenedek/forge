@@ -1,6 +1,7 @@
 package forge.gamemodes.rogue.effect;
 
 import forge.deck.CardPool;
+import forge.gamemodes.rogue.PreviewReference;
 import forge.game.player.RegisteredPlayer;
 import forge.gamemodes.rogue.RogueConfig;
 import forge.gamemodes.rogue.RogueRun;
@@ -38,7 +39,10 @@ public interface RogueEffect {
     default String getRawDescription() { return ""; }
 
     /** Description for tooltips and display text. */
-    default String getDescription() { return TextHelper.stripCardMarkers(getRawDescription()); }
+    default String getDescription() { return TextHelper.stripPreviewMarkers(getRawDescription()); }
+
+    /** Preview references extracted from the raw description. */
+    default List<PreviewReference> getPreviewReferences() { return TextHelper.extractPreviewReferences(getRawDescription()); }
 
     /** Optional preview card reference extracted from the raw description. */
     default String getPreviewCardName() { return TextHelper.extractFirstCardName(getRawDescription()); }

@@ -136,7 +136,8 @@ public enum RogueEvent {
 
     public String getDisplayName() { return displayName; }
     public String getRawDescription() { return description; }
-    public String getDescription() { return TextHelper.stripCardMarkers(getRawDescription()); }
+    public String getDescription() { return TextHelper.stripPreviewMarkers(getRawDescription()); }
+    public List<PreviewReference> getPreviewReferences() { return TextHelper.extractPreviewReferences(getRawDescription()); }
     public String getPreviewCardName() { return TextHelper.extractFirstCardName(getRawDescription()); }
     public List<EventChoice> getChoices() { return choices; }
 

@@ -24,7 +24,7 @@ import java.util.*;
 public enum DescensionLevel implements RogueEffect {
 
     LEVEL_1(1, "Wrathful",
-        "Some Planebounds on the path become Wrathful, gaining random buffs for the match.") {
+        "Some Planebounds on the path become {{Wrathful}}, gaining random buffs for the match.") {
         @Override
         public void afterPathGeneration(RogueRun run) {
             List<NodePlanebound> planeboundNodes = new ArrayList<>();
@@ -50,7 +50,7 @@ public enum DescensionLevel implements RogueEffect {
     },
 
     LEVEL_2(2, "Cursed",
-        "Some Planebounds on the path become Cursed, gaining powerful buffs for the opponent.") {
+        "Some Planebounds on the path become {{Cursed}}, gaining powerful buffs for the opponent.") {
         @Override
         public void afterPathGeneration(RogueRun run) {
             List<NodePlanebound> planeboundNodes = new ArrayList<>();

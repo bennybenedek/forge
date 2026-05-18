@@ -23,7 +23,7 @@ public class ChestDialog {
 
   private final MainPanel panel;
   private FOptionPane optionPane;
-  private final RogueCardPreviewPopup previewPopup = new RogueCardPreviewPopup();
+  private final RoguePreviewPopup previewPopup = new RoguePreviewPopup();
 
   public ChestDialog(ChestLoot loot) {
     panel = new MainPanel();
@@ -34,7 +34,7 @@ public class ChestDialog {
 
     FTextArea txtDescription = new FTextArea(loot.getDescription());
     txtDescription.setFont(txtDescription.getFont().deriveFont(14f));
-    previewPopup.attachTo(txtDescription, loot.getPreviewCardName());
+    previewPopup.attachTo(txtDescription, loot.getPreviewReferences());
 
     panel.add(lblTitle, "w 100%!, h 60px!, ax center, gap 0 0 20px 10px, wrap");
     panel.add(txtDescription, "w 100%!, ax center, gap 0 0 10px 20px, wrap");

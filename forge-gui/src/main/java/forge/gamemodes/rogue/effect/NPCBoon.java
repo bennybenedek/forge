@@ -35,7 +35,7 @@ public enum NPCBoon implements RogueEffect {
             RogueEffect.addCardToBattlefield("Fractured Powerstone", human);
         }
     },
-    NARSET_ALCHEMIST("npc_narset_alchemist", "Alchemist", "Start each match with the item [[Ichor Elixir]] in the command zone.") {
+    NARSET_ALCHEMIST("npc_narset_alchemist", "Alchemist", "Start the Run with an [[Ichor Elixir]] {{Item}} in the command zone.") {
         @Override
         public void onGranted(RogueRun run) {
             run.addCarryCard("Ichor Elixir", RogueRun.CarryCardType.ITEM, getId());

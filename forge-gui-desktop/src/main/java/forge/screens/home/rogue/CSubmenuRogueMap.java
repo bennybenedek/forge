@@ -372,8 +372,8 @@ public enum CSubmenuRogueMap implements ICDoc {
       if (currentRun.hasCarryCardOfType(CarryCardType.ITEM)) {
         RogueEffect.addCardToCommandZone("Rogue - Item Enabler", human);
       }
-      if (currentRun.hasCarryCardOfType(CarryCardType.COMPANION)) {
-        RogueEffect.addCardToCommandZone("Rogue - Companion Enabler", human);
+      if (currentRun.hasCarryCardOfType(CarryCardType.FELLOW)) {
+        RogueEffect.addCardToCommandZone("Rogue - Fellow Enabler", human);
       }
       for (CarryCard card : currentRun.getCarryCards()) {
         RogueEffect.addCardToCommandZone(card.cardName(), human);

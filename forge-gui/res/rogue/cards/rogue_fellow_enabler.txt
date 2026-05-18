@@ -1,4 +1,4 @@
-Name:Rogue - Companion Enabler
+Name:Rogue - Fellow Enabler
 ManaCost:no cost
 Types:Rogue Modifier
 S:Mode$ Continuous | EffectZone$ Command | MayPlay$ True | Affected$ Creature.YouOwn | AffectedZone$ Command | Description$ You may cast companion creatures you own from the command zone.
