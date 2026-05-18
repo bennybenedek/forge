@@ -10,6 +10,11 @@ import forge.toolbox.FTextArea;
 import forge.toolbox.FSkin.SkinnedPanel;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsEnvironment;
+import java.awt.Insets;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComponent;
@@ -22,7 +27,10 @@ import net.miginfocom.swing.MigLayout;
 public class EventDialog {
 
   private static final int DIALOG_WIDTH = 600;
-  private static final int DIALOG_HEIGHT = 400;
+  private static final int MIN_DIALOG_HEIGHT = 400;
+  private static final int PANEL_INSETS = 20;
+  private static final int FULL_WIDTH = DIALOG_WIDTH - 2 * PANEL_INSETS;
+  private static final int BUTTON_WIDTH = FULL_WIDTH * 80 / 100;
 
   private final MainPanel panel;
   private final List<PreviewTarget> previewTargets = new ArrayList<>();
@@ -39,14 +47,20 @@ public class EventDialog {
 
     FTextArea txtDescription = new FTextArea(event.getDescription());
     txtDescription.setFont(txtDescription.getFont().deriveFont(14f));
+    txtDescription.setSize(FULL_WIDTH, Short.MAX_VALUE);
     previewTargets.add(new PreviewTarget(txtDescription, event.getPreviewReferences()));
 
+    int desiredHeight = PANEL_INSETS;
+
     panel.add(lblTitle, "w 100%!, h 60px!, ax center, gap 0 0 20px 10px, wrap");
+    desiredHeight += 60 + 20 + 10;
     panel.add(txtDescription, "w 100%!, ax center, gap 0 0 10px 20px, wrap");
+    desiredHeight += txtDescription.getPreferredSize().height + 10 + 20;
 
     for (EventChoice choice : event.getChoices()) {
       FButton btn = new FButton("<html><div style='padding:6px 10px;'><center><font size=4>" + choice.label()
           + "</font><br><font size=3>" + choice.effect().getDescription() + "</font></center></div></html>");
+      btn.setSize(BUTTON_WIDTH, Short.MAX_VALUE);
       btn.addActionListener(e -> {
         hidePreview();
         selectedChoice = choice;
@@ -55,9 +69,11 @@ public class EventDialog {
       });
       previewTargets.add(new PreviewTarget(btn, choice.effect().getPreviewReferences()));
       panel.add(btn, "w 80%!, ax center, gap 0 0 10px 10px, wrap");
+      desiredHeight += btn.getPreferredSize().height + 10 + 10;
     }
 
-    Dimension dialogSize = new Dimension(DIALOG_WIDTH, DIALOG_HEIGHT);
+    int dialogHeight = Math.min(Math.max(desiredHeight + PANEL_INSETS, MIN_DIALOG_HEIGHT), getMaxDialogHeight());
+    Dimension dialogSize = new Dimension(DIALOG_WIDTH, dialogHeight);
     panel.setPreferredSize(dialogSize);
     panel.setMinimumSize(dialogSize);
   }
@@ -81,6 +97,15 @@ public class EventDialog {
     if (previewPopup != null) {
       previewPopup.hide();
     }
+  }
+
+  private static int getMaxDialogHeight() {
+    GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment()
+        .getDefaultScreenDevice().getDefaultConfiguration();
+    Rectangle screenBounds = gc.getBounds();
+    Insets screenInsets = Toolkit.getDefaultToolkit().getScreenInsets(gc);
+    int usableHeight = screenBounds.height - screenInsets.top - screenInsets.bottom;
+    return (int) (usableHeight * 0.9) - 80;
   }
 
   private record PreviewTarget(JComponent component, List<PreviewReference> references) {}

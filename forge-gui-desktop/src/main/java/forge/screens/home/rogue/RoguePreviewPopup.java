@@ -117,23 +117,22 @@ public class RoguePreviewPopup {
         ensureZoomUtil(component);
         activeSourceComponent = component;
 
-        buildPreviewPanels(previewItems);
-
         Point anchor = component.getLocationOnScreen();
-        Dimension size = previewPanel.getPreferredSize();
         GraphicsConfiguration gc = component.getGraphicsConfiguration();
         Insets insets = Toolkit.getDefaultToolkit().getScreenInsets(gc);
 
-        int screenLeft = gc.getBounds().x + insets.left;
         int screenTop = gc.getBounds().y + insets.top;
         int screenRight = gc.getBounds().x + gc.getBounds().width - insets.right;
         int screenBottom = gc.getBounds().y + gc.getBounds().height - insets.bottom;
 
         int x = anchor.x + component.getWidth() + PREVIEW_GAP;
-        if (x + size.width > screenRight) {
-            x = Math.max(screenLeft, anchor.x - size.width - PREVIEW_GAP);
+        int availableWidth = Math.max(0, screenRight - x);
+        buildPreviewPanels(previewItems, availableWidth);
+        if (previewPanel.getComponentCount() == 0) {
+            return;
         }
 
+        Dimension size = previewPanel.getPreferredSize();
         int y = anchor.y + (component.getHeight() - size.height) / 2;
         if (y + size.height > screenBottom) {
             y = Math.max(screenTop, screenBottom - size.height);
@@ -146,23 +145,23 @@ public class RoguePreviewPopup {
         popup.show();
     }
 
-    private void buildPreviewPanels(List<ResolvedPreviewItem> previewItems) {
+    private void buildPreviewPanels(List<ResolvedPreviewItem> previewItems, int availableWidth) {
         previewPanel.removeAll();
         currentCardPanels.clear();
 
+        List<JComponent> panels = createPreviewPanels(previewItems);
+        List<JComponent> visiblePanels = capPreviewPanels(panels, availableWidth);
+
         boolean firstItem = true;
-        for (ResolvedPreviewItem item : previewItems) {
+        for (JComponent panel : visiblePanels) {
             if (!firstItem) {
                 previewPanel.add(Box.createHorizontalStrut(PREVIEW_GAP));
             }
 
-            if (item.isCard()) {
-                CardPreviewPanel panel = new CardPreviewPanel(item.card());
-                currentCardPanels.add(panel);
-                previewPanel.add(panel);
-            } else if (item.isKeyword()) {
-                previewPanel.add(new KeywordPreviewPanel(item.keywordHint()));
+            if (panel instanceof CardPreviewPanel cardPreviewPanel) {
+                currentCardPanels.add(cardPreviewPanel);
             }
+            previewPanel.add(panel);
             firstItem = false;
         }
 
@@ -272,6 +271,70 @@ public class RoguePreviewPopup {
         return component.contains(localPoint);
     }
 
+    private List<JComponent> createPreviewPanels(List<ResolvedPreviewItem> previewItems) {
+        List<JComponent> panels = new ArrayList<>(previewItems.size());
+        for (ResolvedPreviewItem item : previewItems) {
+            if (item.isCard()) {
+                panels.add(new CardPreviewPanel(item.card()));
+            } else if (item.isKeyword()) {
+                panels.add(new KeywordPreviewPanel(item.keywordHint()));
+            }
+        }
+        return panels;
+    }
+
+    private List<JComponent> capPreviewPanels(List<JComponent> panels, int availableWidth) {
+        if (panels.isEmpty()) {
+            return List.of();
+        }
+
+        if (availableWidth <= 0) {
+            return List.of();
+        }
+
+        if (calculateWidth(panels) <= availableWidth) {
+            return panels;
+        }
+
+        List<JComponent> visiblePanels = new ArrayList<>();
+        for (JComponent panel : panels) {
+            List<JComponent> candidatePanels = new ArrayList<>(visiblePanels);
+            candidatePanels.add(panel);
+            if (calculateWidth(candidatePanels) <= availableWidth) {
+                visiblePanels.add(panel);
+            } else {
+                break;
+            }
+        }
+        return visiblePanels;
+    }
+
+    private int calculateWidth(List<JComponent> panels) {
+        int width = 0;
+        boolean firstItem = true;
+        for (JComponent panel : panels) {
+            if (!firstItem) {
+                width += PREVIEW_GAP;
+            }
+            width += panel.getPreferredSize().width;
+            firstItem = false;
+        }
+        return width;
+    }
+
+    private static PaperCard resolveCard(String cardName) {
+        if (cardName == null || cardName.isBlank()) {
+            return null;
+        }
+
+        RogueConfig.loadRogueCards();
+        PaperCard card = FModel.getMagicDb().getCommonCards().getCard(cardName);
+        if (card == null) {
+            card = FModel.getMagicDb().getVariantCards().getCard(cardName);
+        }
+        return card;
+    }
+
     private List<ResolvedPreviewItem> resolvePreviewItems(List<PreviewReference> references) {
         if (references == null || references.isEmpty()) {
             return List.of();
@@ -292,26 +355,6 @@ public class RoguePreviewPopup {
             }
         }
         return items;
-    }
-
-    private static PaperCard resolveCard(String cardName) {
-        if (cardName == null || cardName.isBlank()) {
-            return null;
-        }
-
-        RogueConfig.loadRogueCards();
-        PaperCard card = FModel.getMagicDb().getCommonCards().getCard(cardName);
-        if (card == null) {
-            card = FModel.getMagicDb().getVariantCards().getCard(cardName);
-        }
-        return card;
-    }
-
-    private void setPreviewHover(boolean hovering) {
-        hoveringPreview = hovering;
-        if (!hovering) {
-            currentCardPanels.forEach(panel -> panel.setHovered(false));
-        }
     }
 
     private void registerHoverTracking(JComponent component) {

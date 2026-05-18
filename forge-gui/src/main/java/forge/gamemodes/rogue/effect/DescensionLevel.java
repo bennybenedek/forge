@@ -15,16 +15,11 @@ import java.util.*;
  * Each level implements its own RogueEffect trigger methods.
  *
  * Active effects per descension level (cumulative):
- *   Level 1: Wrathful — some Planebounds gain random advantages (afterPathGeneration)
- *   Level 2: Cursed — some Planebounds gain powerful opponent buffs (afterPathGeneration)
- *   Level 3: Bloodthirsty — creatures deal +1 damage to you (onMatchStart)
- *   Level 4: Elite Paths — 2 random Normal Planes replaced by Elite Planes (afterPathGeneration)
- *   Level 5: Taxing Mana — all spells cost {1} more (onMatchStart)
  */
 public enum DescensionLevel implements RogueEffect {
 
     LEVEL_1(1, "Wrathful",
-        "Some Planebounds on the path become {{Wrathful}}, gaining random buffs for the match.") {
+        "Some Planebounds on the path become Wrathful, gaining random buffs for the match.") {
         @Override
         public void afterPathGeneration(RogueRun run) {
             List<NodePlanebound> planeboundNodes = new ArrayList<>();
@@ -50,7 +45,7 @@ public enum DescensionLevel implements RogueEffect {
     },
 
     LEVEL_2(2, "Cursed",
-        "Some Planebounds on the path become {{Cursed}}, gaining powerful buffs for the opponent.") {
+        "Some Planebounds on the path become Cursed, gaining powerful buffs for the opponent.") {
         @Override
         public void afterPathGeneration(RogueRun run) {
             List<NodePlanebound> planeboundNodes = new ArrayList<>();
