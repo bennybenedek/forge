@@ -113,7 +113,7 @@ public class CardRewardHelper {
                 // Deduct gold for paid rerolls
                 if (rerollCount >= freeRerolls) {
                     int cost = getRerollCost(rerollCount - freeRerolls);
-                    run.setCurrentGold(run.getCurrentGold() - cost);
+                    run.spendGold(cost);
                 }
                 rerollCount++;
             }

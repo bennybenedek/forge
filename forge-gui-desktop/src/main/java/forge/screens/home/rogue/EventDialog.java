@@ -3,6 +3,7 @@ package forge.screens.home.rogue;
 import forge.gamemodes.rogue.PreviewReference;
 import forge.gamemodes.rogue.RogueEvent;
 import forge.gamemodes.rogue.RogueEvent.EventChoice;
+import forge.gamemodes.rogue.RogueRun;
 import forge.toolbox.FButton;
 import forge.toolbox.FLabel;
 import forge.toolbox.FOptionPane;
@@ -38,7 +39,7 @@ public class EventDialog {
   private RoguePreviewPopup previewPopup;
   private EventChoice selectedChoice;
 
-  public EventDialog(RogueEvent event) {
+  public EventDialog(RogueEvent event, RogueRun run) {
     panel = new MainPanel();
 
     FLabel lblTitle = new FLabel.Builder()
@@ -67,6 +68,11 @@ public class EventDialog {
         optionPane.setResult(0);
         optionPane.setVisible(false);
       });
+      boolean enabled = choice.effect().isChoiceAvailable(run);
+      btn.setEnabled(enabled);
+      if (!enabled) {
+        btn.setToolTipText(choice.effect().getUnavailableReason(run));
+      }
       previewTargets.add(new PreviewTarget(btn, choice.effect().getPreviewReferences()));
       panel.add(btn, "w 80%!, ax center, gap 0 0 10px 10px, wrap");
       desiredHeight += btn.getPreferredSize().height + 10 + 10;

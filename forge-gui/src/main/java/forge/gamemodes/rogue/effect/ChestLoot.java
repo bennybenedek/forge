@@ -9,7 +9,7 @@ public enum ChestLoot implements RogueEffect {
     FIND_GOLD("find_gold", "Treasure", "You found 10 gold.", EffectType.ONESHOT) {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
-            run.setCurrentGold(run.getCurrentGold() + 10);
+            run.addGold(10);
         }
     },
     FIND_ECHOES("find_echoes", "Giant Soul", "You found 10 echoes.", EffectType.ONESHOT) {

@@ -474,7 +474,7 @@ public enum CSubmenuRogueMap implements ICDoc {
     RogueTutorialHelper.showIfNotSeen(RogueTutorial.SANCTUM);
 
     int baseHealAmount = sanctumNode.getHealAmount();
-    int missingLife = Math.max(0, currentRun.getStartingLife() - currentRun.getCurrentLife());
+    int missingLife = Math.max(0, currentRun.getMaxLife() - currentRun.getCurrentLife());
     int effectiveHealAmount = Math.min(baseHealAmount, missingLife);
     boolean hasWounds = !currentRun.getActiveWounds().isEmpty();
     boolean restEnabled = effectiveHealAmount > 0 || hasWounds;
@@ -611,7 +611,7 @@ public enum CSubmenuRogueMap implements ICDoc {
       if (!customBazaar && selectedCards == null) {
         if (rerollCount >= freeRerolls) {
           int cost = CardRewardHelper.getRerollCost(rerollCount - freeRerolls);
-          currentRun.setCurrentGold(currentRun.getCurrentGold() - cost);
+          currentRun.spendGold(cost);
         }
         rerollCount++;
         bazaarCtx.priceOverrides.clear();
@@ -723,7 +723,7 @@ public enum CSubmenuRogueMap implements ICDoc {
 
     int totalCost = BazaarPricing.calculateTotalCost(selectedCards,
         bazaarCtx.priceOverrides.isEmpty() ? null : bazaarCtx.priceOverrides);
-    currentRun.setCurrentGold(currentRun.getCurrentGold() - totalCost);
+    currentRun.spendGold(totalCost);
     return realCards;
   }
 
@@ -751,8 +751,10 @@ public enum CSubmenuRogueMap implements ICDoc {
     event = resolveDevEventOverride(event);
     RogueTutorialHelper.showIfNotSeen(RogueTutorial.EVENT);
 
-    RogueEvent.EventChoice choice = new EventDialog(event).show();
-    if (choice != null && handleEventChoice(eventNode, event, choice)) {
+    RogueEvent.EventChoice choice = new EventDialog(event, currentRun).show();
+    // True means the choice already handled flow control and normal node completion must stop.
+    var handleEventWithoutCompletion = handleEventChoice(eventNode, event, choice);
+    if (choice != null && handleEventWithoutCompletion) {
       return;
     }
 
@@ -782,8 +784,14 @@ public enum CSubmenuRogueMap implements ICDoc {
     return picked != null ? picked : event;
   }
 
+  // Returns true when the choice interrupts normal event completion (for example a trigger,
+  // defeat flow, or another early-exit path already took over).
   private boolean handleEventChoice(NodeEvent eventNode, RogueEvent event, RogueEvent.EventChoice choice) {
     EventBoon boon = choice.effect();
+    if (!boon.isChoiceAvailable(currentRun)) {
+      return true;
+    }
+
     NodeResultContext ctx = new NodeResultContext();
     if (boon.getEffectType() == RogueEffect.EffectType.ONESHOT) {
       boon.applyEffect(currentRun, ctx);
@@ -923,7 +931,7 @@ public enum CSubmenuRogueMap implements ICDoc {
       return resultText + ": " + ctx.gainedWound.getDisplayName()
           + " \u2014 " + ctx.gainedWound.getDescription();
     }
-    if (choice.effect() == EventBoon.GAIN_WOUND) {
+    if (choice.effect() == EventBoon.THORNS_ENDURE) {
       return "You already bear all wounds.";
     }
     return resultText;
@@ -1069,7 +1077,7 @@ public enum CSubmenuRogueMap implements ICDoc {
     var progress = RogueMetaProgress.getInstance();
     if (node instanceof NodePlanebound nodePlanebound) {
       RogueStats.fireOnMatchCompleted(currentRun, progress, true);
-      currentRun.setCurrentGold(currentRun.getCurrentGold() + nodePlanebound.getGoldReward());
+      currentRun.addGold(nodePlanebound.getGoldReward());
       progress.addEchoes(nodePlanebound.getEchoReward());
     } else {
       RogueStats.fireOnSideNodeCompleted(currentRun, progress);

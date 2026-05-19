@@ -17,7 +17,9 @@ public enum KeywordHint {
     BAZAAR("Bazaar",
             "Spend your gold on cards and special offers."),
     SANCTUM("Sanctum",
-            "Rest to regain life and cure alll wounds or cook a random food item.");
+            "Rest to regain life and cure alll wounds or cook a random food item."),
+    MAX_LIFE("Max. Life",
+            "Your life can only exceed Max-Life during a match.");
 
     private final String token;
     private final String hintText;

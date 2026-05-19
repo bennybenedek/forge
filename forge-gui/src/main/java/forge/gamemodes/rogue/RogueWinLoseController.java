@@ -129,7 +129,7 @@ public class RogueWinLoseController {
             echoReward = planeboundNode.getEchoReward();
 
             // Gold is run-specific (spent at Bazaar during the run)
-            currentRun.setCurrentGold(currentRun.getCurrentGold() + goldReward);
+            currentRun.addGold(goldReward);
 
             // Echoes are meta-progression currency - add directly to meta progress
             if (echoReward > 0) {

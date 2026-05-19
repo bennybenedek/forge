@@ -39,7 +39,7 @@ public class RogueRun {
     // Run State
     private Deck currentDeck;                   // Player's evolving deck (starts as Start Deck copy)
     private int currentLife;                    // Persistent life total (starts at 20)
-    private int startingLife;                   // Initial life (default: 20)
+    private int maxLife;                        // Persistent life cap (default: 20)
     private int currentGold;                    // Currency (for future Bazaar support)
     private RoguePath path;                     // The generated path
     private int currentNodeIndex;               // Current position on path
@@ -115,7 +115,7 @@ public class RogueRun {
 
     // Constructors
     public RogueRun() {
-        this.setStartingLife(20);
+        this.initializeMaxLife(20);
         this.setCurrentGold(0);
         this.setCurrentNodeIndex(0);
         this.setRemovalCredits(0);
@@ -395,16 +395,16 @@ public class RogueRun {
 
     // Life management
     public void gainLifeUpToMax(int amount) {
-        currentLife = Math.min(currentLife + amount, startingLife);
+        this.setCurrentLife(Math.min(currentLife + amount, maxLife));
     }
 
     public void loseLife(int amount) {
-        currentLife = currentLife - amount;
+        this.setCurrentLife(Math.max(currentLife - amount, 0));
     }
 
     public void clampCurrentLifeToMax() {
-        if (startingLife > 0) {
-            currentLife = Math.min(currentLife, startingLife);
+        if (maxLife > 0) {
+            currentLife = Math.min(currentLife, maxLife);
         }
     }
 
@@ -475,13 +475,28 @@ public class RogueRun {
         this.currentLife = currentLife;
     }
 
-    public int getStartingLife() {
-        return startingLife;
+    public int getMaxLife() {
+        return maxLife;
     }
 
-    public void setStartingLife(int startingLife) {
-        this.startingLife = startingLife;
-        this.setCurrentLife(this.startingLife);
+    public void initializeMaxLife(int maxLife) {
+        this.maxLife = maxLife;
+        this.setCurrentLife(this.maxLife);
+    }
+
+    public void setMaxLife(int maxLife) {
+        int oldMaxLife = this.maxLife;
+        if (oldMaxLife <= 0) {
+            this.maxLife = maxLife;
+            // No valid old cap exists, so preserve raw life instead of granting a heal.
+            this.currentLife = Math.min(this.currentLife, maxLife);
+            return;
+        }
+
+        float currentLifeRatio = this.currentLife / (float) oldMaxLife;
+        this.maxLife = maxLife;
+        this.currentLife = Math.round(currentLifeRatio * maxLife);
+        clampCurrentLifeToMax();
     }
 
     public int getCurrentGold() {
@@ -490,6 +505,14 @@ public class RogueRun {
 
     public void setCurrentGold(int currentGold) {
         this.currentGold = currentGold;
+    }
+
+    public void addGold(int amount) {
+        this.setCurrentGold(this.getCurrentGold() + amount);
+    }
+
+    public void spendGold(int amount) {
+        this.setCurrentGold(Math.max(getCurrentGold() - amount, 0));
     }
 
     public RoguePath getPath() {

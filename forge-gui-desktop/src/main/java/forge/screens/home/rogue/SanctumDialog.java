@@ -52,7 +52,7 @@ public class SanctumDialog {
         .build();
 
     FButton btnRest = new FButton(buildChoiceHtml(
-        "REST", "Gain " + effectiveHealAmount + " Life & Cure All Wounds"));
+        "Rest", "Gain " + effectiveHealAmount + " Life & Cure All Wounds"));
     btnRest.addActionListener(e -> {
       choice = SanctumChoice.HEAL;
       optionPane.setResult(0);
@@ -64,14 +64,14 @@ public class SanctumDialog {
     }
 
     FButton btnCook = new FButton(buildChoiceHtml(
-        "COOK", "Craft a random Food item"));
+        "Cook", "Craft a random Food item"));
     btnCook.addActionListener(e -> {
       choice = SanctumChoice.COOK;
       optionPane.setResult(0);
       optionPane.setVisible(false);
     });
 
-    FButton btnSkip = new FButton(buildChoiceHtml("SKIP", ""));
+    FButton btnSkip = new FButton(buildChoiceHtml("Skip", ""));
     btnSkip.addActionListener(e -> {
       choice = SanctumChoice.SKIP;
       optionPane.setResult(0);

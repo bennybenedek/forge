@@ -25,7 +25,7 @@ public enum EchoBoon implements RogueEffect {
         @Override
         public void onRunStart(RogueRun run) {
             int bonus = getEffectValueAtRank(run.getRunBoonRank(getId()));
-            if (bonus > 0) run.setStartingLife(run.getStartingLife() + bonus);
+            if (bonus > 0) run.setMaxLife(run.getMaxLife() + bonus);
         }
     },
 
@@ -37,7 +37,7 @@ public enum EchoBoon implements RogueEffect {
         @Override
         public void onRunStart(RogueRun run) {
             int bonus = getEffectValueAtRank(run.getRunBoonRank(getId()));
-            if (bonus > 0) run.setCurrentGold(run.getCurrentGold() + bonus);
+            if (bonus > 0) run.addGold(bonus);
         }
     },
 
@@ -48,7 +48,7 @@ public enum EchoBoon implements RogueEffect {
         3, 0) {
         @Override
         public void onMatchWin(RogueRun run) {
-            if (run.getCurrentLife() >= run.getStartingLife()) return;
+            if (run.getCurrentLife() >= run.getMaxLife()) return;
             int heal = getEffectValueAtRank(run.getRunBoonRank(getId()));
             if (heal > 0) run.gainLifeUpToMax(heal);
         }

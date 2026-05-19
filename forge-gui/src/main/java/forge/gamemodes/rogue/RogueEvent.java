@@ -12,8 +12,12 @@ public enum RogueEvent {
     WANDERING_HEALER("Wandering Healer",
         "A mysterious healer offers their services... for a price.",
         List.of(
-            new EventChoice("Accept", "The healer mends your wounds.",
-                EventBoon.HEALERS_TOUCH),
+            new EventChoice("Receive Healing Potion", "You gulp the aweful tasting but strangely empowering potion down.",
+                EventBoon.HEALER_POTION),
+            new EventChoice("Treat Wounds", "The healer mends your wounds.",
+                EventBoon.HEALER_TREAT_WOUNDS),
+            new EventChoice("Strengthen", "The healer nodds confidently after being done with your fortification.",
+                EventBoon.HEALER_STRENGTHEN),
             new EventChoice("Decline", "You wave the healer away.",
                 EventBoon.NOTHING)
         )),
@@ -22,9 +26,9 @@ public enum RogueEvent {
         "A rift in the planes tears open before you.",
         List.of(
             new EventChoice("Enter the Rift", "The rift's energy empowers your Commander!",
-                EventBoon.COMMANDER_BOOST),
+                EventBoon.PLANAR_RIFT_BOOST),
             new EventChoice("Harvest the Energy", "You siphon raw mana from the rift.",
-                EventBoon.RIFT_ENERGY),
+                EventBoon.PLANAR_RIFT_ENERGY),
             new EventChoice("Walk Away", "Discretion is the better part of valor.",
                 EventBoon.NOTHING)
         )),
@@ -33,7 +37,7 @@ public enum RogueEvent {
         "A caravan of planar merchants sets up shop.",
         List.of(
             new EventChoice("Browse Their Wares", "The merchant thanks you for the business.",
-                EventBoon.BROWSE_WARES),
+                EventBoon.CARAVAN_BROWSE),
             new EventChoice("Rob Them", "You take what you want by force.",
                 EventBoon.CARAVAN_ROB)
         )),
@@ -42,16 +46,18 @@ public enum RogueEvent {
         "The planes demand tribute.",
         List.of(
             new EventChoice("Sacrifice!", "The planes took what is yours.",
-                EventBoon.PLANAR_SACRIFICE),
+                EventBoon.PLANAR_TRIBUTE_REMOVE),
             new EventChoice("Give and take", "The planes reshaped your arsenal.",
-                EventBoon.PLANAR_SHUFFLE)
+                EventBoon.PLANAR_TRIBUTE_REPLACE)
         )),
 
     AMBUSH("Ambush!",
-        "Hostile forces materialize from a rift! Prepare for battle!",
+        "Hostile forces materialize from a rift! 'Empty your pockets or prepare to die. Your choice.', their leader says.",
         List.of(
-            new EventChoice("Fight!", "You fought your way through.",
-                EventBoon.SURPRISE_FIGHT)
+            new EventChoice("Fight", "You fought your way through.",
+                EventBoon.AMBUSH_FIGHT),
+            new EventChoice("Bribe", "'Good choice, maggot.', the leader says and commands his companions back into the rift.",
+                EventBoon.AMBUSH_BRIBE)
         )),
 
     PLANAR_EXCHANGE("Planar Exchange",
@@ -67,19 +73,19 @@ public enum RogueEvent {
         "A suspicious figure eyes your deck with open contempt. \"Worthless,\" they sneer. " +
         "\"Once you change your game, you won't need half this library anymore.\"",
         List.of(
-            new EventChoice("Trade", "The figure strips away your old tricks and offers you something far stronger.",
-                EventBoon.TRADE_GAMECHANGERS),
-            new EventChoice("Browse", "The figure reveals a forbidden stock of Gamechangers.",
-                EventBoon.BROWSE_GAMECHANGERS)
+            new EventChoice("Trust blindly", "The figure strips away your old tricks and offers you something far stronger.",
+                EventBoon.GAMECHANGER_TRUST),
+            new EventChoice("Choose wisely", "The figure grins and disappears into the shadows.",
+                EventBoon.GAMECHANGER_CHOOSE)
         )),
 
     THORNS("Thorns",
         "The land itself rejects your presence. Thorns rise from the soil, leaving your footsteps stained with blood.",
         List.of(
             new EventChoice("Endure", "You suffer a wound.",
-                EventBoon.GAIN_WOUND),
+                EventBoon.THORNS_ENDURE),
             new EventChoice("Press On", "You lose 4 life.",
-                EventBoon.LOSE_4_LIFE)
+                EventBoon.THORNS_PRESS)
         )),
 
     HORROR("Horror",
@@ -91,11 +97,11 @@ public enum RogueEvent {
                 EventBoon.LOSE_ALL_ECHOES)
         )),
 
-    LOST("Lost",
+    LOST_CONNECTION("Lost",
         "Your connection to your spark flickers. You reach for your Commander's presence, but the link has gone cold.",
         List.of(
             new EventChoice("Depart", "Your Commander disappeared into the void.",
-                EventBoon.LOST_CONNECTION)
+                EventBoon.LOST_CANNOT_CAST)
         )),
 
     SATCHEL("Satchel",

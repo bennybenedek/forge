@@ -12,37 +12,92 @@ import java.util.List;
 
 public enum EventBoon implements RogueEffect {
 
-    HEALERS_TOUCH("healers_touch", "Healer's Touch", "Gain 8 life, lose 5 gold.",
-            EffectType.ONESHOT) {
+    HEALER_POTION("healer_potion", "Healer's Potion", "Gain 8 life, lose 5 gold.",
+            EffectType.ONESHOT, 5) {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
             run.gainLifeUpToMax(8);
-            run.setCurrentGold(run.getCurrentGold() - 5);
+            run.spendGold(getGoldCost());
+        }
+
+        @Override
+        public boolean isChoiceAvailable(RogueRun run) {
+            return hasEnoughGold(run) && run.getCurrentLife() < run.getMaxLife();
+        }
+
+        @Override
+        public String getUnavailableReason(RogueRun run) {
+            if (!hasEnoughGold(run)) {
+                return getInsufficientGoldReason();
+            }
+            if (run.getCurrentLife() >= run.getMaxLife()) {
+                return "You are already at maximum life.";
+            }
+            return null;
         }
     },
-    RIFT_ENERGY("rift_energy", "Rift Energy", "Gain 5 gold.",
+    HEALER_TREAT_WOUNDS("healer_treatment", "Healer's Treatment", "Clear all {{Wound}}s, lose 3 gold.",
+        EffectType.ONESHOT, 3) {
+        @Override
+        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+            run.clearWounds();
+            run.spendGold(getGoldCost());
+        }
+
+        @Override
+        public boolean isChoiceAvailable(RogueRun run) {
+            return hasEnoughGold(run) && !run.getActiveWounds().isEmpty();
+        }
+
+        @Override
+        public String getUnavailableReason(RogueRun run) {
+            if (!hasEnoughGold(run)) {
+                return getInsufficientGoldReason();
+            }
+            if (run.getActiveWounds().isEmpty()) {
+                return "You have no active wounds.";
+            }
+            return null;
+        }
+    },
+    HEALER_STRENGTHEN("healer_strengthen", "Healer's Strength", "Gain 10 {{Max. Life}}, lose 7 Gold.",
+        EffectType.ONESHOT, 7) {
+        @Override
+        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+            run.setMaxLife(run.getMaxLife() + 10);
+            run.spendGold(getGoldCost());
+        }
+    },
+    PLANAR_RIFT_ENERGY("planar_rift_energy", "Planar Rift Energy", "Gain 5 gold.",
             EffectType.ONESHOT) {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
-            run.setCurrentGold(run.getCurrentGold() + 5);
+            run.addGold(5);
+        }
+    },
+    PLANAR_RIFT_BOOST("planar_rift_boost", "Planar Rift Boost", "Your Commander gets +1/+1 for the rest of the Run.",
+        EffectType.PERMANENT) {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            RogueEffect.addCardToCommandZone("Event - Commander's Might", human);
         }
     },
     CARAVAN_ROB("caravan_rob", "Caravan Plunder", "Lose 3 life, gain 8 gold.",
             EffectType.ONESHOT) {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
-            run.setCurrentLife(run.getCurrentLife() - 3);
-            run.setCurrentGold(run.getCurrentGold() + 8);
+            run.loseLife(3);
+            run.addGold(8);
         }
     },
-    BROWSE_WARES("browse_wares", "Browse Wares", "Opens a {{Bazaar}}.",
+    CARAVAN_BROWSE("caravan_browse", "Browse Wares", "Opens a {{Bazaar}}.",
             EffectType.ONESHOT) {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
             ctx.trigger = NodeResultContext.ActionTriggerType.BAZAAR;
         }
     },
-    TRADE_GAMECHANGERS("trade_gamechangers", "Trade for Gamechangers",
+    GAMECHANGER_TRUST("gamechanger_trust", "Trade for Gamechangers",
             "Remove 3 random cards from your deck and replace them with chosen cards from the Gamechanger list.",
             EffectType.ONESHOT) {
         @Override
@@ -68,7 +123,7 @@ public enum EventBoon implements RogueEffect {
             }
         }
     },
-    BROWSE_GAMECHANGERS("browse_gamechangers", "Browse Gamechangers",
+    GAMECHANGER_CHOOSE("gamechanger_choose", "Browse Gamechangers",
             "Shop from a selection of Gamechanger cards at doubled prices.",
             EffectType.ONESHOT) {
         @Override
@@ -90,7 +145,7 @@ public enum EventBoon implements RogueEffect {
             ctx.trigger = NodeResultContext.ActionTriggerType.BAZAAR;
         }
     },
-    PLANAR_SHUFFLE("planar_shuffle", "Planar Shuffle",
+    PLANAR_TRIBUTE_REPLACE("planar_shuffle", "Planar Shuffle",
             "Remove 3 random cards (excluding basic lands) and replace them with cards from your Reward Pool.",
             EffectType.ONESHOT) {
         @Override
@@ -125,7 +180,17 @@ public enum EventBoon implements RogueEffect {
             ctx.addedCards = added;
         }
     },
-    SURPRISE_FIGHT("surprise_fight", "Ambush!", "Fight a random Planebound on a random Plane!",
+    PLANAR_TRIBUTE_REMOVE("planar_sacrifice", "Planar Sacrifice",
+        "Choose 3 cards (excluding basic lands) to remove from your deck.",
+        EffectType.ONESHOT) {
+        @Override
+        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+            ctx.trigger = NodeResultContext.ActionTriggerType.CARD_REMOVAL;
+            ctx.removeCount = 3;
+            ctx.drawCount = 0;
+        }
+    },
+    AMBUSH_FIGHT("ambush_fight", "Fight!", "Fight a random Planebound on a random Plane!",
             EffectType.ONESHOT) {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
@@ -144,6 +209,13 @@ public enum EventBoon implements RogueEffect {
             ctx.trigger = NodeResultContext.ActionTriggerType.PLANEBOUND;
         }
     },
+    AMBUSH_BRIBE("ambush_bribe", "Lose 4 Gold", "You lose 4 gold.",
+        EffectType.ONESHOT, 4) {
+        @Override
+        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+            run.spendGold(getGoldCost());
+        }
+    },
     PLANAR_EXCHANGE("planar_exchange", "Planar Exchange",
             "Choose 3 cards to remove (excluding basic lands), then receive 3 random cards from your Reward Pool.",
             EffectType.ONESHOT) {
@@ -154,17 +226,7 @@ public enum EventBoon implements RogueEffect {
             ctx.drawCount = ctx.removeCount;
         }
     },
-    PLANAR_SACRIFICE("planar_sacrifice", "Planar Sacrifice",
-        "Choose 3 cards (excluding basic lands) to remove from your deck.",
-        EffectType.ONESHOT) {
-        @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
-            ctx.trigger = NodeResultContext.ActionTriggerType.CARD_REMOVAL;
-            ctx.removeCount = 3;
-            ctx.drawCount = 0;
-        }
-    },
-    GAIN_WOUND("gain_wound", "Gain Wound", "Gain a random {{Wound}}.",
+    THORNS_ENDURE("thorns_endure", "Gain Wound", "Gain a random {{Wound}}.",
             EffectType.ONESHOT) {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
@@ -177,7 +239,7 @@ public enum EventBoon implements RogueEffect {
             ctx.gainedWound = wound;
         }
     },
-    LOSE_4_LIFE("lose_4_life", "Lose 4 Life", "Lose 4 life.",
+    THORNS_PRESS("thorns_press", "Lose 4 Life", "You lose 4 life.",
             EffectType.ONESHOT) {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
@@ -225,19 +287,9 @@ public enum EventBoon implements RogueEffect {
         }
     },
 
-    // === PERMANENT effects (stored in run, dispatched via RogueEffectComposite) ===
-
-    COMMANDER_BOOST("commander_boost", "Commander's Might", "Your Commander gets +1/+1 for the rest of the Run.",
-            EffectType.PERMANENT) {
-        @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            RogueEffect.addCardToCommandZone("Event - Commander's Might", human);
-        }
-    },
-
     // === CONSUME effects (stored in run, dispatched once, then removed) ===
 
-    LOST_CONNECTION("lost_connection", "Lost Connection", "You may not cast your Commander in the next match.",
+    LOST_CANNOT_CAST("lost_cannot_cast", "Lost Connection - Cannot Cast Commander", "You may not cast your Commander in the next match.",
             EffectType.CONSUME) {
         @Override
         public int getChargesForRank(int rank) { return 1; }
@@ -264,12 +316,18 @@ public enum EventBoon implements RogueEffect {
     private final String displayName;
     private final String description;
     private final EffectType effectType;
+    private final int goldCost;
 
     EventBoon(String id, String displayName, String description, EffectType effectType) {
+        this(id, displayName, description, effectType, 0);
+    }
+
+    EventBoon(String id, String displayName, String description, EffectType effectType, int goldCost) {
         this.id = id;
         this.displayName = displayName;
         this.description = description;
         this.effectType = effectType;
+        this.goldCost = goldCost;
     }
 
     public void applyEffect(RogueRun run, NodeResultContext ctx) { /* Override in ONESHOT constants to apply immediate event effects. */}
@@ -285,6 +343,22 @@ public enum EventBoon implements RogueEffect {
 
     @Override
     public String getRawDescription() { return description; }
+
+    public int getGoldCost() { return goldCost; }
+
+    public boolean isChoiceAvailable(RogueRun run) { return hasEnoughGold(run); }
+
+    public String getUnavailableReason(RogueRun run) {
+        return hasEnoughGold(run) ? null : getInsufficientGoldReason();
+    }
+
+    protected boolean hasEnoughGold(RogueRun run) {
+        return run.getCurrentGold() >= goldCost;
+    }
+
+    protected String getInsufficientGoldReason() {
+        return goldCost > 0 ? "You need " + goldCost + " Gold." : null;
+    }
 
     public static EventBoon fromId(String id) {
         for (EventBoon eb : values())
