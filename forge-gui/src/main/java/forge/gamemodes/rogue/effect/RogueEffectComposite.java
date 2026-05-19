@@ -75,7 +75,7 @@ public enum RogueEffectComposite implements RogueEffect {
     }
 
     @Override
-    public void onBeforeRewards(RewardContext ctx, RogueRun run) {
+    public void onBeforeRewards(MatchRewardContext ctx, RogueRun run) {
         forEachEffect(run, e -> e.onBeforeRewards(ctx, run));
     }
 

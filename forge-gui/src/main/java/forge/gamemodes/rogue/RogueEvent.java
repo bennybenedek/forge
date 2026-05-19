@@ -28,9 +28,7 @@ public enum RogueEvent {
             new EventChoice("Enter the Rift", "The rift's energy empowers your Commander!",
                 EventBoon.PLANAR_RIFT_BOOST),
             new EventChoice("Harvest the Energy", "You siphon raw mana from the rift.",
-                EventBoon.PLANAR_RIFT_ENERGY),
-            new EventChoice("Walk Away", "Discretion is the better part of valor.",
-                EventBoon.NOTHING)
+                EventBoon.PLANAR_RIFT_ENERGY)
         )),
 
     MERCHANT_CARAVAN("Merchant Caravan",
@@ -45,7 +43,7 @@ public enum RogueEvent {
     PLANAR_TRIBUTE("Planar Tribute",
         "The planes demand tribute.",
         List.of(
-            new EventChoice("Sacrifice!", "The planes took what is yours.",
+            new EventChoice("Sacrifice", "The planes took what is yours.",
                 EventBoon.PLANAR_TRIBUTE_REMOVE),
             new EventChoice("Give and take", "The planes reshaped your arsenal.",
                 EventBoon.PLANAR_TRIBUTE_REPLACE)
@@ -101,7 +99,9 @@ public enum RogueEvent {
         "Your connection to your spark flickers. You reach for your Commander's presence, but the link has gone cold.",
         List.of(
             new EventChoice("Depart", "Your Commander disappeared into the void.",
-                EventBoon.LOST_CANNOT_CAST)
+                EventBoon.LOST_CANNOT_CAST),
+            new EventChoice("Persist", "Your Commander holds on, but feels diminished.",
+                EventBoon.LOST_WEAKENED)
         )),
 
     SATCHEL("Satchel",
@@ -119,10 +119,12 @@ public enum RogueEvent {
         )),
 
     DISTORTION("Distortion",
-        "Time lurches sideways. When the battle ends, there's nothing left to salvage. No spoils. No memory. Only silence.",
+        "Time lurches sideways. Nothing left to salvage. No spoils. No memory. Only silence.",
         List.of(
             new EventChoice("Suffer", "The silence consumed you.",
-                EventBoon.SKIP_REWARDS)
+                EventBoon.DISTORTION_SKIP_REWARDS),
+            new EventChoice("Endure", "You salvage only fading fragments from the coming battles.",
+                EventBoon.DISTORTION_FADED_REWARDS)
         )),
 
     MEET_TYVAR("Tyvar Kell",

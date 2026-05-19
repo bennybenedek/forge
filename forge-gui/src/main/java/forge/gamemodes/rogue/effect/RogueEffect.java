@@ -71,8 +71,8 @@ public interface RogueEffect {
     /** Fired when the player would lose the run. */
     default void onDefeat(DefeatContext ctx, RogueRun run) {}
 
-    /** Fired before rewards are given after a match win. Use to skip rewards. */
-    default void onBeforeRewards(RewardContext ctx, RogueRun run) {}
+    /** Fired before match rewards are given after a win. Use to modify or skip them. */
+    default void onBeforeRewards(MatchRewardContext ctx, RogueRun run) {}
 
     /** Fired for card reward node selections. */
     default void onCardReward(CardRewardContext ctx, RogueRun run) {}

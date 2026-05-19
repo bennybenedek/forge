@@ -8,7 +8,7 @@ import forge.game.zone.ZoneType;
 import forge.gamemodes.rogue.RogueRun.CarryCard;
 import forge.gamemodes.rogue.RogueRun.CarryCardType;
 import forge.gamemodes.rogue.effect.DefeatContext;
-import forge.gamemodes.rogue.effect.RewardContext;
+import forge.gamemodes.rogue.effect.MatchRewardContext;
 import forge.gamemodes.rogue.effect.RogueEffectComposite;
 import forge.gamemodes.rogue.path.NodeEvent;
 import forge.gamemodes.rogue.path.NodePlanebound;
@@ -118,14 +118,14 @@ public class RogueWinLoseController {
         var progress = RogueMetaProgress.getInstance();
 
         // Check if rewards should be skipped (e.g. Distortion effect)
-        RewardContext rewardCtx = new RewardContext();
+        MatchRewardContext rewardCtx = new MatchRewardContext();
         RogueEffectComposite.INSTANCE.onBeforeRewards(rewardCtx, currentRun);
 
         NodePlanebound planeboundNode = resolvePlanebound(currentNode);
 
         // Award gold and echo rewards for ALL planebound nodes (including Boss)
         if (planeboundNode != null && !rewardCtx.skipRewards) {
-            goldReward = planeboundNode.getGoldReward();
+            goldReward = Math.max(0, planeboundNode.getGoldReward() + rewardCtx.goldRewardAdjustment);
             echoReward = planeboundNode.getEchoReward();
 
             // Gold is run-specific (spent at Bazaar during the run)
@@ -145,7 +145,7 @@ public class RogueWinLoseController {
         // Award card rewards (only for non-final nodes, skip if distortion)
         if (planeboundNode != null && !rewardCtx.skipRewards) {
             boolean isElite = planeboundNode.getPlaneboundType() == RoguePlaneboundType.ELITE;
-            awardCardRewards(isElite, goldReward, echoReward);
+            awardCardRewards(isElite, goldReward, echoReward, rewardCtx);
         }
 
         // Show lost carry card message
@@ -201,9 +201,9 @@ public class RogueWinLoseController {
         view.showMessage("Congratulations! You have completed the run!", "Victory", FSkinProp.ICO_QUEST_CHARM);
     }
 
-    private void awardCardRewards(boolean isElite, int goldReward, int echoReward) {
+    private void awardCardRewards(boolean isElite, int goldReward, int echoReward, MatchRewardContext rewardCtx) {
         List<PaperCard> chosenCards = CardRewardHelper.runReward(currentRun,
-                view::showCardRewardDialog, false);
+                view::showCardRewardDialog, false, rewardCtx);
 
         if (chosenCards == null) {
             view.showMessage("No more cards available in reward pool.", "No Rewards", FSkinProp.ADV_CLR_ACTIVE);
@@ -213,7 +213,7 @@ public class RogueWinLoseController {
         // If Elite opponent, show second reward screen with mythic cards
         if (isElite) {
             List<PaperCard> chosenMythics = CardRewardHelper.runReward(currentRun,
-                    view::showCardRewardDialog, true);
+                    view::showCardRewardDialog, true, rewardCtx);
             if (chosenMythics != null) {
                 chosenCards.addAll(chosenMythics);
             }

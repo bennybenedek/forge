@@ -22,12 +22,12 @@ public enum EventBoon implements RogueEffect {
 
         @Override
         public boolean isChoiceAvailable(RogueRun run) {
-            return hasEnoughGold(run) && run.getCurrentLife() < run.getMaxLife();
+            return run.hasEnoughGold(getGoldCost()) && run.getCurrentLife() < run.getMaxLife();
         }
 
         @Override
         public String getUnavailableReason(RogueRun run) {
-            if (!hasEnoughGold(run)) {
+            if (!run.hasEnoughGold(getGoldCost())) {
                 return getInsufficientGoldReason();
             }
             if (run.getCurrentLife() >= run.getMaxLife()) {
@@ -46,12 +46,12 @@ public enum EventBoon implements RogueEffect {
 
         @Override
         public boolean isChoiceAvailable(RogueRun run) {
-            return hasEnoughGold(run) && !run.getActiveWounds().isEmpty();
+            return run.hasEnoughGold(getGoldCost()) && !run.getActiveWounds().isEmpty();
         }
 
         @Override
         public String getUnavailableReason(RogueRun run) {
-            if (!hasEnoughGold(run)) {
+            if (!run.hasEnoughGold(getGoldCost())) {
                 return getInsufficientGoldReason();
             }
             if (run.getActiveWounds().isEmpty()) {
@@ -67,19 +67,29 @@ public enum EventBoon implements RogueEffect {
             run.setMaxLife(run.getMaxLife() + 10);
             run.spendGold(getGoldCost());
         }
+
+        @Override
+        public boolean isChoiceAvailable(RogueRun run) {
+            return run.hasEnoughGold(getGoldCost());
+        }
+
+        @Override
+        public String getUnavailableReason(RogueRun run) {
+            return run.hasEnoughGold(getGoldCost()) ? null : getInsufficientGoldReason();
+        }
     },
-    PLANAR_RIFT_ENERGY("planar_rift_energy", "Planar Rift Energy", "Gain 5 gold.",
+    PLANAR_RIFT_ENERGY("planar_rift_energy", "Planar Rift Energy", "Gain 6 gold.",
             EffectType.ONESHOT) {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
             run.addGold(5);
         }
     },
-    PLANAR_RIFT_BOOST("planar_rift_boost", "Planar Rift Boost", "Your Commander gets +1/+1 for the rest of the Run.",
+    PLANAR_RIFT_BOOST("planar_rift_boost", "Planar Rift - Commander Boost", "Your Commander gets +1/+1 for the rest of the Run.",
         EffectType.PERMANENT) {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            RogueEffect.addCardToCommandZone("Event - Commander's Might", human);
+            RogueEffect.addCardToCommandZone("Planar Rift - Commander Boost", human);
         }
     },
     CARAVAN_ROB("caravan_rob", "Caravan Plunder", "Lose 3 life, gain 8 gold.",
@@ -215,6 +225,16 @@ public enum EventBoon implements RogueEffect {
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
             run.spendGold(getGoldCost());
         }
+
+        @Override
+        public boolean isChoiceAvailable(RogueRun run) {
+            return run.hasEnoughGold(getGoldCost());
+        }
+
+        @Override
+        public String getUnavailableReason(RogueRun run) {
+            return run.hasEnoughGold(getGoldCost()) ? null : getInsufficientGoldReason();
+        }
     },
     PLANAR_EXCHANGE("planar_exchange", "Planar Exchange",
             "Choose 3 cards to remove (excluding basic lands), then receive 3 random cards from your Reward Pool.",
@@ -287,8 +307,6 @@ public enum EventBoon implements RogueEffect {
         }
     },
 
-    // === CONSUME effects (stored in run, dispatched once, then removed) ===
-
     LOST_CANNOT_CAST("lost_cannot_cast", "Lost Connection - Cannot Cast Commander", "You may not cast your Commander in the next match.",
             EffectType.CONSUME) {
         @Override
@@ -300,14 +318,34 @@ public enum EventBoon implements RogueEffect {
             run.consumeEffect(getId());
         }
     },
-    SKIP_REWARDS("skip_rewards", "Distortion", "You skip all rewards after your next match.",
+    LOST_WEAKENED("lost_weakened", "Lost Connection - Commander Weakened", "Your Commander gets -1/-1 for the rest of the Run.",
+        EffectType.PERMANENT) {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            RogueEffect.addCardToCommandZone("Lost Connection - Commander Weakened", human);
+        }
+    },
+    DISTORTION_SKIP_REWARDS("skip_rewards", "Distortion", "You skip all rewards after your next match.",
             EffectType.CONSUME) {
         @Override
         public int getChargesForRank(int rank) { return 1; }
 
         @Override
-        public void onBeforeRewards(RewardContext ctx, RogueRun run) {
+        public void onBeforeRewards(MatchRewardContext ctx, RogueRun run) {
             ctx.skipRewards = true;
+            run.consumeEffect(getId());
+        }
+    },
+    DISTORTION_FADED_REWARDS("faded_rewards", "Distortion - Faded Rewards",
+            "After your next 2 matches, gain 1 less gold and see 3 fewer non-mythic cards in Card Rewards.",
+            EffectType.CONSUME) {
+        @Override
+        public int getChargesForRank(int rank) { return 2; }
+
+        @Override
+        public void onBeforeRewards(MatchRewardContext ctx, RogueRun run) {
+            ctx.goldRewardAdjustment -= 1;
+            ctx.nonMythicCardCountAdjustment -= 3;
             run.consumeEffect(getId());
         }
     };
@@ -346,14 +384,10 @@ public enum EventBoon implements RogueEffect {
 
     public int getGoldCost() { return goldCost; }
 
-    public boolean isChoiceAvailable(RogueRun run) { return hasEnoughGold(run); }
+    public boolean isChoiceAvailable(RogueRun run) { return true; }
 
     public String getUnavailableReason(RogueRun run) {
-        return hasEnoughGold(run) ? null : getInsufficientGoldReason();
-    }
-
-    protected boolean hasEnoughGold(RogueRun run) {
-        return run.getCurrentGold() >= goldCost;
+        return null;
     }
 
     protected String getInsufficientGoldReason() {

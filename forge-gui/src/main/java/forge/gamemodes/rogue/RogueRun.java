@@ -511,6 +511,10 @@ public class RogueRun {
         this.setCurrentGold(this.getCurrentGold() + amount);
     }
 
+    public boolean hasEnoughGold(int amount) {
+        return getCurrentGold() >= amount;
+    }
+
     public void spendGold(int amount) {
         this.setCurrentGold(Math.max(getCurrentGold() - amount, 0));
     }

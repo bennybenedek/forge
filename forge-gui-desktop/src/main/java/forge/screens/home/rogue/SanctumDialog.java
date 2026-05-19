@@ -1,12 +1,16 @@
 package forge.screens.home.rogue;
 
+import forge.gamemodes.rogue.PreviewReference;
+import forge.gamemodes.rogue.TextHelper;
 import forge.toolbox.FButton;
 import forge.toolbox.FLabel;
 import forge.toolbox.FOptionPane;
 import forge.toolbox.FSkin.SkinnedPanel;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JComponent;
 import javax.swing.SwingConstants;
 import net.miginfocom.swing.MigLayout;
 
@@ -25,7 +29,9 @@ public class SanctumDialog {
   }
 
   private final MainPanel panel;
+  private final List<PreviewTarget> previewTargets = new ArrayList<>();
   private FOptionPane optionPane;
+  private RoguePreviewPopup previewPopup;
   private SanctumChoice choice = SanctumChoice.SKIP;
 
   /**
@@ -51,9 +57,11 @@ public class SanctumDialog {
         .fontAlign(SwingConstants.CENTER)
         .build();
 
+    String restDescription = "Gain " + effectiveHealAmount + " Life & Cure All Wounds";
     FButton btnRest = new FButton(buildChoiceHtml(
-        "Rest", "Gain " + effectiveHealAmount + " Life & Cure All Wounds"));
+        "Rest", restDescription));
     btnRest.addActionListener(e -> {
+      hidePreview();
       choice = SanctumChoice.HEAL;
       optionPane.setResult(0);
       optionPane.setVisible(false);
@@ -63,16 +71,20 @@ public class SanctumDialog {
       btnRest.setToolTipText(restDisabledReason);
     }
 
+    String cookDescription = "Craft a random food {{Item}}.";
     FButton btnCook = new FButton(buildChoiceHtml(
-        "Cook", "Craft a random Food item"));
+        "Cook", cookDescription));
     btnCook.addActionListener(e -> {
+      hidePreview();
       choice = SanctumChoice.COOK;
       optionPane.setResult(0);
       optionPane.setVisible(false);
     });
+    previewTargets.add(new PreviewTarget(btnCook, TextHelper.extractPreviewReferences(cookDescription)));
 
     FButton btnSkip = new FButton(buildChoiceHtml("Skip", ""));
     btnSkip.addActionListener(e -> {
+      hidePreview();
       choice = SanctumChoice.SKIP;
       optionPane.setResult(0);
       optionPane.setVisible(false);
@@ -104,14 +116,23 @@ public class SanctumDialog {
         -1
     );
     optionPane.getTitleBar().setVisible(false);
+    previewPopup = new RoguePreviewPopup();
+    previewTargets.forEach(target -> previewPopup.attachTo(target.component(), target.references()));
 
     panel.revalidate();
     panel.repaint();
 
     optionPane.setVisible(true);
+    hidePreview();
     optionPane.dispose();
 
     return choice;
+  }
+
+  private void hidePreview() {
+    if (previewPopup != null) {
+      previewPopup.hide();
+    }
   }
 
   private static String buildChoiceHtml(String title, String description) {
@@ -119,9 +140,12 @@ public class SanctumDialog {
       return "<html><div style='padding:6px 10px;'><center><font size=4>" + title
           + "</font></center></div></html>";
     }
+    String displayDescription = TextHelper.stripPreviewMarkers(description);
     return "<html><div style='padding:6px 10px;'><center><font size=4>" + title
-        + "</font><br><font size=3>" + description + "</font></center></div></html>";
+        + "</font><br><font size=3>" + displayDescription + "</font></center></div></html>";
   }
+
+  private record PreviewTarget(JComponent component, List<PreviewReference> references) {}
 
   private static class MainPanel extends SkinnedPanel {
 

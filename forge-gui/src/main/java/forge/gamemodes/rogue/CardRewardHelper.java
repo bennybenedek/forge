@@ -2,6 +2,7 @@ package forge.gamemodes.rogue;
 
 import forge.gamemodes.rogue.effect.CardRewardContext;
 import forge.gamemodes.rogue.effect.CardSelectionContext;
+import forge.gamemodes.rogue.effect.MatchRewardContext;
 import forge.gamemodes.rogue.effect.RogueEffectComposite;
 import forge.item.PaperCard;
 import forge.item.PaperCardPredicates;
@@ -54,7 +55,8 @@ public class CardRewardHelper {
     }
 
     /**
-     * Run a card reward selection with boon adjustments, reroll loop, pool removal, and deck addition.
+     * Run a generic Rogue card reward selection with boon adjustments, reroll loop, pool removal,
+     * and deck addition. This shared overload is used for non-match reward sources such as chests.
      *
      * @param run        current run
      * @param dialog     platform-specific dialog callback
@@ -62,10 +64,22 @@ public class CardRewardHelper {
      * @return chosen cards (empty if player chose nothing), or null if reward pool was empty
      */
     public static List<PaperCard> runReward(RogueRun run, RewardDialog dialog, boolean mythicOnly) {
+        return runReward(run, dialog, mythicOnly, null);
+    }
+
+    /**
+     * Run a card reward selection as part of post-match rewards.
+     * MatchRewardContext applies match-scoped reward adjustments before generic card-reward effects.
+     */
+    public static List<PaperCard> runReward(RogueRun run, RewardDialog dialog, boolean mythicOnly,
+                                            MatchRewardContext matchRewardCtx) {
         RogueDeck rogueDeck = run.getSelectedRogueDeck();
         if (rogueDeck == null) return null;
 
         CardRewardContext rewardCtx = new CardRewardContext(mythicOnly ? 1 : 3);
+        if (matchRewardCtx != null) {
+            rewardCtx.nonMythicCardCountAdjustment = matchRewardCtx.nonMythicCardCountAdjustment;
+        }
         RogueEffectComposite.INSTANCE.onCardReward(rewardCtx, run);
         CardSelectionContext selCtx = new CardSelectionContext();
         RogueEffectComposite.INSTANCE.onCardSelection(selCtx, run);
@@ -80,7 +94,7 @@ public class CardRewardHelper {
             baseMythics = 3;
             title = "Choose Your Mythic Reward";
         } else {
-            baseNonMythics = Math.max(0, 6 - selCtx.extraMythics);
+            baseNonMythics = Math.max(0, 6 - selCtx.extraMythics + rewardCtx.nonMythicCardCountAdjustment);
             baseMythics = 1 + selCtx.extraMythics;
             title = "Choose Your Rewards";
         }
