@@ -58,7 +58,7 @@ public class InputSelectEntitiesFromList<T extends GameEntity> extends InputSele
                 vPlayers.add(p.getView());
             }
         }
-        getController().getGui().setSelectables(vCards);
+        getController().getGui().setSelectables(vCards, this.min, this.max);
         if (!vPlayers.isEmpty()) {
             getController().getGui().setSelectablePlayers(vPlayers);
         }
@@ -79,6 +79,11 @@ public class InputSelectEntitiesFromList<T extends GameEntity> extends InputSele
     protected boolean onCardSelected(final Card c, final List<Card> otherCardsToSelect, final ITriggerEvent triggerEvent) {
         if (!selectEntity(c)) {
             return false;
+        }
+        if (otherCardsToSelect != null) {
+            for (final Card other : otherCardsToSelect) {
+                selectEntity(other);
+            }
         }
         refresh();
         return true;
