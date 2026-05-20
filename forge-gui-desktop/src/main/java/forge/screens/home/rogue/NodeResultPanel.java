@@ -21,6 +21,7 @@ public class NodeResultPanel extends SkinnedPanel {
     private static final int CARD_WIDTH = 180;
     private static final int CARD_HEIGHT = Math.round(CARD_WIDTH * CardPanel.ASPECT_RATIO);
     private static final int CARD_SPACING = 12;
+    private static final int MAX_CARDS_PER_ROW = 4;
     private static final int DEFAULT_MIN_WIDTH = 650;
 
     private final List<ReadOnlyCardPanel> allCardPanels = new ArrayList<>();
@@ -68,9 +69,8 @@ public class NodeResultPanel extends SkinnedPanel {
             }
 
             // Card row panel
-            int rowWidth = section.cards().size() * (CARD_WIDTH + CARD_SPACING) - CARD_SPACING;
             SkinnedPanel cardRow = new SkinnedPanel(
-                    new MigLayout("insets 0, gap " + CARD_SPACING + "px", "", ""));
+                    new MigLayout("insets 0, gap " + CARD_SPACING + "px, wrap " + MAX_CARDS_PER_ROW, "", ""));
             cardRow.setOpaque(false);
 
             for (PaperCard card : section.cards()) {
@@ -82,12 +82,12 @@ public class NodeResultPanel extends SkinnedPanel {
             add(cardRow, "ax center, wrap");
         }
 
-        // Calculate preferred size based on content, capped to screen bounds
+        // Calculate preferred size based on full content.
         boolean hasCards = sections.stream().anyMatch(
                 s -> s.cards() != null && !s.cards().isEmpty());
         int maxCardsInRow = sections.stream()
                 .filter(s -> s.cards() != null)
-                .mapToInt(s -> s.cards().size())
+                .mapToInt(s -> Math.min(s.cards().size(), MAX_CARDS_PER_ROW))
                 .max().orElse(0);
         int desiredWidth = hasCards
                 ? Math.max(DEFAULT_MIN_WIDTH, maxCardsInRow * (CARD_WIDTH + CARD_SPACING) - CARD_SPACING + 40)
@@ -95,7 +95,12 @@ public class NodeResultPanel extends SkinnedPanel {
         int desiredHeight = 50; // message + padding
         for (CardSection section : sections) {
             if (section.cards() != null && !section.cards().isEmpty()) {
-                desiredHeight += (hasLabel(section) ? 25 : 0) + CARD_HEIGHT + 10;
+                int cardsPerRow = Math.min(section.cards().size(), MAX_CARDS_PER_ROW);
+                int rowCount = (int) Math.ceil(section.cards().size() / (double) cardsPerRow);
+                desiredHeight += (hasLabel(section) ? 25 : 0)
+                        + rowCount * CARD_HEIGHT
+                        + Math.max(0, rowCount - 1) * CARD_SPACING
+                        + 10;
             }
         }
         if (!hasCards) {
@@ -103,18 +108,7 @@ public class NodeResultPanel extends SkinnedPanel {
         }
         desiredWidth = Math.max(desiredWidth, minWidth);
         desiredHeight = Math.max(desiredHeight, minHeight);
-
-        // Cap to usable screen space (same approach as CardRewardDialog)
-        GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment()
-                .getDefaultScreenDevice().getDefaultConfiguration();
-        Rectangle screenBounds = gc.getBounds();
-        Insets screenInsets = Toolkit.getDefaultToolkit().getScreenInsets(gc);
-        int maxWidth = (int) ((screenBounds.width - screenInsets.left - screenInsets.right) * 0.9) - 80;
-        int maxHeight = (int) ((screenBounds.height - screenInsets.top - screenInsets.bottom) * 0.9) - 80;
-
-        Dimension size = new Dimension(
-                Math.min(desiredWidth, maxWidth),
-                Math.min(desiredHeight, maxHeight));
+        Dimension size = new Dimension(desiredWidth, desiredHeight);
         setPreferredSize(size);
         setMinimumSize(size);
     }

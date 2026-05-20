@@ -4,11 +4,15 @@ import forge.game.player.RegisteredPlayer;
 import forge.gamemodes.rogue.*;
 import forge.gamemodes.rogue.npc.BazaarContext;
 import forge.gamemodes.rogue.npc.NPC;
+import forge.card.CardRulesPredicates;
 import forge.item.PaperCard;
+import forge.item.PaperCardPredicates;
+import forge.util.Aggregates;
 import forge.util.MyRandom;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 
 public enum EventBoon implements RogueEffect {
 
@@ -107,24 +111,123 @@ public enum EventBoon implements RogueEffect {
             ctx.trigger = NodeResultContext.ActionTriggerType.BAZAAR;
         }
     },
+    DRIFTED_RESCUE("drifted_rescue", "Rescue Pilot", "Gain a random Human {{Fellow}}.",
+            EffectType.ONESHOT) {
+        @Override
+        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+            Predicate<PaperCard> humanFilter = PaperCardPredicates.fromRules(
+                    CardRulesPredicates.IS_CREATURE.and(CardRulesPredicates.subType("Human")));
+            List<PaperCard> fellows = run.getAllCardsForActiveCommander(humanFilter);
+            PaperCard fellow = fellows.isEmpty() ? null : Aggregates.random(fellows);
+            if (fellow == null) {
+                return;
+            }
+
+            run.addCarryCard(fellow.getName(), RogueRun.CarryCardType.FELLOW, getId());
+            ctx.addedCards = List.of(fellow);
+        }
+    },
+    DRIFTED_STEAL("drifted_steal", "Steal Vehicle", "Gain a random Vehicle {{Item}}.",
+            EffectType.ONESHOT) {
+        @Override
+        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+            Predicate<PaperCard> vehicleFilter = PaperCardPredicates.fromRules(
+                    CardRulesPredicates.IS_ARTIFACT.and(CardRulesPredicates.subType("Vehicle")));
+            List<PaperCard> vehicles = run.getAllCardsForActiveCommander(vehicleFilter);
+            PaperCard vehicle = vehicles.isEmpty() ? null : Aggregates.random(vehicles);
+            if (vehicle == null) {
+                return;
+            }
+
+            run.addCarryCard(vehicle.getName(), RogueRun.CarryCardType.ITEM, getId());
+            ctx.addedCards = List.of(vehicle);
+        }
+    },
+    GROUND_ZERO_SPECIAL("ground_zero_special", "You're S.P.E.C.I.A.L.", "Add all Bobblehead artifacts to your deck.",
+            EffectType.ONESHOT) {
+        @Override
+        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+            Predicate<PaperCard> bobbleheadFilter = PaperCardPredicates.fromRules(
+                    CardRulesPredicates.IS_ARTIFACT.and(CardRulesPredicates.subType("Bobblehead")));
+            List<PaperCard> bobbleheads = run.getAllCardsForActiveCommander(bobbleheadFilter);
+            if (bobbleheads.isEmpty()) {
+                return;
+            }
+
+            run.addCardsToDeck(bobbleheads, false);
+            ctx.addedCards = bobbleheads;
+        }
+    },
+    GROUND_ZERO_REPAIR("ground_zero_repair", "Use Workbench",
+            "Consume all artifact cards in your deck and all active {{Item}}s. Add 3 random Robot cards from {{PIP}} to your deck.",
+            EffectType.ONESHOT) {
+        @Override
+        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+            List<PaperCard> removedArtifacts = run.removeCardsFromDeck(
+                    card -> card.getRules().getType().isArtifact());
+            List<PaperCard> removedItems = removeCarryCards(run, RogueRun.CarryCardType.ITEM);
+            if (!removedArtifacts.isEmpty() || !removedItems.isEmpty()) {
+                List<PaperCard> removedCards = new ArrayList<>(removedArtifacts);
+                removedCards.addAll(removedItems);
+                ctx.removedCards = removedCards;
+            }
+
+            Predicate<PaperCard> robotFilter = card -> "PIP".equalsIgnoreCase(card.getEdition())
+                    && PaperCardPredicates.fromRules(
+                        CardRulesPredicates.IS_CREATURE.and(CardRulesPredicates.subType("Robot")))
+                    .test(card);
+            List<PaperCard> robots = run.getAllCardsForActiveCommander(robotFilter);
+            if (robots.isEmpty()) {
+                return;
+            }
+
+            Collections.shuffle(robots, MyRandom.getRandom());
+            List<PaperCard> added = new ArrayList<>(robots.subList(0, Math.min(3, robots.size())));
+            run.addCardsToDeck(added, false);
+            ctx.addedCards = added;
+        }
+    },
+    GROUND_ZERO_MUTATE("ground_zero_mutate", "Endure the Fallout", "Replace 5 random creatures in your deck with radiation mutants.",
+            EffectType.ONESHOT) {
+        @Override
+        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+            List<PaperCard> deckCardsToRemove = run.removeRandomCardsFromDeck(
+                    5, card -> card.getRules().getType().isCreature());
+            if (deckCardsToRemove.isEmpty()) {
+                return;
+            }
+            ctx.removedCards = deckCardsToRemove;
+
+            Predicate<PaperCard> mutantFilter = card -> "PIP".equalsIgnoreCase(card.getEdition())
+                    && PaperCardPredicates.fromRules(
+                        CardRulesPredicates.IS_CREATURE.and(CardRulesPredicates.subType("Mutant")))
+                    .test(card);
+            List<PaperCard> mutants = run.getAllCardsForActiveCommander(mutantFilter);
+            if (mutants.isEmpty()) {
+                return;
+            }
+
+            Collections.shuffle(mutants, MyRandom.getRandom());
+            List<PaperCard> added = new ArrayList<>(mutants.subList(0, Math.min(deckCardsToRemove.size(), mutants.size())));
+            run.addCardsToDeck(added, false);
+            ctx.addedCards = added;
+        }
+    },
     GAMECHANGER_TRUST("gamechanger_trust", "Trade for Gamechangers",
             "Remove 3 random cards from your deck and replace them with chosen cards from the Gamechanger list.",
             EffectType.ONESHOT) {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
             List<PaperCard> gamechangerCards = run.getGamechangerCardsForActiveCommander();
-            List<PaperCard> deckCards = run.getSelectableDeckCards();
-            int swapCount = Math.min(3, Math.min(deckCards.size(), gamechangerCards.size()));
+            int swapCount = Math.min(3, gamechangerCards.size());
             if (swapCount <= 0) {
                 return;
             }
 
-            Collections.shuffle(deckCards, MyRandom.getRandom());
-            List<PaperCard> removed = new ArrayList<>(deckCards.subList(0, swapCount));
-            for (PaperCard card : removed) {
-                run.getCurrentDeck().getMain().remove(card);
+            List<PaperCard> removed = run.removeRandomCardsFromDeck(swapCount, null);
+            if (removed.isEmpty()) {
+                return;
             }
-
             ctx.removedCards = removed;
             ctx.candidateCards = gamechangerCards;
             ctx.addCount = Math.min(swapCount, gamechangerCards.size());
@@ -163,26 +266,13 @@ public enum EventBoon implements RogueEffect {
             RogueDeck rogueDeck = run.getSelectedRogueDeck();
             if (rogueDeck == null) return;
 
-            // Get non-commander, non-basic-land cards from deck
-            List<PaperCard> deckCards = run.getCurrentDeck().getMain().toFlatList();
-            String commanderName = rogueDeck.getCommanderCardName();
-            deckCards.removeIf(c -> c.getName().equals(commanderName)
-                    || c.getRules().getType().isBasicLand());
-            if (deckCards.isEmpty()) return;
-
-            // Pick up to 3 random cards to remove
-            Collections.shuffle(deckCards);
-            int swapCount = Math.min(3, deckCards.size());
-            List<PaperCard> removed = new ArrayList<>(deckCards.subList(0, swapCount));
-
-            // Remove from deck
-            for (PaperCard card : removed) {
-                run.getCurrentDeck().getMain().remove(card);
-            }
+            List<PaperCard> removed = run.removeRandomCardsFromDeck(3, null);
+            if (removed.isEmpty()) return;
+            int swapCount = removed.size();
 
             // Draw same count from reward pool and add to deck
             List<PaperCard> added = rogueDeck.drawRewardOptions(swapCount, null);
-            run.addCardsToRun(added, false);
+            run.addCardsToDeck(added, false);
             rogueDeck.removeFromCardPools(added);
 
             // Store for result display
@@ -392,6 +482,26 @@ public enum EventBoon implements RogueEffect {
 
     protected String getInsufficientGoldReason() {
         return goldCost > 0 ? "You need " + goldCost + " Gold." : null;
+    }
+
+    private static List<PaperCard> removeCarryCards(RogueRun run, RogueRun.CarryCardType type) {
+        if (!run.hasCarryCardOfType(type)) {
+            return List.of();
+        }
+
+        List<RogueRun.CarryCard> removedCarryCards = new ArrayList<>(run.getCarryCards().stream()
+                .filter(card -> card.type() == type)
+                .toList());
+        run.getCarryCards().removeIf(card -> card.type() == type);
+
+        List<PaperCard> removedCards = new ArrayList<>();
+        for (RogueRun.CarryCard carryCard : removedCarryCards) {
+            PaperCard card = RogueConfig.getCard(carryCard.cardName(), null);
+            if (card != null) {
+                removedCards.add(card);
+            }
+        }
+        return removedCards;
     }
 
     public static EventBoon fromId(String id) {

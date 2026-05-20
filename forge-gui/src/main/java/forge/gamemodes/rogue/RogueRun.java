@@ -17,6 +17,7 @@ import forge.gamemodes.rogue.effect.NPCBoon;
 import forge.gamemodes.rogue.path.RoguePath;
 import forge.gamemodes.rogue.path.RoguePathNode;
 import forge.item.PaperCard;
+import forge.util.MyRandom;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -248,6 +249,7 @@ public class RogueRun {
         return filterDuplicateCards(commanderLegalCards);
     }
 
+    // Deck management
     public List<PaperCard> getSelectableDeckCards() {
         if (selectedRogueDeck == null || currentDeck == null) {
             return List.of();
@@ -256,12 +258,11 @@ public class RogueRun {
         List<PaperCard> deckCards = new ArrayList<>(currentDeck.getMain().toFlatList());
         String commanderName = selectedRogueDeck.getCommanderCardName();
         deckCards.removeIf(c -> c.getName().equals(commanderName)
-                || c.getRules().getType().isBasicLand());
+            || c.getRules().getType().isBasicLand());
         return deckCards;
     }
 
-    // Deck management
-    public void addCardsToRun(List<PaperCard> cards, boolean awardRemovalCredits) {
+    public void addCardsToDeck(List<PaperCard> cards, boolean awardRemovalCredits) {
         if (currentDeck != null && cards != null) {
             for (PaperCard card : cards) {
                 currentDeck.getMain().add(card);
@@ -270,6 +271,46 @@ public class RogueRun {
                 removalCredits += cards.size();
             }
         }
+    }
+
+    public List<PaperCard> removeCardsFromDeck(Predicate<PaperCard> predicate) {
+        if (selectedRogueDeck == null || currentDeck == null || predicate == null) {
+            return List.of();
+        }
+
+        List<PaperCard> deckCardsToRemove = new ArrayList<>(currentDeck.getMain().toFlatList());
+        String commanderName = selectedRogueDeck.getCommanderCardName();
+        deckCardsToRemove.removeIf(card -> card.getName().equals(commanderName) || !predicate.test(card));
+        if (deckCardsToRemove.isEmpty()) {
+            return List.of();
+        }
+
+        for (PaperCard card : deckCardsToRemove) {
+            currentDeck.getMain().remove(card);
+        }
+        return deckCardsToRemove;
+    }
+
+    public List<PaperCard> removeRandomCardsFromDeck(int count, Predicate<PaperCard> predicate) {
+        if (currentDeck == null || count <= 0) {
+            return List.of();
+        }
+
+        List<PaperCard> selectableDeckCards = getSelectableDeckCards();
+        if (predicate != null) {
+            selectableDeckCards.removeIf(card -> !predicate.test(card));
+        }
+        if (selectableDeckCards.isEmpty()) {
+            return List.of();
+        }
+
+        Collections.shuffle(selectableDeckCards, MyRandom.getRandom());
+        List<PaperCard> removedCards = new ArrayList<>(selectableDeckCards.subList(0,
+            Math.min(count, selectableDeckCards.size())));
+        for (PaperCard card : removedCards) {
+            currentDeck.getMain().remove(card);
+        }
+        return removedCards;
     }
 
     /**

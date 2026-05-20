@@ -40,6 +40,15 @@ public enum RogueEvent {
                 EventBoon.CARAVAN_ROB)
         )),
 
+    DRIFTED_AWAY("Drifted Away",
+        "You come across a crash-site. The pilot lies nearby, hurt and unconscious, while the wreck still hums with fading power.",
+        List.of(
+            new EventChoice("Rescue", "The pilot stirs and joins your journey.",
+                EventBoon.DRIFTED_RESCUE),
+            new EventChoice("Steal", "You strip the wreck for whatever still works.",
+                EventBoon.DRIFTED_STEAL)
+        )),
+
     PLANAR_TRIBUTE("Planar Tribute",
         "The planes demand tribute.",
         List.of(
@@ -75,6 +84,17 @@ public enum RogueEvent {
                 EventBoon.GAMECHANGER_TRUST),
             new EventChoice("Choose wisely", "The figure grins and disappears into the shadows.",
                 EventBoon.GAMECHANGER_CHOOSE)
+        )),
+
+    GROUND_ZERO("Ground Zero",
+        "You enter a cratered ruin choked with ash and broken steel. Strange relics lie half-buried in the dust, while twisted survivors skulk through the fallout.",
+        List.of(
+            new EventChoice("Loot something S.P.E.C.I.A.L.", "A few old-world lessons make your arsenal feel a little more S.P.E.C.I.A.L.",
+                EventBoon.GROUND_ZERO_SPECIAL),
+            new EventChoice("Use Workbench", "You salvage enough parts to restore a few obedient machines.",
+                EventBoon.GROUND_ZERO_REPAIR),
+            new EventChoice("Explore Wasteland", "The wasteland's radiation leaves part of your army forever changed.",
+                EventBoon.GROUND_ZERO_MUTATE)
         )),
 
     THORNS("Thorns",

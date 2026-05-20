@@ -338,6 +338,8 @@ public class RogueWinLoseController {
             boolean survived = human.getZone(ZoneType.Command).getCards().stream()
                     .anyMatch(c -> c.getName().equals(card.cardName()))
                 || human.getZone(ZoneType.Battlefield).getCards().stream()
+                    .anyMatch(c -> c.getName().equals(card.cardName()))
+                || human.getCardsIn(ZoneType.Stack).stream()
                     .anyMatch(c -> c.getName().equals(card.cardName()));
             if (!survived) lost.add(card);
         }

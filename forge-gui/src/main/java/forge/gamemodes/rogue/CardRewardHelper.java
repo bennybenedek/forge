@@ -137,7 +137,7 @@ public class CardRewardHelper {
 
         if (!chosenCards.isEmpty()) {
             rogueDeck.removeFromCardPools(chosenCards);
-            run.addCardsToRun(chosenCards, true);
+            run.addCardsToDeck(chosenCards, true);
         }
 
         return chosenCards;

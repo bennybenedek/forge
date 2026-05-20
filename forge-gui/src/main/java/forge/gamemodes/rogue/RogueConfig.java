@@ -310,6 +310,7 @@ public class RogueConfig {
 
     // Helper method to get cards from the database
     public static PaperCard getCard(String cardName, String setCode) {
+        loadRogueCards();
         PaperCard card;
         if (setCode == null || setCode.isEmpty()) {
             card = db.getCommonCards().getCard(cardName);

@@ -8,7 +8,6 @@ import forge.gamemodes.rogue.RogueRun;
 import forge.gamemodes.rogue.TextHelper;
 import forge.item.IPaperCard;
 import forge.item.PaperCard;
-import forge.model.FModel;
 import java.util.Collections;
 import java.util.List;
 
@@ -80,19 +79,13 @@ public interface RogueEffect {
     /** Fired for both card reward and bazaar selections. */
     default void onCardSelection(CardSelectionContext ctx, RogueRun run) {}
 
-    /** Resolves a card by name (ensures rogue card scripts are loaded). */
-    static PaperCard loadCard(String cardName) {
-        RogueConfig.loadRogueCards();
-        return FModel.getMagicDb().getCommonCards().getCard(cardName);
-    }
-
     static void addCardToCommandZone(String cardName, RegisteredPlayer human) {
-        PaperCard card = loadCard(cardName);
+        PaperCard card = RogueConfig.getCard(cardName, null);
         if (card != null) human.addExtraCardsInCommandZone(Collections.singletonList(card));
     }
 
     static void addCardToBattlefield(String cardName, RegisteredPlayer human) {
-        PaperCard card = loadCard(cardName);
+        PaperCard card = RogueConfig.getCard(cardName, null);
         if (card != null) human.addExtraCardsOnBattlefield(Collections.singletonList(card));
     }
 

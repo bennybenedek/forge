@@ -33,7 +33,15 @@ import forge.screens.deckeditor.CDeckEditorUI;
 import forge.screens.deckeditor.controllers.CEditorRogue;
 import forge.screens.home.CHomeUI;
 import forge.toolbox.FOptionPane;
+import forge.toolbox.FScrollPane;
 import forge.toolbox.FSkin;
+import java.awt.BorderLayout;
+import java.awt.Dimension;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsEnvironment;
+import java.awt.Insets;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
 import forge.util.Aggregates;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -715,7 +723,7 @@ public enum CSubmenuRogueMap implements ICDoc {
     bazaarCtx.purchasedCards.addAll(selectedCards);
 
     if (!realCards.isEmpty()) {
-      currentRun.addCardsToRun(realCards, true);
+      currentRun.addCardsToDeck(realCards, true);
       if (!customBazaar) {
         rogueDeck.removeFromCardPools(realCards);
       }
@@ -875,7 +883,7 @@ public enum CSubmenuRogueMap implements ICDoc {
     if (ctx.drawCount > 0) {
       RogueDeck rd = currentRun.getSelectedRogueDeck();
       List<PaperCard> added = rd.drawRewardOptions(ctx.drawCount, null);
-      currentRun.addCardsToRun(added, false);
+      currentRun.addCardsToDeck(added, false);
       rd.removeFromCardPools(added);
       ctx.addedCards = added;
     }
@@ -896,7 +904,7 @@ public enum CSubmenuRogueMap implements ICDoc {
       return;
     }
 
-    currentRun.addCardsToRun(added, false);
+    currentRun.addCardsToDeck(added, false);
     ctx.addedCards = added;
   }
 
@@ -980,11 +988,11 @@ public enum CSubmenuRogueMap implements ICDoc {
 
   private void showNodeResultDialog(String title, String message,
                                     List<NodeResultPanel.CardSection> sections) {
-    NodeResultPanel resultPanel = new NodeResultPanel(message, sections);
-    FOptionPane optionPane = new FOptionPane(null, title, null, resultPanel, List.of("OK"), 0);
-    resultPanel.initZoom(optionPane);
-    optionPane.setVisible(true);
-    optionPane.dispose();
+    boolean hasCardSections = sections.stream().anyMatch(
+        section -> section.cards() != null && !section.cards().isEmpty());
+    int minHeight = hasCardSections ? 700 : 0;
+    showNodeResultDialog(title, message, sections, 650, minHeight,
+        NodeResultPanel.MessageAlignment.LEFT);
   }
 
   private void showNodeResultDialog(String title, String message,
@@ -993,7 +1001,27 @@ public enum CSubmenuRogueMap implements ICDoc {
                                     NodeResultPanel.MessageAlignment messageAlignment) {
     NodeResultPanel resultPanel = new NodeResultPanel(
         message, sections, minWidth, minHeight, messageAlignment);
-    FOptionPane optionPane = new FOptionPane(null, title, null, resultPanel, List.of("OK"), 0);
+    FScrollPane scrollPane = new FScrollPane(resultPanel, false,
+        ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+        ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+    Dimension resultSize = resultPanel.getPreferredSize();
+    GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment()
+        .getDefaultScreenDevice().getDefaultConfiguration();
+    Rectangle screenBounds = gc.getBounds();
+    Insets screenInsets = Toolkit.getDefaultToolkit().getScreenInsets(gc);
+    int maxDialogWidth = (int) ((screenBounds.width - screenInsets.left - screenInsets.right) * 0.9) - 50;
+    int maxDialogHeight = (int) ((screenBounds.height - screenInsets.top - screenInsets.bottom) * 0.9) - 80;
+    Dimension dialogSize = new Dimension(
+        Math.min(resultSize.width + 30, maxDialogWidth),
+        Math.min(resultSize.height, maxDialogHeight));
+
+    FSkin.SkinnedPanel wrapper = new FSkin.SkinnedPanel(new BorderLayout());
+    wrapper.setOpaque(false);
+    wrapper.add(scrollPane, BorderLayout.CENTER);
+    wrapper.setPreferredSize(dialogSize);
+    wrapper.setMinimumSize(dialogSize);
+
+    FOptionPane optionPane = new FOptionPane(null, title, null, wrapper, List.of("OK"), 0);
     resultPanel.initZoom(optionPane);
     optionPane.setVisible(true);
     optionPane.dispose();

@@ -4,6 +4,7 @@ import forge.card.CardType;
 import forge.item.PaperCard;
 import forge.toolbox.FLabel;
 import forge.toolbox.FOptionPane;
+import forge.toolbox.FScrollPane;
 import forge.toolbox.FSkin.SkinnedPanel;
 import forge.view.arcane.CardPanel;
 import java.awt.*;
@@ -12,7 +13,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.swing.JScrollPane;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 
 /**
@@ -95,13 +96,9 @@ public class CardSelectionDialog {
     wrapper.add(header, BorderLayout.NORTH);
 
     // Scrollable card area
-    JScrollPane scrollPane = new JScrollPane(gridPanel,
-        JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-        JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-    scrollPane.setBorder(null);
-    scrollPane.getViewport().setOpaque(false);
-    scrollPane.setOpaque(false);
-    scrollPane.getVerticalScrollBar().setUnitIncrement(20);
+    FScrollPane scrollPane = new FScrollPane(gridPanel, false,
+        ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+        ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
     wrapper.add(scrollPane, BorderLayout.CENTER);
 
     // Dialog size — fit screen
