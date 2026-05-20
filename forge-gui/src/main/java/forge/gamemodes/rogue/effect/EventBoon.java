@@ -182,7 +182,7 @@ public enum EventBoon implements RogueEffect {
 
             // Draw same count from reward pool and add to deck
             List<PaperCard> added = rogueDeck.drawRewardOptions(swapCount, null);
-            run.addCardsToRun(added);
+            run.addCardsToRun(added, false);
             rogueDeck.removeFromCardPools(added);
 
             // Store for result display

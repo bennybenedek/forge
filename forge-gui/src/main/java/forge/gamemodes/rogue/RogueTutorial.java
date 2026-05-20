@@ -69,7 +69,7 @@ public enum RogueTutorial {
           +
           "Unchosen or rerolled cards leave the active Reward Pool and only return when there are not enough cards left to offer.\n"
           +
-          "For each card added, you will also gain a 'Removal Credit' to remove an unwanted non-basic Land card from your deck."
+          "For each card added, you will also gain a 'Removal Credit' to remove an unwanted card from your deck."
   ),
 
   BAZAAR(
@@ -80,7 +80,7 @@ public enum RogueTutorial {
           +
           "Unbought or rerolled cards leave the active Reward Pool and only return when there are not enough cards left to offer.\n"
           +
-          "Save gold for powerful cards that fit your strategy."
+          "For each card added, you will also gain a 'Removal Credit' to remove an unwanted card from your deck."
   ),
 
   EVENT(
@@ -104,7 +104,7 @@ public enum RogueTutorial {
   DECK_EDITOR(
       "Deck Editor",
       "Review your current deck at any time. Keep track of your cards, " +
-          "mana curve, and strategy. You can always add and remove as many basic lands as needed, but other cards can only be added as rewards during the Run, and can only be removed with Removal Credits earned by adding cards.\n" +
+          "mana curve, and strategy. You can always add and remove as many basic lands as needed, but other cards can only be added as rewards during the Run, and can only be removed with Removal Credits earned by adding cards from a Card Reward or Shop.\n" +
           "Changes to your deck will be saved automatically and persist for the rest of the Run, but will be reset at the end of the Run regardless of win or loss."
   ),
 

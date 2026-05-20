@@ -261,12 +261,14 @@ public class RogueRun {
     }
 
     // Deck management
-    public void addCardsToRun(List<PaperCard> cards) {
+    public void addCardsToRun(List<PaperCard> cards, boolean awardRemovalCredits) {
         if (currentDeck != null && cards != null) {
             for (PaperCard card : cards) {
                 currentDeck.getMain().add(card);
             }
-            removalCredits += cards.size();
+            if (awardRemovalCredits) {
+                removalCredits += cards.size();
+            }
         }
     }
 

@@ -715,7 +715,7 @@ public enum CSubmenuRogueMap implements ICDoc {
     bazaarCtx.purchasedCards.addAll(selectedCards);
 
     if (!realCards.isEmpty()) {
-      currentRun.addCardsToRun(realCards);
+      currentRun.addCardsToRun(realCards, true);
       if (!customBazaar) {
         rogueDeck.removeFromCardPools(realCards);
       }
@@ -875,7 +875,7 @@ public enum CSubmenuRogueMap implements ICDoc {
     if (ctx.drawCount > 0) {
       RogueDeck rd = currentRun.getSelectedRogueDeck();
       List<PaperCard> added = rd.drawRewardOptions(ctx.drawCount, null);
-      currentRun.addCardsToRun(added);
+      currentRun.addCardsToRun(added, false);
       rd.removeFromCardPools(added);
       ctx.addedCards = added;
     }
@@ -896,7 +896,7 @@ public enum CSubmenuRogueMap implements ICDoc {
       return;
     }
 
-    currentRun.addCardsToRun(added);
+    currentRun.addCardsToRun(added, false);
     ctx.addedCards = added;
   }
 
