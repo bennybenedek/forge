@@ -97,6 +97,18 @@ public enum RogueEvent {
                 EventBoon.GROUND_ZERO_MUTATE)
         )),
 
+    CROOKED_COUNSEL("Crooked Counsel",
+        "An old wizard, once a cherished friend, greets you with a smile that no longer reaches his eyes. " +
+        "\"The shadow rises,\" he murmurs. \"Stand against it if you must... but it wouldn't be wise, my friend.\"",
+        List.of(
+            new EventChoice("Rally the Free Peoples", "You assemble a fellowship worthy of the long road ahead.",
+                EventBoon.CROOKED_COUNSEL_FELLOWSHIP),
+            new EventChoice("Join with the Dark Lord", "Dark riders answer your choice, and your old allies fall away.",
+                EventBoon.CROOKED_COUNSEL_NAZGUL),
+            new EventChoice("Keep to your own path", "A quiet will settles over you, and the ring answers only to your hand.",
+                EventBoon.CROOKED_COUNSEL_RING)
+        )),
+
     THORNS("Thorns",
         "The land itself rejects your presence. Thorns rise from the soil, leaving your footsteps stained with blood.",
         List.of(

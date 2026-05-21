@@ -29,8 +29,19 @@ public final class TextHelper {
             return text;
         }
 
-        String withoutCardMarkers = stripPattern(text, CARD_MARKER_PATTERN);
+        String withoutCardMarkers = stripCardPattern(text);
         return stripPattern(withoutCardMarkers, KEYWORD_MARKER_PATTERN);
+    }
+
+    private static String stripCardPattern(String text) {
+        Matcher matcher = CARD_MARKER_PATTERN.matcher(text);
+        StringBuffer sb = new StringBuffer();
+        while (matcher.find()) {
+            String token = matcher.group(INNER_MARKER_GROUP).trim();
+            matcher.appendReplacement(sb, Matcher.quoteReplacement(extractCardDisplayName(token)));
+        }
+        matcher.appendTail(sb);
+        return sb.toString();
     }
 
     private static String stripPattern(String text, Pattern pattern) {
@@ -53,7 +64,7 @@ public final class TextHelper {
             return null;
         }
 
-        String cardName = matcher.group(1).trim();
+        String cardName = extractCardDisplayName(matcher.group(1).trim());
         return cardName.isEmpty() ? null : cardName;
     }
 
@@ -89,5 +100,14 @@ public final class TextHelper {
         references.addAll(cards.values());
         references.addAll(keywords.values());
         return references;
+    }
+
+    private static String extractCardDisplayName(String token) {
+        if (token == null || token.isBlank()) {
+            return "";
+        }
+
+        int separatorIndex = token.indexOf('|');
+        return separatorIndex >= 0 ? token.substring(0, separatorIndex).trim() : token;
     }
 }

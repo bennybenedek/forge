@@ -187,7 +187,7 @@ public enum EventBoon implements RogueEffect {
             ctx.addedCards = added;
         }
     },
-    GROUND_ZERO_MUTATE("ground_zero_mutate", "Endure the Fallout", "Replace 5 random creatures in your deck with radiation mutants.",
+    GROUND_ZERO_MUTATE("ground_zero_mutate", "Explore Wasteland", "Replace 5 random creatures in your deck with radiation mutants.",
             EffectType.ONESHOT) {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
@@ -211,6 +211,94 @@ public enum EventBoon implements RogueEffect {
             List<PaperCard> added = new ArrayList<>(mutants.subList(0, Math.min(deckCardsToRemove.size(), mutants.size())));
             run.addCardsToDeck(added, false);
             ctx.addedCards = added;
+        }
+    },
+    CROOKED_COUNSEL_FELLOWSHIP("crooked_counsel_fellowship", "Rally the Free Peoples",
+            "Choose 9 creatures from a set of legendary Halflings, Humans, Elves, Dwarves, and Wizards to add to your deck.",
+            EffectType.ONESHOT) {
+        @Override
+        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+            Predicate<PaperCard> fellowshipFilter = card -> {
+                if (!("LTR".equalsIgnoreCase(card.getEdition()) || "LTC".equalsIgnoreCase(card.getEdition()))) {
+                    return false;
+                }
+                if (!card.getRules().getType().isCreature() || !card.getRules().getType().isLegendary()) {
+                    return false;
+                }
+                return card.getRules().getType().hasSubtype("Halfling")
+                        || card.getRules().getType().hasSubtype("Human")
+                        || card.getRules().getType().hasSubtype("Elf")
+                        || card.getRules().getType().hasSubtype("Dwarf")
+                        || card.getRules().getType().hasSubtype("Wizard");
+            };
+            List<PaperCard> fellowshipCards = run.getAllCardsForActiveCommander(fellowshipFilter);
+            if (fellowshipCards.isEmpty()) {
+                return;
+            }
+
+            Collections.shuffle(fellowshipCards, MyRandom.getRandom());
+            List<PaperCard> candidates = new ArrayList<>(fellowshipCards.subList(0, Math.min(30, fellowshipCards.size())));
+            ctx.candidateCards = candidates;
+            ctx.addCount = Math.min(9, candidates.size());
+            if (ctx.addCount > 0) {
+                ctx.trigger = NodeResultContext.ActionTriggerType.CARD_ADDITION;
+            }
+        }
+    },
+    CROOKED_COUNSEL_RING("crooked_counsel_ring", "Keep to your own path",
+            "Gain the legendary artifact {{Item}} '[[The One Ring|LTR|2]]'. Lose 4 life.",
+            EffectType.ONESHOT) {
+        @Override
+        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+            PaperCard ring = RogueConfig.getCard("The One Ring", null);
+            if (ring == null) {
+                return;
+            }
+
+            run.addCarryCard(ring.getName(), RogueRun.CarryCardType.ITEM, getId());
+            run.loseLife(4);
+            ctx.addedCards = List.of(ring);
+        }
+
+        @Override
+        public boolean isChoiceAvailable(RogueRun run) {
+            return run.canAddCardToDeck(RogueConfig.getCard("The One Ring", null));
+        }
+
+        @Override
+        public String getUnavailableReason(RogueRun run) {
+            return isChoiceAvailable(run) ? null : "You already have The One Ring.";
+        }
+    },
+    CROOKED_COUNSEL_NAZGUL("crooked_counsel_nazgul", "Join with the dark lord",
+            "Remove 9 random creatures from your deck and replace them with 9 copies of [[Nazgûl]].",
+            EffectType.ONESHOT) {
+        @Override
+        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+            List<PaperCard> removed = run.removeRandomCardsFromDeck(9,
+                    card -> card.getRules().getType().isCreature());
+            if (!removed.isEmpty()) {
+                ctx.removedCards = removed;
+            }
+
+            PaperCard nazgul = RogueConfig.getCard("Nazgûl", null);
+            if (nazgul == null) {
+                return;
+            }
+
+            List<PaperCard> added = new ArrayList<>(Collections.nCopies(9, nazgul));
+            run.addCardsToDeck(added, false);
+            ctx.addedCards = added;
+        }
+
+        @Override
+        public boolean isChoiceAvailable(RogueRun run) {
+            return run.canAddCardToDeck(RogueConfig.getCard("Nazgûl", null));
+        }
+
+        @Override
+        public String getUnavailableReason(RogueRun run) {
+            return isChoiceAvailable(run) ? null : "Your commander or deck does not allow Nazgûl.";
         }
     },
     GAMECHANGER_TRUST("gamechanger_trust", "Trade for Gamechangers",

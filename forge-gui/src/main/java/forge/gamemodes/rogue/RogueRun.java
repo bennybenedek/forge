@@ -370,37 +370,46 @@ public class RogueRun {
         return filtered;
     }
 
+    public boolean canAddCardToDeck(PaperCard card) {
+        if (card == null) {
+            return false;
+        }
+        boolean fulfillsColorIdentity = !filterCardsByCommanderColorIdentity(List.of(card)).isEmpty();
+
+        if (fulfillsColorIdentity) {
+            return !filterDuplicateCards(List.of(card)).isEmpty();
+        } else {
+            return false;
+        }
+    }
+
     public List<PaperCard> filterDuplicateCards(Collection<PaperCard> cards) {
         if (cards == null || cards.isEmpty()) {
             return List.of();
         }
 
-        Predicate<PaperCard> notAlreadyOwned = getNotAlreadyInDeckPredicate();
-        if (notAlreadyOwned == null) {
-            return new ArrayList<>(cards);
-        }
+        Map<String, Integer> existingCardCounts = getExistingCardCounts();
 
         List<PaperCard> filtered = new ArrayList<>();
         for (PaperCard card : cards) {
-            if (notAlreadyOwned.test(card)) {
+            if (canAddCardByCardCountRules(card, existingCardCounts)) {
                 filtered.add(card);
+                if (!DeckFormat.canHaveAnyNumberOf(card)) {
+                    String normalizedName = card.getRules().getNormalizedName();
+                    existingCardCounts.put(normalizedName, existingCardCounts.getOrDefault(normalizedName, 0) + 1);
+                }
             }
         }
         return filtered;
     }
 
     public Predicate<PaperCard> getNotAlreadyInDeckPredicate() {
-        Deck activeDeck = currentDeck != null
-            ? currentDeck
-            : selectedRogueDeck != null ? selectedRogueDeck.getStartDeck() : null;
-        if (activeDeck == null) {
-            return null;
+        if (currentDeck == null) {
+            return card -> true;
         }
 
-        Set<String> existingCardNames = new HashSet<>();
-        addExistingCardNames(existingCardNames, activeDeck.get(DeckSection.Main));
-        addExistingCardNames(existingCardNames, activeDeck.get(DeckSection.Commander));
-        return card -> !existingCardNames.contains(card.getRules().getNormalizedName());
+        Map<String, Integer> existingCardCounts = getExistingCardCounts();
+        return card -> canAddCardByCardCountRules(card, existingCardCounts);
     }
 
     public int getCommanderColorIdentityMask() {
@@ -427,12 +436,29 @@ public class RogueRun {
         return List.of();
     }
 
-    private static void addExistingCardNames(Set<String> existingCardNames, CardPool cardPool) {
+    private Map<String, Integer> getExistingCardCounts() {
+        Map<String, Integer> existingCardCounts = new HashMap<>();
+        addExistingCardCounts(existingCardCounts, currentDeck.get(DeckSection.Main));
+        addExistingCardCounts(existingCardCounts, currentDeck.get(DeckSection.Commander));
+        return existingCardCounts;
+    }
+
+    private static boolean canAddCardByCardCountRules(PaperCard card, Map<String, Integer> existingCardCounts) {
+        String normalizedName = card.getRules().getNormalizedName();
+        int existingCopies = existingCardCounts.getOrDefault(normalizedName, 0);
+        Integer deckLimit = DeckFormat.canHaveSpecificNumberInDeck(card);
+        return DeckFormat.canHaveAnyNumberOf(card)
+            || deckLimit != null && deckLimit > 0 && existingCopies < deckLimit
+            || deckLimit == null && existingCopies == 0;
+    }
+
+    private static void addExistingCardCounts(Map<String, Integer> existingCardCounts, CardPool cardPool) {
         if (cardPool == null) {
             return;
         }
         for (Map.Entry<PaperCard, Integer> entry : cardPool) {
-            existingCardNames.add(entry.getKey().getRules().getNormalizedName());
+            String normalizedName = entry.getKey().getRules().getNormalizedName();
+            existingCardCounts.merge(normalizedName, entry.getValue(), Integer::sum);
         }
     }
 
