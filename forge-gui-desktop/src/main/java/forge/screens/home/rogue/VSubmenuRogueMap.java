@@ -123,7 +123,7 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
     lblEchoes.setText("Echoes: " + totalEchoes);
 
     if (run != null) {
-      lblCommanderName.setText(run.getSelectedRogueDeck().getCommanderCardName());
+      lblCommanderName.setText(run.getCurrentCommanderName());
       lblCommanderAvatar.setIcon(FSkin.getAvatars().get(run.getSelectedRogueDeck().getAvatarIndex()));
       lblLife.setText("\u2665 Life: " + run.getCurrentLife() + " / " + run.getMaxLife());
       lblGold.setText("Gold: " + run.getCurrentGold());

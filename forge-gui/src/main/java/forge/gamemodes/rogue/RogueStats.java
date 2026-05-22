@@ -122,7 +122,7 @@ public enum RogueStats {
         @Override public int evaluate(RogueRun run, RogueMetaProgress p) { return p.getStatValue(getConditionKey()); }
         @Override public void onRunCompleted(RogueRun run, RogueMetaProgress p, boolean won) {
             if (won) {
-                p.mergeRunsWonPerCommander(run.getSelectedRogueDeck().getCommanderCardName());
+                p.mergeRunsWonPerCommander(run.getCurrentCommanderName());
                 p.updateStat(this, evaluate(run, p) + 1);
             }
         }

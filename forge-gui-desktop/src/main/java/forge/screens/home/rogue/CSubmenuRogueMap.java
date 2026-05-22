@@ -4,6 +4,7 @@ import forge.LobbyPlayer;
 import forge.Singletons;
 import forge.deck.CardPool;
 import forge.deck.Deck;
+import forge.deck.DeckSection;
 import forge.deck.io.DeckSerializer;
 import forge.game.GameType;
 import forge.game.player.RegisteredPlayer;
@@ -368,7 +369,7 @@ public enum CSubmenuRogueMap implements ICDoc {
       human.setStartingLife(currentRun.getCurrentLife());
 
       LobbyPlayer lobbyPlayer = GamePlayerUtil.getGuiPlayer();
-      lobbyPlayer.setName(currentRun.getSelectedRogueDeck().getName());
+      lobbyPlayer.setName(currentRun.getCurrentCommanderName());
       lobbyPlayer.setAvatarIndex(currentRun.getSelectedRogueDeck().getAvatarIndex());
       lobbyPlayer.setSleeveIndex(currentRun.getSelectedRogueDeck().getSleeveIndex());
       human.setPlayer(lobbyPlayer);
@@ -867,7 +868,7 @@ public enum CSubmenuRogueMap implements ICDoc {
     }
 
     List<PaperCard> removed = showCardSelectionDialog(
-        "Card Removal",
+        "Card Selection",
         "Choose " + removeCount + " cards to remove.",
         candidateCards,
         removeCount);
@@ -890,21 +891,38 @@ public enum CSubmenuRogueMap implements ICDoc {
   }
 
   private void handleEventCardAddition(NodeResultContext ctx) {
-    int addCount = Math.min(ctx.addCount, getCandidateCardCount(ctx));
-    if (addCount <= 0) {
+    int addMaxCount = Math.min(ctx.addMaxCount, getCandidateCardCount(ctx));
+    int addMinCount = Math.min(ctx.addMinCount, addMaxCount);
+    if (addMaxCount <= 0) {
       return;
     }
 
     List<PaperCard> added = showCardSelectionDialog(
-        "Card Addition",
-        "Choose " + addCount + " cards to add.",
+        "Card Selection",
+        getCardAdditionSubtitle(addMinCount, addMaxCount),
         ctx.candidateCards,
-        addCount);
-    if (added.isEmpty()) {
+        addMinCount,
+        addMaxCount);
+    if (added.isEmpty() && addMinCount > 0) {
       return;
     }
 
-    currentRun.addCardsToDeck(added, false);
+    if (ctx.addSection == DeckSection.Commander) {
+      if (ctx.replaceCurrentCardsInAddSection) {
+        List<PaperCard> removedCommanders = new ArrayList<>(currentRun.getCurrentDeck().getCommanders());
+        if (!removedCommanders.isEmpty()) {
+          for (PaperCard commander : removedCommanders) {
+            currentRun.getCurrentDeck().getOrCreate(DeckSection.Commander).remove(commander);
+          }
+          ctx.removedCards = removedCommanders;
+        }
+      }
+      for (PaperCard card : added) {
+        currentRun.getCurrentDeck().getOrCreate(DeckSection.Commander).add(card);
+      }
+    } else {
+      currentRun.addCardsToDeck(added, false);
+    }
     ctx.addedCards = added;
   }
 
@@ -914,7 +932,20 @@ public enum CSubmenuRogueMap implements ICDoc {
 
   private List<PaperCard> showCardSelectionDialog(String title, String subtitle,
                                                   List<PaperCard> cards, int exactSelections) {
-    return new CardSelectionDialog(title, subtitle, cards, exactSelections).show();
+    return new CardSelectionDialog(title, subtitle, cards, exactSelections, exactSelections).show();
+  }
+
+  private List<PaperCard> showCardSelectionDialog(String title, String subtitle,
+                                                  List<PaperCard> cards, int minSelections,
+                                                  int maxSelections) {
+    return new CardSelectionDialog(title, subtitle, cards, minSelections, maxSelections).show();
+  }
+
+  private String getCardAdditionSubtitle(int addMinCount, int addMaxCount) {
+    if (addMinCount == addMaxCount) {
+      return addMaxCount == 1 ? "Choose 1 card to add." : "Choose " + addMaxCount + " cards to add.";
+    }
+    return "Choose up to " + addMaxCount + " cards to add.";
   }
 
   private void showEventResult(RogueEvent.EventChoice choice, NodeResultContext ctx) {
@@ -1123,7 +1154,7 @@ public enum CSubmenuRogueMap implements ICDoc {
 
   private void devWinRun() {
     if (currentRun == null) return;
-    String commanderName = currentRun.getSelectedRogueDeck().getCommanderCardName();
+    String commanderName = currentRun.getCurrentCommanderName();
     currentRun.setRunWon(true);
     RogueMetaProgress progress = RogueMetaProgress.getInstance();
     progress.addEchoes(20);

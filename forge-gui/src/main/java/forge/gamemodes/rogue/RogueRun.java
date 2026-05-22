@@ -251,14 +251,13 @@ public class RogueRun {
 
     // Deck management
     public List<PaperCard> getSelectableDeckCards() {
-        if (selectedRogueDeck == null || currentDeck == null) {
+        if (currentDeck == null) {
             return List.of();
         }
 
         List<PaperCard> deckCards = new ArrayList<>(currentDeck.getMain().toFlatList());
-        String commanderName = selectedRogueDeck.getCommanderCardName();
-        deckCards.removeIf(c -> c.getName().equals(commanderName)
-            || c.getRules().getType().isBasicLand());
+        Set<String> commanderNames = getActiveCommanderNames();
+        deckCards.removeIf(c -> commanderNames.contains(c.getName()) || c.getRules().getType().isBasicLand());
         return deckCards;
     }
 
@@ -274,13 +273,13 @@ public class RogueRun {
     }
 
     public List<PaperCard> removeCardsFromDeck(Predicate<PaperCard> predicate) {
-        if (selectedRogueDeck == null || currentDeck == null || predicate == null) {
+        if (currentDeck == null || predicate == null) {
             return List.of();
         }
 
         List<PaperCard> deckCardsToRemove = new ArrayList<>(currentDeck.getMain().toFlatList());
-        String commanderName = selectedRogueDeck.getCommanderCardName();
-        deckCardsToRemove.removeIf(card -> card.getName().equals(commanderName) || !predicate.test(card));
+        Set<String> commanderNames = getActiveCommanderNames();
+        deckCardsToRemove.removeIf(card -> commanderNames.contains(card.getName()) || !predicate.test(card));
         if (deckCardsToRemove.isEmpty()) {
             return List.of();
         }
@@ -420,6 +419,14 @@ public class RogueRun {
         return colorIdentityMask;
     }
 
+    public String getCurrentCommanderName() {
+        List<PaperCard> commanders = getActiveCommanders();
+        if (!commanders.isEmpty()) {
+            return commanders.get(0).getName();
+        }
+        return selectedRogueDeck != null ? selectedRogueDeck.getCommanderCardName() : "";
+    }
+
     private List<PaperCard> getActiveCommanders() {
         if (currentDeck != null) {
             List<PaperCard> commanders = currentDeck.getCommanders();
@@ -434,6 +441,14 @@ public class RogueRun {
             }
         }
         return List.of();
+    }
+
+    private Set<String> getActiveCommanderNames() {
+        Set<String> commanderNames = new HashSet<>();
+        for (PaperCard commander : getActiveCommanders()) {
+            commanderNames.add(commander.getName());
+        }
+        return commanderNames;
     }
 
     private Map<String, Integer> getExistingCardCounts() {

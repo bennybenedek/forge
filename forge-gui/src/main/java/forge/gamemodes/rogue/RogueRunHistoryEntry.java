@@ -31,7 +31,7 @@ public class RogueRunHistoryEntry {
 
     public static RogueRunHistoryEntry fromRun(RogueRun run, String outcome, String bossOrDefeatedBy) {
         RogueRunHistoryEntry entry = new RogueRunHistoryEntry();
-        entry.commanderName = run.getSelectedRogueDeck().getCommanderCardName();
+        entry.commanderName = run.getCurrentCommanderName();
         entry.avatarIndex = run.getSelectedRogueDeck().getAvatarIndex();
         entry.outcome = outcome;
         entry.bossOrDefeatedBy = bossOrDefeatedBy != null ? bossOrDefeatedBy : "";

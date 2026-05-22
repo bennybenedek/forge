@@ -11,11 +11,14 @@ import java.util.regex.Pattern;
  */
 public final class TextHelper {
     private static final int INNER_MARKER_GROUP = 1;
-    private static final int CARD_PREVIEW_GROUP = 2;
-    private static final int KEYWORD_PREVIEW_GROUP = 3;
-    private static final Pattern CARD_MARKER_PATTERN = Pattern.compile("\\[\\[(.+?)]]");
+    private static final int CARD_HIDDEN_GROUP = 1;
+    private static final int CARD_TOKEN_GROUP = 2;
+    private static final int PREVIEW_CARD_HIDDEN_GROUP = 1;
+    private static final int PREVIEW_CARD_TOKEN_GROUP = 2;
+    private static final int KEYWORD_TOKEN_GROUP = 3;
+    private static final Pattern CARD_MARKER_PATTERN = Pattern.compile("(!)?\\[\\[(.+?)]]");
     private static final Pattern KEYWORD_MARKER_PATTERN = Pattern.compile("\\{\\{(.+?)}}");
-    private static final Pattern PREVIEW_MARKER_PATTERN = Pattern.compile("(\\[\\[(.+?)]]|\\{\\{(.+?)}})");
+    private static final Pattern PREVIEW_MARKER_PATTERN = Pattern.compile("(!)?\\[\\[(.+?)]]|\\{\\{(.+?)}}");
 
     private TextHelper() {
     }
@@ -30,15 +33,19 @@ public final class TextHelper {
         }
 
         String withoutCardMarkers = stripCardPattern(text);
-        return stripPattern(withoutCardMarkers, KEYWORD_MARKER_PATTERN);
+        String withoutKeywordMarkers = stripPattern(withoutCardMarkers, KEYWORD_MARKER_PATTERN);
+        return normalizeStrippedPreviewText(withoutKeywordMarkers);
     }
 
     private static String stripCardPattern(String text) {
         Matcher matcher = CARD_MARKER_PATTERN.matcher(text);
         StringBuffer sb = new StringBuffer();
         while (matcher.find()) {
-            String token = matcher.group(INNER_MARKER_GROUP).trim();
-            matcher.appendReplacement(sb, Matcher.quoteReplacement(extractCardDisplayName(token)));
+            String token = matcher.group(CARD_TOKEN_GROUP).trim();
+            String replacement = matcher.group(CARD_HIDDEN_GROUP) == null
+                ? extractCardDisplayName(token)
+                : "";
+            matcher.appendReplacement(sb, Matcher.quoteReplacement(replacement));
         }
         matcher.appendTail(sb);
         return sb.toString();
@@ -64,7 +71,7 @@ public final class TextHelper {
             return null;
         }
 
-        String cardName = extractCardDisplayName(matcher.group(1).trim());
+        String cardName = extractCardDisplayName(matcher.group(CARD_TOKEN_GROUP).trim());
         return cardName.isEmpty() ? null : cardName;
     }
 
@@ -79,13 +86,13 @@ public final class TextHelper {
         int order = 0;
 
         while (matcher.find()) {
-            if (matcher.group(CARD_PREVIEW_GROUP) != null) {
-                String token = matcher.group(CARD_PREVIEW_GROUP).trim();
+            if (matcher.group(PREVIEW_CARD_TOKEN_GROUP) != null) {
+                String token = matcher.group(PREVIEW_CARD_TOKEN_GROUP).trim();
                 if (!token.isEmpty() && !cards.containsKey(token)) {
                     cards.put(token, new PreviewReference(PreviewReferenceType.CARD, token, order++));
                 }
-            } else if (matcher.group(KEYWORD_PREVIEW_GROUP) != null) {
-                String token = matcher.group(KEYWORD_PREVIEW_GROUP).trim();
+            } else if (matcher.group(KEYWORD_TOKEN_GROUP) != null) {
+                String token = matcher.group(KEYWORD_TOKEN_GROUP).trim();
                 if (!token.isEmpty() && !keywords.containsKey(token)) {
                     keywords.put(token, new PreviewReference(PreviewReferenceType.KEYWORD, token, order++));
                 }
@@ -109,5 +116,14 @@ public final class TextHelper {
 
         int separatorIndex = token.indexOf('|');
         return separatorIndex >= 0 ? token.substring(0, separatorIndex).trim() : token;
+    }
+
+    private static String normalizeStrippedPreviewText(String text) {
+        return text
+            .replaceAll("[ \\t]{2,}", " ")
+            .replaceAll("\\s+([,.;:!?])", "$1")
+            .replaceAll("\\(\\s+", "(")
+            .replaceAll("\\s+\\)", ")")
+            .trim();
     }
 }

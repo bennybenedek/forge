@@ -1,5 +1,6 @@
 package forge.gamemodes.rogue.effect;
 
+import forge.deck.DeckSection;
 import forge.gamemodes.rogue.RoguePlanebound;
 import forge.gamemodes.rogue.npc.BazaarContext;
 import forge.item.PaperCard;
@@ -26,8 +27,11 @@ public class NodeResultContext {
 
     /** Set by card-selection triggers: how many cards to remove, add, or draw as replacements. */
     public int removeCount;
-    public int addCount;
+    public int addMinCount;
+    public int addMaxCount;
     public int drawCount;
+    public DeckSection addSection = DeckSection.Main;
+    public boolean replaceCurrentCardsInAddSection;
 
     /** Cards removed/added by the effect, for result display. Null = not applicable. */
     public List<PaperCard> removedCards;

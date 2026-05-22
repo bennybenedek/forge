@@ -131,9 +131,11 @@ public enum RogueEvent {
         "Your connection to your spark flickers. You reach for your Commander's presence, but the link has gone cold.",
         List.of(
             new EventChoice("Depart", "Your Commander disappeared into the void.",
-                EventBoon.LOST_CANNOT_CAST),
+                EventBoon.LOST_DEPART),
             new EventChoice("Persist", "Your Commander holds on, but feels diminished.",
-                EventBoon.LOST_WEAKENED)
+                EventBoon.LOST_PERSIST),
+            new EventChoice("Replace", "A new legend answers your call and takes command of your deck.",
+                EventBoon.LOST_REPLACE)
         )),
 
     SATCHEL("Satchel",

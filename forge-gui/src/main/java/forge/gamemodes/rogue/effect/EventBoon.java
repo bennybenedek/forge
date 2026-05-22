@@ -1,7 +1,9 @@
 package forge.gamemodes.rogue.effect;
 
+import forge.deck.DeckSection;
 import forge.game.player.RegisteredPlayer;
 import forge.gamemodes.rogue.*;
+import forge.gamemodes.rogue.RogueRun.CarryCardType;
 import forge.gamemodes.rogue.npc.BazaarContext;
 import forge.gamemodes.rogue.npc.NPC;
 import forge.card.CardRulesPredicates;
@@ -143,7 +145,7 @@ public enum EventBoon implements RogueEffect {
             ctx.addedCards = List.of(vehicle);
         }
     },
-    GROUND_ZERO_SPECIAL("ground_zero_special", "You're S.P.E.C.I.A.L.", "Add all Bobblehead artifacts to your deck.",
+    GROUND_ZERO_SPECIAL("ground_zero_special", "You're S.P.E.C.I.A.L.", "Add all 7 Bobblehead artifacts to your deck. ![[Charisma Bobblehead]] ![[Intelligence Bobblehead]] ![[Strength Bobblehead]]",
             EffectType.ONESHOT) {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
@@ -159,7 +161,7 @@ public enum EventBoon implements RogueEffect {
         }
     },
     GROUND_ZERO_REPAIR("ground_zero_repair", "Use Workbench",
-            "Consume all artifact cards in your deck and all active {{Item}}s. Add 3 random Robot cards from {{PIP}} to your deck.",
+            "Remove all artifact cards from your deck and lose all {{Item}}s. Gain 3 random PIP Robot {{Fellow}}s.",
             EffectType.ONESHOT) {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
@@ -183,7 +185,11 @@ public enum EventBoon implements RogueEffect {
 
             Collections.shuffle(robots, MyRandom.getRandom());
             List<PaperCard> added = new ArrayList<>(robots.subList(0, Math.min(3, robots.size())));
-            run.addCardsToDeck(added, false);
+
+            for (PaperCard card : added) {
+                run.addCarryCard(card.getName(), CarryCardType.FELLOW, getId());
+            }
+
             ctx.addedCards = added;
         }
     },
@@ -214,10 +220,15 @@ public enum EventBoon implements RogueEffect {
         }
     },
     CROOKED_COUNSEL_FELLOWSHIP("crooked_counsel_fellowship", "Rally the Free Peoples",
-            "Choose 9 creatures from a set of legendary Halflings, Humans, Elves, Dwarves, and Wizards to add to your deck.",
+            "Remove all black cards from your deck. Choose up to 9 creatures from a set of legendary Halflings, Humans, Elves, Dwarves, and Wizards to add to your deck.",
             EffectType.ONESHOT) {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
+            List<PaperCard> removed = run.removeCardsFromDeck(card -> card.getRules().getColor().hasBlack());
+            if (!removed.isEmpty()) {
+                ctx.removedCards = removed;
+            }
+
             Predicate<PaperCard> fellowshipFilter = card -> {
                 if (!("LTR".equalsIgnoreCase(card.getEdition()) || "LTC".equalsIgnoreCase(card.getEdition()))) {
                     return false;
@@ -239,14 +250,15 @@ public enum EventBoon implements RogueEffect {
             Collections.shuffle(fellowshipCards, MyRandom.getRandom());
             List<PaperCard> candidates = new ArrayList<>(fellowshipCards.subList(0, Math.min(30, fellowshipCards.size())));
             ctx.candidateCards = candidates;
-            ctx.addCount = Math.min(9, candidates.size());
-            if (ctx.addCount > 0) {
+            ctx.addMinCount = 0;
+            ctx.addMaxCount = Math.min(9, candidates.size());
+            if (ctx.addMaxCount > 0) {
                 ctx.trigger = NodeResultContext.ActionTriggerType.CARD_ADDITION;
             }
         }
     },
     CROOKED_COUNSEL_RING("crooked_counsel_ring", "Keep to your own path",
-            "Gain the legendary artifact {{Item}} '[[The One Ring|LTR|2]]'. Lose 4 life.",
+            "Gain the legendary artifact {{Item}} '[[The One Ring|LTR|2]]'. Lose 5 life.",
             EffectType.ONESHOT) {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
@@ -256,7 +268,7 @@ public enum EventBoon implements RogueEffect {
             }
 
             run.addCarryCard(ring.getName(), RogueRun.CarryCardType.ITEM, getId());
-            run.loseLife(4);
+            run.loseLife(5);
             ctx.addedCards = List.of(ring);
         }
 
@@ -318,8 +330,9 @@ public enum EventBoon implements RogueEffect {
             }
             ctx.removedCards = removed;
             ctx.candidateCards = gamechangerCards;
-            ctx.addCount = Math.min(swapCount, gamechangerCards.size());
-            if (ctx.addCount > 0) {
+            ctx.addMinCount = Math.min(swapCount, gamechangerCards.size());
+            ctx.addMaxCount = ctx.addMinCount;
+            if (ctx.addMaxCount > 0) {
                 ctx.trigger = NodeResultContext.ActionTriggerType.CARD_ADDITION;
             }
         }
@@ -485,7 +498,7 @@ public enum EventBoon implements RogueEffect {
         }
     },
 
-    LOST_CANNOT_CAST("lost_cannot_cast", "Lost Connection - Cannot Cast Commander", "You may not cast your Commander in the next match.",
+    LOST_DEPART("lost_depart", "Lost Connection - Depart", "You may not cast your Commander in the next match.",
             EffectType.CONSUME) {
         @Override
         public int getChargesForRank(int rank) { return 1; }
@@ -496,11 +509,35 @@ public enum EventBoon implements RogueEffect {
             run.consumeEffect(getId());
         }
     },
-    LOST_WEAKENED("lost_weakened", "Lost Connection - Commander Weakened", "Your Commander gets -1/-1 for the rest of the Run.",
+    LOST_PERSIST("lost_weakened", "Lost Connection - Commander Weakened", "Your Commander gets -1/-1 for the rest of the Run.",
         EffectType.PERMANENT) {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             RogueEffect.addCardToCommandZone("Lost Connection - Commander Weakened", human);
+        }
+    },
+    LOST_REPLACE("lost_new_commander", "Lost Connection - Replace",
+            "Choose a new Commander for your deck for the rest of the Run.",
+            EffectType.ONESHOT) {
+        @Override
+        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+            int commanderColorIdentityMask = run.getCommanderColorIdentityMask();
+            Predicate<PaperCard> commanderFilter = card ->
+                    card.getRules().getType().isCreature()
+                    && card.getRules().getType().isLegendary()
+                    && card.getRules().getColorIdentity().getColor() == commanderColorIdentityMask;
+            List<PaperCard> commanderChoices = run.getAllCardsForActiveCommander(commanderFilter);
+            if (commanderChoices.isEmpty()) {
+                return;
+            }
+
+            Collections.shuffle(commanderChoices, MyRandom.getRandom());
+            ctx.candidateCards = new ArrayList<>(commanderChoices.subList(0, Math.min(20, commanderChoices.size())));
+            ctx.addMinCount = 1;
+            ctx.addMaxCount = 1;
+            ctx.addSection = DeckSection.Commander;
+            ctx.replaceCurrentCardsInAddSection = true;
+            ctx.trigger = NodeResultContext.ActionTriggerType.CARD_ADDITION;
         }
     },
     DISTORTION_SKIP_REWARDS("skip_rewards", "Distortion", "You skip all rewards after your next match.",

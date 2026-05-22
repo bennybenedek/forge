@@ -18,7 +18,7 @@ import javax.swing.SwingConstants;
 
 /**
  * Dialog for selecting cards from a provided list. Cards are shown face-up in a scrollable grid.
- * The player must select exactly N cards before confirming.
+ * The player must select between the provided minimum and maximum counts before confirming.
  */
 public class CardSelectionDialog {
 
@@ -30,7 +30,8 @@ public class CardSelectionDialog {
 
   private final String title;
   private final String subtitle;
-  private final int exactSelections;
+  private final int minSelections;
+  private final int maxSelections;
   private final Set<PaperCard> selectedCards;
   private final List<SelectableCardPanel> cardPanels;
   private final GridPanel gridPanel;
@@ -40,10 +41,11 @@ public class CardSelectionDialog {
   private CardUtil zoomUtil;
 
   public CardSelectionDialog(String title, String subtitle, List<PaperCard> cards,
-      int exactSelections) {
+      int minSelections, int maxSelections) {
     this.title = title;
     this.subtitle = subtitle;
-    this.exactSelections = exactSelections;
+    this.minSelections = minSelections;
+    this.maxSelections = maxSelections;
     this.selectedCards = new HashSet<>();
     this.cardPanels = new ArrayList<>();
 
@@ -118,7 +120,7 @@ public class CardSelectionDialog {
 
     optionPane = new FOptionPane(null, title, null, wrapper, List.of("OK"), 0);
     optionPane.getTitleBar().setVisible(false);
-    optionPane.setButtonEnabled(0, false); // Disabled until exact selections met
+    optionPane.setButtonEnabled(0, minSelections == 0);
 
     zoomUtil = new CardUtil(optionPane);
     zoomUtil.setupZoomOverlay();
@@ -138,15 +140,16 @@ public class CardSelectionDialog {
     if (selectedCards.contains(card)) {
       selectedCards.remove(card);
       cardPanel.setSelected(false);
-    } else if (selectedCards.size() < exactSelections) {
+    } else if (selectedCards.size() < maxSelections) {
       selectedCards.add(card);
       cardPanel.setSelected(true);
     }
 
     updateInfoLabel();
-    // Enable OK only when exactly N selected
+    // Enable OK only when the current selection is within the allowed range.
     if (optionPane != null) {
-      optionPane.setButtonEnabled(0, selectedCards.size() == exactSelections);
+      optionPane.setButtonEnabled(0, selectedCards.size() >= minSelections
+          && selectedCards.size() <= maxSelections);
     }
   }
 
@@ -155,7 +158,11 @@ public class CardSelectionDialog {
   }
 
   private String getInfoText() {
-    return String.format("%s (%d / %d selected)", subtitle, selectedCards.size(), exactSelections);
+    if (minSelections == maxSelections) {
+      return String.format("%s (%d / %d selected)", subtitle, selectedCards.size(), maxSelections);
+    }
+    return String.format("%s (%d selected, choose %d to %d)", subtitle, selectedCards.size(),
+        minSelections, maxSelections);
   }
 
   /** Returns type sort index matching Deck Editor order (GroupDef.CARD_TYPE). */
