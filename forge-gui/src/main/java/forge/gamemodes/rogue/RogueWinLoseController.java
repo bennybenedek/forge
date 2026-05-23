@@ -311,10 +311,18 @@ public class RogueWinLoseController {
             RogueRun.CarryCard card = lostCarryCards.get(i);
             sb.append(card.cardName())
               .append(" (")
-              .append(card.type() == CarryCardType.ITEM ? "item" : "companion")
+              .append(getCarryCardTypeLabel(card.type()))
               .append(")");
         }
-        view.showMessage(sb.toString(), "Lost Equipment", FSkinProp.ICO_QUEST_MINUS);
+        view.showMessage(sb.toString(), "Lost Carry Cards", FSkinProp.ICO_QUEST_MINUS);
+    }
+
+    private static String getCarryCardTypeLabel(CarryCardType type) {
+        return switch (type) {
+            case ITEM -> "item";
+            case FELLOW -> "fellow";
+            case SCROLL -> "scroll";
+        };
     }
 
     private void handleMatchData() {
@@ -335,18 +343,23 @@ public class RogueWinLoseController {
     private void checkCarryCardSurvival(Player human) {
         List<CarryCard> lost = new ArrayList<>();
         for (CarryCard card : currentRun.getCarryCards()) {
-            boolean survived = human.getZone(ZoneType.Command).getCards().stream()
-                    .anyMatch(c -> c.getName().equals(card.cardName()))
-                || human.getZone(ZoneType.Battlefield).getCards().stream()
-                    .anyMatch(c -> c.getName().equals(card.cardName()))
-                || human.getCardsIn(ZoneType.Stack).stream()
-                    .anyMatch(c -> c.getName().equals(card.cardName()));
+            boolean survived = hasCarryCardSurvived(human, card);
             if (!survived) lost.add(card);
         }
         for (CarryCard card : lost) {
             currentRun.removeCarryCard(card.cardName());
         }
         this.lostCarryCards = lost;
+    }
+
+    private static boolean hasCarryCardSurvived(Player human, CarryCard card) {
+        boolean inCommandZone = human.getZone(ZoneType.Command).getCards().stream()
+            .anyMatch(c -> c.getName().equals(card.cardName()));
+        return inCommandZone
+            || human.getZone(ZoneType.Battlefield).getCards().stream()
+                .anyMatch(c -> c.getName().equals(card.cardName()))
+            || human.getCardsIn(ZoneType.Stack).stream()
+                .anyMatch(c -> c.getName().equals(card.cardName()));
     }
 
     public void actionOnQuit() {

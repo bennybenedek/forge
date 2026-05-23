@@ -133,12 +133,13 @@ public enum RogueTutorial {
   ),
 
   CARRY_CARDS(
-      "Items & Companions",
+      "Carry Cards",
       "You have acquired a carry card! Carry cards persist across matches and can be cast from your command zone.\n" +
-          "There are two types:\n" +
+          "There are three types:\n" +
           "- Items: Artifacts such as equipment and relics.\n" +
-          "- Companions: Creatures that fight alongside you.\n" +
-          "If a carry card is neither in the command zone nor on the battlefield after a match (e.g. destroyed, exiled, returned to hand), it is lost permanently!"
+          "- Fellows: Creatures that fight alongside you.\n" +
+          "- Scrolls: Instants and sorceries kept in your command zone until used.\n" +
+          "Items and fellows are lost permanently if they are neither in the command zone nor on the battlefield after a match. Scrolls are lost if they end a match outside the command zone."
   );
 
   private final String title;

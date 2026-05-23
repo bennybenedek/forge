@@ -1,0 +1,5 @@
+Name:Rogue - Scroll Enabler
+ManaCost:no cost
+Types:Rogue Modifier
+S:Mode$ Continuous | EffectZone$ Command | MayPlay$ True | Affected$ Instant.YouOwn,Sorcery.YouOwn | AffectedZone$ Command | Description$ You may cast instant and sorcery scrolls you own from the command zone.
+Oracle:You may cast instant and sorcery scrolls you own from the command zone.
