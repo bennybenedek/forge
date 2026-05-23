@@ -49,6 +49,16 @@ public enum RogueEvent {
                 EventBoon.DRIFTED_STEAL)
         )),
 
+    CROSSROADS_OF_DESTINY("Crossroads of Destiny",
+        "At a weathered crossroads shrine, a calm traveler offers guidance for the road ahead. " +
+        "Some wisdom walks beside you, they say. Some wisdom waits in the scroll case.",
+        List.of(
+            new EventChoice("Walk together", "A steadfast traveler falls into step beside you.",
+                EventBoon.CROSSROADS_WALK),
+            new EventChoice("Study", "You leave with lessons worth keeping close at hand.",
+                EventBoon.CROSSROADS_STUDY)
+        )),
+
     PLANAR_TRIBUTE("Planar Tribute",
         "The planes demand tribute.",
         List.of(

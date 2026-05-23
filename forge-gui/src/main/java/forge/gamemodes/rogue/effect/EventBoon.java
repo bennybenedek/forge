@@ -145,6 +145,45 @@ public enum EventBoon implements RogueEffect {
             ctx.addedCards = List.of(vehicle);
         }
     },
+    CROSSROADS_WALK("crossroads_walk", "Walk with a Companion", "Gain a random Ally {{Fellow}}.",
+            EffectType.ONESHOT) {
+        @Override
+        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+            Predicate<PaperCard> allyFilter = card -> "TLA".equalsIgnoreCase(card.getEdition())
+                    && PaperCardPredicates.fromRules(
+                        CardRulesPredicates.IS_CREATURE.and(CardRulesPredicates.subType("Ally")))
+                    .test(card);
+            List<PaperCard> allies = run.getAllCardsForActiveCommander(allyFilter);
+            PaperCard ally = allies.isEmpty() ? null : Aggregates.random(allies);
+            if (ally == null) {
+                return;
+            }
+
+            run.addCarryCard(ally.getName(), RogueRun.CarryCardType.FELLOW, getId());
+            ctx.addedCards = List.of(ally);
+        }
+    },
+    CROSSROADS_STUDY("crossroads_study", "Study the Scrolls",
+            "Gain 3 random Lesson {{Scroll}}s.",
+            EffectType.ONESHOT) {
+        @Override
+        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+            Predicate<PaperCard> lessonFilter = card -> "TLA".equalsIgnoreCase(card.getEdition())
+                    && (card.getRules().getType().isInstant() || card.getRules().getType().isSorcery())
+                    && card.getRules().getType().hasSubtype("Lesson");
+            List<PaperCard> lessons = run.getAllCardsForActiveCommander(lessonFilter);
+            if (lessons.isEmpty()) {
+                return;
+            }
+
+            Collections.shuffle(lessons, MyRandom.getRandom());
+            List<PaperCard> added = new ArrayList<>(lessons.subList(0, Math.min(3, lessons.size())));
+            for (PaperCard card : added) {
+                run.addCarryCard(card.getName(), RogueRun.CarryCardType.SCROLL, getId());
+            }
+            ctx.addedCards = added;
+        }
+    },
     GROUND_ZERO_SPECIAL("ground_zero_special", "You're S.P.E.C.I.A.L.", "Add all 7 Bobblehead artifacts to your deck. ![[Charisma Bobblehead]] ![[Intelligence Bobblehead]] ![[Strength Bobblehead]]",
             EffectType.ONESHOT) {
         @Override
