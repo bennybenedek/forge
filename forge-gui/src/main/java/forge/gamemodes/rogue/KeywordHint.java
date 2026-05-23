@@ -17,7 +17,15 @@ public enum KeywordHint {
     BAZAAR("Bazaar",
             "Spend your gold on cards and special offers."),
     SANCTUM("Sanctum",
-            "Rest to regain life and cure alll wounds or cook a random food item."),
+            "Rest to regain life and cure all wounds or cook a random food item."),
+    CHEST("Chest",
+        "Contain a random reward, like gold, cards from your Reward Pool, or permanent buffs that last for the rest of the Run."),
+    GOLD("Gold",
+        "Currency to spend during the Run, like for buying cards at a Bazaar or rerolling rewards."),
+    ECHOES("Echoes",
+        "Currency to spend in the Aether, to unlock Boons for making you stronger in future Runs."),
+    REWARD_POOL("Reward Pool",
+        "The Commander-specific card pool where cards are drawn from for Card Rewards and Bazaars."),
     MAX_LIFE("Max. Life",
             "Your life can only exceed Max-Life during a match.");
 

@@ -1,11 +1,14 @@
 package forge.screens.home.rogue;
 
+import forge.deckchooser.FDeckViewer;
 import forge.card.CardType;
 import forge.item.PaperCard;
 import forge.toolbox.FLabel;
 import forge.toolbox.FOptionPane;
 import forge.toolbox.FScrollPane;
+import forge.toolbox.FSkin;
 import forge.toolbox.FSkin.SkinnedPanel;
+import forge.localinstance.skin.FSkinProp;
 import forge.view.arcane.CardPanel;
 import java.awt.*;
 import java.util.ArrayList;
@@ -118,20 +121,40 @@ public class CardSelectionDialog {
     wrapper.setPreferredSize(dialogSize);
     wrapper.setMinimumSize(dialogSize);
 
-    optionPane = new FOptionPane(null, title, null, wrapper, List.of("OK"), 0);
-    optionPane.getTitleBar().setVisible(false);
-    optionPane.setButtonEnabled(0, minSelections == 0);
+    final int OK_OPTION = 0;
+    final int VIEW_DECK_OPTION = 1;
+    int result;
+    do {
+      optionPane = new FOptionPane(null, title, null, wrapper, List.of("OK", "View Deck"), 0);
+      optionPane.getTitleBar().setVisible(false);
+      optionPane.setButtonEnabled(OK_OPTION, minSelections == 0
+          || selectedCards.size() >= minSelections && selectedCards.size() <= maxSelections);
+      optionPane.getButton(VIEW_DECK_OPTION).setIcon(FSkin.getIcon(FSkinProp.ICO_CARD_IMAGE));
+      optionPane.getButton(VIEW_DECK_OPTION).setHorizontalTextPosition(SwingConstants.RIGHT);
 
-    zoomUtil = new CardUtil(optionPane);
-    zoomUtil.setupZoomOverlay();
+      zoomUtil = new CardUtil(optionPane);
+      zoomUtil.setupZoomOverlay();
 
-    optionPane.setVisible(true);
-    optionPane.dispose();
+      optionPane.setVisible(true);
+      result = optionPane.getResult();
+      optionPane.dispose();
 
-    if (optionPane.getResult() == 0) {
+      if (result == VIEW_DECK_OPTION) {
+        showCurrentDeck();
+      }
+    } while (result == VIEW_DECK_OPTION);
+
+    if (result == OK_OPTION) {
       return new ArrayList<>(selectedCards);
     }
     return new ArrayList<>();
+  }
+
+  private void showCurrentDeck() {
+    var currentRun = CSubmenuRogueMap.SINGLETON_INSTANCE.getCurrentRun();
+    if (currentRun != null && currentRun.getCurrentDeck() != null) {
+      FDeckViewer.show(currentRun.getCurrentDeck());
+    }
   }
 
   private void toggleCardSelection(SelectableCardPanel cardPanel) {

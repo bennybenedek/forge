@@ -1,12 +1,15 @@
 package forge.screens.home.rogue;
 
+import forge.deckchooser.FDeckViewer;
 import forge.gamemodes.rogue.PreviewReference;
 import forge.gamemodes.rogue.RogueEvent;
 import forge.gamemodes.rogue.RogueEvent.EventChoice;
 import forge.gamemodes.rogue.RogueRun;
+import forge.localinstance.skin.FSkinProp;
 import forge.toolbox.FButton;
 import forge.toolbox.FLabel;
 import forge.toolbox.FOptionPane;
+import forge.toolbox.FSkin;
 import forge.toolbox.FTextArea;
 import forge.toolbox.FSkin.SkinnedPanel;
 import java.awt.Dimension;
@@ -32,14 +35,17 @@ public class EventDialog {
   private static final int PANEL_INSETS = 20;
   private static final int FULL_WIDTH = DIALOG_WIDTH - 2 * PANEL_INSETS;
   private static final int BUTTON_WIDTH = FULL_WIDTH * 80 / 100;
+  private static final int CHOICE_RESULT = 1;
 
   private final MainPanel panel;
+  private final RogueRun run;
   private final List<PreviewTarget> previewTargets = new ArrayList<>();
   private FOptionPane optionPane;
   private RoguePreviewPopup previewPopup;
   private EventChoice selectedChoice;
 
   public EventDialog(RogueEvent event, RogueRun run) {
+    this.run = run;
     panel = new MainPanel();
 
     FLabel lblTitle = new FLabel.Builder()
@@ -65,7 +71,7 @@ public class EventDialog {
       btn.addActionListener(e -> {
         hidePreview();
         selectedChoice = choice;
-        optionPane.setResult(0);
+        optionPane.setResult(CHOICE_RESULT);
         optionPane.setVisible(false);
       });
       boolean enabled = choice.effect().isChoiceAvailable(run);
@@ -86,22 +92,41 @@ public class EventDialog {
 
   /** Show dialog and return selected choice, or null if skipped. */
   public EventChoice show() {
-    optionPane = new FOptionPane(null, "Event", null, panel,
-        List.of(), -1);
-    optionPane.getTitleBar().setVisible(false);
-    previewPopup = new RoguePreviewPopup();
-    previewTargets.forEach(target -> previewPopup.attachTo(target.component(), target.references()));
-    panel.revalidate();
-    panel.repaint();
-    optionPane.setVisible(true);
-    hidePreview();
-    optionPane.dispose();
+    final int VIEW_DECK_OPTION = 0;
+    int result;
+    do {
+      optionPane = new FOptionPane(null, "Event", null, panel,
+          List.of("View Deck"), VIEW_DECK_OPTION);
+      optionPane.getTitleBar().setVisible(false);
+      optionPane.getButton(VIEW_DECK_OPTION).setIcon(FSkin.getIcon(FSkinProp.ICO_CARD_IMAGE));
+      optionPane.getButton(VIEW_DECK_OPTION).setHorizontalTextPosition(SwingConstants.RIGHT);
+      previewPopup = new RoguePreviewPopup();
+      previewTargets.forEach(target -> previewPopup.attachTo(target.component(), target.references()));
+      panel.revalidate();
+      panel.repaint();
+      optionPane.setVisible(true);
+      result = optionPane.getResult();
+      hidePreview();
+      optionPane.dispose();
+
+      if (result == VIEW_DECK_OPTION) {
+        showCurrentDeck();
+      }
+    } while (result == VIEW_DECK_OPTION);
+
     return selectedChoice;
   }
 
   private void hidePreview() {
     if (previewPopup != null) {
       previewPopup.hide();
+    }
+  }
+
+  private void showCurrentDeck() {
+    hidePreview();
+    if (run != null && run.getCurrentDeck() != null) {
+      FDeckViewer.show(run.getCurrentDeck());
     }
   }
 

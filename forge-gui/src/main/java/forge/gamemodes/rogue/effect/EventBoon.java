@@ -42,7 +42,7 @@ public enum EventBoon implements RogueEffect {
             return null;
         }
     },
-    HEALER_TREAT_WOUNDS("healer_treatment", "Healer's Treatment", "Clear all {{Wound}}s, lose 3 gold.",
+    HEALER_TREAT_WOUNDS("healer_treatment", "Healer's Treatment", "Clear all {{Wound}}s, lose 3 {{Gold}}.",
         EffectType.ONESHOT, 3) {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
@@ -66,7 +66,7 @@ public enum EventBoon implements RogueEffect {
             return null;
         }
     },
-    HEALER_STRENGTHEN("healer_strengthen", "Healer's Strength", "Gain 10 {{Max. Life}}, lose 7 Gold.",
+    HEALER_STRENGTHEN("healer_strengthen", "Healer's Strength", "Gain 10 {{Max. Life}}, lose 7 {{Gold}}.",
         EffectType.ONESHOT, 7) {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
@@ -84,7 +84,7 @@ public enum EventBoon implements RogueEffect {
             return run.hasEnoughGold(getGoldCost()) ? null : getInsufficientGoldReason();
         }
     },
-    PLANAR_RIFT_ENERGY("planar_rift_energy", "Planar Rift Energy", "Gain 6 gold.",
+    PLANAR_RIFT_ENERGY("planar_rift_energy", "Planar Rift Energy", "Gain 6 {{Gold}}.",
             EffectType.ONESHOT) {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
@@ -98,7 +98,7 @@ public enum EventBoon implements RogueEffect {
             RogueEffect.addCardToCommandZone("Planar Rift - Commander Boost", human);
         }
     },
-    CARAVAN_ROB("caravan_rob", "Caravan Plunder", "Lose 3 life, gain 8 gold.",
+    CARAVAN_ROB("caravan_rob", "Caravan Plunder", "Lose 3 life, gain 8 {{Gold}}.",
             EffectType.ONESHOT) {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
@@ -360,7 +360,7 @@ public enum EventBoon implements RogueEffect {
         }
     },
     PLANAR_TRIBUTE_REPLACE("planar_shuffle", "Planar Shuffle",
-            "Remove 3 random cards (excluding basic lands) and replace them with cards from your Reward Pool.",
+            "Remove 3 random cards (excluding basic lands) and replace them with cards from your {{Reward Pool}}.",
             EffectType.ONESHOT) {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
@@ -428,7 +428,7 @@ public enum EventBoon implements RogueEffect {
         }
     },
     PLANAR_EXCHANGE("planar_exchange", "Planar Exchange",
-            "Choose 3 cards to remove (excluding basic lands), then receive 3 random cards from your Reward Pool.",
+            "Choose 3 cards to remove (excluding basic lands), then receive 3 random cards from your {{Reward Pool}}.",
             EffectType.ONESHOT) {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
@@ -457,7 +457,7 @@ public enum EventBoon implements RogueEffect {
             run.loseLife(4);
         }
     },
-    FIND_CHEST("find_chest", "Hidden Chest", "You find a hidden chest.",
+    FIND_CHEST("find_chest", "Hidden Chest", "You find a hidden {{Chest}}.",
             EffectType.ONESHOT) {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
@@ -471,14 +471,14 @@ public enum EventBoon implements RogueEffect {
             ctx.trigger = NodeResultContext.ActionTriggerType.SANCTUM;
         }
     },
-    LOSE_ALL_GOLD("lose_all_gold", "Lose All Gold", "You lose all your gold.",
+    LOSE_ALL_GOLD("lose_all_gold", "Lose All Gold", "You lose all your {{Gold}}.",
             EffectType.ONESHOT) {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
             run.setCurrentGold(0);
         }
     },
-    LOSE_ALL_ECHOES("lose_all_echoes", "Lose All Echoes", "You lose all your echoes.",
+    LOSE_ALL_ECHOES("lose_all_echoes", "Lose All Echoes", "You lose all your {{Echoes}}.",
             EffectType.ONESHOT) {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
@@ -552,7 +552,7 @@ public enum EventBoon implements RogueEffect {
         }
     },
     DISTORTION_FADED_REWARDS("faded_rewards", "Distortion - Faded Rewards",
-            "After your next 2 matches, gain 1 less gold and see 3 fewer non-mythic cards in Card Rewards.",
+            "After your next 2 matches, gain 1 less {{Gold}} and see 3 fewer non-mythic cards in Card Rewards.",
             EffectType.CONSUME) {
         @Override
         public int getChargesForRank(int rank) { return 2; }
