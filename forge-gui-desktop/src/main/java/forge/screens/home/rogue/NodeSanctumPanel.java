@@ -5,7 +5,8 @@ import java.awt.*;
 
 /**
  * Visual representation of a Sanctum node in the Rogue Commander path. Sanctums allow the player to
- * heal and cook a carry item. Displays as a small circular node with a heart icon.
+ * heal, cook a carry item, or reflect for removal credits. Displays as a small circular node with
+ * a heart icon.
  */
 public class NodeSanctumPanel extends NodeCircularPanel {
 
@@ -19,7 +20,8 @@ public class NodeSanctumPanel extends NodeCircularPanel {
   public NodeSanctumPanel(NodeSanctum node) {
     super(node);
     this.sanctumNode = node;
-    setToolTipText("Sanctum: Gain life and cure all wounds, or craft a random Food item.");
+    setToolTipText(
+        "Sanctum: Gain life and cure all wounds, craft a random Food item, or gain 3 Removal Credits.");
   }
 
   @Override

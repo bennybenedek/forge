@@ -20,11 +20,13 @@ import net.miginfocom.swing.MigLayout;
 public class SanctumDialog {
 
   private static final int DIALOG_WIDTH = 600;
-  private static final int DIALOG_HEIGHT = 380;
+  private static final int DIALOG_HEIGHT = 390;
+  private static final int CHOICE_RESULT = 1;
 
   public enum SanctumChoice {
     HEAL,
     COOK,
+    REFLECT,
     SKIP
   }
 
@@ -63,7 +65,7 @@ public class SanctumDialog {
     btnRest.addActionListener(e -> {
       hidePreview();
       choice = SanctumChoice.HEAL;
-      optionPane.setResult(0);
+      optionPane.setResult(CHOICE_RESULT);
       optionPane.setVisible(false);
     });
     btnRest.setEnabled(restEnabled);
@@ -77,16 +79,18 @@ public class SanctumDialog {
     btnCook.addActionListener(e -> {
       hidePreview();
       choice = SanctumChoice.COOK;
-      optionPane.setResult(0);
+      optionPane.setResult(CHOICE_RESULT);
       optionPane.setVisible(false);
     });
     previewTargets.add(new PreviewTarget(btnCook, TextHelper.extractPreviewReferences(cookDescription)));
 
-    FButton btnSkip = new FButton(buildChoiceHtml("Skip", ""));
-    btnSkip.addActionListener(e -> {
+    String reflectDescription = "Gain 3 {{Removal Credits}}.";
+    FButton btnReflect = new FButton(buildChoiceHtml(
+        "Reflect", reflectDescription));
+    btnReflect.addActionListener(e -> {
       hidePreview();
-      choice = SanctumChoice.SKIP;
-      optionPane.setResult(0);
+      choice = SanctumChoice.REFLECT;
+      optionPane.setResult(CHOICE_RESULT);
       optionPane.setVisible(false);
     });
 
@@ -94,7 +98,7 @@ public class SanctumDialog {
     panel.add(lblDescription, "w 100%!, h 30px!, ax center, gap 0 0 10px 20px, wrap");
     panel.add(btnRest, "w 80%!, ax center, gap 0 0 10px 10px, wrap");
     panel.add(btnCook, "w 80%!, ax center, gap 0 0 10px 10px, wrap");
-    panel.add(btnSkip, "w 80%!, ax center, gap 0 0 10px 10px, wrap");
+    panel.add(btnReflect, "w 80%!, ax center, gap 0 0 10px 10px, wrap");
 
     Dimension dialogSize = new Dimension(DIALOG_WIDTH, DIALOG_HEIGHT);
     panel.setPreferredSize(dialogSize);
@@ -104,7 +108,7 @@ public class SanctumDialog {
   /**
    * Show the dialog and return the player's choice.
    *
-   * @return The selected choice (HEAL, COOK, or SKIP)
+   * @return The selected choice (HEAL, COOK, REFLECT, or SKIP)
    */
   public SanctumChoice show() {
     optionPane = new FOptionPane(
@@ -112,8 +116,8 @@ public class SanctumDialog {
         "Sanctum",
         null,
         panel,
-        List.of(),
-        -1
+        List.of("Skip"),
+        0
     );
     optionPane.getTitleBar().setVisible(false);
     previewPopup = new RoguePreviewPopup();
@@ -126,6 +130,9 @@ public class SanctumDialog {
     hidePreview();
     optionPane.dispose();
 
+    if (optionPane.getResult() == 0) {
+      choice = SanctumChoice.SKIP;
+    }
     return choice;
   }
 

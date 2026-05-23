@@ -24,6 +24,8 @@ public enum KeywordHint {
         "Currency to spend during the Run, like for buying cards at a Bazaar or rerolling rewards."),
     ECHOES("Echoes",
         "Currency to spend in the Aether, to unlock Boons for making you stronger in future Runs."),
+    REMOVAL_CREDITS("Removal Credits",
+        "Earned for each card added to your deck from a Card Reward or Bazaar. Can be spent to remove cards from your Deck. Basic lands can always be removed."),
     REWARD_POOL("Reward Pool",
         "The Commander-specific card pool where cards are drawn from for Card Rewards and Bazaars."),
     MAX_LIFE("Max. Life",

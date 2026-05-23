@@ -522,6 +522,10 @@ public enum CSubmenuRogueMap implements ICDoc {
             NodeResultPanel.MessageAlignment.CENTER);
         break;
 
+      case REFLECT:
+        currentRun.addRemovalCredits(3);
+        break;
+
       case SKIP:
         // Do nothing
         break;
