@@ -4,7 +4,7 @@ import forge.ImageCache;
 import forge.ImageKeys;
 import forge.gamemodes.rogue.*;
 import forge.gamemodes.rogue.effect.DescensionLevel;
-import forge.gamemodes.rogue.effect.NPCBoon;
+import forge.gamemodes.rogue.effect.NPCEffect;
 import forge.gamemodes.rogue.effect.RogueEffectComposite;
 import forge.gamemodes.rogue.npc.NPCContext;
 import forge.gamemodes.rogue.npc.NPC;
@@ -394,7 +394,7 @@ public enum CSubmenuRogueStart implements ICDoc {
 
     // Show NPC encounter dialogs (e.g. Tyvar offering boon choices)
     for (NPCContext ctx : NPCEncounterComposite.INSTANCE.onRunStart(progress)) {
-      NPCBoon chosen = new NPCDialog(ctx).show();
+      NPCEffect chosen = new NPCDialog(ctx).show();
       if (chosen != null) newRun.addNPCBoon(chosen);
     }
 

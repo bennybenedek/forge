@@ -1,6 +1,6 @@
 package forge.gamemodes.rogue.path;
 
-import forge.gamemodes.rogue.effect.ChestLoot;
+import forge.gamemodes.rogue.effect.ChestEffect;
 
 /**
  * Represents a Loot node in a Rogue Commander path.
@@ -8,19 +8,19 @@ import forge.gamemodes.rogue.effect.ChestLoot;
  */
 public class NodeChest extends RoguePathNode {
 
-    private ChestLoot loot;
+    private ChestEffect loot;
 
     public NodeChest() {
         super();
     }
 
-    public NodeChest(ChestLoot loot) {
+    public NodeChest(ChestEffect loot) {
         super();
         this.loot = loot;
     }
 
-    public ChestLoot getLoot() { return loot; }
-    public void setLoot(ChestLoot loot) { this.loot = loot; }
+    public ChestEffect getLoot() { return loot; }
+    public void setLoot(ChestEffect loot) { this.loot = loot; }
 
     @Override
     public String toString() {

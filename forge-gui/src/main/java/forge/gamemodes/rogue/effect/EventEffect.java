@@ -16,7 +16,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 
-public enum EventBoon implements RogueEffect {
+public enum EventEffect implements RogueEffect {
 
     HEALER_POTION("healer_potion", "Healer's Potion", "Gain 8 life, lose 5 gold.",
             EffectType.ONESHOT, 5) {
@@ -145,7 +145,7 @@ public enum EventBoon implements RogueEffect {
             ctx.addedCards = List.of(vehicle);
         }
     },
-    CROSSROADS_WALK("crossroads_walk", "Walk with a Companion", "Gain a random Ally {{Fellow}}.",
+    BENDING_WALK("crossroads_walk", "Walk with a Companion", "Gain a random Ally {{Fellow}}.",
             EffectType.ONESHOT) {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
@@ -163,7 +163,7 @@ public enum EventBoon implements RogueEffect {
             ctx.addedCards = List.of(ally);
         }
     },
-    CROSSROADS_STUDY("crossroads_study", "Study the Scrolls",
+    BENDING_STUDY("crossroads_study", "Study the Scrolls",
             "Gain 3 random Lesson {{Scroll}}s.",
             EffectType.ONESHOT) {
         @Override
@@ -610,11 +610,11 @@ public enum EventBoon implements RogueEffect {
     private final EffectType effectType;
     private final int goldCost;
 
-    EventBoon(String id, String displayName, String description, EffectType effectType) {
+    EventEffect(String id, String displayName, String description, EffectType effectType) {
         this(id, displayName, description, effectType, 0);
     }
 
-    EventBoon(String id, String displayName, String description, EffectType effectType, int goldCost) {
+    EventEffect(String id, String displayName, String description, EffectType effectType, int goldCost) {
         this.id = id;
         this.displayName = displayName;
         this.description = description;
@@ -668,8 +668,8 @@ public enum EventBoon implements RogueEffect {
         return removedCards;
     }
 
-    public static EventBoon fromId(String id) {
-        for (EventBoon eb : values())
+    public static EventEffect fromId(String id) {
+        for (EventEffect eb : values())
             if (eb.id.equals(id)) return eb;
         return null;
     }

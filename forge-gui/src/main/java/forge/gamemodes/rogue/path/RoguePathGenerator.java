@@ -1,7 +1,7 @@
 package forge.gamemodes.rogue.path;
 
 import forge.gamemodes.rogue.*;
-import forge.gamemodes.rogue.effect.ChestLoot;
+import forge.gamemodes.rogue.effect.ChestEffect;
 import forge.gamemodes.rogue.effect.RogueEffectComposite;
 import forge.util.MyRandom;
 import java.util.ArrayList;
@@ -32,7 +32,7 @@ public class RoguePathGenerator {
         for (RogueEvent e : RogueEvent.values()) {
             if (e.isAvailable()) events.add(e);
         }
-        List<ChestLoot> chestLoot = new ArrayList<>(List.of(ChestLoot.values()));
+        List<ChestEffect> chestEffect = new ArrayList<>(List.of(ChestEffect.values()));
 
         // Split planebounds into normal, elite and boss lists
         List<RoguePlanebound> normalPlanebounds = getPlaneboundsOfType(
@@ -47,14 +47,14 @@ public class RoguePathGenerator {
         validateSize(2, elitePlanebounds.size());
         validateSize(1, bossPlanebounds.size());
         validateSize(4, events.size());
-        validateSize(4, chestLoot.size());
+        validateSize(4, chestEffect.size());
 
         // Shuffle lists for randomization
         shufflePlanebounds(normalPlanebounds);
         shufflePlanebounds(elitePlanebounds);
         shufflePlanebounds(bossPlanebounds);
         shuffleEvents(events);
-        shuffleChestLoot(chestLoot);
+        shuffleChestLoot(chestEffect);
 
         // Create nodes for the path
         List<RoguePathNode> nodes = new ArrayList<>();
@@ -68,7 +68,7 @@ public class RoguePathGenerator {
         specialNodes.add(new NodeBazaar());
         specialNodes.add(new NodeEvent(events.get(eventIndex++)));
         specialNodes.add(new NodeEvent(events.get(eventIndex++)));
-        specialNodes.add(new NodeChest(chestLoot.get(lootIndex++)));
+        specialNodes.add(new NodeChest(chestEffect.get(lootIndex++)));
 
         addSpecialNodesRow(nodes, specialNodes, createRandomNodeCount(2, 4));
 
@@ -81,7 +81,7 @@ public class RoguePathGenerator {
         specialNodes.add(new NodeSanctum());
         specialNodes.add(new NodeBazaar());
         specialNodes.add(new NodeEvent(events.get(eventIndex++)));
-        specialNodes.add(new NodeChest(chestLoot.get(lootIndex++)));
+        specialNodes.add(new NodeChest(chestEffect.get(lootIndex++)));
 
         addSpecialNodesRow(nodes, specialNodes, createRandomNodeCount(2, 4));
 
@@ -102,7 +102,7 @@ public class RoguePathGenerator {
         specialNodes.add(new NodeBazaar());
         specialNodes.add(new NodeBazaar());
         specialNodes.add(new NodeEvent(events.get(eventIndex++)));
-        specialNodes.add(new NodeChest(chestLoot.get(lootIndex++)));
+        specialNodes.add(new NodeChest(chestEffect.get(lootIndex++)));
 
         addSpecialNodesRow(nodes, specialNodes, createRandomNodeCount(2, 4));
 
@@ -114,7 +114,7 @@ public class RoguePathGenerator {
         specialNodes.add(new NodeSanctum());
         specialNodes.add(new NodeBazaar());
         specialNodes.add(new NodeEvent(events.get(eventIndex)));
-        specialNodes.add(new NodeChest(chestLoot.get(lootIndex)));
+        specialNodes.add(new NodeChest(chestEffect.get(lootIndex)));
 
         addSpecialNodesRow(nodes, specialNodes, createRandomNodeCount(2, 3));
 
@@ -203,7 +203,7 @@ public class RoguePathGenerator {
         Collections.shuffle(events, MyRandom.getRandom());
     }
 
-    private static void shuffleChestLoot(List<ChestLoot> loots) {
+    private static void shuffleChestLoot(List<ChestEffect> loots) {
         Collections.shuffle(loots, MyRandom.getRandom());
     }
 }

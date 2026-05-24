@@ -1,7 +1,7 @@
 package forge.screens.home.rogue;
 
 import forge.gamemodes.rogue.PreviewReference;
-import forge.gamemodes.rogue.effect.NPCBoon;
+import forge.gamemodes.rogue.effect.NPCEffect;
 import forge.gamemodes.rogue.npc.NPCContext;
 import forge.gamemodes.rogue.npc.NPCContext.NPCChoice;
 import forge.toolbox.FButton;
@@ -38,7 +38,7 @@ public class NPCDialog {
     private final List<PreviewTarget> previewTargets = new ArrayList<>();
     private FOptionPane optionPane;
     private RoguePreviewPopup previewPopup;
-    private NPCBoon selectedBoon;
+    private NPCEffect selectedBoon;
 
     public NPCDialog(NPCContext ctx) {
         panel = new MainPanel();
@@ -104,7 +104,7 @@ public class NPCDialog {
     }
 
     /** Show dialog and return selected NPCBoon, or null if closed without choosing. */
-    public NPCBoon show() {
+    public NPCEffect show() {
         optionPane = new FOptionPane(null, "NPC Encounter", null, panel,
                 List.of(), -1);
         optionPane.getTitleBar().setVisible(false);

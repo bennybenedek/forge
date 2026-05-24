@@ -2,7 +2,7 @@ package forge.gamemodes.rogue.npc;
 
 import forge.gamemodes.rogue.RogueMetaProgress;
 import forge.gamemodes.rogue.RogueRun;
-import forge.gamemodes.rogue.effect.NPCBoon;
+import forge.gamemodes.rogue.effect.NPCEffect;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -44,9 +44,9 @@ public enum NarsetEncounter implements NPCEncounter {
     OFFERING_BOONS(3) {
         @Override
         public NPCContext onRunStart() {
-            List<NPCBoon> pool = new ArrayList<>(List.of(
-                NPCBoon.NARSET_TRAVELER, NPCBoon.NARSET_ALCHEMIST,
-                NPCBoon.NARSET_CHAOSBOUND, NPCBoon.NARSET_GOD_OF_CHAOS
+            List<NPCEffect> pool = new ArrayList<>(List.of(
+                NPCEffect.NARSET_TRAVELER, NPCEffect.NARSET_ALCHEMIST,
+                NPCEffect.NARSET_CHAOSBOUND, NPCEffect.NARSET_GOD_OF_CHAOS
             ));
             Collections.shuffle(pool);
             List<NPCContext.NPCChoice> choices = pool.subList(0, 3).stream()

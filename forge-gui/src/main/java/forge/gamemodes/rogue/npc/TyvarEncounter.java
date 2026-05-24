@@ -2,7 +2,7 @@ package forge.gamemodes.rogue.npc;
 
 import forge.gamemodes.rogue.RogueMetaProgress;
 import forge.gamemodes.rogue.RogueEvent;
-import forge.gamemodes.rogue.effect.NPCBoon;
+import forge.gamemodes.rogue.effect.NPCEffect;
 import java.util.List;
 
 /**
@@ -44,9 +44,9 @@ public enum TyvarEncounter implements NPCEncounter {
                 "Tyvar Kell steps from the shadows, his elven features lit by the glow of his Planeswalker spark. " +
                 "\"I've watched you fight, and I see potential. Let me train your Commander.\"",
                 List.of(
-                    new NPCContext.NPCChoice("Might", NPCBoon.TYVAR_MIGHT),
-                    new NPCContext.NPCChoice("Efficiency", NPCBoon.TYVAR_DISCOUNT),
-                    new NPCContext.NPCChoice("Fury", NPCBoon.TYVAR_HASTE)
+                    new NPCContext.NPCChoice("Might", NPCEffect.TYVAR_MIGHT),
+                    new NPCContext.NPCChoice("Efficiency", NPCEffect.TYVAR_DISCOUNT),
+                    new NPCContext.NPCChoice("Fury", NPCEffect.TYVAR_HASTE)
                 )
             );
         }

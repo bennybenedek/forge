@@ -1,6 +1,6 @@
 package forge.screens.home.rogue;
 
-import forge.gamemodes.rogue.effect.ChestLoot;
+import forge.gamemodes.rogue.effect.ChestEffect;
 import forge.toolbox.FButton;
 import forge.toolbox.FLabel;
 import forge.toolbox.FOptionPane;
@@ -25,7 +25,7 @@ public class ChestDialog {
   private FOptionPane optionPane;
   private final RoguePreviewPopup previewPopup = new RoguePreviewPopup();
 
-  public ChestDialog(ChestLoot loot) {
+  public ChestDialog(ChestEffect loot) {
     panel = new MainPanel();
 
     FLabel lblTitle = new FLabel.Builder()

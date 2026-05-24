@@ -4,7 +4,7 @@ import forge.game.player.RegisteredPlayer;
 import forge.gamemodes.rogue.RogueMetaProgress;
 import forge.gamemodes.rogue.RogueRun;
 
-public enum ChestLoot implements RogueEffect {
+public enum ChestEffect implements RogueEffect {
 
     FIND_GOLD("find_gold", "Treasure", "You found 10 gold.", EffectType.ONESHOT) {
         @Override
@@ -59,7 +59,7 @@ public enum ChestLoot implements RogueEffect {
     private final String description;
     private final EffectType effectType;
 
-    ChestLoot(String id, String displayName, String description, EffectType effectType) {
+    ChestEffect(String id, String displayName, String description, EffectType effectType) {
         this.id = id;
         this.displayName = displayName;
         this.description = description;
@@ -80,8 +80,8 @@ public enum ChestLoot implements RogueEffect {
     @Override
     public String getRawDescription() { return description; }
 
-    public static ChestLoot fromId(String id) {
-        for (ChestLoot cl : values())
+    public static ChestEffect fromId(String id) {
+        for (ChestEffect cl : values())
             if (cl.id.equals(id)) return cl;
         return null;
     }

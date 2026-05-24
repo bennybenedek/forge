@@ -1,6 +1,6 @@
 package forge.gamemodes.rogue.npc;
 
-import forge.gamemodes.rogue.effect.NPCBoon;
+import forge.gamemodes.rogue.effect.NPCEffect;
 import java.util.List;
 
 /**
@@ -8,5 +8,5 @@ import java.util.List;
  */
 public record NPCContext(NPC npc, String flavorText, List<NPCChoice> choices) {
 
-    public record NPCChoice(String label, NPCBoon boon) {}
+    public record NPCChoice(String label, NPCEffect boon) {}
 }

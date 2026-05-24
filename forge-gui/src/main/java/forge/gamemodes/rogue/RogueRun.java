@@ -6,14 +6,14 @@ import forge.deck.Deck;
 import forge.deck.DeckSection;
 import forge.deck.CardPool;
 import forge.gamemodes.match.HostedMatch;
-import forge.gamemodes.rogue.effect.ChestLoot;
+import forge.gamemodes.rogue.effect.ChestEffect;
 import forge.gamemodes.rogue.effect.Cursed;
 import forge.gamemodes.rogue.effect.EchoBoon;
-import forge.gamemodes.rogue.effect.EventBoon;
+import forge.gamemodes.rogue.effect.EventEffect;
 import forge.gamemodes.rogue.effect.RogueEffect;
 import forge.gamemodes.rogue.effect.Wound;
 import forge.gamemodes.rogue.effect.Wrathful;
-import forge.gamemodes.rogue.effect.NPCBoon;
+import forge.gamemodes.rogue.effect.NPCEffect;
 import forge.gamemodes.rogue.path.RoguePath;
 import forge.gamemodes.rogue.path.RoguePathNode;
 import forge.item.PaperCard;
@@ -660,19 +660,19 @@ public class RogueRun {
     }
 
     public List<RogueEffect> getActiveEchoBoons()  { return mapEffects(activeEchoBoons, EchoBoon::fromId); }
-    public List<RogueEffect> getActiveEventBoons() { return mapEffects(activeEventBoons, EventBoon::fromId); }
-    public List<RogueEffect> getActiveChestBoons() { return mapEffects(activeChestBoons, ChestLoot::fromId); }
+    public List<RogueEffect> getActiveEventBoons() { return mapEffects(activeEventBoons, EventEffect::fromId); }
+    public List<RogueEffect> getActiveChestBoons() { return mapEffects(activeChestBoons, ChestEffect::fromId); }
     public List<RogueEffect> getActiveWounds()     { return mapEffects(activeWounds, Wound::fromId); }
     public List<RogueEffect> getActiveWrathful()   { return mapEffects(activeWrathful, Wrathful::fromId); }
     public List<RogueEffect> getActiveCursed()    { return mapEffects(activeCursed, Cursed::fromId); }
-    public List<RogueEffect> getActiveNPCBoons() { return mapEffects(activeNPCBoons, NPCBoon::fromId); }
+    public List<RogueEffect> getActiveNPCBoons() { return mapEffects(activeNPCBoons, NPCEffect::fromId); }
 
-    public void addEventBoon(EventBoon boon)   { activeEventBoons = addEffect(activeEventBoons, boon); }
-    public void addChestBoon(ChestLoot loot)    { activeChestBoons = addEffect(activeChestBoons, loot); }
+    public void addEventBoon(EventEffect boon)   { activeEventBoons = addEffect(activeEventBoons, boon); }
+    public void addChestBoon(ChestEffect loot)    { activeChestBoons = addEffect(activeChestBoons, loot); }
     public void addWound(Wound wound)           { activeWounds = addEffect(activeWounds, wound); }
     public void addWrathful(Wrathful wrathful)  { activeWrathful = addEffect(activeWrathful, wrathful); }
     public void addCursed(Cursed cursed)        { activeCursed = addEffect(activeCursed, cursed); }
-    public void addNPCBoon(NPCBoon boon)       { activeNPCBoons = addEffect(activeNPCBoons, boon); boon.onGranted(this); }
+    public void addNPCBoon(NPCEffect boon)       { activeNPCBoons = addEffect(activeNPCBoons, boon); boon.onGranted(this); }
 
     private List<RogueRunBoon> addEffect(List<RogueRunBoon> list, RogueEffect effect) {
         if (list == null) list = new ArrayList<>();

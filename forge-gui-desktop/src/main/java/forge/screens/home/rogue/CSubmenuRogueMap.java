@@ -803,7 +803,7 @@ public enum CSubmenuRogueMap implements ICDoc {
   // Returns true when the choice interrupts normal event completion (for example a trigger,
   // defeat flow, or another early-exit path already took over).
   private boolean handleEventChoice(NodeEvent eventNode, RogueEvent event, RogueEvent.EventChoice choice) {
-    EventBoon boon = choice.effect();
+    EventEffect boon = choice.effect();
     if (!boon.isChoiceAvailable(currentRun)) {
       return true;
     }
@@ -977,7 +977,7 @@ public enum CSubmenuRogueMap implements ICDoc {
       return resultText + ": " + ctx.gainedWound.getDisplayName()
           + " \u2014 " + ctx.gainedWound.getDescription();
     }
-    if (choice.effect() == EventBoon.THORNS_ENDURE) {
+    if (choice.effect() == EventEffect.THORNS_ENDURE) {
       return "You already bear all wounds.";
     }
     return resultText;
@@ -1069,19 +1069,19 @@ public enum CSubmenuRogueMap implements ICDoc {
     if (currentRun == null) return;
 
     // Get or assign random loot
-    ChestLoot loot = chestNode.getLoot();
+    ChestEffect loot = chestNode.getLoot();
     if (loot == null) {
-      ChestLoot[] allLoots = ChestLoot.values();
+      ChestEffect[] allLoots = ChestEffect.values();
       loot = allLoots[new Random().nextInt(allLoots.length)];
       chestNode.setLoot(loot);
     }
 
     // DEV: allow picking which loot to test
     if (ForgePreferences.DEV_MODE) {
-      ChestLoot picked = (ChestLoot) JOptionPane.showInputDialog(
+      ChestEffect picked = (ChestEffect) JOptionPane.showInputDialog(
           null, "Override chest loot:", "[DEV] Pick Loot",
           JOptionPane.PLAIN_MESSAGE, null,
-          ChestLoot.values(), loot);
+          ChestEffect.values(), loot);
       if (picked != null) loot = picked;
     }
 

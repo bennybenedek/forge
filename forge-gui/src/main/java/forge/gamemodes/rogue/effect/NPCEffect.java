@@ -4,10 +4,10 @@ import forge.game.player.RegisteredPlayer;
 import forge.gamemodes.rogue.RogueRun;
 
 /**
- * NPC boons granted during run start encounters.
+ * NPC effets granted during run start encounters.
  * Each constant defines its own behavior explicitly.
  */
-public enum NPCBoon implements RogueEffect {
+public enum NPCEffect implements RogueEffect {
 
     TYVAR_MIGHT("npc_tyvar_might", "Tyvar's Might", "Your Commander gets +2/+2.") {
         @Override
@@ -58,7 +58,7 @@ public enum NPCBoon implements RogueEffect {
     private final String displayName;
     private final String description;
 
-    NPCBoon(String id, String displayName, String description) {
+    NPCEffect(String id, String displayName, String description) {
         this.id = id;
         this.displayName = displayName;
         this.description = description;
@@ -73,8 +73,8 @@ public enum NPCBoon implements RogueEffect {
     @Override
     public String getRawDescription() { return description; }
 
-    public static NPCBoon fromId(String id) {
-        for (NPCBoon b : values())
+    public static NPCEffect fromId(String id) {
+        for (NPCEffect b : values())
             if (b.id.equals(id)) return b;
         return null;
     }
