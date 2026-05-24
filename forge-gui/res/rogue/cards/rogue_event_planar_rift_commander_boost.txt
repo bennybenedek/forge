@@ -1,5 +1,5 @@
 Name:Planar Rift - Commander Boost
 ManaCost:no cost
-Types:Rogue Modifier
+Types:Boon
 S:Mode$ Continuous | Affected$ Creature.IsCommander+YouCtrl | AddPower$ 1 | AddToughness$ 1 | EffectZone$ Command | Description$ Your commander gets +1/+1.
 Oracle:Your commander gets +1/+1.

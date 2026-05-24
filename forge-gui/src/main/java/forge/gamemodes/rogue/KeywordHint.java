@@ -10,6 +10,8 @@ public enum KeywordHint {
         "A Creature added to your command zone as a carry card. It persists between matches unless it ends a match neither in the command zone nor on the battlefield."),
     SCROLL("Scroll",
         "An Instant or Sorcery added to your command zone as a carry card. It persists between matches unless it ends a match outside the command zone."),
+    BOON("Boon",
+        "A permanent positive effect that lasts for the rest of the Run."),
     WOUND("Wound",
             "A permanent negative effect that lasts for the rest of the Run unless treated at a Sanctum."),
     WRATHFUL("Wrathful",

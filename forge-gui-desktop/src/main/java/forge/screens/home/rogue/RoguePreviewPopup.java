@@ -66,8 +66,8 @@ public class RoguePreviewPopup {
     private boolean hoveringPreview;
 
     public RoguePreviewPopup() {
-        previewPanel.setOpaque(true);
-        previewPanel.setBackground(FSkin.getColor(FSkin.Colors.CLR_THEME2));
+        previewPanel.setOpaque(false);
+        previewPanel.setBackground(new Color(0, 0, 0, 0));
         registerHoverTracking(previewPanel);
 
         hideTimer.setRepeats(false);
@@ -143,6 +143,7 @@ public class RoguePreviewPopup {
 
         popup = PopupFactory.getSharedInstance().getPopup(component, previewPanel, x, y);
         popup.show();
+        makePopupHostTransparent();
     }
 
     private void buildPreviewPanels(List<ResolvedPreviewItem> previewItems, int availableWidth) {
@@ -232,6 +233,18 @@ public class RoguePreviewPopup {
         previewPanel.removeAll();
         previewPanel.revalidate();
         previewPanel.repaint();
+    }
+
+    private void makePopupHostTransparent() {
+        if (previewPanel.getParent() instanceof JComponent parent) {
+            parent.setOpaque(false);
+            parent.setBackground(new Color(0, 0, 0, 0));
+        }
+
+        Window popupWindow = SwingUtilities.getWindowAncestor(previewPanel);
+        if (popupWindow != null) {
+            popupWindow.setBackground(new Color(0, 0, 0, 0));
+        }
     }
 
     private void handleZoomWatch() {
@@ -398,8 +411,8 @@ public class RoguePreviewPopup {
     private class PreviewClusterPanel extends SkinnedPanel {
         private PreviewClusterPanel() {
             super(new FlowLayout(FlowLayout.LEFT, 0, 0));
-            setOpaque(true);
-            setBackground(FSkin.getColor(FSkin.Colors.CLR_THEME2));
+            setOpaque(false);
+            setBackground(new Color(0, 0, 0, 0));
         }
     }
 

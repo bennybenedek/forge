@@ -1,5 +1,5 @@
 Name:Wound - Leg
 ManaCost:no cost
-Types:Rogue Modifier
+Types:Wound
 S:Mode$ RaiseCost | ValidCard$ Card | Activator$ You | Type$ Spell | Amount$ 1 | EffectZone$ Command | Description$ Spells you cast cost {1} more to cast.
 Oracle:Spells you cast cost {1} more to cast.

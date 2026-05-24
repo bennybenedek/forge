@@ -1,5 +1,5 @@
-Name:Event - Lost Connection
+Name:Lost Connection - Depart
 ManaCost:no cost
-Types:Rogue Modifier
+Types:Boon
 S:Mode$ CantBeCast | ValidCard$ Card.IsCommander | Caster$ You | Origin$ Command | EffectZone$ Command | Description$ You can't cast your Commander.
 Oracle:You can't cast your Commander.

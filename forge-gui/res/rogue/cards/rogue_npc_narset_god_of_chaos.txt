@@ -1,6 +1,6 @@
-Name:NPC Narset - God of Chaos
+Name:Narset - God of Chaos
 ManaCost:no cost
-Types:Enchantment
+Types:Boon
 R:Event$ Planeswalk | ActiveZones$ Command | ValidPlayer$ You | ValidCause$ PlanarDie | ReplaceWith$ REChaos | Description$ If you would planeswalk as a result of rolling the planar die, chaos ensues instead.
 SVar:REChaos:DB$ ChaosEnsues
 Oracle:If you would planeswalk as a result of rolling the planar die, chaos ensues instead.

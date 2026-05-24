@@ -9,22 +9,22 @@ import forge.gamemodes.rogue.RogueRun;
  */
 public enum NPCEffect implements RogueEffect {
 
-    TYVAR_MIGHT("npc_tyvar_might", "Tyvar's Might", "Your Commander gets +2/+2.") {
+    TYVAR_MIGHT("npc_tyvar_might", "Tyvar's Might", "Gain the {{Boon}} [[Tyvar's Might]].") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            RogueEffect.addCardToCommandZone("NPC Tyvar - Might", human);
+            RogueEffect.addCardToCommandZone("Tyvar's Might", human);
         }
     },
-    TYVAR_DISCOUNT("npc_tyvar_discount", "Tyvar's Efficiency", "Your Commander costs {1} less to cast.") {
+    TYVAR_DISCOUNT("npc_tyvar_discount", "Tyvar's Efficiency", "Gain the {{Boon}} [[Tyvar's Efficiency]].") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            RogueEffect.addCardToCommandZone("NPC Tyvar - Discount", human);
+            RogueEffect.addCardToCommandZone("Tyvar's Efficiency", human);
         }
     },
-    TYVAR_HASTE("npc_tyvar_haste", "Tyvar's Fury", "Your Commander has haste.") {
+    TYVAR_HASTE("npc_tyvar_haste", "Tyvar's Fury", "Gain the {{Boon}} [[Tyvar's Fury]].") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            RogueEffect.addCardToCommandZone("NPC Tyvar - Haste", human);
+            RogueEffect.addCardToCommandZone("Tyvar's Fury", human);
         }
     },
 
@@ -41,16 +41,16 @@ public enum NPCEffect implements RogueEffect {
             run.addCarryCard("Ichor Elixir", RogueRun.CarryCardType.ITEM, getId());
         }
     },
-    NARSET_CHAOSBOUND("npc_narset_chaosbound", "Chaosbound", "Start each match with an artifact you can sacrifice to trigger Chaos.") {
+    NARSET_CHAOSBOUND("npc_narset_chaosbound", "Chaosbound", "Start each match with a Chaosbound ![[Narset - Chaosbound]] on the battlefield.") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            RogueEffect.addCardToBattlefield("NPC Narset - Chaosbound", human);
+            RogueEffect.addCardToBattlefield("Narset - Chaosbound", human);
         }
     },
-    NARSET_GOD_OF_CHAOS("npc_narset_god_of_chaos", "God of Chaos", "If you would planeswalk as a result of rolling the planar die, chaos ensues instead.") {
+    NARSET_GOD_OF_CHAOS("npc_narset_god_of_chaos", "God of Chaos", "Gain the {{Boon}} God of Chaos. ![[Narset - God of Chaos]]") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            RogueEffect.addCardToCommandZone("NPC Narset - God of Chaos", human);
+            RogueEffect.addCardToCommandZone("Narset - God of Chaos", human);
         }
     };
 

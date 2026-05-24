@@ -1,5 +1,5 @@
-Name:NPC Tyvar - Haste
+Name:Tyvar's Fury
 ManaCost:no cost
-Types:Rogue Modifier
+Types:Boon
 S:Mode$ Continuous | Affected$ Creature.IsCommander+YouCtrl | AddKeyword$ Haste | EffectZone$ Command | Description$ Your commander has haste.
 Oracle:Your commander has haste.

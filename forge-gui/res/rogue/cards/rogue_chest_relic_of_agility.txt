@@ -1,5 +1,5 @@
-Name:Chest - Relic Of Agility
+Name:Loot - Relic Of Agility
 ManaCost:no cost
-Types:Rogue Modifier
+Types:Boon
 S:Mode$ ReduceCost | ValidCard$ Permanent | Activator$ You | Type$ Spell | Amount$ 1 | EffectZone$ Command | Description$ Permanent spells you cast cost {1} less to cast.
 Oracle:Permanent spells you cast cost {1} less to cast.

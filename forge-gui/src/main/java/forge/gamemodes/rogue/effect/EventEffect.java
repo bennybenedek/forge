@@ -544,7 +544,7 @@ public enum EventEffect implements RogueEffect {
 
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            RogueEffect.addCardToCommandZone("Event - Lost Connection", human);
+            RogueEffect.addCardToCommandZone("Lost Connection - Depart", human);
             run.consumeEffect(getId());
         }
     },

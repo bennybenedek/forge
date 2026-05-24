@@ -1,6 +1,6 @@
 Name:Descension - Bloodthirsty
 ManaCost:no cost
-Types:Rogue Modifier
+Types:Boon
 T:Mode$ DamageDone | ValidSource$ Creature.OppCtrl | ValidTarget$ You | TriggerZones$ Command | Execute$ TrigExtraDmg | TriggerDescription$ Whenever a creature an opponent controls deals damage to you, it deals 1 additional damage.
 SVar:TrigExtraDmg:DB$ DealDamage | Defined$ You | NumDmg$ 1
 Oracle:Whenever a creature an opponent controls deals damage to you, it deals 1 additional damage.
