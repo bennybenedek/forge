@@ -95,7 +95,7 @@ public enum EventEffect implements RogueEffect {
         EffectType.PERMANENT) {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            RogueEffect.addCardToCommandZone("Planar Rift - Commander Boost", human);
+            RogueEffect.addCardToCommandZone("Event Boon - Commander Boost", human);
         }
     },
     CARAVAN_ROB("caravan_rob", "Caravan Plunder", "Lose 3 life, gain 8 {{Gold}}.",
@@ -544,7 +544,7 @@ public enum EventEffect implements RogueEffect {
 
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            RogueEffect.addCardToCommandZone("Lost Connection - Depart", human);
+            RogueEffect.addCardToCommandZone("Event Boon - Depart", human);
             run.consumeEffect(getId());
         }
     },
@@ -552,7 +552,7 @@ public enum EventEffect implements RogueEffect {
         EffectType.PERMANENT) {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            RogueEffect.addCardToCommandZone("Lost Connection - Commander Weakened", human);
+            RogueEffect.addCardToCommandZone("Event Boon - Commander Weakened", human);
         }
     },
     LOST_REPLACE("lost_new_commander", "Lost Connection - Replace",

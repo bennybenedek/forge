@@ -1,4 +1,4 @@
-Name:Loot - Relic Of Agility
+Name:Chest Boon - Relic Of Agility
 ManaCost:no cost
 Types:Boon
 S:Mode$ ReduceCost | ValidCard$ Permanent | Activator$ You | Type$ Spell | Amount$ 1 | EffectZone$ Command | Description$ Permanent spells you cast cost {1} less to cast.

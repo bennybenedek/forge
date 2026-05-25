@@ -149,7 +149,7 @@ public enum EchoBoon implements RogueEffect {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             int reduction = getEffectValueAtRank(run.getRunBoonRank(getId()));
-            if (reduction > 0) RogueEffect.addCardToCommandZone("Echo - Fractured Binding " + reduction, human);
+            if (reduction > 0) RogueEffect.addCardToCommandZone("Echo Boon - Fractured Binding " + reduction, human);
         }
     };
 

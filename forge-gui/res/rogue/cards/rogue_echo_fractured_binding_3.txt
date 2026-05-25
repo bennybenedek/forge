@@ -1,4 +1,4 @@
-Name:Echo - Fractured Binding 3
+Name:Echo Boon - Fractured Binding 3
 ManaCost:no cost
 Types:Boon
 S:Mode$ ReduceCost | ValidCard$ Card.IsCommander+YouOwn | Type$ Spell | Amount$ 3 | EffectZone$ Command | Description$ Your commander costs {3} less to cast from the command zone.

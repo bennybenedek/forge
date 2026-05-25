@@ -1,4 +1,4 @@
-Name:Tyvar's Fury
+Name:Tyvar Boon - Haste
 ManaCost:no cost
 Types:Boon
 S:Mode$ Continuous | Affected$ Creature.IsCommander+YouCtrl | AddKeyword$ Haste | EffectZone$ Command | Description$ Your commander has haste.

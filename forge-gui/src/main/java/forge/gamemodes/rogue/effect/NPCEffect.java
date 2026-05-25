@@ -9,22 +9,22 @@ import forge.gamemodes.rogue.RogueRun;
  */
 public enum NPCEffect implements RogueEffect {
 
-    TYVAR_MIGHT("npc_tyvar_might", "Tyvar's Might", "Gain the {{Boon}} [[Tyvar's Might]].") {
+    TYVAR_MIGHT("npc_tyvar_might", "Tyvar's Might", "Gain the {{Boon}} Might. ![[Tyvar Boon - Might]]") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            RogueEffect.addCardToCommandZone("Tyvar's Might", human);
+            RogueEffect.addCardToCommandZone("Tyvar Boon - Might", human);
         }
     },
-    TYVAR_DISCOUNT("npc_tyvar_discount", "Tyvar's Efficiency", "Gain the {{Boon}} [[Tyvar's Efficiency]].") {
+    TYVAR_DISCOUNT("npc_tyvar_discount", "Tyvar's Efficiency", "Gain the {{Boon}} Efficiency. ![[Tyvar Boon - Efficiency]]") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            RogueEffect.addCardToCommandZone("Tyvar's Efficiency", human);
+            RogueEffect.addCardToCommandZone("Tyvar Boon - Efficiency", human);
         }
     },
-    TYVAR_HASTE("npc_tyvar_haste", "Tyvar's Fury", "Gain the {{Boon}} [[Tyvar's Fury]].") {
+    TYVAR_HASTE("npc_tyvar_haste", "Tyvar's Fury", "Gain the {{Boon}} Haste. ![[Tyvar Boon - Haste]]") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            RogueEffect.addCardToCommandZone("Tyvar's Fury", human);
+            RogueEffect.addCardToCommandZone("Tyvar Boon - Haste", human);
         }
     },
 
@@ -47,10 +47,10 @@ public enum NPCEffect implements RogueEffect {
             RogueEffect.addCardToBattlefield("Narset - Chaosbound", human);
         }
     },
-    NARSET_GOD_OF_CHAOS("npc_narset_god_of_chaos", "God of Chaos", "Gain the {{Boon}} God of Chaos. ![[Narset - God of Chaos]]") {
+    NARSET_GOD_OF_CHAOS("npc_narset_god_of_chaos", "God of Chaos", "Gain the {{Boon}} God of Chaos. ![[Narset Boon - God of Chaos]]") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            RogueEffect.addCardToCommandZone("Narset - God of Chaos", human);
+            RogueEffect.addCardToCommandZone("Narset Boon - God of Chaos", human);
         }
     };
 

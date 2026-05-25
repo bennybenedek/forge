@@ -9,7 +9,7 @@ import java.util.List;
  * Gonti, Lord of Luxury — Bazaar Shop Owner NPC.
  *
  * LEVEL_0 (requiredLevel=0): Increment Gonti's level on each bazaar entry.
- * LEVEL_2 (requiredLevel=2): Always inject the Tarnished Relic; if the relic is bought, promote to level 3.
+ * LEVEL_2 (requiredLevel=2): Always inject the Gonti Curio - Tarnished Relic; if the relic is bought, promote to level 3.
  * LEVEL_3 (requiredLevel=3): Apply a discount after the relic has been purchased.
  */
 public enum GontiEncounter implements NPCEncounter {
@@ -23,9 +23,9 @@ public enum GontiEncounter implements NPCEncounter {
         }
     },
 
-    /** Level 2 – always inject the Tarnished Relic. Promotion occurs only if the relic is bought. */
+    /** Level 2 – always inject the Gonti Curio - Tarnished Relic. Promotion occurs only if the relic is bought. */
     OFFERING_TARNISHED_RELIC(2) {
-        private static final String CURIO_CARD_NAME = "Tarnished Relic";
+        private static final String CURIO_CARD_NAME = "Gonti Curio - Tarnished Relic";
         private static final int CURIO_PRICE = 10;
 
         @Override
