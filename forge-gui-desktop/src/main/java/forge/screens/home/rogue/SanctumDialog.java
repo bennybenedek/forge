@@ -60,8 +60,7 @@ public class SanctumDialog {
         .build();
 
     String restDescription = "Gain " + effectiveHealAmount + " Life & Cure All Wounds";
-    FButton btnRest = new FButton(buildChoiceHtml(
-        "Rest", restDescription));
+    FButton btnRest = RogueButtonHelper.createChoiceButton("Rest", restDescription);
     btnRest.addActionListener(e -> {
       hidePreview();
       choice = SanctumChoice.HEAL;
@@ -74,8 +73,9 @@ public class SanctumDialog {
     }
 
     String cookDescription = "Craft a random food {{Item}}.";
-    FButton btnCook = new FButton(buildChoiceHtml(
-        "Cook", cookDescription));
+    FButton btnCook = RogueButtonHelper.createChoiceButton(
+        "Cook", TextHelper.stripPreviewMarkers(cookDescription),
+        TextHelper.extractPreviewReferences(cookDescription));
     btnCook.addActionListener(e -> {
       hidePreview();
       choice = SanctumChoice.COOK;
@@ -85,8 +85,9 @@ public class SanctumDialog {
     previewTargets.add(new PreviewTarget(btnCook, TextHelper.extractPreviewReferences(cookDescription)));
 
     String reflectDescription = "Gain 3 {{Removal Credits}}.";
-    FButton btnReflect = new FButton(buildChoiceHtml(
-        "Reflect", reflectDescription));
+    FButton btnReflect = RogueButtonHelper.createChoiceButton(
+        "Reflect", TextHelper.stripPreviewMarkers(reflectDescription),
+        TextHelper.extractPreviewReferences(reflectDescription));
     btnReflect.addActionListener(e -> {
       hidePreview();
       choice = SanctumChoice.REFLECT;
@@ -140,16 +141,6 @@ public class SanctumDialog {
     if (previewPopup != null) {
       previewPopup.hide();
     }
-  }
-
-  private static String buildChoiceHtml(String title, String description) {
-    if (description == null || description.isEmpty()) {
-      return "<html><div style='padding:6px 10px;'><center><font size=4>" + title
-          + "</font></center></div></html>";
-    }
-    String displayDescription = TextHelper.stripPreviewMarkers(description);
-    return "<html><div style='padding:6px 10px;'><center><font size=4>" + title
-        + "</font><br><font size=3>" + displayDescription + "</font></center></div></html>";
   }
 
   private record PreviewTarget(JComponent component, List<PreviewReference> references) {}

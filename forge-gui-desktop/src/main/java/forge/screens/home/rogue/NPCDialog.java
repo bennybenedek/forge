@@ -32,7 +32,6 @@ public class NPCDialog {
     private static final int MIN_DIALOG_HEIGHT = 480;
     private static final int PANEL_INSETS = 20;
     private static final int FULL_WIDTH = DIALOG_WIDTH - 2 * PANEL_INSETS;
-    private static final int BUTTON_WIDTH = FULL_WIDTH * 80 / 100;
 
     private final MainPanel panel;
     private final List<PreviewTarget> previewTargets = new ArrayList<>();
@@ -66,8 +65,7 @@ public class NPCDialog {
         desiredHeight += txtFlavor.getPreferredSize().height + 10 + 20;
 
         if (ctx.choices().isEmpty()) {
-            FButton btn = new FButton("<html><div style='padding:6px 10px;'><center><font size=4>Continue</font></center></div></html>");
-            btn.setSize(BUTTON_WIDTH, Short.MAX_VALUE);
+            FButton btn = RogueButtonHelper.createChoiceButton("Continue", "");
             btn.addActionListener(e -> {
                 hidePreview();
                 optionPane.setResult(0);
@@ -78,12 +76,8 @@ public class NPCDialog {
         } else {
             for (NPCChoice choice : ctx.choices()) {
                 String desc = choice.boon() != null ? choice.boon().getDescription() : "";
-                String buttonHtml = desc.isEmpty()
-                        ? "<html><div style='padding:6px 10px;'><center><font size=4>" + choice.label() + "</font></center></div></html>"
-                        : "<html><div style='padding:6px 10px;'><center><font size=4>" + choice.label()
-                        + "</font><br><font size=3>" + desc + "</font></center></div></html>";
-                FButton btn = new FButton(buttonHtml);
-                btn.setSize(BUTTON_WIDTH, Short.MAX_VALUE);
+                FButton btn = RogueButtonHelper.createChoiceButton(choice.label(), desc,
+                        choice.boon() == null ? List.of() : choice.boon().getPreviewReferences());
                 btn.addActionListener(e -> {
                     hidePreview();
                     selectedBoon = choice.boon();

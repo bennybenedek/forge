@@ -297,7 +297,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     CROOKED_COUNSEL_RING("crooked_counsel_ring", "Keep to your own path",
-            "Gain the legendary artifact {{Item}} '[[The One Ring|LTR|2]]'. Lose 5 life.",
+            "Lose 5 life. Gain the legendary artifact {{Item}} [[The One Ring|LTR|2]].",
             EffectType.ONESHOT) {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
