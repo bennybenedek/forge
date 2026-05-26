@@ -25,6 +25,8 @@ This repository is a Java 17+ multi-module Maven project (Forge / Rogue Commande
 - Use the least code that correctly solves the task; avoid speculative cleanup or side improvements.
 - Do not add one-time migrations by default. Ask the user for permission before adding any migration, especially if it was not part of the original plan.
 - Do not add backward-compatibility, legacy-save compatibility, fallback migration behavior, or similar compatibility code unless the user explicitly asks for it.
+- Do not introduce non-ASCII, mojibake, or typographic symbol replacements into source code, comments, tooltips, or user-facing strings unless the user explicitly asks for them. Preserve existing plain ASCII text by default.
+- Preserve each file's existing encoding and BOM state. Do not add, remove, or change BOM/encoding unless the user explicitly asks for it.
 - Use proper imports rather than fully qualified names in code.
 - If adding multiple related fields, prefer grouping them into a record or small inner type when that fits local style.
 - Extract duplicated logic when it is truly shared, but do not over-abstract simple or one-off code.

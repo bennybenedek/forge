@@ -52,6 +52,24 @@ public class NodePlanebound extends RoguePathNode {
         return roguePlanebound != null ? roguePlanebound.type() : RoguePlaneboundType.NORMAL;
     }
 
+    // set life based on Planebound rows + Planebound type
+    public int getPlaneboundLife(int pathRowCount) {
+        int rowLife = pathRowCount * 5;
+        int planeboundTypeBaseLife;
+
+        if (getPlaneboundType().equals(RoguePlaneboundType.BOSS)) {
+            planeboundTypeBaseLife = 15;
+        }
+        else if (getPlaneboundType().equals(RoguePlaneboundType.ELITE)) {
+            planeboundTypeBaseLife = 10;
+        }
+        else {
+            planeboundTypeBaseLife = 0;
+        }
+
+        return rowLife + planeboundTypeBaseLife;
+    }
+
     // Convenience methods for rewards
     public int getGoldReward() {
         return getPlaneboundType().getGoldReward();

@@ -396,9 +396,8 @@ public enum CSubmenuRogueMap implements ICDoc {
           node.getRoguePlanebound().avatarIndex(),
           0));
 
-      // Calculate life based on Planebound rows
       int planeboundRowCount = currentRun.getPath().countPlaneboundRowsUpTo(node.getRowIndex());
-      ai.setStartingLife(5 * planeboundRowCount);
+      ai.setStartingLife(node.getPlaneboundLife(planeboundRowCount));
 
       // Apply all match start effects AFTER AI creation (cursed effects need opponent)
       RogueEffectComposite.INSTANCE.onMatchStart(human, ai, currentRun);

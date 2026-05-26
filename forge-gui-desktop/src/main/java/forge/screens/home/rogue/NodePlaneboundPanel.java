@@ -36,6 +36,7 @@ public class NodePlaneboundPanel extends NodePanel implements ImageFetcher.Callb
 
   private final CardPicturePanel cardImage;
   private final JPanel pnlNameRow;
+  private final JPanel pnlLifeRow;
   private final JLabel lblPlaneboundName;
   private final JLabel lblLifeTotal;
   private final PaperCard currentPlaneCard;
@@ -120,27 +121,13 @@ public class NodePlaneboundPanel extends NodePanel implements ImageFetcher.Callb
       }
     });
 
-    // Name row: flames + planebound name in a centered flow layout
+    // Name row: elite/boss marker + planebound name in a centered flow layout
     pnlNameRow = new JPanel(new FlowLayout(FlowLayout.CENTER, 2, 0));
     pnlNameRow.setOpaque(false);
 
-    for (int i = 0; i < node.getWrathfulCount(); i++) {
-      JLabel flame = new JLabel(FLAME_ICON);
-      flame.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 5, 0));
-      flame.setToolTipText("Wrathful — this Planebound gains a minor buff");
-      pnlNameRow.add(flame);
-    }
-
-    for (int i = 0; i < node.getCursedCount(); i++) {
-      JLabel pentagram = new JLabel(PENTAGRAM_ICON);
-      pentagram.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 5, 0));
-      pentagram.setToolTipText("Cursed — this Planebound gains a powerful buff");
-      pnlNameRow.add(pentagram);
-    }
-
     String planeboundName = showFaceDown ? "???" : node.getRoguePlanebound().planeboundName();
     lblPlaneboundName = new JLabel(planeboundName);
-    lblPlaneboundName.setFont(FSkin.getRelativeFont(12).getBaseFont());
+    lblPlaneboundName.setFont(FSkin.getRelativeFont(13).getBaseFont());
     lblPlaneboundName.setForeground(FSkin.getColor(FSkin.Colors.CLR_TEXT).getColor());
 
     RoguePlaneboundType type = node.getPlaneboundType();
@@ -159,13 +146,31 @@ public class NodePlaneboundPanel extends NodePanel implements ImageFetcher.Callb
     pnlNameRow.add(lblPlaneboundName);
     add(pnlNameRow);
 
-    // Life total label (always shown - it's a known rule that life scales by Planebound row)
-    int planeboundLife = 5 * planeboundRowCount;
-    lblLifeTotal = new JLabel("Life: " + planeboundLife);
+    // Lower stat row: wrathful/cursed markers + life total
+    pnlLifeRow = new JPanel(new FlowLayout(FlowLayout.CENTER, 2, 0));
+    pnlLifeRow.setOpaque(false);
+
+    for (int i = 0; i < node.getWrathfulCount(); i++) {
+      JLabel flame = new JLabel(FLAME_ICON);
+      flame.setToolTipText("Wrathful — this Planebound gains a minor buff");
+      pnlLifeRow.add(flame);
+    }
+
+    for (int i = 0; i < node.getCursedCount(); i++) {
+      JLabel pentagram = new JLabel(PENTAGRAM_ICON);
+      pentagram.setToolTipText("Cursed — this Planebound gains a powerful buff");
+      pnlLifeRow.add(pentagram);
+    }
+
+    int planeboundLife = node.getPlaneboundLife(planeboundRowCount);
+    lblLifeTotal = new JLabel("\u2665 " + planeboundLife);
     lblLifeTotal.setFont(FSkin.getRelativeBoldFont(14).getBaseFont());
     lblLifeTotal.setForeground(FSkin.getColor(FSkin.Colors.CLR_TEXT).getColor());
     lblLifeTotal.setHorizontalAlignment(SwingConstants.CENTER);
-    add(lblLifeTotal);
+    lblLifeTotal.setBorder(javax.swing.BorderFactory.createEmptyBorder(5, 6, 0, 0));
+    lblLifeTotal.setToolTipText("Planebound starts match with " + planeboundLife + " Life.");
+    pnlLifeRow.add(lblLifeTotal);
+    add(pnlLifeRow);
   }
 
   /**
@@ -213,12 +218,12 @@ public class NodePlaneboundPanel extends NodePanel implements ImageFetcher.Callb
     cardImage.setBounds(x, y, CARD_WIDTH, CARD_HEIGHT);
     y += CARD_HEIGHT + 5;
 
-    // Name row (flames + name, centered by FlowLayout)
+    // Name row
     pnlNameRow.setBounds(x, y, CARD_WIDTH, 20);
     y += 25;
 
-    // Life total
-    lblLifeTotal.setBounds(x, y, CARD_WIDTH, 20);
+    // Lower stat row
+    pnlLifeRow.setBounds(x, y, CARD_WIDTH, 20);
   }
 
   /**
@@ -389,7 +394,7 @@ public class NodePlaneboundPanel extends NodePanel implements ImageFetcher.Callb
     g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
     double cx = w / 2.0, cy = h / 2.0;
     double r = h / 2.0 - 1;
-    // 5 vertices, connect every other (0→2→4→1→3) for pentagram shape
+    // 5 vertices, connect every other (0->2->4->1->3) for pentagram shape
     double[] px = new double[5], py = new double[5];
     for (int i = 0; i < 5; i++) {
       double angle = Math.PI / 2 + i * 2 * Math.PI / 5;
@@ -442,3 +447,4 @@ public class NodePlaneboundPanel extends NodePanel implements ImageFetcher.Callb
     return new ImageIcon(img);
   }
 }
+
