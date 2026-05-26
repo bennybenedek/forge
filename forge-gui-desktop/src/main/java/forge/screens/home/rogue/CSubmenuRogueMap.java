@@ -377,15 +377,7 @@ public enum CSubmenuRogueMap implements ICDoc {
       // Add carry cards (items/fellows/scrolls) to command zone with their enablers
       if (!currentRun.getCarryCards().isEmpty()) {
         RogueTutorialHelper.showIfNotSeen(RogueTutorial.CARRY_CARDS);
-      }
-      if (currentRun.hasCarryCardOfType(CarryCardType.ITEM)) {
-        RogueEffect.addCardToCommandZone("Rogue - Item Enabler", human);
-      }
-      if (currentRun.hasCarryCardOfType(CarryCardType.FELLOW)) {
-        RogueEffect.addCardToCommandZone("Rogue - Fellow Enabler", human);
-      }
-      if (currentRun.hasCarryCardOfType(CarryCardType.SCROLL)) {
-        RogueEffect.addCardToCommandZone("Rogue - Scroll Enabler", human);
+        RogueEffect.addCardToCommandZone("Rogue - Carry Card Enabler", human);
       }
       for (CarryCard card : currentRun.getCarryCards()) {
         RogueEffect.addCardToCommandZone(card.toPaperCard(), human);

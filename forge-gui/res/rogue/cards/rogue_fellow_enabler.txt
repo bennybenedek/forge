@@ -1,5 +1,0 @@
-Name:Rogue - Fellow Enabler
-ManaCost:no cost
-Types:Rogue Modifier
-S:Mode$ Continuous | EffectZone$ Command | MayPlay$ True | Affected$ Creature.YouOwn | AffectedZone$ Command | Description$ You may cast creature fellows you own from the command zone.
-Oracle:You may cast companion creatures you own from the command zone.
