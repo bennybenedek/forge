@@ -112,12 +112,17 @@ public enum EventEffect implements RogueEffect {
             ctx.trigger = NodeResultContext.ActionTriggerType.BAZAAR;
         }
     },
-    DRIFTED_RESCUE("drifted_rescue", "Rescue Pilot", "Gain a random Human {{Fellow}}.",
+    DRIFTED_RESCUE("drifted_rescue", "Rescue Pilot", "Lose 3 Life. Gain a random legendary Human {{Fellow}}.",
             EffectType.ONESHOT) {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
+
+            run.loseLife(3);
+
             Predicate<PaperCard> humanFilter = PaperCardPredicates.fromRules(
-                    CardRulesPredicates.IS_CREATURE.and(CardRulesPredicates.subType("Human")));
+                    CardRulesPredicates.IS_CREATURE
+                        .and(CardRulesPredicates.IS_LEGENDARY)
+                        .and(CardRulesPredicates.subType("Human")));
             addCarryCards(run, ctx, humanFilter, 1, RogueRun.CarryCardType.FELLOW, List.of());
         }
     },
@@ -158,14 +163,18 @@ public enum EventEffect implements RogueEffect {
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
             Predicate<PaperCard> bobbleheadFilter = PaperCardPredicates.fromRules(
                     CardRulesPredicates.IS_ARTIFACT.and(CardRulesPredicates.subType("Bobblehead")));
-            List<PaperCard> bobbleheads = run.getAllCardsForActiveCommander(bobbleheadFilter);
-            if (bobbleheads.isEmpty()) {
-                return;
-            }
-            List<PaperCard> exactPrints = setExactPrints(bobbleheads, BOBBLEHEAD_PRINT_OVERRIDES);
+            String setCode = "PIP";
+            int artIndex = 1;
 
-            run.addCardsToDeck(exactPrints, false);
-            ctx.addedCards = exactPrints;
+            addCardsToDeck(run, ctx, bobbleheadFilter, null, List.of(
+                new CardPrintOverride("Agility Bobblehead", setCode, artIndex),
+                new CardPrintOverride("Charisma Bobblehead", setCode, artIndex),
+                new CardPrintOverride("Endurance Bobblehead", setCode, artIndex),
+                new CardPrintOverride("Intelligence Bobblehead", setCode, artIndex),
+                new CardPrintOverride("Luck Bobblehead", setCode, artIndex),
+                new CardPrintOverride("Perception Bobblehead", setCode, artIndex),
+                new CardPrintOverride("Strength Bobblehead", setCode, artIndex)
+            ));
         }
     },
     GROUND_ZERO_REPAIR("ground_zero_repair", "Use Workbench",
@@ -204,15 +213,7 @@ public enum EventEffect implements RogueEffect {
                     && PaperCardPredicates.fromRules(
                         CardRulesPredicates.IS_CREATURE.and(CardRulesPredicates.subType("Mutant")))
                     .test(card);
-            List<PaperCard> mutants = run.getAllCardsForActiveCommander(mutantFilter);
-            if (mutants.isEmpty()) {
-                return;
-            }
-
-            Collections.shuffle(mutants, MyRandom.getRandom());
-            List<PaperCard> added = new ArrayList<>(mutants.subList(0, Math.min(deckCardsToRemove.size(), mutants.size())));
-            run.addCardsToDeck(added, false);
-            ctx.addedCards = added;
+            addCardsToDeck(run, ctx, mutantFilter, deckCardsToRemove.size(), List.of());
         }
     },
     CROOKED_COUNSEL_FELLOWSHIP("crooked_counsel_fellowship", "Rally the Free Peoples",
@@ -355,7 +356,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     PLANAR_TRIBUTE_REPLACE("planar_shuffle", "Planar Shuffle",
-            "Remove 3 random cards (excluding basic lands) and replace them with cards from your {{Reward Pool}}.",
+            "Remove 3 random cards (excluding basic lands) and replace them with random cards from your {{Reward Pool}}.",
             EffectType.ONESHOT) {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
@@ -504,7 +505,7 @@ public enum EventEffect implements RogueEffect {
             run.consumeEffect(getId());
         }
     },
-    LOST_PERSIST("lost_weakened", "Lost Connection - Commander Weakened", "Your Commander gets -1/-1 for the rest of the Run.",
+    LOST_PERSIST("lost_weakened", "Lost Connection - Commander Weakened", "Gain the {{Boon}} **Commander Weakened**. ![[Event Boon - Commander Weakened]]",
         EffectType.PERMANENT) {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
@@ -565,16 +566,6 @@ public enum EventEffect implements RogueEffect {
     private final String description;
     private final EffectType effectType;
     private final int goldCost;
-    private static final List<CardPrintOverride> BOBBLEHEAD_PRINT_OVERRIDES = List.of(
-        new CardPrintOverride("Agility Bobblehead", "PIP", 1),
-        new CardPrintOverride("Charisma Bobblehead", "PIP", 1),
-        new CardPrintOverride("Endurance Bobblehead", "PIP", 1),
-        new CardPrintOverride("Intelligence Bobblehead", "PIP", 1),
-        new CardPrintOverride("Luck Bobblehead", "PIP", 1),
-        new CardPrintOverride("Perception Bobblehead", "PIP", 1),
-        new CardPrintOverride("Strength Bobblehead", "PIP", 1)
-    );
-
     EventEffect(String id, String displayName, String description, EffectType effectType) {
         this(id, displayName, description, effectType, 0);
     }
@@ -611,31 +602,6 @@ public enum EventEffect implements RogueEffect {
 
     protected String getInsufficientGoldReason() {
         return goldCost > 0 ? "You need " + goldCost + " Gold." : null;
-    }
-
-    private static List<PaperCard> setExactPrints(List<PaperCard> cards, List<CardPrintOverride> printOverrides) {
-        if (cards.isEmpty() || printOverrides.isEmpty()) {
-            return cards;
-        }
-
-        List<PaperCard> exactPrints = new ArrayList<>(cards.size());
-        for (PaperCard card : cards) {
-            PaperCard exactCard = card;
-            for (CardPrintOverride printOverride : printOverrides) {
-                if (!printOverride.matches(card)) {
-                    continue;
-                }
-
-                PaperCard resolved = RogueConfig.getCard(printOverride.cardName(),
-                    printOverride.setCode(), printOverride.artIndex());
-                if (resolved != null) {
-                    exactCard = resolved;
-                }
-                break;
-            }
-            exactPrints.add(exactCard);
-        }
-        return exactPrints;
     }
 
     public static EventEffect fromId(String id) {

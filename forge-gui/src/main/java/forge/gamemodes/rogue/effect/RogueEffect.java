@@ -3,6 +3,7 @@ package forge.gamemodes.rogue.effect;
 import forge.deck.CardPool;
 import forge.gamemodes.rogue.CardPrintOverride;
 import forge.gamemodes.rogue.PreviewReference;
+import forge.gamemodes.rogue.PreviewReferenceType;
 import forge.game.player.RegisteredPlayer;
 import forge.gamemodes.rogue.RogueConfig;
 import forge.gamemodes.rogue.RogueRun;
@@ -44,6 +45,27 @@ public interface RogueEffect {
 
     /** Description for tooltips and display text. */
     default String getDescription() { return TextHelper.stripPreviewMarkers(getRawDescription()); }
+
+    /** Tooltip text for long-lived effect displays such as the RogueMap header. */
+    default String getTooltipText() {
+        if (!getRawDescription().contains("{{Boon}}")) {
+            return getDescription();
+        }
+
+        List<PreviewReference> cardReferences = getPreviewReferences().stream()
+            .filter(reference -> reference.type() == PreviewReferenceType.CARD)
+            .toList();
+        if (cardReferences.size() != 1) {
+            return getDescription();
+        }
+
+        PaperCard card = RogueConfig.getCard(cardReferences.get(0).token(), null, null);
+        if (card == null || card.getRules() == null || card.getRules().getOracleText() == null
+            || card.getRules().getOracleText().isBlank()) {
+            return getDescription();
+        }
+        return card.getRules().getOracleText();
+    }
 
     /** Preview references extracted from the raw description. */
     default List<PreviewReference> getPreviewReferences() { return TextHelper.extractPreviewReferences(getRawDescription()); }
@@ -91,22 +113,32 @@ public interface RogueEffect {
             return;
         }
 
-        List<PaperCard> added;
-        if (count <= 1) {
-            PaperCard selected = Aggregates.random(result);
-            if (selected == null) {
-                return;
-            }
-            added = new ArrayList<>(List.of(selected));
-        } else {
-            Collections.shuffle(result, MyRandom.getRandom());
-            added = new ArrayList<>(result.subList(0, Math.min(count, result.size())));
+        List<PaperCard> added = selectCards(result, count);
+        if (added.isEmpty()) {
+            return;
         }
 
         added = setExactPrints(added, printOverrides);
         for (PaperCard card : added) {
             run.addCarryCard(card, type, getId());
         }
+        ctx.addedCards = added;
+    }
+
+    default void addCardsToDeck(RogueRun run, NodeResultContext ctx, Predicate<PaperCard> filter,
+                                Integer count, List<CardPrintOverride> printOverrides) {
+        List<PaperCard> result = run.getAllCardsForActiveCommander(filter);
+        if (result.isEmpty()) {
+            return;
+        }
+
+        List<PaperCard> added = selectCards(result, count);
+        if (added.isEmpty()) {
+            return;
+        }
+
+        added = setExactPrints(added, printOverrides);
+        run.addCardsToDeck(added, false);
         ctx.addedCards = added;
     }
 
@@ -158,6 +190,24 @@ public interface RogueEffect {
         for (IPaperCard card : cards)
             main.remove((PaperCard) card, 1);
         human.addExtraCardsOnBattlefield(cards);
+    }
+
+    private static List<PaperCard> selectCards(List<PaperCard> cards, Integer count) {
+        if (cards.isEmpty()) {
+            return List.of();
+        }
+
+        if (count == null) {
+            return new ArrayList<>(cards);
+        }
+
+        if (count <= 1) {
+            PaperCard selected = Aggregates.random(cards);
+            return selected == null ? List.of() : new ArrayList<>(List.of(selected));
+        }
+
+        Collections.shuffle(cards, MyRandom.getRandom());
+        return new ArrayList<>(cards.subList(0, Math.min(count, cards.size())));
     }
 
     private static List<PaperCard> setExactPrints(List<PaperCard> cards, List<CardPrintOverride> printOverrides) {

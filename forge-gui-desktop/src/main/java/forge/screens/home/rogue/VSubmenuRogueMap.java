@@ -145,7 +145,7 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
         else if (effect instanceof ChestEffect) prefix = "Loot - ";
         else if (effect instanceof DescensionLevel) prefix = "Descension - ";
         FLabel effectLbl = new FLabel.Builder().text(prefix + effect.getDisplayName()).fontSize(11).build();
-        effectLbl.setToolTipText(effect.getDescription());
+        effectLbl.setToolTipText(effect.getTooltipText());
         pnlEffects.add(effectLbl, "cell " + col + " " + row);
       }
       pnlEffects.revalidate();
