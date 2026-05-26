@@ -388,7 +388,7 @@ public enum CSubmenuRogueMap implements ICDoc {
         RogueEffect.addCardToCommandZone("Rogue - Scroll Enabler", human);
       }
       for (CarryCard card : currentRun.getCarryCards()) {
-        RogueEffect.addCardToCommandZone(card.cardName(), human);
+        RogueEffect.addCardToCommandZone(card.toPaperCard(), human);
       }
 
       // Load Planebound deck
@@ -515,7 +515,7 @@ public enum CSubmenuRogueMap implements ICDoc {
               "Sanctum");
           break;
         }
-        currentRun.addCarryCard(craftedFood.getName(), CarryCardType.ITEM, SANCTUM_COOK_SOURCE_ID);
+        currentRun.addCarryCard(craftedFood, CarryCardType.ITEM, SANCTUM_COOK_SOURCE_ID);
         showNodeResultDialog(
             "Sanctum",
             "You cooked:",

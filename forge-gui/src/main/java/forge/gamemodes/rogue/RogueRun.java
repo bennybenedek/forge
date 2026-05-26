@@ -87,20 +87,34 @@ public class RogueRun {
      *  sourceId links to the boon that granted it (null if purchased/rewarded). */
     public static class CarryCard {
         private String cardName;
+        private String setCode;
+        private Integer artIndex;
         private CarryCardType type;
         private String sourceId;
 
         public CarryCard() {} // XStream
 
         public CarryCard(String cardName, CarryCardType type, String sourceId) {
+            this(cardName, null, null, type, sourceId);
+        }
+
+        public CarryCard(String cardName, String setCode, Integer artIndex, CarryCardType type, String sourceId) {
             this.cardName = cardName;
+            this.setCode = setCode;
+            this.artIndex = artIndex;
             this.type = type;
             this.sourceId = sourceId;
         }
 
         public String cardName() { return cardName; }
+        public String setCode() { return setCode; }
+        public Integer artIndex() { return artIndex; }
         public CarryCardType type() { return type; }
         public String sourceId() { return sourceId; }
+
+        public PaperCard toPaperCard() {
+            return RogueConfig.getCard(cardName, setCode, artIndex);
+        }
     }
 
     // Carry cards (items/fellows/scrolls that persist across matches in the command zone)
@@ -233,10 +247,6 @@ public class RogueRun {
         }
     }
 
-    public List<PaperCard> getAllCardsForActiveCommander() {
-        return getAllCardsForActiveCommander(null);
-    }
-
     public List<PaperCard> getAllCardsForActiveCommander(Predicate<PaperCard> filter) {
         List<PaperCard> candidateCards = RogueConfig.getAllCards(filter);
         List<PaperCard> commanderLegalCards = filterCardsByCommanderColorIdentity(candidateCards);
@@ -321,9 +331,12 @@ public class RogueRun {
     }
 
     // Carry card management (items/fellows/scrolls in command zone)
-    public void addCarryCard(String cardName, CarryCardType type, String sourceId) {
+    public void addCarryCard(PaperCard card, CarryCardType type, String sourceId) {
+        if (card == null) {
+            return;
+        }
         if (carryCards == null) carryCards = new ArrayList<>();
-        carryCards.add(new CarryCard(cardName, type, sourceId));
+        carryCards.add(new CarryCard(card.getName(), card.getEdition(), card.getArtIndex(), type, sourceId));
     }
 
     public void removeCarryCard(String cardName) {

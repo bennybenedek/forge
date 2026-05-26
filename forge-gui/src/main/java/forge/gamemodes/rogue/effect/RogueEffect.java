@@ -1,6 +1,7 @@
 package forge.gamemodes.rogue.effect;
 
 import forge.deck.CardPool;
+import forge.gamemodes.rogue.CardPrintOverride;
 import forge.gamemodes.rogue.PreviewReference;
 import forge.game.player.RegisteredPlayer;
 import forge.gamemodes.rogue.RogueConfig;
@@ -8,8 +9,12 @@ import forge.gamemodes.rogue.RogueRun;
 import forge.gamemodes.rogue.TextHelper;
 import forge.item.IPaperCard;
 import forge.item.PaperCard;
+import forge.util.Aggregates;
+import forge.util.MyRandom;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Predicate;
 
 /**
  * Interface for effects that trigger at specific points during a Rogue Commander run.
@@ -79,13 +84,67 @@ public interface RogueEffect {
     /** Fired for both card reward and bazaar selections. */
     default void onCardSelection(CardSelectionContext ctx, RogueRun run) {}
 
+    default void addCarryCards(RogueRun run, NodeResultContext ctx, Predicate<PaperCard> filter,
+                               int count, RogueRun.CarryCardType type, List<CardPrintOverride> printOverrides) {
+        List<PaperCard> result = run.getAllCardsForActiveCommander(filter);
+        if (result.isEmpty()) {
+            return;
+        }
+
+        List<PaperCard> added;
+        if (count <= 1) {
+            PaperCard selected = Aggregates.random(result);
+            if (selected == null) {
+                return;
+            }
+            added = new ArrayList<>(List.of(selected));
+        } else {
+            Collections.shuffle(result, MyRandom.getRandom());
+            added = new ArrayList<>(result.subList(0, Math.min(count, result.size())));
+        }
+
+        added = setExactPrints(added, printOverrides);
+        for (PaperCard card : added) {
+            run.addCarryCard(card, type, getId());
+        }
+        ctx.addedCards = added;
+    }
+
+    static List<PaperCard> removeCarryCards(RogueRun run, RogueRun.CarryCardType type) {
+        if (!run.hasCarryCardOfType(type)) {
+            return List.of();
+        }
+
+        List<RogueRun.CarryCard> removedCarryCards = new ArrayList<>(run.getCarryCards().stream()
+            .filter(card -> card.type() == type)
+            .toList());
+        run.getCarryCards().removeIf(card -> card.type() == type);
+
+        List<PaperCard> removedCards = new ArrayList<>();
+        for (RogueRun.CarryCard carryCard : removedCarryCards) {
+            PaperCard card = carryCard.toPaperCard();
+            if (card != null) {
+                removedCards.add(card);
+            }
+        }
+        return removedCards;
+    }
+
     static void addCardToCommandZone(String cardName, RegisteredPlayer human) {
-        PaperCard card = RogueConfig.getCard(cardName, null);
+        PaperCard card = RogueConfig.getCard(cardName, null, null);
+        addCardToCommandZone(card, human);
+    }
+
+    static void addCardToCommandZone(PaperCard card, RegisteredPlayer human) {
         if (card != null) human.addExtraCardsInCommandZone(Collections.singletonList(card));
     }
 
     static void addCardToBattlefield(String cardName, RegisteredPlayer human) {
-        PaperCard card = RogueConfig.getCard(cardName, null);
+        PaperCard card = RogueConfig.getCard(cardName, null, null);
+        addCardToBattlefield(card, human);
+    }
+
+    static void addCardToBattlefield(PaperCard card, RegisteredPlayer human) {
         if (card != null) human.addExtraCardsOnBattlefield(Collections.singletonList(card));
     }
 
@@ -99,5 +158,30 @@ public interface RogueEffect {
         for (IPaperCard card : cards)
             main.remove((PaperCard) card, 1);
         human.addExtraCardsOnBattlefield(cards);
+    }
+
+    private static List<PaperCard> setExactPrints(List<PaperCard> cards, List<CardPrintOverride> printOverrides) {
+        if (cards.isEmpty() || printOverrides.isEmpty()) {
+            return cards;
+        }
+
+        List<PaperCard> exactPrints = new ArrayList<>(cards.size());
+        for (PaperCard card : cards) {
+            PaperCard exactCard = card;
+            for (CardPrintOverride printOverride : printOverrides) {
+                if (!printOverride.matches(card)) {
+                    continue;
+                }
+
+                PaperCard resolved = RogueConfig.getCard(printOverride.cardName(),
+                    printOverride.setCode(), printOverride.artIndex());
+                if (resolved != null) {
+                    exactCard = resolved;
+                }
+                break;
+            }
+            exactPrints.add(exactCard);
+        }
+        return exactPrints;
     }
 }

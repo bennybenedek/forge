@@ -308,14 +308,19 @@ public class RogueConfig {
                 .toList();
     }
 
-    // Helper method to get cards from the database
-    public static PaperCard getCard(String cardName, String setCode) {
+    /**
+     * Helper method to get cards from the database.
+     * setCode and artIndex may be null to ignore edition or art selection.
+     */
+    public static PaperCard getCard(String cardName, String setCode, Integer artIndex) {
         loadRogueCards();
         PaperCard card;
         if (setCode == null || setCode.isEmpty()) {
             card = db.getCommonCards().getCard(cardName);
-        } else {
+        } else if (artIndex == null) {
             card = db.getCommonCards().getCard(cardName, setCode);
+        } else {
+            card = db.getCommonCards().getCard(cardName, setCode, artIndex);
         }
         if (card == null) {
             System.err.println("Warning: Card not found: " + cardName);

@@ -9,7 +9,6 @@ import forge.gamemodes.rogue.npc.NPC;
 import forge.card.CardRulesPredicates;
 import forge.item.PaperCard;
 import forge.item.PaperCardPredicates;
-import forge.util.Aggregates;
 import forge.util.MyRandom;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -119,14 +118,7 @@ public enum EventEffect implements RogueEffect {
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
             Predicate<PaperCard> humanFilter = PaperCardPredicates.fromRules(
                     CardRulesPredicates.IS_CREATURE.and(CardRulesPredicates.subType("Human")));
-            List<PaperCard> fellows = run.getAllCardsForActiveCommander(humanFilter);
-            PaperCard fellow = fellows.isEmpty() ? null : Aggregates.random(fellows);
-            if (fellow == null) {
-                return;
-            }
-
-            run.addCarryCard(fellow.getName(), RogueRun.CarryCardType.FELLOW, getId());
-            ctx.addedCards = List.of(fellow);
+            addCarryCards(run, ctx, humanFilter, 1, RogueRun.CarryCardType.FELLOW, List.of());
         }
     },
     DRIFTED_STEAL("drifted_steal", "Steal Vehicle", "Gain a random Vehicle {{Item}}.",
@@ -135,14 +127,7 @@ public enum EventEffect implements RogueEffect {
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
             Predicate<PaperCard> vehicleFilter = PaperCardPredicates.fromRules(
                     CardRulesPredicates.IS_ARTIFACT.and(CardRulesPredicates.subType("Vehicle")));
-            List<PaperCard> vehicles = run.getAllCardsForActiveCommander(vehicleFilter);
-            PaperCard vehicle = vehicles.isEmpty() ? null : Aggregates.random(vehicles);
-            if (vehicle == null) {
-                return;
-            }
-
-            run.addCarryCard(vehicle.getName(), RogueRun.CarryCardType.ITEM, getId());
-            ctx.addedCards = List.of(vehicle);
+            addCarryCards(run, ctx, vehicleFilter, 1, RogueRun.CarryCardType.ITEM, List.of());
         }
     },
     BENDING_WALK("crossroads_walk", "Walk with a Companion", "Gain a random Ally {{Fellow}}.",
@@ -153,14 +138,7 @@ public enum EventEffect implements RogueEffect {
                     && PaperCardPredicates.fromRules(
                         CardRulesPredicates.IS_CREATURE.and(CardRulesPredicates.subType("Ally")))
                     .test(card);
-            List<PaperCard> allies = run.getAllCardsForActiveCommander(allyFilter);
-            PaperCard ally = allies.isEmpty() ? null : Aggregates.random(allies);
-            if (ally == null) {
-                return;
-            }
-
-            run.addCarryCard(ally.getName(), RogueRun.CarryCardType.FELLOW, getId());
-            ctx.addedCards = List.of(ally);
+            addCarryCards(run, ctx, allyFilter, 1, RogueRun.CarryCardType.FELLOW, List.of());
         }
     },
     BENDING_STUDY("crossroads_study", "Study the Scrolls",
@@ -171,20 +149,10 @@ public enum EventEffect implements RogueEffect {
             Predicate<PaperCard> lessonFilter = card -> "TLA".equalsIgnoreCase(card.getEdition())
                     && (card.getRules().getType().isInstant() || card.getRules().getType().isSorcery())
                     && card.getRules().getType().hasSubtype("Lesson");
-            List<PaperCard> lessons = run.getAllCardsForActiveCommander(lessonFilter);
-            if (lessons.isEmpty()) {
-                return;
-            }
-
-            Collections.shuffle(lessons, MyRandom.getRandom());
-            List<PaperCard> added = new ArrayList<>(lessons.subList(0, Math.min(3, lessons.size())));
-            for (PaperCard card : added) {
-                run.addCarryCard(card.getName(), RogueRun.CarryCardType.SCROLL, getId());
-            }
-            ctx.addedCards = added;
+            addCarryCards(run, ctx, lessonFilter, 3, RogueRun.CarryCardType.SCROLL, List.of());
         }
     },
-    GROUND_ZERO_SPECIAL("ground_zero_special", "You're S.P.E.C.I.A.L.", "Add all 7 Bobblehead artifacts to your deck. ![[Charisma Bobblehead]] ![[Intelligence Bobblehead]] ![[Strength Bobblehead]]",
+    GROUND_ZERO_SPECIAL("ground_zero_special", "You're S.P.E.C.I.A.L.", "Add all 7 Bobblehead artifacts to your deck. ![[Charisma Bobblehead|PIP|1]] ![[Intelligence Bobblehead|PIP|1]] ![[Strength Bobblehead|PIP|1]]",
             EffectType.ONESHOT) {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
@@ -194,9 +162,10 @@ public enum EventEffect implements RogueEffect {
             if (bobbleheads.isEmpty()) {
                 return;
             }
+            List<PaperCard> exactPrints = setExactPrints(bobbleheads, BOBBLEHEAD_PRINT_OVERRIDES);
 
-            run.addCardsToDeck(bobbleheads, false);
-            ctx.addedCards = bobbleheads;
+            run.addCardsToDeck(exactPrints, false);
+            ctx.addedCards = exactPrints;
         }
     },
     GROUND_ZERO_REPAIR("ground_zero_repair", "Use Workbench",
@@ -206,7 +175,7 @@ public enum EventEffect implements RogueEffect {
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
             List<PaperCard> removedArtifacts = run.removeCardsFromDeck(
                     card -> card.getRules().getType().isArtifact());
-            List<PaperCard> removedItems = removeCarryCards(run, RogueRun.CarryCardType.ITEM);
+            List<PaperCard> removedItems = RogueEffect.removeCarryCards(run, RogueRun.CarryCardType.ITEM);
             if (!removedArtifacts.isEmpty() || !removedItems.isEmpty()) {
                 List<PaperCard> removedCards = new ArrayList<>(removedArtifacts);
                 removedCards.addAll(removedItems);
@@ -217,19 +186,7 @@ public enum EventEffect implements RogueEffect {
                     && PaperCardPredicates.fromRules(
                         CardRulesPredicates.IS_CREATURE.and(CardRulesPredicates.subType("Robot")))
                     .test(card);
-            List<PaperCard> robots = run.getAllCardsForActiveCommander(robotFilter);
-            if (robots.isEmpty()) {
-                return;
-            }
-
-            Collections.shuffle(robots, MyRandom.getRandom());
-            List<PaperCard> added = new ArrayList<>(robots.subList(0, Math.min(3, robots.size())));
-
-            for (PaperCard card : added) {
-                run.addCarryCard(card.getName(), CarryCardType.FELLOW, getId());
-            }
-
-            ctx.addedCards = added;
+            addCarryCards(run, ctx, robotFilter, 3, CarryCardType.FELLOW, List.of());
         }
     },
     GROUND_ZERO_MUTATE("ground_zero_mutate", "Explore Wasteland", "Replace 5 random creatures in your deck with radiation mutants.",
@@ -301,19 +258,18 @@ public enum EventEffect implements RogueEffect {
             EffectType.ONESHOT) {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
-            PaperCard ring = RogueConfig.getCard("The One Ring", null);
-            if (ring == null) {
+            Predicate<PaperCard> ringFilter = card -> card.getName().equals("The One Ring");
+            addCarryCards(run, ctx, ringFilter, 1, RogueRun.CarryCardType.ITEM,
+                List.of(new CardPrintOverride("The One Ring", "LTR", 2)));
+            if (ctx.addedCards == null || ctx.addedCards.isEmpty()) {
                 return;
             }
-
-            run.addCarryCard(ring.getName(), RogueRun.CarryCardType.ITEM, getId());
             run.loseLife(5);
-            ctx.addedCards = List.of(ring);
         }
 
         @Override
         public boolean isChoiceAvailable(RogueRun run) {
-            return run.canAddCardToDeck(RogueConfig.getCard("The One Ring", null));
+            return run.canAddCardToDeck(RogueConfig.getCard("The One Ring", "LTR", 2));
         }
 
         @Override
@@ -332,7 +288,7 @@ public enum EventEffect implements RogueEffect {
                 ctx.removedCards = removed;
             }
 
-            PaperCard nazgul = RogueConfig.getCard("Nazgûl", null);
+            PaperCard nazgul = RogueConfig.getCard("Nazgûl", null, null);
             if (nazgul == null) {
                 return;
             }
@@ -344,7 +300,7 @@ public enum EventEffect implements RogueEffect {
 
         @Override
         public boolean isChoiceAvailable(RogueRun run) {
-            return run.canAddCardToDeck(RogueConfig.getCard("Nazgûl", null));
+            return run.canAddCardToDeck(RogueConfig.getCard("Nazgûl", null, null));
         }
 
         @Override
@@ -609,6 +565,15 @@ public enum EventEffect implements RogueEffect {
     private final String description;
     private final EffectType effectType;
     private final int goldCost;
+    private static final List<CardPrintOverride> BOBBLEHEAD_PRINT_OVERRIDES = List.of(
+        new CardPrintOverride("Agility Bobblehead", "PIP", 1),
+        new CardPrintOverride("Charisma Bobblehead", "PIP", 1),
+        new CardPrintOverride("Endurance Bobblehead", "PIP", 1),
+        new CardPrintOverride("Intelligence Bobblehead", "PIP", 1),
+        new CardPrintOverride("Luck Bobblehead", "PIP", 1),
+        new CardPrintOverride("Perception Bobblehead", "PIP", 1),
+        new CardPrintOverride("Strength Bobblehead", "PIP", 1)
+    );
 
     EventEffect(String id, String displayName, String description, EffectType effectType) {
         this(id, displayName, description, effectType, 0);
@@ -648,24 +613,29 @@ public enum EventEffect implements RogueEffect {
         return goldCost > 0 ? "You need " + goldCost + " Gold." : null;
     }
 
-    private static List<PaperCard> removeCarryCards(RogueRun run, RogueRun.CarryCardType type) {
-        if (!run.hasCarryCardOfType(type)) {
-            return List.of();
+    private static List<PaperCard> setExactPrints(List<PaperCard> cards, List<CardPrintOverride> printOverrides) {
+        if (cards.isEmpty() || printOverrides.isEmpty()) {
+            return cards;
         }
 
-        List<RogueRun.CarryCard> removedCarryCards = new ArrayList<>(run.getCarryCards().stream()
-                .filter(card -> card.type() == type)
-                .toList());
-        run.getCarryCards().removeIf(card -> card.type() == type);
+        List<PaperCard> exactPrints = new ArrayList<>(cards.size());
+        for (PaperCard card : cards) {
+            PaperCard exactCard = card;
+            for (CardPrintOverride printOverride : printOverrides) {
+                if (!printOverride.matches(card)) {
+                    continue;
+                }
 
-        List<PaperCard> removedCards = new ArrayList<>();
-        for (RogueRun.CarryCard carryCard : removedCarryCards) {
-            PaperCard card = RogueConfig.getCard(carryCard.cardName(), null);
-            if (card != null) {
-                removedCards.add(card);
+                PaperCard resolved = RogueConfig.getCard(printOverride.cardName(),
+                    printOverride.setCode(), printOverride.artIndex());
+                if (resolved != null) {
+                    exactCard = resolved;
+                }
+                break;
             }
+            exactPrints.add(exactCard);
         }
-        return removedCards;
+        return exactPrints;
     }
 
     public static EventEffect fromId(String id) {

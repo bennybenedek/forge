@@ -18,11 +18,13 @@ This repository is a Java 17+ multi-module Maven project (Forge / Rogue Commande
 - Do not add unit tests by default. Only add tests when the user explicitly asks for them, or when test additions are part of the agreed implementation plan.
 - Do not implement beyond explicit user requirements; if ambiguous, ask one focused question.
 - Keep changes lean and localized; prefer existing patterns over new abstractions.
+- Avoid method overloads by default. Prefer one explicit method signature with nullable/empty parameters when appropriate, and only add overloads if the user explicitly wants them or there is a strong established pattern nearby.
 - Check nearby code before editing; match the established approach in that package/module.
 - Reuse existing mechanisms for UI, loading, events, persistence, and rendering before adding helpers.
 - Avoid changes to shared/core Forge code (`forge-core`, `forge-game`, and generic shared desktop infrastructure) when a Rogue Commander-local fix can solve the issue. Only touch shared/core code when there is no reasonable Rogue-scoped solution, and call that out explicitly.
 - Use the least code that correctly solves the task; avoid speculative cleanup or side improvements.
 - Do not add one-time migrations by default. Ask the user for permission before adding any migration, especially if it was not part of the original plan.
+- Do not add backward-compatibility, legacy-save compatibility, fallback migration behavior, or similar compatibility code unless the user explicitly asks for it.
 - Use proper imports rather than fully qualified names in code.
 - If adding multiple related fields, prefer grouping them into a record or small inner type when that fits local style.
 - Extract duplicated logic when it is truly shared, but do not over-abstract simple or one-off code.

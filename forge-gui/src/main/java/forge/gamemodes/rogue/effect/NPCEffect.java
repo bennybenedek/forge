@@ -1,7 +1,9 @@
 package forge.gamemodes.rogue.effect;
 
 import forge.game.player.RegisteredPlayer;
+import forge.gamemodes.rogue.RogueConfig;
 import forge.gamemodes.rogue.RogueRun;
+import forge.item.PaperCard;
 
 /**
  * NPC effets granted during run start encounters.
@@ -24,7 +26,7 @@ public enum NPCEffect implements RogueEffect {
     TYVAR_HASTE("npc_tyvar_haste", "Tyvar's Fury", "Gain the {{Boon}} **Tyvar's Fury**. ![[Tyvar Boon - Fury]]") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            RogueEffect.addCardToCommandZone("Tyvar Boon - Haste", human);
+            RogueEffect.addCardToCommandZone("Tyvar Boon - Fury", human);
         }
     },
 
@@ -38,7 +40,8 @@ public enum NPCEffect implements RogueEffect {
     NARSET_ALCHEMIST("npc_narset_alchemist", "Alchemist", "Start the Run with an [[Ichor Elixir]] {{Item}} in the command zone.") {
         @Override
         public void onGranted(RogueRun run) {
-            run.addCarryCard("Ichor Elixir", RogueRun.CarryCardType.ITEM, getId());
+            PaperCard ichorElixir = RogueConfig.getCard("Ichor Elixir", null, null);
+            run.addCarryCard(ichorElixir, RogueRun.CarryCardType.ITEM, getId());
         }
     },
     NARSET_CHAOSBOUND("npc_narset_chaosbound", "Chaosbound", "Start each match with a **Chaosbound** ![[Narset - Chaosbound]] on the battlefield.") {
