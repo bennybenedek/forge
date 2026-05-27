@@ -1,18 +1,18 @@
 package forge.gamemodes.rogue;
 
 /**
- * Serializable snapshot of an active boon during a run.
- * Stores the boon ID, its rank, and remaining consumption charges.
+ * Serializable snapshot of an active effect during a run.
+ * Stores the effect ID, its rank, and remaining consumption charges.
  * Charges of -1 means permanent (never consumed).
  */
-public class RogueRunBoon {
+public class RogueRunEffect {
     private String id;
     private int rank;
     private int charges;  // -1 = permanent, >0 = remaining charges
 
-    public RogueRunBoon() {} // XStream
+    public RogueRunEffect() {} // XStream
 
-    public RogueRunBoon(String id, int rank, int charges) {
+    public RogueRunEffect(String id, int rank, int charges) {
         this.id = id;
         this.rank = rank;
         this.charges = charges;

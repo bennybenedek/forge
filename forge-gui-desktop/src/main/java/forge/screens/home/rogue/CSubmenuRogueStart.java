@@ -395,7 +395,7 @@ public enum CSubmenuRogueStart implements ICDoc {
     // Show NPC encounter dialogs (e.g. Tyvar offering boon choices)
     for (NPCContext ctx : NPCEncounterComposite.INSTANCE.onRunStart(progress)) {
       NPCEffect chosen = new NPCDialog(ctx).show();
-      if (chosen != null) newRun.addNPCBoon(chosen);
+      if (chosen != null) newRun.addNPCEffect(chosen);
     }
 
     // Generate unique name for the run (used as filename)

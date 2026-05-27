@@ -3,27 +3,27 @@ package forge.gamemodes.rogue.path;
 import forge.gamemodes.rogue.effect.ChestEffect;
 
 /**
- * Represents a Loot node in a Rogue Commander path.
- * Loot nodes provide a random reward from the ChestLoot pool.
+ * Represents a Chest node in a Rogue Commander path.
+ * Chest nodes provide a random reward ('loot') from the ChestEffect pool.
  */
 public class NodeChest extends RoguePathNode {
 
-    private ChestEffect loot;
+    private ChestEffect chestEffect;
 
     public NodeChest() {
         super();
     }
 
-    public NodeChest(ChestEffect loot) {
+    public NodeChest(ChestEffect chestEffect) {
         super();
-        this.loot = loot;
+        this.chestEffect = chestEffect;
     }
 
-    public ChestEffect getLoot() { return loot; }
-    public void setLoot(ChestEffect loot) { this.loot = loot; }
+    public ChestEffect getChestEffect() { return chestEffect; }
+    public void setChestEffect(ChestEffect chestEffect) { this.chestEffect = chestEffect; }
 
     @Override
     public String toString() {
-        return loot != null ? "Loot (" + loot.getDisplayName() + ")" : "Loot (Treasure)";
+        return chestEffect != null ? "Loot (" + chestEffect.getDisplayName() + ")" : "Loot (Treasure)";
     }
 }

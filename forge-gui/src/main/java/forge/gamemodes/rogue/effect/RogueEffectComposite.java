@@ -8,13 +8,13 @@ import java.util.function.Consumer;
 
 /**
  * Composite dispatcher implementing RogueEffect.
- * Iterates active effects from all sources (echo boons, descension levels, event boons).
+ * Iterates active effects from all sources (e.g. echo, descension, event).
  */
 public enum RogueEffectComposite implements RogueEffect {
 
     INSTANCE;
 
-    /** Returns all active effects from all sources (echo boons, descension, event boons, chest boons, wounds). */
+    /** Returns all active effects from all sources */
     public static List<RogueEffect> getAllEffects(RogueRun run) {
       List<RogueEffect> effects = new ArrayList<>(run.getActiveEchoBoons());
         int descLevel = run.getDescensionLevel();
@@ -22,12 +22,12 @@ public enum RogueEffectComposite implements RogueEffect {
             DescensionLevel dl = DescensionLevel.forLevel(l);
             if (dl != null) effects.add(dl);
         }
-        effects.addAll(run.getActiveEventBoons());
-        effects.addAll(run.getActiveChestBoons());
+        effects.addAll(run.getActiveEventEffects());
+        effects.addAll(run.getActiveChestEffects());
         effects.addAll(run.getActiveWounds());
         effects.addAll(run.getActiveWrathful());
         effects.addAll(run.getActiveCursed());
-        effects.addAll(run.getActiveNPCBoons());
+        effects.addAll(run.getActiveNPCEffects());
         return effects;
     }
 

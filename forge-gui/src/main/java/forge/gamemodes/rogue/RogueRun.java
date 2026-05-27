@@ -50,25 +50,25 @@ public class RogueRun {
     private int descensionLevel;                // 0 = no descension; XStream defaults int to 0 for old saves
 
     // Echo boons (snapshotted from RogueMetaProgress at run creation)
-    private List<RogueRunBoon> activeEchoBoons;
+    private List<RogueRunEffect> activeEchoBoons;
 
-    // Event boons (gained from event nodes during the run)
-    private List<RogueRunBoon> activeEventBoons;
+    // NPC effects (gained from NPC encounters at run start)
+    private List<RogueRunEffect> activeNPCEffects;
 
-    // Chest boons (gained from chest nodes during the run)
-    private List<RogueRunBoon> activeChestBoons;
+    // Event effects (gained from event nodes during the run)
+    private List<RogueRunEffect> activeEventEffects;
+
+    // Chest effects (gained from chest nodes during the run)
+    private List<RogueRunEffect> activeChestEffects;
 
     // Wounds (permanent debuffs gained from events, descension, etc.)
-    private List<RogueRunBoon> activeWounds;
+    private List<RogueRunEffect> activeWounds;
 
     // Wrathful effects (consume debuffs from wrathful planebounds)
-    private List<RogueRunBoon> activeWrathful;
+    private List<RogueRunEffect> activeWrathful;
 
     // Cursed effects (consume debuffs from cursed planebounds)
-    private List<RogueRunBoon> activeCursed;
-
-    // NPC boons (gained from NPC encounters at run start)
-    private List<RogueRunBoon> activeNPCBoons;
+    private List<RogueRunEffect> activeCursed;
 
     // Match History
     private int matchesWon;                     // Win counter
@@ -84,7 +84,7 @@ public class RogueRun {
     public enum CarryCardType { ITEM, FELLOW, SCROLL}
 
     /** A card the player carries between matches (castable from command zone).
-     *  sourceId links to the boon that granted it (null if purchased/rewarded). */
+     *  sourceId links to the effect that granted it (null if purchased/rewarded). */
     public static class CarryCard {
         private String cardName;
         private String setCode;
@@ -655,18 +655,18 @@ public class RogueRun {
         for (EchoBoon boon : progress.getActiveEchoBoons()) {
             int rank = progress.getBoonRank(boon);
             int charges = boon.getChargesForRank(rank);
-            activeEchoBoons.add(new RogueRunBoon(boon.getId(), rank, charges));
+            activeEchoBoons.add(new RogueRunEffect(boon.getId(), rank, charges));
         }
     }
 
     // Generic effect list helpers
-    private List<RogueRunBoon> ensureList(List<RogueRunBoon> list) {
+    private List<RogueRunEffect> ensureList(List<RogueRunEffect> list) {
         return list != null ? list : new ArrayList<>();
     }
 
-    private List<RogueEffect> mapEffects(List<RogueRunBoon> list, Function<String, ? extends RogueEffect> lookup) {
+    private List<RogueEffect> mapEffects(List<RogueRunEffect> list, Function<String, ? extends RogueEffect> lookup) {
         List<RogueEffect> result = new ArrayList<>();
-        for (RogueRunBoon rb : ensureList(list)) {
+        for (RogueRunEffect rb : ensureList(list)) {
             RogueEffect e = lookup.apply(rb.getId());
             if (e != null) result.add(e);
         }
@@ -674,23 +674,25 @@ public class RogueRun {
     }
 
     public List<RogueEffect> getActiveEchoBoons()  { return mapEffects(activeEchoBoons, EchoBoon::fromId); }
-    public List<RogueEffect> getActiveEventBoons() { return mapEffects(activeEventBoons, EventEffect::fromId); }
-    public List<RogueEffect> getActiveChestBoons() { return mapEffects(activeChestBoons, ChestEffect::fromId); }
+    public List<RogueEffect> getActiveEventEffects() { return mapEffects(activeEventEffects, EventEffect::fromId); }
+    public List<RogueEffect> getActiveChestEffects() { return mapEffects(activeChestEffects, ChestEffect::fromId); }
     public List<RogueEffect> getActiveWounds()     { return mapEffects(activeWounds, Wound::fromId); }
     public List<RogueEffect> getActiveWrathful()   { return mapEffects(activeWrathful, Wrathful::fromId); }
     public List<RogueEffect> getActiveCursed()    { return mapEffects(activeCursed, Cursed::fromId); }
-    public List<RogueEffect> getActiveNPCBoons() { return mapEffects(activeNPCBoons, NPCEffect::fromId); }
+    public List<RogueEffect> getActiveNPCEffects() { return mapEffects(activeNPCEffects, NPCEffect::fromId); }
 
-    public void addEventBoon(EventEffect boon)   { activeEventBoons = addEffect(activeEventBoons, boon); }
-    public void addChestBoon(ChestEffect loot)    { activeChestBoons = addEffect(activeChestBoons, loot); }
+    public void addEventEffect(EventEffect eventEffect)   { activeEventEffects = addEffect(
+        activeEventEffects, eventEffect); }
+    public void addChestEffect(ChestEffect chestEffect)    { activeChestEffects = addEffect(
+        activeChestEffects, chestEffect); }
     public void addWound(Wound wound)           { activeWounds = addEffect(activeWounds, wound); }
     public void addWrathful(Wrathful wrathful)  { activeWrathful = addEffect(activeWrathful, wrathful); }
     public void addCursed(Cursed cursed)        { activeCursed = addEffect(activeCursed, cursed); }
-    public void addNPCBoon(NPCEffect boon)       { activeNPCBoons = addEffect(activeNPCBoons, boon); boon.onGranted(this); }
+    public void addNPCEffect(NPCEffect npcEffect)       { activeNPCEffects = addEffect(activeNPCEffects, npcEffect); npcEffect.onGranted(this); }
 
-    private List<RogueRunBoon> addEffect(List<RogueRunBoon> list, RogueEffect effect) {
+    private List<RogueRunEffect> addEffect(List<RogueRunEffect> list, RogueEffect effect) {
         if (list == null) list = new ArrayList<>();
-        list.add(new RogueRunBoon(effect.getId(), 0, effect.getChargesForRank(0)));
+        list.add(new RogueRunEffect(effect.getId(), 0, effect.getChargesForRank(0)));
         return list;
     }
 
@@ -698,29 +700,29 @@ public class RogueRun {
         if (activeWounds != null) activeWounds.clear();
     }
 
-    // Boon queries
-    public int getRunBoonRank(String id) {
-        RogueRunBoon rb = findRunBoon(id);
+    // effect queries
+    public int getRunEffectRank(String id) {
+        RogueRunEffect rb = findRunEffect(id);
         return rb != null ? rb.getRank() : 0;
     }
 
     @SuppressWarnings("unchecked")
-    private List<RogueRunBoon>[] allBoonLists() {
-        return new List[]{activeEchoBoons, activeEventBoons, activeChestBoons,
-                activeWounds, activeWrathful, activeCursed, activeNPCBoons};
+    private List<RogueRunEffect>[] allEffectLists() {
+        return new List[]{activeEchoBoons, activeEventEffects, activeChestEffects,
+                activeWounds, activeWrathful, activeCursed, activeNPCEffects};
     }
 
     // Effect consumption
     public void consumeEffect(String id) {
-        for (List<RogueRunBoon> list : allBoonLists())
+        for (List<RogueRunEffect> list : allEffectLists())
             consumeFromList(list, id);
     }
 
-    private void consumeFromList(List<RogueRunBoon> list, String id) {
+    private void consumeFromList(List<RogueRunEffect> list, String id) {
         if (list == null) return;
-        Iterator<RogueRunBoon> it = list.iterator();
+        Iterator<RogueRunEffect> it = list.iterator();
         while (it.hasNext()) {
-            RogueRunBoon rb = it.next();
+            RogueRunEffect rb = it.next();
             if (rb.getId().equals(id) && rb.consumeCharge()) {
                 it.remove();
                 removeCarryCardsBySource(id);
@@ -729,10 +731,10 @@ public class RogueRun {
         }
     }
 
-    private RogueRunBoon findRunBoon(String id) {
-        for (List<RogueRunBoon> list : allBoonLists()) {
+    private RogueRunEffect findRunEffect(String id) {
+        for (List<RogueRunEffect> list : allEffectLists()) {
             if (list == null) continue;
-            for (RogueRunBoon rb : list)
+            for (RogueRunEffect rb : list)
                 if (rb.getId().equals(id)) return rb;
         }
         return null;

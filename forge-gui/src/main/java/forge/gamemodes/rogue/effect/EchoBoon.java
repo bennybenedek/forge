@@ -24,7 +24,7 @@ public enum EchoBoon implements RogueEffect {
         3, 0) {
         @Override
         public void onRunStart(RogueRun run) {
-            int bonus = getEffectValueAtRank(run.getRunBoonRank(getId()));
+            int bonus = getEffectValueAtRank(run.getRunEffectRank(getId()));
             if (bonus > 0) run.setMaxLife(run.getMaxLife() + bonus);
         }
     },
@@ -36,7 +36,7 @@ public enum EchoBoon implements RogueEffect {
         3, 0) {
         @Override
         public void onRunStart(RogueRun run) {
-            int bonus = getEffectValueAtRank(run.getRunBoonRank(getId()));
+            int bonus = getEffectValueAtRank(run.getRunEffectRank(getId()));
             if (bonus > 0) run.addGold(bonus);
         }
     },
@@ -49,7 +49,7 @@ public enum EchoBoon implements RogueEffect {
         @Override
         public void onMatchWin(RogueRun run) {
             if (run.getCurrentLife() >= run.getMaxLife()) return;
-            int heal = getEffectValueAtRank(run.getRunBoonRank(getId()));
+            int heal = getEffectValueAtRank(run.getRunEffectRank(getId()));
             if (heal > 0) run.gainLifeUpToMax(heal);
         }
     },
@@ -61,7 +61,7 @@ public enum EchoBoon implements RogueEffect {
         3, 0) {
         @Override
         public void onCardSelection(CardSelectionContext ctx, RogueRun run) {
-            ctx.freeRerolls += getEffectValueAtRank(run.getRunBoonRank(getId()));
+            ctx.freeRerolls += getEffectValueAtRank(run.getRunEffectRank(getId()));
         }
     },
 
@@ -72,7 +72,7 @@ public enum EchoBoon implements RogueEffect {
         3, 0) {
         @Override
         public void onCardSelection(CardSelectionContext ctx, RogueRun run) {
-            ctx.extraMythics += getEffectValueAtRank(run.getRunBoonRank(getId()));
+            ctx.extraMythics += getEffectValueAtRank(run.getRunEffectRank(getId()));
         }
     },
 
@@ -104,7 +104,7 @@ public enum EchoBoon implements RogueEffect {
         1, 1) {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            int extra = getEffectValueAtRank(run.getRunBoonRank(getId()));
+            int extra = getEffectValueAtRank(run.getRunEffectRank(getId()));
             if (extra > 0) human.setStartingHand(human.getStartingHand() + extra);
         }
     },
@@ -116,7 +116,7 @@ public enum EchoBoon implements RogueEffect {
         1, 1) {
         @Override
         public void onCardReward(CardRewardContext ctx, RogueRun run) {
-            ctx.maxPicks += getEffectValueAtRank(run.getRunBoonRank(getId()));
+            ctx.maxPicks += getEffectValueAtRank(run.getRunEffectRank(getId()));
         }
     },
 
@@ -127,7 +127,7 @@ public enum EchoBoon implements RogueEffect {
         2, 1) {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            int count = getEffectValueAtRank(run.getRunBoonRank(getId()));
+            int count = getEffectValueAtRank(run.getRunEffectRank(getId()));
             if (count <= 0) return;
             List<PaperCard> basicLands = new ArrayList<>();
             for (PaperCard c : human.getDeck().getMain().toFlatList()) {
@@ -148,7 +148,7 @@ public enum EchoBoon implements RogueEffect {
         3, 1) {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            int reduction = getEffectValueAtRank(run.getRunBoonRank(getId()));
+            int reduction = getEffectValueAtRank(run.getRunEffectRank(getId()));
             if (reduction > 0) RogueEffect.addCardToCommandZone("Echo Boon - Fractured Binding " + reduction, human);
         }
     };

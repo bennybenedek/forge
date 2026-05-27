@@ -148,6 +148,17 @@ public enum RogueEvent {
                 EventEffect.AFTER_DUSK_FEED)
         )),
 
+    NEON_LID("Neon-Lid",
+        "Neon rain hisses across Kamigawa's midnight streets while shrine lights shimmer through the smog. Ancient vows and chrome temptations call you toward three different paths.",
+        List.of(
+            new EventChoice("Path of the Samurai", "You trade flesh for discipline and rebuild your deck around the blade.",
+                EventEffect.NEON_LID_SAMURAI),
+            new EventChoice("Path of the Ninja", "You vanish into the alleys and return deadlier than ever before.",
+                EventEffect.NEON_LID_NINJA),
+            new EventChoice("Path of Inner Peace", "You follow the glow of the shrines and let their wisdom settle over you.",
+                EventEffect.NEON_LID_SHRINE)
+        )),
+
     LOST_CONNECTION("Lost",
         "Your connection to your spark flickers. You reach for your Commander's presence, but the link has gone cold.",
         List.of(

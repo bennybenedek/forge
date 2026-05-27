@@ -794,19 +794,19 @@ public enum CSubmenuRogueMap implements ICDoc {
   // Returns true when the choice interrupts normal event completion (for example a trigger,
   // defeat flow, or another early-exit path already took over).
   private boolean handleEventChoice(NodeEvent eventNode, RogueEvent event, RogueEvent.EventChoice choice) {
-    EventEffect boon = choice.effect();
-    if (!boon.isChoiceAvailable(currentRun)) {
+    EventEffect effect = choice.effect();
+    if (!effect.isChoiceAvailable(currentRun)) {
       return true;
     }
 
     NodeResultContext ctx = new NodeResultContext();
-    if (boon.getEffectType() == RogueEffect.EffectType.ONESHOT) {
-      boon.applyEffect(currentRun, ctx);
+    if (effect.getEffectType() == RogueEffect.EffectType.ONESHOT) {
+      effect.applyEffect(currentRun, ctx);
       if (handleEventTrigger(eventNode, ctx)) {
         return true;
       }
     } else {
-      currentRun.addEventBoon(boon);
+      currentRun.addEventEffect(effect);
     }
 
     if (checkSideNodeDefeat(event.getDisplayName())) {
@@ -1060,11 +1060,11 @@ public enum CSubmenuRogueMap implements ICDoc {
     if (currentRun == null) return;
 
     // Get or assign random loot
-    ChestEffect loot = chestNode.getLoot();
-    if (loot == null) {
-      ChestEffect[] allLoots = ChestEffect.values();
-      loot = allLoots[new Random().nextInt(allLoots.length)];
-      chestNode.setLoot(loot);
+    ChestEffect chestEffect = chestNode.getChestEffect();
+    if (chestEffect == null) {
+      ChestEffect[] allChestEffects = ChestEffect.values();
+      chestEffect = allChestEffects[new Random().nextInt(allChestEffects.length)];
+      chestNode.setChestEffect(chestEffect);
     }
 
     // DEV: allow picking which loot to test
@@ -1072,19 +1072,19 @@ public enum CSubmenuRogueMap implements ICDoc {
       ChestEffect picked = (ChestEffect) JOptionPane.showInputDialog(
           null, "Override chest loot:", "[DEV] Pick Loot",
           JOptionPane.PLAIN_MESSAGE, null,
-          ChestEffect.values(), loot);
-      if (picked != null) loot = picked;
+          ChestEffect.values(), chestEffect);
+      if (picked != null) chestEffect = picked;
     }
 
     RogueTutorialHelper.showIfNotSeen(RogueTutorial.CHEST);
 
     // Show chest dialog (same structure as EventDialog)
-    new ChestDialog(loot).show();
+    new ChestDialog(chestEffect).show();
 
     // Apply effect after player acknowledges
     NodeResultContext ctx = new NodeResultContext();
-    if (loot.getEffectType() == RogueEffect.EffectType.ONESHOT) {
-      loot.applyEffect(currentRun, ctx);
+    if (chestEffect.getEffectType() == RogueEffect.EffectType.ONESHOT) {
+      chestEffect.applyEffect(currentRun, ctx);
       boolean mythicOnly = ctx.trigger == NodeResultContext.ActionTriggerType.MYTHIC_CARD_REWARD;
       if (ctx.trigger == NodeResultContext.ActionTriggerType.CARD_REWARD
           || ctx.trigger == NodeResultContext.ActionTriggerType.MYTHIC_CARD_REWARD) {
@@ -1093,7 +1093,7 @@ public enum CSubmenuRogueMap implements ICDoc {
             mythicOnly);
       }
     } else {
-      currentRun.addChestBoon(loot);
+      currentRun.addChestEffect(chestEffect);
     }
 
     chestNode.setCompleted(true);

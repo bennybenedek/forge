@@ -4,13 +4,10 @@ import forge.deck.DeckSection;
 import forge.game.player.RegisteredPlayer;
 import forge.gamemodes.rogue.*;
 import forge.gamemodes.rogue.RogueRun.CarryCardType;
-import forge.gamemodes.rogue.npc.BazaarContext;
 import forge.gamemodes.rogue.npc.NPC;
 import forge.card.CardRulesPredicates;
 import forge.item.PaperCard;
 import forge.item.PaperCardPredicates;
-import forge.util.MyRandom;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -477,6 +474,50 @@ public enum EventEffect implements RogueEffect {
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
             removeCardsFromDeck(run, ctx, PaperCardPredicates.fromRules(CardRulesPredicates.IS_WHITE), null);
             addCarryCards(run, ctx, getCardFilter(), 2, CarryCardType.FELLOW, List.of());
+        }
+    },
+    NEON_LID_SAMURAI("neon_lid_samurai", "Path of the Samurai",
+            "Remove all creatures from your deck. For each creature removed this way, choose a Samurai to add to your deck.",
+            EffectType.ONESHOT) {
+        @Override
+        public Predicate<PaperCard> getCardFilter() {
+            return PaperCardPredicates.fromRules(
+                CardRulesPredicates.IS_CREATURE.and(CardRulesPredicates.subType("Samurai")));
+        }
+
+        @Override
+        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+            removeCardsFromDeck(run, ctx, PaperCardPredicates.fromRules(CardRulesPredicates.IS_CREATURE), null);
+            selectCardsForDeck(run, ctx, getCardFilter(), Math.max(ctx.removedCards.size(), 20), ctx.removedCards.size(), ctx.removedCards.size(), null);
+        }
+    },
+    NEON_LID_NINJA("neon_lid_ninja", "Path of the Ninja",
+            "Lose 5 max life. Gain the {{Boon}} **Ninjutsu Mastery**. ![[Event Boon - Ninjutsu Mastery]]",
+            EffectType.ONESHOT) {
+        @Override
+        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+            run.setMaxLife(Math.max(1, run.getMaxLife() - 5));
+            run.addEventEffect(this);
+        }
+
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            RogueEffect.addCardToCommandZone("Event Boon - Ninjutsu Mastery", human);
+        }
+    },
+    NEON_LID_SHRINE("neon_lid_shrine", "Path of Inner Peace",
+            "For each color of your commander, add a random legendary Shrine to your deck.",
+            EffectType.ONESHOT) {
+        @Override
+        public Predicate<PaperCard> getCardFilter() {
+            return PaperCardPredicates.fromRules(
+                CardRulesPredicates.IS_LEGENDARY.and(CardRulesPredicates.subType("Shrine")));
+        }
+
+        @Override
+        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+            int colorCount = Integer.bitCount(run.getCommanderColorIdentityMask());
+            addCardsToDeck(run, ctx, getCardFilter(), colorCount, null, List.of());
         }
     },
     FIND_CHEST("find_chest", "Hidden Chest", "You find a hidden {{Chest}}.",
