@@ -20,14 +20,14 @@ public class BazaarContext {
     /** Custom inventory for Bazaar-style shopping. Ordinary Bazaar setup leaves this empty. */
     public List<PaperCard> inventory = new ArrayList<>();
 
-    /** Card name → fixed price override. Used for both item pricing and card discounts. */
-    public final Map<String, Integer> priceOverrides = new HashMap<>();
-
     /** Extra cards to inject into the bazaar inventory (e.g. Gonti's items). */
     public final Set<PaperCard> injectedCards = new HashSet<>();
 
     /** Cards the player purchased (populated after shopping, before onAfterBazaarPurchase). */
     public final Set<PaperCard> purchasedCards = new HashSet<>();
+
+    /** Card name → fixed price override. Used for both item pricing and card discounts. */
+    public Map<String, Integer> priceOverrides = new HashMap<>();
 
     /** Number of random cards to discount (set by encounters, applied by bazaar code). */
     public int discountCount;

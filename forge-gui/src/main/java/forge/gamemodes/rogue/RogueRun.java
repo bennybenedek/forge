@@ -260,7 +260,7 @@ public class RogueRun {
     }
 
     // Deck management
-    public List<PaperCard> getSelectableDeckCards() {
+    public List<PaperCard> getSelectableDeckCards(Predicate<PaperCard> filter) {
         if (currentDeck == null) {
             return List.of();
         }
@@ -268,6 +268,10 @@ public class RogueRun {
         List<PaperCard> deckCards = new ArrayList<>(currentDeck.getMain().toFlatList());
         Set<String> commanderNames = getActiveCommanderNames();
         deckCards.removeIf(c -> commanderNames.contains(c.getName()) || c.getRules().getType().isBasicLand());
+
+        if (filter != null) {
+            deckCards.removeIf(card -> !filter.test(card));
+        }
         return deckCards;
     }
 
@@ -305,10 +309,7 @@ public class RogueRun {
             return List.of();
         }
 
-        List<PaperCard> selectableDeckCards = getSelectableDeckCards();
-        if (predicate != null) {
-            selectableDeckCards.removeIf(card -> !predicate.test(card));
-        }
+        List<PaperCard> selectableDeckCards = getSelectableDeckCards(predicate);
         if (selectableDeckCards.isEmpty()) {
             return List.of();
         }

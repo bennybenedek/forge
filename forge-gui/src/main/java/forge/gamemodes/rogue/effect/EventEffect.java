@@ -12,6 +12,7 @@ import forge.item.PaperCardPredicates;
 import forge.util.MyRandom;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -115,58 +116,77 @@ public enum EventEffect implements RogueEffect {
     DRIFTED_RESCUE("drifted_rescue", "Rescue Pilot", "Lose 3 Life. Gain a random legendary Human {{Fellow}}.",
             EffectType.ONESHOT) {
         @Override
+        public Predicate<PaperCard> getCardFilter() {
+            return PaperCardPredicates.fromRules(
+                CardRulesPredicates.IS_CREATURE
+                    .and(CardRulesPredicates.IS_LEGENDARY)
+                    .and(CardRulesPredicates.subType("Human")));
+        }
+
+        @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
 
             run.loseLife(3);
-
-            Predicate<PaperCard> humanFilter = PaperCardPredicates.fromRules(
-                    CardRulesPredicates.IS_CREATURE
-                        .and(CardRulesPredicates.IS_LEGENDARY)
-                        .and(CardRulesPredicates.subType("Human")));
-            addCarryCards(run, ctx, humanFilter, 1, RogueRun.CarryCardType.FELLOW, List.of());
+            addCarryCards(run, ctx, getCardFilter(), 1, RogueRun.CarryCardType.FELLOW, List.of());
         }
     },
     DRIFTED_STEAL("drifted_steal", "Steal Vehicle", "Gain a random Vehicle {{Item}}.",
             EffectType.ONESHOT) {
         @Override
+        public Predicate<PaperCard> getCardFilter() {
+            return PaperCardPredicates.fromRules(
+                CardRulesPredicates.IS_ARTIFACT.and(CardRulesPredicates.subType("Vehicle")));
+        }
+
+        @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
-            Predicate<PaperCard> vehicleFilter = PaperCardPredicates.fromRules(
-                    CardRulesPredicates.IS_ARTIFACT.and(CardRulesPredicates.subType("Vehicle")));
-            addCarryCards(run, ctx, vehicleFilter, 1, RogueRun.CarryCardType.ITEM, List.of());
+            addCarryCards(run, ctx, getCardFilter(), 1, RogueRun.CarryCardType.ITEM, List.of());
         }
     },
     BENDING_WALK("crossroads_walk", "Walk with a Companion", "Gain a random Ally {{Fellow}}.",
             EffectType.ONESHOT) {
         @Override
+        public Predicate<PaperCard> getCardFilter() {
+            return card -> "TLA".equalsIgnoreCase(card.getEdition())
+                && PaperCardPredicates.fromRules(
+                    CardRulesPredicates.IS_CREATURE.and(CardRulesPredicates.subType("Ally")))
+                .test(card);
+        }
+
+        @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
-            Predicate<PaperCard> allyFilter = card -> "TLA".equalsIgnoreCase(card.getEdition())
-                    && PaperCardPredicates.fromRules(
-                        CardRulesPredicates.IS_CREATURE.and(CardRulesPredicates.subType("Ally")))
-                    .test(card);
-            addCarryCards(run, ctx, allyFilter, 1, RogueRun.CarryCardType.FELLOW, List.of());
+            addCarryCards(run, ctx, getCardFilter(), 1, RogueRun.CarryCardType.FELLOW, List.of());
         }
     },
     BENDING_STUDY("crossroads_study", "Study the Scrolls",
             "Gain 3 random Lesson {{Scroll}}s.",
             EffectType.ONESHOT) {
         @Override
+        public Predicate<PaperCard> getCardFilter() {
+            return card -> "TLA".equalsIgnoreCase(card.getEdition())
+                && (card.getRules().getType().isInstant() || card.getRules().getType().isSorcery())
+                && card.getRules().getType().hasSubtype("Lesson");
+        }
+
+        @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
-            Predicate<PaperCard> lessonFilter = card -> "TLA".equalsIgnoreCase(card.getEdition())
-                    && (card.getRules().getType().isInstant() || card.getRules().getType().isSorcery())
-                    && card.getRules().getType().hasSubtype("Lesson");
-            addCarryCards(run, ctx, lessonFilter, 3, RogueRun.CarryCardType.SCROLL, List.of());
+            addCarryCards(run, ctx, getCardFilter(), 3, RogueRun.CarryCardType.SCROLL, List.of());
         }
     },
     GROUND_ZERO_SPECIAL("ground_zero_special", "You're S.P.E.C.I.A.L.", "Add all 7 Bobblehead artifacts to your deck. ![[Charisma Bobblehead|PIP|1]] ![[Intelligence Bobblehead|PIP|1]] ![[Strength Bobblehead|PIP|1]]",
             EffectType.ONESHOT) {
         @Override
+        public Predicate<PaperCard> getCardFilter() {
+            return PaperCardPredicates.fromRules(
+                CardRulesPredicates.IS_ARTIFACT.and(CardRulesPredicates.subType("Bobblehead")));
+        }
+
+        @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
-            Predicate<PaperCard> bobbleheadFilter = PaperCardPredicates.fromRules(
-                    CardRulesPredicates.IS_ARTIFACT.and(CardRulesPredicates.subType("Bobblehead")));
             String setCode = "PIP";
             int artIndex = 1;
 
-            addCardsToDeck(run, ctx, bobbleheadFilter, null, List.of(
+            addCardsToDeck(run, ctx, getCardFilter(), null, null, List.of(
                 new CardPrintOverride("Agility Bobblehead", setCode, artIndex),
                 new CardPrintOverride("Charisma Bobblehead", setCode, artIndex),
                 new CardPrintOverride("Endurance Bobblehead", setCode, artIndex),
@@ -181,52 +201,46 @@ public enum EventEffect implements RogueEffect {
             "Remove all artifact cards from your deck and lose all {{Item}}s. Gain 3 random PIP Robot {{Fellow}}s.",
             EffectType.ONESHOT) {
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
-            List<PaperCard> removedArtifacts = run.removeCardsFromDeck(
-                    card -> card.getRules().getType().isArtifact());
-            List<PaperCard> removedItems = RogueEffect.removeCarryCards(run, RogueRun.CarryCardType.ITEM);
-            if (!removedArtifacts.isEmpty() || !removedItems.isEmpty()) {
-                List<PaperCard> removedCards = new ArrayList<>(removedArtifacts);
-                removedCards.addAll(removedItems);
-                ctx.removedCards = removedCards;
-            }
-
-            Predicate<PaperCard> robotFilter = card -> "PIP".equalsIgnoreCase(card.getEdition())
-                    && PaperCardPredicates.fromRules(
-                        CardRulesPredicates.IS_CREATURE.and(CardRulesPredicates.subType("Robot")))
-                    .test(card);
-            addCarryCards(run, ctx, robotFilter, 3, CarryCardType.FELLOW, List.of());
+        public Predicate<PaperCard> getCardFilter() {
+            return card -> "PIP".equalsIgnoreCase(card.getEdition())
+                && PaperCardPredicates.fromRules(
+                    CardRulesPredicates.IS_CREATURE.and(CardRulesPredicates.subType("Robot")))
+                .test(card);
         }
-    },
-    GROUND_ZERO_MUTATE("ground_zero_mutate", "Explore Wasteland", "Replace 5 random creatures in your deck with radiation mutants.",
-            EffectType.ONESHOT) {
+
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
-            List<PaperCard> deckCardsToRemove = run.removeRandomCardsFromDeck(
-                    5, card -> card.getRules().getType().isCreature());
-            if (deckCardsToRemove.isEmpty()) {
-                return;
-            }
-            ctx.removedCards = deckCardsToRemove;
+            removeCardsFromDeck(
+                run, ctx, PaperCardPredicates.fromRules(
+                    CardRulesPredicates.IS_ARTIFACT), null);
+            removeCarryCards(run, ctx, CarryCardType.ITEM);
+            addCarryCards(run, ctx, getCardFilter(), 3, CarryCardType.FELLOW, List.of());
+        }
+    },
+    GROUND_ZERO_MUTATE("ground_zero_mutate", "Explore Wasteland", "Remove 5 random creatures from your deck. For each creature removed this way, add a random radiation mutant to your deck.",
+            EffectType.ONESHOT) {
 
-            Predicate<PaperCard> mutantFilter = card -> "PIP".equalsIgnoreCase(card.getEdition())
-                    && PaperCardPredicates.fromRules(
-                        CardRulesPredicates.IS_CREATURE.and(CardRulesPredicates.subType("Mutant")))
-                    .test(card);
-            addCardsToDeck(run, ctx, mutantFilter, deckCardsToRemove.size(), List.of());
+        @Override
+        public Predicate<PaperCard> getCardFilter() {
+            return card -> "PIP".equalsIgnoreCase(card.getEdition())
+                && PaperCardPredicates.fromRules(
+                    CardRulesPredicates.IS_CREATURE.and(CardRulesPredicates.subType("Mutant")))
+                .test(card);
+        }
+
+        @Override
+        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+            removeCardsFromDeck(run, ctx, PaperCardPredicates.fromRules(CardRulesPredicates.IS_CREATURE), 5);
+            int removedCount = ctx.removedCards.size();
+            addCardsToDeck(run, ctx, getCardFilter(), removedCount, null, List.of());
         }
     },
     CROOKED_COUNSEL_FELLOWSHIP("crooked_counsel_fellowship", "Rally the Free Peoples",
             "Remove all black cards from your deck. Choose up to 9 creatures from a set of legendary Halflings, Humans, Elves, Dwarves, and Wizards to add to your deck.",
             EffectType.ONESHOT) {
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
-            List<PaperCard> removed = run.removeCardsFromDeck(card -> card.getRules().getColor().hasBlack());
-            if (!removed.isEmpty()) {
-                ctx.removedCards = removed;
-            }
-
-            Predicate<PaperCard> fellowshipFilter = card -> {
+        public Predicate<PaperCard> getCardFilter() {
+            return card -> {
                 if (!("LTR".equalsIgnoreCase(card.getEdition()) || "LTC".equalsIgnoreCase(card.getEdition()))) {
                     return false;
                 }
@@ -234,38 +248,37 @@ public enum EventEffect implements RogueEffect {
                     return false;
                 }
                 return card.getRules().getType().hasSubtype("Halfling")
-                        || card.getRules().getType().hasSubtype("Human")
-                        || card.getRules().getType().hasSubtype("Elf")
-                        || card.getRules().getType().hasSubtype("Dwarf")
-                        || card.getRules().getType().hasSubtype("Wizard");
+                    || card.getRules().getType().hasSubtype("Human")
+                    || card.getRules().getType().hasSubtype("Elf")
+                    || card.getRules().getType().hasSubtype("Dwarf")
+                    || card.getRules().getType().hasSubtype("Wizard");
             };
-            List<PaperCard> fellowshipCards = run.getAllCardsForActiveCommander(fellowshipFilter);
+        }
+
+        @Override
+        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+            removeCardsFromDeck(run, ctx, PaperCardPredicates.fromRules(CardRulesPredicates.IS_BLACK), null);
+            List<PaperCard> fellowshipCards = run.getAllCardsForActiveCommander(getCardFilter());
             if (fellowshipCards.isEmpty()) {
                 return;
             }
 
-            Collections.shuffle(fellowshipCards, MyRandom.getRandom());
-            List<PaperCard> candidates = new ArrayList<>(fellowshipCards.subList(0, Math.min(30, fellowshipCards.size())));
-            ctx.candidateCards = candidates;
-            ctx.addMinCount = 0;
-            ctx.addMaxCount = Math.min(9, candidates.size());
-            if (ctx.addMaxCount > 0) {
-                ctx.trigger = NodeResultContext.ActionTriggerType.CARD_ADDITION;
-            }
+            selectCardsForDeck(run, ctx, getCardFilter(), 30, 0, 9, null);
         }
     },
     CROOKED_COUNSEL_RING("crooked_counsel_ring", "Keep to your own path",
             "Lose 5 life. Gain the legendary artifact {{Item}} [[The One Ring|LTR|2]].",
             EffectType.ONESHOT) {
         @Override
+        public Predicate<PaperCard> getCardFilter() {
+            return card -> card.getName().equals("The One Ring");
+        }
+
+        @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
-            Predicate<PaperCard> ringFilter = card -> card.getName().equals("The One Ring");
-            addCarryCards(run, ctx, ringFilter, 1, RogueRun.CarryCardType.ITEM,
-                List.of(new CardPrintOverride("The One Ring", "LTR", 2)));
-            if (ctx.addedCards == null || ctx.addedCards.isEmpty()) {
-                return;
-            }
             run.loseLife(5);
+            addCarryCards(run, ctx, getCardFilter(), 1, RogueRun.CarryCardType.ITEM,
+                List.of(new CardPrintOverride("The One Ring", "LTR", 2)));
         }
 
         @Override
@@ -279,24 +292,25 @@ public enum EventEffect implements RogueEffect {
         }
     },
     CROOKED_COUNSEL_NAZGUL("crooked_counsel_nazgul", "Join with the dark lord",
-            "Remove 9 random creatures from your deck and replace them with 9 copies of [[Nazgûl]].",
-            EffectType.ONESHOT) {
+        "Remove 9 random creatures from your deck. If you do, add 9 copies of [[Nazgûl]] to your deck.",
+        EffectType.ONESHOT) {
+
+        Predicate<PaperCard> getDeckCardFilter() {
+            return PaperCardPredicates.fromRules(CardRulesPredicates.IS_CREATURE);
+        }
+
+        @Override
+        public Predicate<PaperCard> getCardFilter() {
+            return card -> card.getRules().getName().equals("Nazgûl");
+        }
+
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
-            List<PaperCard> removed = run.removeRandomCardsFromDeck(9,
-                    card -> card.getRules().getType().isCreature());
-            if (!removed.isEmpty()) {
-                ctx.removedCards = removed;
-            }
-
-            PaperCard nazgul = RogueConfig.getCard("Nazgûl", null, null);
-            if (nazgul == null) {
+            if (run.getSelectableDeckCards(getDeckCardFilter()).size() < 9) {
                 return;
             }
-
-            List<PaperCard> added = new ArrayList<>(Collections.nCopies(9, nazgul));
-            run.addCardsToDeck(added, false);
-            ctx.addedCards = added;
+            removeCardsFromDeck(run, ctx, getDeckCardFilter(), 9);
+            addCardsToDeck(run, ctx, getCardFilter(), 1, 9, List.of());
         }
 
         @Override
@@ -310,27 +324,18 @@ public enum EventEffect implements RogueEffect {
         }
     },
     GAMECHANGER_TRUST("gamechanger_trust", "Trade for Gamechangers",
-            "Remove 3 random cards from your deck and replace them with chosen cards from the Gamechanger list.",
+            "Remove 3 random cards from your deck. Choose 3 cards from the Gamechanger list to add to your deck.",
             EffectType.ONESHOT) {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
             List<PaperCard> gamechangerCards = run.getGamechangerCardsForActiveCommander();
             int swapCount = Math.min(3, gamechangerCards.size());
-            if (swapCount <= 0) {
+            if (swapCount == 0) {
                 return;
             }
 
-            List<PaperCard> removed = run.removeRandomCardsFromDeck(swapCount, null);
-            if (removed.isEmpty()) {
-                return;
-            }
-            ctx.removedCards = removed;
-            ctx.candidateCards = gamechangerCards;
-            ctx.addMinCount = Math.min(swapCount, gamechangerCards.size());
-            ctx.addMaxCount = ctx.addMinCount;
-            if (ctx.addMaxCount > 0) {
-                ctx.trigger = NodeResultContext.ActionTriggerType.CARD_ADDITION;
-            }
+            removeCardsFromDeck(run, ctx, null, swapCount);
+            selectCardsForDeck(ctx, gamechangerCards, swapCount, swapCount);
         }
     },
     GAMECHANGER_CHOOSE("gamechanger_choose", "Browse Gamechangers",
@@ -343,48 +348,39 @@ public enum EventEffect implements RogueEffect {
                 return;
             }
 
-            BazaarContext bazaarContext = new BazaarContext();
-            bazaarContext.title = "Gamechanger Shop";
-            bazaarContext.inventory.addAll(gamechangerCards);
+            var priceOverrides = new HashMap<String, Integer>();
             for (PaperCard card : gamechangerCards) {
-                bazaarContext.priceOverrides.put(card.getName(),
+                priceOverrides.put(card.getName(),
                     BazaarPricing.getCardPrice(card) * 2);
             }
 
-            ctx.bazaarContext = bazaarContext;
-            ctx.trigger = NodeResultContext.ActionTriggerType.BAZAAR;
+            openCustomBazaar(ctx, "Gamechanger Shop", gamechangerCards, priceOverrides);
         }
     },
-    PLANAR_TRIBUTE_REPLACE("planar_shuffle", "Planar Shuffle",
-            "Remove 3 random cards (excluding basic lands) and replace them with random cards from your {{Reward Pool}}.",
+    PLANAR_TRIBUTE_REPLACE("planar_tribute_replace", "Planar Shuffle",
+            "Remove 3 random cards (excluding basic lands) from your deck. Add 3 random cards from your {{Reward Pool}}.",
             EffectType.ONESHOT) {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
+
             RogueDeck rogueDeck = run.getSelectedRogueDeck();
             if (rogueDeck == null) return;
 
-            List<PaperCard> removed = run.removeRandomCardsFromDeck(3, null);
-            if (removed.isEmpty()) return;
-            int swapCount = removed.size();
+            int swapCount = 3;
+            removeCardsFromDeck(run, ctx, PaperCardPredicates.fromRules(CardRulesPredicates.NOT_BASIC_LAND), swapCount);
 
-            // Draw same count from reward pool and add to deck
-            List<PaperCard> added = rogueDeck.drawRewardOptions(swapCount, null);
-            run.addCardsToDeck(added, false);
-            rogueDeck.removeFromCardPools(added);
-
-            // Store for result display
-            ctx.removedCards = removed;
-            ctx.addedCards = added;
+            List<PaperCard> toAdd = rogueDeck.drawRewardOptions(swapCount, null);
+            run.addCardsToDeck(toAdd, false);
+            rogueDeck.removeFromCardPools(toAdd);
+            ctx.addedCards = toAdd;
         }
     },
-    PLANAR_TRIBUTE_REMOVE("planar_sacrifice", "Planar Sacrifice",
+    PLANAR_TRIBUTE_REMOVE("planar_tribute_remove", "Planar Sacrifice",
         "Choose 3 cards (excluding basic lands) to remove from your deck.",
         EffectType.ONESHOT) {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
-            ctx.trigger = NodeResultContext.ActionTriggerType.CARD_REMOVAL;
-            ctx.removeCount = 3;
-            ctx.drawCount = 0;
+            selectCardsFromDeck(ctx, 3, 0);
         }
     },
     AMBUSH_FIGHT("ambush_fight", "Fight!", "Fight a random Planebound on a random Plane!",
@@ -428,22 +424,15 @@ public enum EventEffect implements RogueEffect {
             EffectType.ONESHOT) {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
-            ctx.trigger = NodeResultContext.ActionTriggerType.CARD_REMOVAL;
-            ctx.removeCount = 3;
-            ctx.drawCount = ctx.removeCount;
+            int exchangeCount = 3;
+            selectCardsFromDeck(ctx, exchangeCount, exchangeCount);
         }
     },
     THORNS_ENDURE("thorns_endure", "Gain Wound", "Gain a random {{Wound}}.",
             EffectType.ONESHOT) {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
-            List<Wound> available = new ArrayList<>(List.of(Wound.values()));
-            List<RogueEffect> active = run.getActiveWounds();
-            available.removeIf(w -> active.stream().anyMatch(a -> a == w));
-            if (available.isEmpty()) return;
-            Wound wound = available.get(MyRandom.getRandom().nextInt(available.size()));
-            run.addWound(wound);
-            ctx.gainedWound = wound;
+            gainWound(run, ctx);
         }
     },
     THORNS_PRESS("thorns_press", "Lose 4 Life", "You lose 4 life.",
@@ -493,7 +482,6 @@ public enum EventEffect implements RogueEffect {
             }
         }
     },
-
     LOST_DEPART("lost_depart", "Lost Connection - Depart", "You may not cast your Commander in the next match.",
             EffectType.CONSUME) {
         @Override
@@ -522,18 +510,10 @@ public enum EventEffect implements RogueEffect {
                     card.getRules().getType().isCreature()
                     && card.getRules().getType().isLegendary()
                     && card.getRules().getColorIdentity().getColor() == commanderColorIdentityMask;
-            List<PaperCard> commanderChoices = run.getAllCardsForActiveCommander(commanderFilter);
-            if (commanderChoices.isEmpty()) {
-                return;
-            }
 
-            Collections.shuffle(commanderChoices, MyRandom.getRandom());
-            ctx.candidateCards = new ArrayList<>(commanderChoices.subList(0, Math.min(20, commanderChoices.size())));
-            ctx.addMinCount = 1;
-            ctx.addMaxCount = 1;
             ctx.addSection = DeckSection.Commander;
             ctx.replaceCurrentCardsInAddSection = true;
-            ctx.trigger = NodeResultContext.ActionTriggerType.CARD_ADDITION;
+            selectCardsForDeck(run, ctx, commanderFilter, 20, 1, 1, null);
         }
     },
     DISTORTION_SKIP_REWARDS("skip_rewards", "Distortion", "You skip all rewards after your next match.",
@@ -602,6 +582,10 @@ public enum EventEffect implements RogueEffect {
 
     protected String getInsufficientGoldReason() {
         return goldCost > 0 ? "You need " + goldCost + " Gold." : null;
+    }
+
+    protected String getInsufficientCardsReason() {
+        return "Your deck doesn't contain enough cards.";
     }
 
     public static EventEffect fromId(String id) {

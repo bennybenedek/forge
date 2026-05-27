@@ -859,7 +859,7 @@ public enum CSubmenuRogueMap implements ICDoc {
   }
 
   private void handleEventCardRemoval(NodeResultContext ctx) {
-    List<PaperCard> candidateCards = currentRun.getSelectableDeckCards();
+    List<PaperCard> candidateCards = currentRun.getSelectableDeckCards(null);
     int removeCount = Math.min(ctx.removeCount, candidateCards.size());
     if (removeCount <= 0) {
       return;

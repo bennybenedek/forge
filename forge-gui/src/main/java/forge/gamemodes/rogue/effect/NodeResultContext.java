@@ -4,6 +4,7 @@ import forge.deck.DeckSection;
 import forge.gamemodes.rogue.RoguePlanebound;
 import forge.gamemodes.rogue.npc.BazaarContext;
 import forge.item.PaperCard;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -39,4 +40,9 @@ public class NodeResultContext {
 
     /** Wound gained from this event, for result display. Null = not applicable. */
     public Wound gainedWound;
+
+    public NodeResultContext() {
+        removedCards = new ArrayList<>();
+        addedCards = new ArrayList<>();
+    }
 }
