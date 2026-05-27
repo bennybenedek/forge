@@ -131,6 +131,17 @@ public enum RogueEvent {
                 EventEffect.AMONG_MURDERERS_HIRE)
         )),
 
+    BURROWED_INTO_TROUBLE("Burrowed into Trouble",
+        "A trader's caravan creaks beneath the weight of iron cages. Squirrels, otters, raccoons, and other small woodland creatures peer out with wide, mournful eyes while the trader smiles and asks what price your pity will bear.",
+        List.of(
+            new EventChoice("Browse", "You linger among the cages and bargain for a few woodland companions.",
+                EventEffect.BURROWED_BROWSE),
+            new EventChoice("Free", "You break the cages open and leave the trader cursing, with wounded pride and grateful legends at your side.",
+                EventEffect.BURROWED_FREE),
+            new EventChoice("Sell", "The trader eagerly buys every suitable beast you part with.",
+                EventEffect.BURROWED_SELL)
+        )),
+
     THORNS("Thorns",
         "The land itself rejects your presence. Thorns rise from the soil, leaving your footsteps stained with blood.",
         List.of(

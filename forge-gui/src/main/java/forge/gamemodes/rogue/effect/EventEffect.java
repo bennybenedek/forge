@@ -166,6 +166,89 @@ public enum EventEffect implements RogueEffect {
             return "No detectives are available for your commander.";
         }
     },
+    BURROWED_BROWSE("burrowed_browse", "Browse",
+            "Shop from a selection of Woodland creatures.",
+            EffectType.ONESHOT) {
+        @Override
+        public Predicate<PaperCard> getCardFilter() {
+            Predicate<PaperCard> creatureFilter = PaperCardPredicates.fromRules(
+                CardRulesPredicates.IS_CREATURE.and(
+                    CardRulesPredicates.subType("Bat")
+                        .or(CardRulesPredicates.subType("Bird"))
+                        .or(CardRulesPredicates.subType("Frog"))
+                        .or(CardRulesPredicates.subType("Lizard"))
+                        .or(CardRulesPredicates.subType("Mouse"))
+                        .or(CardRulesPredicates.subType("Otter"))
+                        .or(CardRulesPredicates.subType("Rabbit"))
+                        .or(CardRulesPredicates.subType("Raccoon"))
+                        .or(CardRulesPredicates.subType("Rat"))
+                        .or(CardRulesPredicates.subType("Squirrel"))));
+            return card -> ("BLB".equalsIgnoreCase(card.getEdition())
+                || "BLC".equalsIgnoreCase(card.getEdition()))
+                && creatureFilter.test(card);
+        }
+
+        @Override
+        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+            openCustomBazaar(ctx, "Woodland Caravan",
+                run.getAllCardsForActiveCommander(getCardFilter()), null);
+        }
+    },
+    BURROWED_FREE("burrowed_free", "Free",
+            "Gain a random {{Wound}}. Gain 3 random legendary Woodland {{Fellow}}s.",
+            EffectType.ONESHOT) {
+        @Override
+        public Predicate<PaperCard> getCardFilter() {
+            Predicate<PaperCard> creatureFilter = PaperCardPredicates.fromRules(
+                CardRulesPredicates.IS_CREATURE
+                    .and(CardRulesPredicates.IS_LEGENDARY)
+                    .and(CardRulesPredicates.subType("Bat")
+                        .or(CardRulesPredicates.subType("Bird"))
+                        .or(CardRulesPredicates.subType("Frog"))
+                        .or(CardRulesPredicates.subType("Lizard"))
+                        .or(CardRulesPredicates.subType("Mouse"))
+                        .or(CardRulesPredicates.subType("Otter"))
+                        .or(CardRulesPredicates.subType("Rabbit"))
+                        .or(CardRulesPredicates.subType("Raccoon"))
+                        .or(CardRulesPredicates.subType("Rat"))
+                        .or(CardRulesPredicates.subType("Squirrel"))));
+            return card -> ("BLB".equalsIgnoreCase(card.getEdition())
+                || "BLC".equalsIgnoreCase(card.getEdition()))
+                && creatureFilter.test(card);
+        }
+
+        @Override
+        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+            gainWound(run, ctx);
+            addCarryCards(run, ctx, getCardFilter(), 3, CarryCardType.FELLOW, List.of());
+        }
+    },
+    BURROWED_SELL("burrowed_sell", "Sell",
+            "Sell all non-Human creatures from your deck for 2 {{Gold}} each.",
+            EffectType.ONESHOT) {
+        Predicate<PaperCard> getDeckCardFilter() {
+            return PaperCardPredicates.fromRules(
+                CardRulesPredicates.IS_CREATURE.and(CardRulesPredicates.subType("Human").negate()));
+        }
+
+        @Override
+        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+            removeCardsFromDeck(run, ctx, getDeckCardFilter(), null);
+            if (!ctx.removedCards.isEmpty()) {
+                run.addGold(ctx.removedCards.size() * 2);
+            }
+        }
+
+        @Override
+        public boolean isChoiceAvailable(RogueRun run) {
+            return !run.getSelectableDeckCards(getDeckCardFilter()).isEmpty();
+        }
+
+        @Override
+        public String getUnavailableReason(RogueRun run) {
+            return isChoiceAvailable(run) ? null : "Your deck has no non-Human creatures to sell.";
+        }
+    },
     DRIFTED_RESCUE("drifted_rescue", "Rescue Pilot", "Lose 3 Life. Gain a random legendary Human {{Fellow}}.",
             EffectType.ONESHOT) {
         @Override
