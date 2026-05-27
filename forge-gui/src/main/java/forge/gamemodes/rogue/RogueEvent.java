@@ -137,6 +137,17 @@ public enum RogueEvent {
                 EventEffect.LOSE_ALL_ECHOES)
         )),
 
+    AFTER_DUSK("After Dusk",
+        "Past midnight, you find shelter in a sprawling mansion where every corridor creaks, every candle gutters, and something hungry moves behind the walls.",
+        List.of(
+            new EventChoice("Turn insane", "The house slips into your thoughts and leaves nightmares behind.",
+                EventEffect.AFTER_DUSK_INSANE),
+            new EventChoice("Explore mansion", "You brave the shifting halls and claim a few rooms for yourself.",
+                EventEffect.AFTER_DUSK_EXPLORE),
+            new EventChoice("Feed monsters", "The mansion's oldest horrors are sated and follow in your wake.",
+                EventEffect.AFTER_DUSK_FEED)
+        )),
+
     LOST_CONNECTION("Lost",
         "Your connection to your spark flickers. You reach for your Commander's presence, but the link has gone cold.",
         List.of(

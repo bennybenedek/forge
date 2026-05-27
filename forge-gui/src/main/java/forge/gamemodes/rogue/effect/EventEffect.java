@@ -147,10 +147,8 @@ public enum EventEffect implements RogueEffect {
             EffectType.ONESHOT) {
         @Override
         public Predicate<PaperCard> getCardFilter() {
-            return card -> "TLA".equalsIgnoreCase(card.getEdition())
-                && PaperCardPredicates.fromRules(
-                    CardRulesPredicates.IS_CREATURE.and(CardRulesPredicates.subType("Ally")))
-                .test(card);
+            return PaperCardPredicates.fromRules(
+                CardRulesPredicates.IS_CREATURE.and(CardRulesPredicates.subType("Ally")));
         }
 
         @Override
@@ -163,9 +161,10 @@ public enum EventEffect implements RogueEffect {
             EffectType.ONESHOT) {
         @Override
         public Predicate<PaperCard> getCardFilter() {
-            return card -> "TLA".equalsIgnoreCase(card.getEdition())
-                && (card.getRules().getType().isInstant() || card.getRules().getType().isSorcery())
-                && card.getRules().getType().hasSubtype("Lesson");
+            return PaperCardPredicates.fromRules(
+                (CardRulesPredicates.IS_INSTANT
+                    .or(CardRulesPredicates.IS_SORCERY))
+                    .and(CardRulesPredicates.subType("Lesson")));
         }
 
         @Override
@@ -198,14 +197,12 @@ public enum EventEffect implements RogueEffect {
         }
     },
     GROUND_ZERO_REPAIR("ground_zero_repair", "Use Workbench",
-            "Remove all artifact cards from your deck and lose all {{Item}}s. Gain 3 random PIP Robot {{Fellow}}s.",
+            "Remove all artifact cards from your deck and lose all {{Item}}s. Gain 3 random Robot {{Fellow}}s.",
             EffectType.ONESHOT) {
         @Override
         public Predicate<PaperCard> getCardFilter() {
-            return card -> "PIP".equalsIgnoreCase(card.getEdition())
-                && PaperCardPredicates.fromRules(
-                    CardRulesPredicates.IS_CREATURE.and(CardRulesPredicates.subType("Robot")))
-                .test(card);
+            return PaperCardPredicates.fromRules(
+                CardRulesPredicates.IS_CREATURE.and(CardRulesPredicates.subType("Robot")));
         }
 
         @Override
@@ -222,10 +219,10 @@ public enum EventEffect implements RogueEffect {
 
         @Override
         public Predicate<PaperCard> getCardFilter() {
+            Predicate<PaperCard> mutantFilter = PaperCardPredicates.fromRules(
+                CardRulesPredicates.IS_CREATURE.and(CardRulesPredicates.subType("Mutant")));
             return card -> "PIP".equalsIgnoreCase(card.getEdition())
-                && PaperCardPredicates.fromRules(
-                    CardRulesPredicates.IS_CREATURE.and(CardRulesPredicates.subType("Mutant")))
-                .test(card);
+                && mutantFilter.test(card);
         }
 
         @Override
@@ -240,19 +237,14 @@ public enum EventEffect implements RogueEffect {
             EffectType.ONESHOT) {
         @Override
         public Predicate<PaperCard> getCardFilter() {
-            return card -> {
-                if (!("LTR".equalsIgnoreCase(card.getEdition()) || "LTC".equalsIgnoreCase(card.getEdition()))) {
-                    return false;
-                }
-                if (!card.getRules().getType().isCreature() || !card.getRules().getType().isLegendary()) {
-                    return false;
-                }
-                return card.getRules().getType().hasSubtype("Halfling")
-                    || card.getRules().getType().hasSubtype("Human")
-                    || card.getRules().getType().hasSubtype("Elf")
-                    || card.getRules().getType().hasSubtype("Dwarf")
-                    || card.getRules().getType().hasSubtype("Wizard");
-            };
+            return PaperCardPredicates.fromRules(
+                CardRulesPredicates.IS_CREATURE
+                    .and(CardRulesPredicates.IS_LEGENDARY)
+                    .and(CardRulesPredicates.subType("Halfling")
+                        .or(CardRulesPredicates.subType("Human"))
+                        .or(CardRulesPredicates.subType("Elf"))
+                        .or(CardRulesPredicates.subType("Dwarf"))
+                        .or(CardRulesPredicates.subType("Wizard"))));
         }
 
         @Override
@@ -440,6 +432,51 @@ public enum EventEffect implements RogueEffect {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
             run.loseLife(4);
+        }
+    },
+    AFTER_DUSK_INSANE("after_dusk_insane", "Turn Insane",
+            "Add 3 random Nightmare cards to your deck.",
+            EffectType.ONESHOT) {
+        @Override
+        public Predicate<PaperCard> getCardFilter() {
+            return PaperCardPredicates.fromRules(
+                CardRulesPredicates.IS_CREATURE.and(CardRulesPredicates.subType("Nightmare")));
+        }
+
+        @Override
+        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+            addCardsToDeck(run, ctx, getCardFilter(), 3, null, List.of());
+        }
+    },
+    AFTER_DUSK_EXPLORE("after_dusk_explore", "Explore Mansion",
+            "Lose 3 life. Choose up to 5 Room cards to add to your deck.",
+            EffectType.ONESHOT) {
+        @Override
+        public Predicate<PaperCard> getCardFilter() {
+            return PaperCardPredicates.fromRules(CardRulesPredicates.subType("Room"));
+        }
+
+        @Override
+        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+            run.loseLife(3);
+            selectCardsForDeck(run, ctx, getCardFilter(), null, 0, 5, null);
+        }
+    },
+    AFTER_DUSK_FEED("after_dusk_feed", "Feed Monsters",
+            "Remove all white cards from your deck. Gain 2 random legendary Horror {{Fellow}}s.",
+            EffectType.ONESHOT) {
+        @Override
+        public Predicate<PaperCard> getCardFilter() {
+            return PaperCardPredicates.fromRules(
+                CardRulesPredicates.IS_CREATURE
+                    .and(CardRulesPredicates.IS_LEGENDARY)
+                    .and(CardRulesPredicates.subType("Horror")));
+        }
+
+        @Override
+        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+            removeCardsFromDeck(run, ctx, PaperCardPredicates.fromRules(CardRulesPredicates.IS_WHITE), null);
+            addCarryCards(run, ctx, getCardFilter(), 2, CarryCardType.FELLOW, List.of());
         }
     },
     FIND_CHEST("find_chest", "Hidden Chest", "You find a hidden {{Chest}}.",
