@@ -110,6 +110,62 @@ public enum EventEffect implements RogueEffect {
             ctx.trigger = NodeResultContext.ActionTriggerType.BAZAAR;
         }
     },
+    AMONG_MURDERERS_INVESTIGATE("among_murderers_investigate", "Investigate",
+            "Gain a random Clue {{Item}}.",
+            EffectType.ONESHOT) {
+        @Override
+        public Predicate<PaperCard> getCardFilter() {
+            return PaperCardPredicates.fromRules(
+                CardRulesPredicates.IS_ARTIFACT.and(CardRulesPredicates.subType("Clue")));
+        }
+
+        @Override
+        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+            addCarryCards(run, ctx, getCardFilter(), 1, RogueRun.CarryCardType.ITEM, List.of());
+        }
+    },
+    AMONG_MURDERERS_CONFESS("among_murderers_confess", "Confess",
+            "Gain the {{Boon}} **Confession**. ![[Event Boon - Confession]]",
+            EffectType.ONESHOT) {
+        @Override
+        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+            run.addEventEffect(this);
+        }
+
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            RogueEffect.addCardToCommandZone("Event Boon - Confession", human);
+        }
+    },
+    AMONG_MURDERERS_HIRE("among_murderers_hire", "Hire",
+            "Pay 3 {{Gold}}. Choose up to 5 Detectives to add to your deck.",
+            EffectType.ONESHOT, 3) {
+        @Override
+        public Predicate<PaperCard> getCardFilter() {
+            return PaperCardPredicates.fromRules(
+                CardRulesPredicates.IS_CREATURE.and(CardRulesPredicates.subType("Detective")));
+        }
+
+        @Override
+        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+            run.spendGold(getGoldCost());
+            selectCardsForDeck(run, ctx, getCardFilter(), 20, 0, 5, null);
+        }
+
+        @Override
+        public boolean isChoiceAvailable(RogueRun run) {
+            return run.hasEnoughGold(getGoldCost())
+                && !run.getAllCardsForActiveCommander(getCardFilter()).isEmpty();
+        }
+
+        @Override
+        public String getUnavailableReason(RogueRun run) {
+            if (!run.hasEnoughGold(getGoldCost())) {
+                return getInsufficientGoldReason();
+            }
+            return "No detectives are available for your commander.";
+        }
+    },
     DRIFTED_RESCUE("drifted_rescue", "Rescue Pilot", "Lose 3 Life. Gain a random legendary Human {{Fellow}}.",
             EffectType.ONESHOT) {
         @Override

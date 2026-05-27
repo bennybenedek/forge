@@ -1,0 +1,7 @@
+Name:Event Boon - Confession
+ManaCost:no cost
+Types:Boon
+S:Mode$ Continuous | Affected$ Creature.IsCommander+YouOwn | AddTrigger$ TrigSuspect | EffectZone$ Command | Description$ Your commander is suspected. (A suspected creature has menace and can't block.)
+SVar:TrigSuspect:Mode$ ChangesZone | Origin$ Any | Destination$ Battlefield | ValidCard$ Card.Self | Execute$ DBSuspect | TriggerDescription$ When this creature enters, suspect it. (A suspected creature has menace and can't block.)
+SVar:DBSuspect:DB$ AlterAttribute | Defined$ Self | Attributes$ Suspected
+Oracle:Your commander is suspected.\n(A suspected creature has menace and can't block.)

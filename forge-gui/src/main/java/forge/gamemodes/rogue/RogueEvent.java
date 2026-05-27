@@ -119,6 +119,18 @@ public enum RogueEvent {
                 EventEffect.CROOKED_COUNSEL_RING)
         )),
 
+    AMONG_MURDERERS("Among Murderers",
+        "Behind tall windows and warm candlelight, every polished smile conceals a motive. " +
+        "Servants whisper, goblets tremble, and somewhere in the manor a killer waits to see who will be blamed.",
+        List.of(
+            new EventChoice("Investigate", "You study the scene in silence and leave with incriminating evidence.",
+                EventEffect.AMONG_MURDERERS_INVESTIGATE),
+            new EventChoice("Confess", "A hush falls across the room as suspicion settles over your commander and refuses to leave.",
+                EventEffect.AMONG_MURDERERS_CONFESS),
+            new EventChoice("Hire", "A few discreet payments bring sharp-eyed detectives into your service.",
+                EventEffect.AMONG_MURDERERS_HIRE)
+        )),
+
     THORNS("Thorns",
         "The land itself rejects your presence. Thorns rise from the soil, leaving your footsteps stained with blood.",
         List.of(
