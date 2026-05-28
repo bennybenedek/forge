@@ -64,6 +64,7 @@ public enum CSubmenuRogueMap implements ICDoc {
   private final ActionListener actEnterNode = arg0 -> enterNode();
   private final ActionListener actEditDeck = arg0 -> editDeck();
   private final VSubmenuRogueMap view = VSubmenuRogueMap.SINGLETON_INSTANCE;
+  private final NodeEventHelper nodeEventHelper = new NodeEventHelper(this);
 
   // Test run data (for MVP - will be replaced with proper loading later)
   private RogueRun currentRun;
@@ -233,7 +234,7 @@ public enum CSubmenuRogueMap implements ICDoc {
     updateViewWithSelection();
   }
 
-  private void updateView() {
+  void updateView() {
     view.updateDisplay(currentRun);
     updateViewWithSelection();
   }
@@ -306,13 +307,13 @@ public enum CSubmenuRogueMap implements ICDoc {
     } else if (node instanceof NodeBazaar nodeBazaar) {
       handleBazaarNode(nodeBazaar);
     } else if (node instanceof NodeEvent nodeEvent) {
-      handleEventNode(nodeEvent);
+      nodeEventHelper.handleEventNode(nodeEvent, currentRun);
     } else if (node instanceof NodeChest nodeChest) {
       handleChestNode(nodeChest);
     }
   }
 
-  private void handlePlaneboundNode(NodePlanebound node) {
+  void handlePlaneboundNode(NodePlanebound node) {
     // Prevent starting a new match if one is already in progress this session
     if (currentRun.getHostedMatch() != null) {
       return;
@@ -469,7 +470,7 @@ public enum CSubmenuRogueMap implements ICDoc {
     FOptionPane.showOptionDialog(message, title, null, effectsPanel, List.of("OK"), 0);
   }
 
-  private void handleSanctumNode(NodeSanctum sanctumNode) {
+  void handleSanctumNode(NodeSanctum sanctumNode) {
     if (currentRun == null) {
       return;
     }
@@ -567,7 +568,7 @@ public enum CSubmenuRogueMap implements ICDoc {
   }
 
   /** Run Bazaar shopping UI and apply purchases. Null context = ordinary Bazaar setup. */
-  private List<PaperCard> runBazaarShopping(BazaarContext ctx) {
+  List<PaperCard> runBazaarShopping(BazaarContext ctx) {
     boolean customBazaar = ctx != null;
     RogueDeck rogueDeck = currentRun.getSelectedRogueDeck();
     if (rogueDeck == null) {
@@ -745,236 +746,7 @@ public enum CSubmenuRogueMap implements ICDoc {
     return rewardPoolCards;
   }
 
-  private void handleEventNode(NodeEvent eventNode) {
-    if (currentRun == null) return;
-
-    RogueEvent event = resolveEvent(eventNode);
-    if (event == null) {
-      currentRun.nextNode();
-      updateView();
-      return;
-    }
-
-    event = resolveDevEventOverride(event);
-    RogueTutorialHelper.showIfNotSeen(RogueTutorial.EVENT);
-
-    RogueEvent.EventChoice choice = new EventDialog(event, currentRun).show();
-    // True means the choice already handled flow control and normal node completion must stop.
-    var handleEventWithoutCompletion = handleEventChoice(eventNode, event, choice);
-    if (choice != null && handleEventWithoutCompletion) {
-      return;
-    }
-
-    completeSideNode(eventNode);
-  }
-
-  private RogueEvent resolveEvent(NodeEvent eventNode) {
-    EventContext npcCtx = new EventContext(eventNode.getEvent());
-    NPCEncounterComposite.INSTANCE.onBeforeEvent(npcCtx, RogueMetaProgress.getInstance());
-
-    RogueEvent event = npcCtx.getResolvedEvent();
-    if (npcCtx.eventOverride != null) {
-      eventNode.setEvent(event);
-    }
-    return event;
-  }
-
-  private RogueEvent resolveDevEventOverride(RogueEvent event) {
-    if (!ForgePreferences.DEV_MODE) {
-      return event;
-    }
-
-    RogueEvent picked = (RogueEvent) JOptionPane.showInputDialog(
-        null, "Override event:", "[DEV] Pick Event",
-        JOptionPane.PLAIN_MESSAGE, null,
-        RogueEvent.values(), event);
-    return picked != null ? picked : event;
-  }
-
-  // Returns true when the choice interrupts normal event completion (for example a trigger,
-  // defeat flow, or another early-exit path already took over).
-  private boolean handleEventChoice(NodeEvent eventNode, RogueEvent event, RogueEvent.EventChoice choice) {
-    EventEffect effect = choice.effect();
-    if (!effect.isChoiceAvailable(currentRun)) {
-      return true;
-    }
-
-    NodeResultContext ctx = new NodeResultContext();
-    if (effect.getEffectType() == RogueEffect.EffectType.ONESHOT) {
-      effect.applyEffect(currentRun, ctx);
-      if (handleEventTrigger(eventNode, ctx)) {
-        return true;
-      }
-    } else {
-      currentRun.addEventEffect(effect);
-    }
-
-    if (checkSideNodeDefeat(event.getDisplayName())) {
-      return true;
-    }
-
-    showEventResult(choice, ctx);
-    return false;
-  }
-
-  private boolean handleEventTrigger(NodeEvent eventNode, NodeResultContext ctx) {
-    if (ctx.trigger == null) {
-      return false;
-    }
-
-    switch (ctx.trigger) {
-      case BAZAAR:
-        ctx.addedCards = runBazaarShopping(ctx.bazaarContext);
-        return false;
-      case PLANEBOUND:
-        return handleEventPlanebound(eventNode, ctx);
-      case CHEST:
-        eventNode.setCompleted(true);
-        handleChestNode(new NodeChest());
-        return true;
-      case SANCTUM:
-        eventNode.setCompleted(true);
-        handleSanctumNode(new NodeSanctum());
-        return true;
-      case CARD_REMOVAL:
-        handleEventCardRemoval(ctx);
-        return false;
-      case CARD_ADDITION:
-        handleEventCardAddition(ctx);
-        return false;
-      default:
-        return false;
-    }
-  }
-
-  private boolean handleEventPlanebound(NodeEvent eventNode, NodeResultContext ctx) {
-    if (ctx.planebound == null) {
-      return false;
-    }
-    eventNode.setEventPlanebound(ctx.planebound);
-    NodePlanebound tempNode = new NodePlanebound(ctx.planebound);
-    tempNode.setRowIndex(eventNode.getRowIndex());
-    handlePlaneboundNode(tempNode);
-    return true;  // win/lose controller handles completion
-  }
-
-  private void handleEventCardRemoval(NodeResultContext ctx) {
-    List<PaperCard> candidateCards = currentRun.getSelectableDeckCards(null);
-    int removeCount = Math.min(ctx.removeCount, candidateCards.size());
-    if (removeCount <= 0) {
-      return;
-    }
-
-    List<PaperCard> removed = showCardSelectionDialog(
-        "Card Selection",
-        "Choose " + removeCount + " cards to remove.",
-        candidateCards,
-        removeCount);
-    if (removed.isEmpty()) {
-      return;
-    }
-
-    for (PaperCard card : removed) {
-      currentRun.getCurrentDeck().getMain().remove(card);
-    }
-    ctx.removedCards = removed;
-
-    if (ctx.drawCount > 0) {
-      RogueDeck rd = currentRun.getSelectedRogueDeck();
-      List<PaperCard> added = rd.drawRewardOptions(ctx.drawCount, null);
-      currentRun.addCardsToDeck(added, false);
-      rd.removeFromCardPools(added);
-      ctx.addedCards = added;
-    }
-  }
-
-  private void handleEventCardAddition(NodeResultContext ctx) {
-    int addMaxCount = Math.min(ctx.addMaxCount, getCandidateCardCount(ctx));
-    int addMinCount = Math.min(ctx.addMinCount, addMaxCount);
-    if (addMaxCount <= 0) {
-      return;
-    }
-
-    List<PaperCard> added = showCardSelectionDialog(
-        "Card Selection",
-        getCardAdditionSubtitle(addMinCount, addMaxCount),
-        ctx.candidateCards,
-        addMinCount,
-        addMaxCount);
-    if (added.isEmpty() && addMinCount > 0) {
-      return;
-    }
-
-    if (ctx.addSection == DeckSection.Commander) {
-      if (ctx.replaceCurrentCardsInAddSection) {
-        List<PaperCard> removedCommanders = new ArrayList<>(currentRun.getCurrentDeck().getCommanders());
-        if (!removedCommanders.isEmpty()) {
-          for (PaperCard commander : removedCommanders) {
-            currentRun.getCurrentDeck().getOrCreate(DeckSection.Commander).remove(commander);
-          }
-          ctx.removedCards = removedCommanders;
-        }
-      }
-      for (PaperCard card : added) {
-        currentRun.getCurrentDeck().getOrCreate(DeckSection.Commander).add(card);
-      }
-    } else {
-      currentRun.addCardsToDeck(added, false);
-    }
-    ctx.addedCards = added;
-  }
-
-  private int getCandidateCardCount(NodeResultContext ctx) {
-    return ctx.candidateCards == null ? 0 : ctx.candidateCards.size();
-  }
-
-  private List<PaperCard> showCardSelectionDialog(String title, String subtitle,
-                                                  List<PaperCard> cards, int exactSelections) {
-    return new CardSelectionDialog(title, subtitle, cards, exactSelections, exactSelections).show();
-  }
-
-  private List<PaperCard> showCardSelectionDialog(String title, String subtitle,
-                                                  List<PaperCard> cards, int minSelections,
-                                                  int maxSelections) {
-    return new CardSelectionDialog(title, subtitle, cards, minSelections, maxSelections).show();
-  }
-
-  private String getCardAdditionSubtitle(int addMinCount, int addMaxCount) {
-    if (addMinCount == addMaxCount) {
-      return addMaxCount == 1 ? "Choose 1 card to add." : "Choose " + addMaxCount + " cards to add.";
-    }
-    return "Choose up to " + addMaxCount + " cards to add.";
-  }
-
-  private void showEventResult(RogueEvent.EventChoice choice, NodeResultContext ctx) {
-    showNodeResultDialog("Event Completed", getEventResultText(choice, ctx),
-        buildNodeResultSections(ctx));
-  }
-
-  private List<NodeResultPanel.CardSection> buildNodeResultSections(NodeResultContext ctx) {
-    List<NodeResultPanel.CardSection> sections = new ArrayList<>();
-    if (ctx.removedCards != null && !ctx.removedCards.isEmpty()) {
-      sections.add(new NodeResultPanel.CardSection("Cards removed:", ctx.removedCards));
-    }
-    if (ctx.addedCards != null && !ctx.addedCards.isEmpty()) {
-      sections.add(new NodeResultPanel.CardSection("Cards added:", ctx.addedCards));
-    }
-    return sections;
-  }
-
-  private String getEventResultText(RogueEvent.EventChoice choice, NodeResultContext ctx) {
-    String resultText = choice.resultText();
-    if (ctx.gainedWound != null) {
-      return resultText + ": " + ctx.gainedWound.getDisplayName()
-          + " \u2014 " + ctx.gainedWound.getDescription();
-    }
-    if (choice.effect() == EventEffect.THORNS_ENDURE) {
-      return "You already bear all wounds.";
-    }
-    return resultText;
-  }
-
-  private void completeSideNode(RoguePathNode node) {
+  void completeSideNode(RoguePathNode node) {
     node.setCompleted(true);
     currentRun.nextNode();
     RogueStats.fireOnSideNodeCompleted(currentRun, RogueMetaProgress.getInstance());
@@ -982,7 +754,7 @@ public enum CSubmenuRogueMap implements ICDoc {
     update();
   }
 
-  private boolean checkSideNodeDefeat(String defeatedBy) {
+  boolean checkSideNodeDefeat(String defeatedBy) {
     if (currentRun == null || currentRun.getCurrentLife() > 0) {
       return false;
     }
@@ -1015,7 +787,7 @@ public enum CSubmenuRogueMap implements ICDoc {
     optionPane.dispose();
   }
 
-  private void showNodeResultDialog(String title, String message,
+  void showNodeResultDialog(String title, String message,
                                     List<NodeResultPanel.CardSection> sections) {
     boolean hasCardSections = sections.stream().anyMatch(
         section -> section.cards() != null && !section.cards().isEmpty());
@@ -1056,7 +828,7 @@ public enum CSubmenuRogueMap implements ICDoc {
     optionPane.dispose();
   }
 
-  private void handleChestNode(NodeChest chestNode) {
+  void handleChestNode(NodeChest chestNode) {
     if (currentRun == null) return;
 
     // Get or assign random loot
@@ -1195,3 +967,4 @@ public enum CSubmenuRogueMap implements ICDoc {
     });
   }
 }
+

@@ -762,6 +762,9 @@ public enum EventEffect implements RogueEffect {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
             gainWound(run, ctx);
+            if (ctx.gainedWound == null) {
+                ctx.resultTextOverride = "You already bear all wounds.";
+            }
         }
     },
     THORNS_PRESS("thorns_press", "Lose 4 Life", "You lose 4 life.",

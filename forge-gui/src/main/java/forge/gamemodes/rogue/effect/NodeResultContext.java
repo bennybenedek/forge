@@ -41,6 +41,9 @@ public class NodeResultContext {
     /** Wound gained from this event, for result display. Null = not applicable. */
     public Wound gainedWound;
 
+    /** Optional replacement result text supplied by the effect itself. Null = use the choice result text. */
+    public String resultTextOverride;
+
     public NodeResultContext() {
         removedCards = new ArrayList<>();
         addedCards = new ArrayList<>();

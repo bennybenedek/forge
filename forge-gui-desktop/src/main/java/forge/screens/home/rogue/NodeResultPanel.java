@@ -27,7 +27,15 @@ public class NodeResultPanel extends SkinnedPanel {
     private final List<ReadOnlyCardPanel> allCardPanels = new ArrayList<>();
     private CardUtil zoomUtil;
 
-    public record CardSection(String label, List<PaperCard> cards) {}
+    public record CardSection(String label, String text, List<PaperCard> cards) {
+        public CardSection(String label, List<PaperCard> cards) {
+            this(label, null, cards);
+        }
+
+        public CardSection(String label, String text) {
+            this(label, text, List.of());
+        }
+    }
 
     public enum MessageAlignment {
         LEFT(StyleConstants.ALIGN_LEFT),
@@ -55,9 +63,9 @@ public class NodeResultPanel extends SkinnedPanel {
         txtMessage.setTextAlignment(messageAlignment.styleConstant);
         add(txtMessage, "w 100%!, ax center, gap 0 0 0 10px, wrap");
 
-        // Card sections
+        // Result sections
         for (CardSection section : sections) {
-            if (section.cards() == null || section.cards().isEmpty()) continue;
+            if (!hasContent(section)) continue;
 
             if (hasLabel(section)) {
                 FLabel lblSection = new FLabel.Builder()
@@ -68,23 +76,33 @@ public class NodeResultPanel extends SkinnedPanel {
                 add(lblSection, "w 100%!, h 22px!, gap 5px 0 5px 3px, wrap");
             }
 
-            // Card row panel
-            SkinnedPanel cardRow = new SkinnedPanel(
-                    new MigLayout("insets 0, gap " + CARD_SPACING + "px, wrap " + MAX_CARDS_PER_ROW, "", ""));
-            cardRow.setOpaque(false);
-
-            for (PaperCard card : section.cards()) {
-                ReadOnlyCardPanel cardPanel = new ReadOnlyCardPanel(card, () -> zoomUtil);
-                allCardPanels.add(cardPanel);
-                cardRow.add(cardPanel, "w " + CARD_WIDTH + "!, h " + CARD_HEIGHT + "!");
+            if (section.text() != null && !section.text().isBlank()) {
+                FTextPane txtSection = new FTextPane(section.text());
+                txtSection.setFont(txtSection.getFont().deriveFont(13f));
+                txtSection.setTextAlignment(MessageAlignment.LEFT.styleConstant);
+                add(txtSection, "w 100%!, gap 0 0 0 5px, wrap");
             }
 
-            add(cardRow, "ax center, wrap");
+            if (section.cards() != null && !section.cards().isEmpty()) {
+                // Card row panel
+                SkinnedPanel cardRow = new SkinnedPanel(
+                        new MigLayout("insets 0, gap " + CARD_SPACING + "px, wrap " + MAX_CARDS_PER_ROW, "", ""));
+                cardRow.setOpaque(false);
+
+                for (PaperCard card : section.cards()) {
+                    ReadOnlyCardPanel cardPanel = new ReadOnlyCardPanel(card, () -> zoomUtil);
+                    allCardPanels.add(cardPanel);
+                    cardRow.add(cardPanel, "w " + CARD_WIDTH + "!, h " + CARD_HEIGHT + "!");
+                }
+
+                add(cardRow, "ax center, wrap");
+            }
         }
 
         // Calculate preferred size based on full content.
         boolean hasCards = sections.stream().anyMatch(
                 s -> s.cards() != null && !s.cards().isEmpty());
+        boolean hasSections = sections.stream().anyMatch(NodeResultPanel::hasContent);
         int maxCardsInRow = sections.stream()
                 .filter(s -> s.cards() != null)
                 .mapToInt(s -> Math.min(s.cards().size(), MAX_CARDS_PER_ROW))
@@ -94,16 +112,25 @@ public class NodeResultPanel extends SkinnedPanel {
                 : DEFAULT_MIN_WIDTH;
         int desiredHeight = 50; // message + padding
         for (CardSection section : sections) {
+            if (!hasContent(section)) {
+                continue;
+            }
+
+            desiredHeight += hasLabel(section) ? 25 : 0;
+
+            if (section.text() != null && !section.text().isBlank()) {
+                desiredHeight += 35;
+            }
+
             if (section.cards() != null && !section.cards().isEmpty()) {
                 int cardsPerRow = Math.min(section.cards().size(), MAX_CARDS_PER_ROW);
                 int rowCount = (int) Math.ceil(section.cards().size() / (double) cardsPerRow);
-                desiredHeight += (hasLabel(section) ? 25 : 0)
-                        + rowCount * CARD_HEIGHT
+                desiredHeight += rowCount * CARD_HEIGHT
                         + Math.max(0, rowCount - 1) * CARD_SPACING
                         + 10;
             }
         }
-        if (!hasCards) {
+        if (!hasSections) {
             desiredHeight = 50; // text-only
         }
         desiredWidth = Math.max(desiredWidth, minWidth);
@@ -115,6 +142,11 @@ public class NodeResultPanel extends SkinnedPanel {
 
     private static boolean hasLabel(CardSection section) {
         return section.label() != null && !section.label().isBlank();
+    }
+
+    private static boolean hasContent(CardSection section) {
+        return section.text() != null && !section.text().isBlank()
+            || section.cards() != null && !section.cards().isEmpty();
     }
 
     /**
