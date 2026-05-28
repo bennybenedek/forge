@@ -26,13 +26,15 @@ class NodeEventHelper {
     private final NodeBazaarHelper bazaarHelper;
     private final NodeChestHelper chestHelper;
     private final NodeSanctumHelper sanctumHelper;
+    private final NodePlaneboundHelper planeboundHelper;
 
     NodeEventHelper(CSubmenuRogueMap map, NodeBazaarHelper bazaarHelper, NodeChestHelper chestHelper,
-                    NodeSanctumHelper sanctumHelper) {
+                    NodeSanctumHelper sanctumHelper, NodePlaneboundHelper planeboundHelper) {
         this.map = map;
         this.bazaarHelper = bazaarHelper;
         this.chestHelper = chestHelper;
         this.sanctumHelper = sanctumHelper;
+        this.planeboundHelper = planeboundHelper;
     }
 
     void handleEventNode(NodeEvent eventNode, RogueRun currentRun) {
@@ -120,7 +122,7 @@ class NodeEventHelper {
                 ctx.addedCards = bazaarHelper.runBazaarShopping(currentRun, ctx.bazaarContext);
                 return false;
             case PLANEBOUND:
-                return handleEventPlanebound(eventNode, ctx);
+                return handleEventPlanebound(eventNode, ctx, currentRun);
             case CHEST:
                 chestHelper.resolveChest(currentRun, new NodeChest());
                 map.completeSideNode(eventNode);
@@ -140,7 +142,7 @@ class NodeEventHelper {
         }
     }
 
-    private boolean handleEventPlanebound(NodeEvent eventNode, NodeResultContext ctx) {
+    private boolean handleEventPlanebound(NodeEvent eventNode, NodeResultContext ctx, RogueRun currentRun) {
         if (ctx.planebound == null) {
             return false;
         }
@@ -148,7 +150,7 @@ class NodeEventHelper {
         eventNode.setEventPlanebound(ctx.planebound);
         NodePlanebound tempNode = new NodePlanebound(ctx.planebound);
         tempNode.setRowIndex(eventNode.getRowIndex());
-        map.handlePlaneboundNode(tempNode);
+        planeboundHelper.handlePlaneboundNode(tempNode, currentRun);
         return true;
     }
 

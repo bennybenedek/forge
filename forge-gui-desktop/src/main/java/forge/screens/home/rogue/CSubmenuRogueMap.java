@@ -1,27 +1,13 @@
 package forge.screens.home.rogue;
 
-import forge.LobbyPlayer;
 import forge.Singletons;
-import forge.deck.CardPool;
-import forge.deck.Deck;
-import forge.deck.io.DeckSerializer;
-import forge.game.GameType;
-import forge.game.player.RegisteredPlayer;
-import forge.gamemodes.match.HostedMatch;
 import forge.gamemodes.rogue.*;
-import forge.gamemodes.rogue.RogueRun.CarryCard;
 import forge.gamemodes.rogue.effect.*;
 import forge.gamemodes.rogue.path.*;
-import forge.gui.GuiBase;
-import forge.gui.SOverlayUtils;
 import forge.gui.framework.EDocID;
 import forge.gui.framework.FScreen;
 import forge.gui.framework.ICDoc;
-import forge.item.PaperCard;
 import forge.localinstance.achievements.RogueCommanderAchievements;
-import forge.localinstance.properties.ForgeConstants;
-import forge.localinstance.properties.ForgePreferences;
-import forge.player.GamePlayerUtil;
 import forge.screens.deckeditor.CDeckEditorUI;
 import forge.screens.deckeditor.controllers.CEditorRogue;
 import forge.screens.home.CHomeUI;
@@ -36,10 +22,8 @@ import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.ActionListener;
-import java.io.File;
 import java.util.*;
 import javax.swing.*;
-import net.miginfocom.swing.MigLayout;
 
 /**
  * Controls the "rogue map" submenu in the home UI.
@@ -54,9 +38,10 @@ public enum CSubmenuRogueMap implements ICDoc {
   private final VSubmenuRogueMap view = VSubmenuRogueMap.SINGLETON_INSTANCE;
   private final NodeBazaarHelper nodeBazaarHelper = new NodeBazaarHelper(this);
   private final NodeChestHelper nodeChestHelper = new NodeChestHelper(this);
+  private final NodePlaneboundHelper nodePlaneboundHelper = new NodePlaneboundHelper();
   private final NodeSanctumHelper nodeSanctumHelper = new NodeSanctumHelper(this);
   private final NodeEventHelper nodeEventHelper =
-      new NodeEventHelper(this, nodeBazaarHelper, nodeChestHelper, nodeSanctumHelper);
+      new NodeEventHelper(this, nodeBazaarHelper, nodeChestHelper, nodeSanctumHelper, nodePlaneboundHelper);
 
   // Test run data (for MVP - will be replaced with proper loading later)
   private RogueRun currentRun;
@@ -293,7 +278,7 @@ public enum CSubmenuRogueMap implements ICDoc {
 
     // Handle different node types
     if (node instanceof NodePlanebound nodePlanebound) {
-      handlePlaneboundNode(nodePlanebound);
+      nodePlaneboundHelper.handlePlaneboundNode(nodePlanebound, currentRun);
     } else if (node instanceof NodeSanctum nodeSanctum) {
       nodeSanctumHelper.handleSanctumNode(nodeSanctum, currentRun);
     } else if (node instanceof NodeBazaar nodeBazaar) {
@@ -303,163 +288,6 @@ public enum CSubmenuRogueMap implements ICDoc {
     } else if (node instanceof NodeChest nodeChest) {
       nodeChestHelper.handleChestNode(nodeChest, currentRun);
     }
-  }
-
-  void handlePlaneboundNode(NodePlanebound node) {
-    // Prevent starting a new match if one is already in progress this session
-    if (currentRun.getHostedMatch() != null) {
-      return;
-    }
-
-    // Roll and apply wrathful/cursed effects, show combined dialog
-    handlePlaneboundBoons(node);
-
-    // Show loading overlay
-    SwingUtilities.invokeLater(() -> {
-      SOverlayUtils.startGameOverlay();
-      SOverlayUtils.showOverlay();
-    });
-
-    // DEV: allow picking which planebound to test
-    if (ForgePreferences.DEV_MODE) {
-      RoguePlanebound picked = (RoguePlanebound) JOptionPane.showInputDialog(
-          null, "Override planebound:", "[DEV] Pick Planebound",
-          JOptionPane.PLAIN_MESSAGE, null,
-          RogueConfig.loadPlanebounds().toArray(), node.getRoguePlanebound());
-      if (picked != null) node.setRoguePlanebound(picked);
-    }
-
-    try {
-      // Get all plane cards from the centralized cache
-      CardPool allPlanes = RogueConfig.getAllPlanes();
-
-      // Find the designated plane for this node
-      String cardPlaneName = node.getRoguePlanebound().planeName();
-      PaperCard designatedPlane = null;
-      for (PaperCard card : allPlanes.toFlatList()) {
-        if (cardPlaneName.equalsIgnoreCase(card.getName())) {
-          designatedPlane = card;
-          break;
-        }
-      }
-
-      // Create shared plane deck with the designated plane
-      List<PaperCard> sharedPlaneDeck = new java.util.ArrayList<>();
-      if (designatedPlane != null) {
-        sharedPlaneDeck.add(designatedPlane);
-      } else {
-        System.err.println("Warning: Could not find plane card: " + cardPlaneName);
-      }
-
-      // Configure Commander + Planechase variants
-      Set<GameType> appliedVariants = EnumSet.of(GameType.Commander, GameType.Planechase);
-
-      // Create human player with persistent life
-      RegisteredPlayer human = RegisteredPlayer.forVariants(
-          2, appliedVariants, currentRun.getCurrentDeck(),
-          null, false, sharedPlaneDeck, null
-      );
-      human.setStartingLife(currentRun.getCurrentLife());
-
-      LobbyPlayer lobbyPlayer = GamePlayerUtil.getGuiPlayer();
-      lobbyPlayer.setName(currentRun.getCurrentCommanderName());
-      lobbyPlayer.setAvatarIndex(currentRun.getSelectedRogueDeck().getAvatarIndex());
-      lobbyPlayer.setSleeveIndex(currentRun.getSelectedRogueDeck().getSleeveIndex());
-      human.setPlayer(lobbyPlayer);
-
-      // Add carry cards (items/fellows/scrolls) to command zone with their enablers
-      if (!currentRun.getCarryCards().isEmpty()) {
-        RogueTutorialHelper.showIfNotSeen(RogueTutorial.CARRY_CARDS);
-        RogueEffect.addCardToCommandZone("Rogue - Carry Card Enabler", human);
-      }
-      for (CarryCard card : currentRun.getCarryCards()) {
-        RogueEffect.addCardToCommandZone(card.toPaperCard(), human);
-      }
-
-      // Load Planebound deck
-      Deck planeboundDeck = loadPlaneboundDeck(node.getRoguePlanebound().deckPath());
-
-      // Create AI Planebound opponent
-      RegisteredPlayer ai = RegisteredPlayer.forVariants(
-          2, appliedVariants, planeboundDeck,
-          null, false, sharedPlaneDeck, null
-      );
-      ai.setPlayer(GamePlayerUtil.createAiPlayer(
-          node.getRoguePlanebound().planeboundName(),
-          node.getRoguePlanebound().avatarIndex(),
-          0));
-
-      int planeboundRowCount = currentRun.getPath().countPlaneboundRowsUpTo(node.getRowIndex());
-      ai.setStartingLife(node.getPlaneboundLife(planeboundRowCount));
-
-      // Apply all match start effects AFTER AI creation (cursed effects need opponent)
-      RogueEffectComposite.INSTANCE.onMatchStart(human, ai, currentRun);
-
-      // Start match
-      List<RegisteredPlayer> players = Arrays.asList(human, ai);
-      HostedMatch hostedMatch = GuiBase.getInterface().hostMatch();
-      currentRun.setHostedMatch(hostedMatch);
-
-      hostedMatch.startMatch(
-          GameType.RogueCommander,
-          appliedVariants,
-          players,
-          human,
-          GuiBase.getInterface().getNewGuiGame()
-      );
-
-    } catch (Exception e) {
-      e.printStackTrace();
-      SwingUtilities.invokeLater(SOverlayUtils::hideOverlay);
-    }
-
-    SwingUtilities.invokeLater(SOverlayUtils::hideOverlay);
-  }
-
-  private void handlePlaneboundBoons(NodePlanebound node) {
-    int wrathfulCount = node.getWrathfulCount();
-    int cursedCount = node.getCursedCount();
-    if (wrathfulCount == 0 && cursedCount == 0) return;
-
-    ImageIcon flameIcon = NodePlaneboundPanel.createFlameIcon(14, 18);
-    ImageIcon pentagramIcon = NodePlaneboundPanel.createPentagramIcon(14, 18);
-    FSkin.SkinnedPanel effectsPanel = new FSkin.SkinnedPanel(
-        new MigLayout("insets 5, gap 0, wrap", "[grow]"));
-    effectsPanel.setOpaque(false);
-
-    Set<Wrathful> usedWrathful = new HashSet<>();
-    for (int i = 0; i < wrathfulCount; i++) {
-      Wrathful w = Wrathful.getRandomExcluding(usedWrathful);
-      usedWrathful.add(w);
-      currentRun.addWrathful(w);
-      JLabel lbl = new JLabel(w.getDisplayName() + " - " + w.getDescription(), flameIcon, SwingConstants.LEFT);
-      lbl.setFont(FSkin.getRelativeFont(12).getBaseFont());
-      lbl.setForeground(FSkin.getColor(FSkin.Colors.CLR_TEXT).getColor());
-      lbl.setIconTextGap(5);
-      lbl.setOpaque(false);
-      effectsPanel.add(lbl, "growx, h 24px!, wrap");
-    }
-
-    Set<Cursed> usedCursed = new HashSet<>();
-    for (int i = 0; i < cursedCount; i++) {
-      Cursed c = Cursed.getRandomExcluding(usedCursed);
-      usedCursed.add(c);
-      currentRun.addCursed(c);
-      JLabel lbl = new JLabel(c.getDisplayName() + " - " + c.getDescription(), pentagramIcon, SwingConstants.LEFT);
-      lbl.setFont(FSkin.getRelativeFont(12).getBaseFont());
-      lbl.setForeground(FSkin.getColor(FSkin.Colors.CLR_TEXT).getColor());
-      lbl.setIconTextGap(5);
-      lbl.setOpaque(false);
-      effectsPanel.add(lbl, "growx, h 24px!, wrap");
-    }
-
-    boolean hasWrathful = wrathfulCount > 0;
-    boolean hasCursed = cursedCount > 0;
-    String title = hasWrathful && hasCursed ? "Wrathful & Cursed Planebound"
-        : hasCursed ? "Cursed Planebound" : "Wrathful Planebound";
-    String message = hasWrathful && hasCursed ? "This Planebound is Wrathful and Cursed!"
-        : hasCursed ? "This Planebound is Cursed!" : "This Planebound is Wrathful!";
-    FOptionPane.showOptionDialog(message, title, null, effectsPanel, List.of("OK"), 0);
   }
 
   void completeSideNode(RoguePathNode node) {
@@ -544,20 +372,6 @@ public enum CSubmenuRogueMap implements ICDoc {
     optionPane.dispose();
   }
 
-  private Deck loadPlaneboundDeck(String deckPath) {
-    // Load deck from file path
-    // The deckPath is relative to the res directory, e.g., "rogue/planebounds/meria.dck"
-    File deckFile = new File(ForgeConstants.RES_DIR, deckPath);
-
-    if (!deckFile.exists()) {
-      throw new RuntimeException(
-          "Planebound deck not found: " + deckPath + " (full path: " + deckFile.getAbsolutePath()
-              + ")");
-    }
-
-    return DeckSerializer.fromFile(deckFile);
-  }
-
   public RogueRun getCurrentRun() {
     return currentRun;
   }
@@ -636,4 +450,3 @@ public enum CSubmenuRogueMap implements ICDoc {
     });
   }
 }
-
