@@ -8,14 +8,12 @@ import forge.gamemodes.rogue.RogueTutorial;
 import forge.gamemodes.rogue.effect.EventEffect;
 import forge.gamemodes.rogue.effect.NodeResultContext;
 import forge.gamemodes.rogue.effect.RogueEffect;
-import forge.gamemodes.rogue.npc.BazaarContext;
 import forge.gamemodes.rogue.npc.EventContext;
 import forge.gamemodes.rogue.npc.NPCEncounterComposite;
 import forge.gamemodes.rogue.path.NodeChest;
 import forge.gamemodes.rogue.path.NodeEvent;
 import forge.gamemodes.rogue.path.NodePlanebound;
 import forge.gamemodes.rogue.path.NodeSanctum;
-import forge.gamemodes.rogue.path.RoguePathNode;
 import forge.item.PaperCard;
 import forge.localinstance.properties.ForgePreferences;
 import java.util.ArrayList;
@@ -25,9 +23,11 @@ import javax.swing.JOptionPane;
 class NodeEventHelper {
 
     private final CSubmenuRogueMap map;
+    private final NodeBazaarHelper bazaarHelper;
 
-    NodeEventHelper(CSubmenuRogueMap map) {
+    NodeEventHelper(CSubmenuRogueMap map, NodeBazaarHelper bazaarHelper) {
         this.map = map;
+        this.bazaarHelper = bazaarHelper;
     }
 
     void handleEventNode(NodeEvent eventNode, RogueRun currentRun) {
@@ -112,7 +112,7 @@ class NodeEventHelper {
 
         switch (ctx.trigger) {
             case BAZAAR:
-                ctx.addedCards = map.runBazaarShopping(ctx.bazaarContext);
+                ctx.addedCards = bazaarHelper.runBazaarShopping(currentRun, ctx.bazaarContext);
                 return false;
             case PLANEBOUND:
                 return handleEventPlanebound(eventNode, ctx);

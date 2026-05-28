@@ -4,7 +4,6 @@ import forge.LobbyPlayer;
 import forge.Singletons;
 import forge.deck.CardPool;
 import forge.deck.Deck;
-import forge.deck.DeckSection;
 import forge.deck.io.DeckSerializer;
 import forge.game.GameType;
 import forge.game.player.RegisteredPlayer;
@@ -13,10 +12,6 @@ import forge.gamemodes.rogue.*;
 import forge.gamemodes.rogue.RogueRun.CarryCard;
 import forge.gamemodes.rogue.RogueRun.CarryCardType;
 import forge.gamemodes.rogue.effect.*;
-import forge.gamemodes.rogue.npc.BazaarContext;
-import forge.gamemodes.rogue.npc.EventContext;
-import forge.gamemodes.rogue.npc.NPCContext;
-import forge.gamemodes.rogue.npc.NPCEncounterComposite;
 import forge.gamemodes.rogue.path.*;
 import forge.gui.GuiBase;
 import forge.gui.SOverlayUtils;
@@ -64,7 +59,8 @@ public enum CSubmenuRogueMap implements ICDoc {
   private final ActionListener actEnterNode = arg0 -> enterNode();
   private final ActionListener actEditDeck = arg0 -> editDeck();
   private final VSubmenuRogueMap view = VSubmenuRogueMap.SINGLETON_INSTANCE;
-  private final NodeEventHelper nodeEventHelper = new NodeEventHelper(this);
+  private final NodeBazaarHelper nodeBazaarHelper = new NodeBazaarHelper(this);
+  private final NodeEventHelper nodeEventHelper = new NodeEventHelper(this, nodeBazaarHelper);
 
   // Test run data (for MVP - will be replaced with proper loading later)
   private RogueRun currentRun;
@@ -305,7 +301,7 @@ public enum CSubmenuRogueMap implements ICDoc {
     } else if (node instanceof NodeSanctum nodeSanctum) {
       handleSanctumNode(nodeSanctum);
     } else if (node instanceof NodeBazaar nodeBazaar) {
-      handleBazaarNode(nodeBazaar);
+      nodeBazaarHelper.handleBazaarNode(nodeBazaar, currentRun);
     } else if (node instanceof NodeEvent nodeEvent) {
       nodeEventHelper.handleEventNode(nodeEvent, currentRun);
     } else if (node instanceof NodeChest nodeChest) {
@@ -543,207 +539,6 @@ public enum CSubmenuRogueMap implements ICDoc {
         CardRulesPredicates.IS_ARTIFACT.and(CardRulesPredicates.subType("Food")));
     List<PaperCard> foods = currentRun.getAllCardsForActiveCommander(foodFilter);
     return foods.isEmpty() ? null : Aggregates.random(foods);
-  }
-
-  private void handleBazaarNode(NodeBazaar bazaarNode) {
-    if (currentRun == null) {
-      return;
-    }
-
-    runBazaarShopping(null);
-
-    // Mark node as completed and move to next
-    bazaarNode.setCompleted(true);
-    currentRun.nextNode();
-
-    // Evaluate achievements after Bazaar (deck/gold may have changed)
-    RogueCommanderAchievements.instance.evaluateRunAchievements(currentRun);
-
-    // Track stats and check for unlocks
-    RogueStats.fireOnSideNodeCompleted(currentRun, RogueMetaProgress.getInstance());
-
-    // Save run and update view
-    RogueIO.saveRun(currentRun);
-    update();
-  }
-
-  /** Run Bazaar shopping UI and apply purchases. Null context = ordinary Bazaar setup. */
-  List<PaperCard> runBazaarShopping(BazaarContext ctx) {
-    boolean customBazaar = ctx != null;
-    RogueDeck rogueDeck = currentRun.getSelectedRogueDeck();
-    if (rogueDeck == null) {
-      System.err.println("ERROR: Could not find rogue deck for current run.");
-      return List.of();
-    }
-
-    BazaarContext bazaarCtx = customBazaar ? ctx : createOrdinaryBazaarContext();
-    if (!customBazaar) {
-      RogueTutorialHelper.showIfNotSeen(RogueTutorial.BAZAAR);
-      NPCEncounterComposite.INSTANCE.onBeforeBazaar(bazaarCtx, RogueMetaProgress.getInstance());
-    }
-
-    CardSelectionContext selCtx = customBazaar ? null : createBazaarSelectionContext();
-    int freeRerolls = customBazaar ? 0 : selCtx.freeRerolls;
-    int rerollCount = 0;
-    Set<PaperCard> selectedCards;
-    do {
-      List<PaperCard> inventory = customBazaar
-          ? buildCustomBazaarInventory(bazaarCtx)
-          : buildOrdinaryBazaarInventory(rogueDeck, selCtx);
-
-      applyBazaarDiscounts(bazaarCtx, inventory);
-      injectBazaarItems(bazaarCtx, inventory);
-
-      if (inventory.isEmpty()) {
-        System.err.println("ERROR: No cards available in Bazaar inventory.");
-        return List.of();
-      }
-
-      String rerollLabel = customBazaar ? null
-          : CardRewardHelper.buildRerollLabel(freeRerolls, rerollCount);
-      boolean rerollEnabled = !customBazaar
-          && CardRewardHelper.canAffordReroll(freeRerolls, rerollCount, currentRun.getCurrentGold());
-      BazaarDialog dialog = new BazaarDialog(
-          inventory,
-          currentRun.getCurrentGold(),
-          bazaarCtx.title,
-          rerollLabel,
-          bazaarCtx.priceOverrides.isEmpty() ? null : bazaarCtx.priceOverrides);
-      dialog.setRerollEnabled(rerollEnabled);
-      selectedCards = dialog.show();
-
-      if (!customBazaar) {
-        rogueDeck.discardRewardOptions(getRewardPoolCards(inventory, bazaarCtx.injectedCards));
-      }
-
-      if (!customBazaar && selectedCards == null) {
-        if (rerollCount >= freeRerolls) {
-          int cost = CardRewardHelper.getRerollCost(rerollCount - freeRerolls);
-          currentRun.spendGold(cost);
-        }
-        rerollCount++;
-        bazaarCtx.priceOverrides.clear();
-      }
-    } while (!customBazaar && selectedCards == null);
-
-    List<PaperCard> purchasedCards = applyBazaarPurchases(rogueDeck, bazaarCtx, selectedCards, customBazaar);
-    if (!customBazaar) {
-      for (NPCContext npcContext : NPCEncounterComposite.INSTANCE.onAfterBazaarPurchase(
-          bazaarCtx, RogueMetaProgress.getInstance())) {
-        new NPCDialog(npcContext).show();
-      }
-    }
-    return purchasedCards;
-  }
-
-  private BazaarContext createOrdinaryBazaarContext() {
-    BazaarContext bazaarCtx = new BazaarContext();
-    bazaarCtx.title = "Bazaar";
-    return bazaarCtx;
-  }
-
-  private CardSelectionContext createBazaarSelectionContext() {
-    CardSelectionContext selCtx = new CardSelectionContext();
-    RogueEffectComposite.INSTANCE.onCardSelection(selCtx, currentRun);
-    return selCtx;
-  }
-
-  private List<PaperCard> buildOrdinaryBazaarInventory(RogueDeck rogueDeck, CardSelectionContext selCtx) {
-    int baseNonMythics = 8;
-    int baseMythics = 2;
-    int totalNonMythics = Math.max(0, baseNonMythics - selCtx.extraMythics);
-    int totalMythics = baseMythics + selCtx.extraMythics;
-
-    Predicate<PaperCard> notAlreadyOwned = currentRun.getNotAlreadyInDeckPredicate();
-    List<PaperCard> nonMythicCards = rogueDeck.drawRewardOptions(totalNonMythics,
-        CardRewardHelper.combineFilters(PaperCardPredicates.IS_MYTHIC_RARE.negate(), notAlreadyOwned));
-    List<PaperCard> mythicCards = rogueDeck.drawRewardOptions(totalMythics,
-        CardRewardHelper.combineFilters(PaperCardPredicates.IS_MYTHIC_RARE, notAlreadyOwned));
-
-    List<PaperCard> inventory = new ArrayList<>();
-    inventory.addAll(nonMythicCards);
-    inventory.addAll(mythicCards);
-    return inventory;
-  }
-
-  private List<PaperCard> buildCustomBazaarInventory(BazaarContext bazaarCtx) {
-    List<PaperCard> inventory = new ArrayList<>(bazaarCtx.inventory);
-    if (inventory.size() <= BazaarDialog.MAX_DISPLAY_CARDS) {
-      return inventory;
-    }
-
-    Collections.shuffle(inventory);
-    return new ArrayList<>(inventory.subList(0, BazaarDialog.MAX_DISPLAY_CARDS));
-  }
-
-  private void applyBazaarDiscounts(BazaarContext bazaarCtx, List<PaperCard> inventory) {
-    if (bazaarCtx.discountCount <= 0 || inventory.isEmpty()) {
-      return;
-    }
-
-    List<Integer> indices = new ArrayList<>();
-    for (int i = 0; i < inventory.size(); i++) {
-      indices.add(i);
-    }
-    java.util.Collections.shuffle(indices);
-    for (int i = 0; i < Math.min(bazaarCtx.discountCount, inventory.size()); i++) {
-      PaperCard card = inventory.get(indices.get(i));
-      int basePrice = BazaarPricing.getCardPrice(card);
-      int discounted = Math.max(0, basePrice - bazaarCtx.discountAmount);
-      if (discounted == 0 && basePrice > 2) {
-        discounted = 1;
-      }
-      bazaarCtx.priceOverrides.put(card.getName(), discounted);
-    }
-  }
-
-  private void injectBazaarItems(BazaarContext bazaarCtx, List<PaperCard> inventory) {
-    if (bazaarCtx.injectedCards.isEmpty()) {
-      return;
-    }
-
-    for (PaperCard injected : bazaarCtx.injectedCards) {
-      if (!inventory.isEmpty()) {
-        inventory.remove(inventory.size() - 1);
-      }
-      inventory.add(injected);
-    }
-  }
-
-  private List<PaperCard> applyBazaarPurchases(RogueDeck rogueDeck, BazaarContext bazaarCtx,
-                                               Set<PaperCard> selectedCards, boolean customBazaar) {
-    if (selectedCards == null || selectedCards.isEmpty()) {
-      return List.of();
-    }
-
-    List<PaperCard> realCards = customBazaar
-        ? new ArrayList<>(selectedCards)
-        : getRewardPoolCards(selectedCards, bazaarCtx.injectedCards);
-    bazaarCtx.purchasedCards.clear();
-    bazaarCtx.purchasedCards.addAll(selectedCards);
-
-    if (!realCards.isEmpty()) {
-      currentRun.addCardsToDeck(realCards, true);
-      if (!customBazaar) {
-        rogueDeck.removeFromCardPools(realCards);
-      }
-    }
-
-    int totalCost = BazaarPricing.calculateTotalCost(selectedCards,
-        bazaarCtx.priceOverrides.isEmpty() ? null : bazaarCtx.priceOverrides);
-    currentRun.spendGold(totalCost);
-    return realCards;
-  }
-
-  private static List<PaperCard> getRewardPoolCards(Collection<PaperCard> cards,
-      Set<PaperCard> injectedCards) {
-    List<PaperCard> rewardPoolCards = new ArrayList<>();
-    for (PaperCard card : cards) {
-      if (!injectedCards.contains(card)) {
-        rewardPoolCards.add(card);
-      }
-    }
-    return rewardPoolCards;
   }
 
   void completeSideNode(RoguePathNode node) {
