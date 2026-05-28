@@ -24,10 +24,12 @@ class NodeEventHelper {
 
     private final CSubmenuRogueMap map;
     private final NodeBazaarHelper bazaarHelper;
+    private final NodeChestHelper chestHelper;
 
-    NodeEventHelper(CSubmenuRogueMap map, NodeBazaarHelper bazaarHelper) {
+    NodeEventHelper(CSubmenuRogueMap map, NodeBazaarHelper bazaarHelper, NodeChestHelper chestHelper) {
         this.map = map;
         this.bazaarHelper = bazaarHelper;
+        this.chestHelper = chestHelper;
     }
 
     void handleEventNode(NodeEvent eventNode, RogueRun currentRun) {
@@ -117,8 +119,8 @@ class NodeEventHelper {
             case PLANEBOUND:
                 return handleEventPlanebound(eventNode, ctx);
             case CHEST:
-                eventNode.setCompleted(true);
-                map.handleChestNode(new NodeChest());
+                chestHelper.resolveChest(currentRun, new NodeChest());
+                map.completeSideNode(eventNode);
                 return true;
             case SANCTUM:
                 eventNode.setCompleted(true);

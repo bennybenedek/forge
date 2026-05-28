@@ -60,7 +60,8 @@ public enum CSubmenuRogueMap implements ICDoc {
   private final ActionListener actEditDeck = arg0 -> editDeck();
   private final VSubmenuRogueMap view = VSubmenuRogueMap.SINGLETON_INSTANCE;
   private final NodeBazaarHelper nodeBazaarHelper = new NodeBazaarHelper(this);
-  private final NodeEventHelper nodeEventHelper = new NodeEventHelper(this, nodeBazaarHelper);
+  private final NodeChestHelper nodeChestHelper = new NodeChestHelper(this);
+  private final NodeEventHelper nodeEventHelper = new NodeEventHelper(this, nodeBazaarHelper, nodeChestHelper);
 
   // Test run data (for MVP - will be replaced with proper loading later)
   private RogueRun currentRun;
@@ -305,7 +306,7 @@ public enum CSubmenuRogueMap implements ICDoc {
     } else if (node instanceof NodeEvent nodeEvent) {
       nodeEventHelper.handleEventNode(nodeEvent, currentRun);
     } else if (node instanceof NodeChest nodeChest) {
-      handleChestNode(nodeChest);
+      nodeChestHelper.handleChestNode(nodeChest, currentRun);
     }
   }
 
@@ -621,53 +622,6 @@ public enum CSubmenuRogueMap implements ICDoc {
     resultPanel.initZoom(optionPane);
     optionPane.setVisible(true);
     optionPane.dispose();
-  }
-
-  void handleChestNode(NodeChest chestNode) {
-    if (currentRun == null) return;
-
-    // Get or assign random loot
-    ChestEffect chestEffect = chestNode.getChestEffect();
-    if (chestEffect == null) {
-      ChestEffect[] allChestEffects = ChestEffect.values();
-      chestEffect = allChestEffects[new Random().nextInt(allChestEffects.length)];
-      chestNode.setChestEffect(chestEffect);
-    }
-
-    // DEV: allow picking which loot to test
-    if (ForgePreferences.DEV_MODE) {
-      ChestEffect picked = (ChestEffect) JOptionPane.showInputDialog(
-          null, "Override chest loot:", "[DEV] Pick Loot",
-          JOptionPane.PLAIN_MESSAGE, null,
-          ChestEffect.values(), chestEffect);
-      if (picked != null) chestEffect = picked;
-    }
-
-    RogueTutorialHelper.showIfNotSeen(RogueTutorial.CHEST);
-
-    // Show chest dialog (same structure as EventDialog)
-    new ChestDialog(chestEffect).show();
-
-    // Apply effect after player acknowledges
-    NodeResultContext ctx = new NodeResultContext();
-    if (chestEffect.getEffectType() == RogueEffect.EffectType.ONESHOT) {
-      chestEffect.applyEffect(currentRun, ctx);
-      boolean mythicOnly = ctx.trigger == NodeResultContext.ActionTriggerType.MYTHIC_CARD_REWARD;
-      if (ctx.trigger == NodeResultContext.ActionTriggerType.CARD_REWARD
-          || ctx.trigger == NodeResultContext.ActionTriggerType.MYTHIC_CARD_REWARD) {
-        CardRewardHelper.runReward(currentRun,
-            (title, cards, max, label, enabled, gold) -> new CardRewardDialog(title, cards, max, label, enabled, gold).show(),
-            mythicOnly);
-      }
-    } else {
-      currentRun.addChestEffect(chestEffect);
-    }
-
-    chestNode.setCompleted(true);
-    currentRun.nextNode();
-    RogueStats.fireOnSideNodeCompleted(currentRun, RogueMetaProgress.getInstance());
-    RogueIO.saveRun(currentRun);
-    update();
   }
 
   private Deck loadPlaneboundDeck(String deckPath) {
