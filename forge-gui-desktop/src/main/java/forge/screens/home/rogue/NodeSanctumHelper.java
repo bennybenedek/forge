@@ -1,0 +1,89 @@
+package forge.screens.home.rogue;
+
+import forge.card.CardRulesPredicates;
+import forge.gamemodes.rogue.RogueRun;
+import forge.gamemodes.rogue.RogueRun.CarryCardType;
+import forge.gamemodes.rogue.RogueTutorial;
+import forge.gamemodes.rogue.path.NodeSanctum;
+import forge.item.PaperCard;
+import forge.item.PaperCardPredicates;
+import forge.toolbox.FOptionPane;
+import forge.util.Aggregates;
+import java.util.List;
+import java.util.function.Predicate;
+
+class NodeSanctumHelper {
+
+    private static final String SANCTUM_COOK_SOURCE_ID = "sanctum_cook";
+
+    private final CSubmenuRogueMap map;
+
+    NodeSanctumHelper(CSubmenuRogueMap map) {
+        this.map = map;
+    }
+
+    void handleSanctumNode(NodeSanctum sanctumNode, RogueRun currentRun) {
+        if (currentRun == null) {
+            return;
+        }
+
+        resolveSanctum(currentRun, sanctumNode);
+        map.completeSideNode(sanctumNode);
+    }
+
+    void resolveSanctum(RogueRun currentRun, NodeSanctum sanctumNode) {
+        RogueTutorialHelper.showIfNotSeen(RogueTutorial.SANCTUM);
+
+        int baseHealAmount = sanctumNode.getHealAmount();
+        int missingLife = Math.max(0, currentRun.getMaxLife() - currentRun.getCurrentLife());
+        int effectiveHealAmount = Math.min(baseHealAmount, missingLife);
+        boolean hasWounds = !currentRun.getActiveWounds().isEmpty();
+        boolean restEnabled = effectiveHealAmount > 0 || hasWounds;
+        String restDisabledReason = restEnabled
+            ? null
+            : "You are already at maximum life and have no wounds to cure.";
+
+        SanctumDialog dialog = new SanctumDialog(
+            effectiveHealAmount, restEnabled, restDisabledReason);
+        SanctumDialog.SanctumChoice choice = dialog.show();
+
+        switch (choice) {
+            case HEAL:
+                currentRun.gainLifeUpToMax(baseHealAmount);
+                currentRun.clearWounds();
+                break;
+
+            case COOK:
+                PaperCard craftedFood = craftSanctumFood(currentRun);
+                if (craftedFood == null) {
+                    FOptionPane.showMessageDialog(
+                        "No Food items matching your commander's color identity were available to craft.",
+                        "Sanctum");
+                    break;
+                }
+                currentRun.addCarryCard(craftedFood, CarryCardType.ITEM, SANCTUM_COOK_SOURCE_ID);
+                map.showNodeResultDialog(
+                    "Sanctum",
+                    "You cooked:",
+                    List.of(new NodeResultPanel.CardSection(null, List.of(craftedFood))),
+                    900,
+                    700,
+                    NodeResultPanel.MessageAlignment.CENTER);
+                break;
+
+            case REFLECT:
+                currentRun.addRemovalCredits(3);
+                break;
+
+            case SKIP:
+                break;
+        }
+    }
+
+    private PaperCard craftSanctumFood(RogueRun currentRun) {
+        Predicate<PaperCard> foodFilter = PaperCardPredicates.fromRules(
+            CardRulesPredicates.IS_ARTIFACT.and(CardRulesPredicates.subType("Food")));
+        List<PaperCard> foods = currentRun.getAllCardsForActiveCommander(foodFilter);
+        return foods.isEmpty() ? null : Aggregates.random(foods);
+    }
+}

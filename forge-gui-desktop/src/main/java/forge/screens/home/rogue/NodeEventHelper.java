@@ -25,11 +25,14 @@ class NodeEventHelper {
     private final CSubmenuRogueMap map;
     private final NodeBazaarHelper bazaarHelper;
     private final NodeChestHelper chestHelper;
+    private final NodeSanctumHelper sanctumHelper;
 
-    NodeEventHelper(CSubmenuRogueMap map, NodeBazaarHelper bazaarHelper, NodeChestHelper chestHelper) {
+    NodeEventHelper(CSubmenuRogueMap map, NodeBazaarHelper bazaarHelper, NodeChestHelper chestHelper,
+                    NodeSanctumHelper sanctumHelper) {
         this.map = map;
         this.bazaarHelper = bazaarHelper;
         this.chestHelper = chestHelper;
+        this.sanctumHelper = sanctumHelper;
     }
 
     void handleEventNode(NodeEvent eventNode, RogueRun currentRun) {
@@ -123,8 +126,8 @@ class NodeEventHelper {
                 map.completeSideNode(eventNode);
                 return true;
             case SANCTUM:
-                eventNode.setCompleted(true);
-                map.handleSanctumNode(new NodeSanctum());
+                sanctumHelper.resolveSanctum(currentRun, new NodeSanctum());
+                map.completeSideNode(eventNode);
                 return true;
             case CARD_REMOVAL:
                 handleEventCardRemoval(ctx, currentRun);

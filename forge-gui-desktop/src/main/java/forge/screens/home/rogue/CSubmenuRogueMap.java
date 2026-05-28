@@ -10,7 +10,6 @@ import forge.game.player.RegisteredPlayer;
 import forge.gamemodes.match.HostedMatch;
 import forge.gamemodes.rogue.*;
 import forge.gamemodes.rogue.RogueRun.CarryCard;
-import forge.gamemodes.rogue.RogueRun.CarryCardType;
 import forge.gamemodes.rogue.effect.*;
 import forge.gamemodes.rogue.path.*;
 import forge.gui.GuiBase;
@@ -18,9 +17,7 @@ import forge.gui.SOverlayUtils;
 import forge.gui.framework.EDocID;
 import forge.gui.framework.FScreen;
 import forge.gui.framework.ICDoc;
-import forge.card.CardRulesPredicates;
 import forge.item.PaperCard;
-import forge.item.PaperCardPredicates;
 import forge.localinstance.achievements.RogueCommanderAchievements;
 import forge.localinstance.properties.ForgeConstants;
 import forge.localinstance.properties.ForgePreferences;
@@ -38,11 +35,9 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
-import forge.util.Aggregates;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.*;
-import java.util.function.Predicate;
 import javax.swing.*;
 import net.miginfocom.swing.MigLayout;
 
@@ -54,14 +49,14 @@ import net.miginfocom.swing.MigLayout;
 public enum CSubmenuRogueMap implements ICDoc {
   SINGLETON_INSTANCE;
 
-  private static final String SANCTUM_COOK_SOURCE_ID = "sanctum_cook";
-
   private final ActionListener actEnterNode = arg0 -> enterNode();
   private final ActionListener actEditDeck = arg0 -> editDeck();
   private final VSubmenuRogueMap view = VSubmenuRogueMap.SINGLETON_INSTANCE;
   private final NodeBazaarHelper nodeBazaarHelper = new NodeBazaarHelper(this);
   private final NodeChestHelper nodeChestHelper = new NodeChestHelper(this);
-  private final NodeEventHelper nodeEventHelper = new NodeEventHelper(this, nodeBazaarHelper, nodeChestHelper);
+  private final NodeSanctumHelper nodeSanctumHelper = new NodeSanctumHelper(this);
+  private final NodeEventHelper nodeEventHelper =
+      new NodeEventHelper(this, nodeBazaarHelper, nodeChestHelper, nodeSanctumHelper);
 
   // Test run data (for MVP - will be replaced with proper loading later)
   private RogueRun currentRun;
@@ -300,7 +295,7 @@ public enum CSubmenuRogueMap implements ICDoc {
     if (node instanceof NodePlanebound nodePlanebound) {
       handlePlaneboundNode(nodePlanebound);
     } else if (node instanceof NodeSanctum nodeSanctum) {
-      handleSanctumNode(nodeSanctum);
+      nodeSanctumHelper.handleSanctumNode(nodeSanctum, currentRun);
     } else if (node instanceof NodeBazaar nodeBazaar) {
       nodeBazaarHelper.handleBazaarNode(nodeBazaar, currentRun);
     } else if (node instanceof NodeEvent nodeEvent) {
@@ -467,81 +462,6 @@ public enum CSubmenuRogueMap implements ICDoc {
     FOptionPane.showOptionDialog(message, title, null, effectsPanel, List.of("OK"), 0);
   }
 
-  void handleSanctumNode(NodeSanctum sanctumNode) {
-    if (currentRun == null) {
-      return;
-    }
-
-    RogueTutorialHelper.showIfNotSeen(RogueTutorial.SANCTUM);
-
-    int baseHealAmount = sanctumNode.getHealAmount();
-    int missingLife = Math.max(0, currentRun.getMaxLife() - currentRun.getCurrentLife());
-    int effectiveHealAmount = Math.min(baseHealAmount, missingLife);
-    boolean hasWounds = !currentRun.getActiveWounds().isEmpty();
-    boolean restEnabled = effectiveHealAmount > 0 || hasWounds;
-    String restDisabledReason = restEnabled
-        ? null
-        : "You are already at maximum life and have no wounds to cure.";
-
-    // Show Sanctum dialog
-    SanctumDialog dialog = new SanctumDialog(
-        effectiveHealAmount, restEnabled, restDisabledReason);
-    SanctumDialog.SanctumChoice choice = dialog.show();
-
-    // Handle player's choice
-    switch (choice) {
-      case HEAL:
-        // Gain life up to max and cure all wounds
-        currentRun.gainLifeUpToMax(baseHealAmount);
-        currentRun.clearWounds();
-        break;
-
-      case COOK:
-        PaperCard craftedFood = craftSanctumFood();
-        if (craftedFood == null) {
-          FOptionPane.showMessageDialog(
-              "No Food items matching your commander's color identity were available to craft.",
-              "Sanctum");
-          break;
-        }
-        currentRun.addCarryCard(craftedFood, CarryCardType.ITEM, SANCTUM_COOK_SOURCE_ID);
-        showNodeResultDialog(
-            "Sanctum",
-            "You cooked:",
-            List.of(new NodeResultPanel.CardSection(null, List.of(craftedFood))),
-            900,
-            700,
-            NodeResultPanel.MessageAlignment.CENTER);
-        break;
-
-      case REFLECT:
-        currentRun.addRemovalCredits(3);
-        break;
-
-      case SKIP:
-        // Do nothing
-        break;
-    }
-
-    // Mark node as completed and move to next
-    sanctumNode.setCompleted(true);
-    currentRun.nextNode();
-
-    // Track stats and check for unlocks
-    RogueStats.fireOnSideNodeCompleted(currentRun, RogueMetaProgress.getInstance());
-
-    // Save run and update view
-    RogueIO.saveRun(currentRun);
-    update();
-  }
-
-  private PaperCard craftSanctumFood() {
-    Predicate<PaperCard> foodFilter = PaperCardPredicates.fromRules(
-        CardRulesPredicates.IS_ARTIFACT.and(CardRulesPredicates.subType("Food")));
-    List<PaperCard> foods = currentRun.getAllCardsForActiveCommander(foodFilter);
-    return foods.isEmpty() ? null : Aggregates.random(foods);
-  }
-
   void completeSideNode(RoguePathNode node) {
     node.setCompleted(true);
     currentRun.nextNode();
@@ -592,10 +512,10 @@ public enum CSubmenuRogueMap implements ICDoc {
         NodeResultPanel.MessageAlignment.LEFT);
   }
 
-  private void showNodeResultDialog(String title, String message,
-                                    List<NodeResultPanel.CardSection> sections,
-                                    int minWidth, int minHeight,
-                                    NodeResultPanel.MessageAlignment messageAlignment) {
+  void showNodeResultDialog(String title, String message,
+                            List<NodeResultPanel.CardSection> sections,
+                            int minWidth, int minHeight,
+                            NodeResultPanel.MessageAlignment messageAlignment) {
     NodeResultPanel resultPanel = new NodeResultPanel(
         message, sections, minWidth, minHeight, messageAlignment);
     FScrollPane scrollPane = new FScrollPane(resultPanel, false,
