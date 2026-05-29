@@ -75,12 +75,12 @@ public enum RogueEvent {
         )),
 
     DISTORTION("Distortion",
-        "Time lurches sideways. Nothing left to salvage. No spoils. No memory. Only silence.",
+        "Time lurches sideways. Space is deformed. ",
         List.of(
             new EventChoice("Suffer", "The silence consumed you.",
-                EventEffect.DISTORTION_SKIP_REWARDS),
+                EventEffect.DISTORTION_SUFFER),
             new EventChoice("Endure", "You salvage only fading fragments from the coming battles.",
-                EventEffect.DISTORTION_FADED_REWARDS)
+                EventEffect.DISTORTION_ENDURE)
         )),
 
     DRIFTED_AWAY("Drifted Away",
@@ -120,6 +120,18 @@ public enum RogueEvent {
                 EventEffect.HORROR_SURRENDER),
             new EventChoice("Resist", "You lose all your echoes.",
                 EventEffect.HORROR_RESIST)
+        )),
+
+    INFAMOUS_JUNCTION("Once Upon a Time at an Infamous Junction",
+        "A hard little town squats at the edge of the badlands, all splintered porches, swinging saloon doors, and watchful eyes behind dusty windows. " +
+            "The posters are fresh, the sheriff is outnumbered, and every soul in town looks like they've already chosen a side.",
+        List.of(
+            new EventChoice("Raise a Gang", "By sundown your crew prepared for life as outlaws, ready to take what's rightfully theirs.",
+                EventEffect.INFAMOUS_JUNCTION_RAISE_GANG),
+            new EventChoice("Rob the Local Bank", "The alarm comes late, the horses come fast, and by the time the town gives chase you're already riding richer.",
+                EventEffect.INFAMOUS_JUNCTION_ROB_BANK),
+            new EventChoice("Rope the Lost Cattle", "Out in the scrub you find more than strays, and one steady mount chooses to follow you back.",
+                EventEffect.INFAMOUS_JUNCTION_ROPE_CATTLE)
         )),
 
     LOST_CONNECTION("Lost",
@@ -214,6 +226,18 @@ public enum RogueEvent {
                 EventEffect.THORNS_ENDURE),
             new EventChoice("Press On", "You lose 4 life.",
                 EventEffect.THORNS_PRESS)
+        )),
+
+    TRAPPED_IN_THE_LAIR("Trapped in the Lair",
+        "You stumble through a tunnel of slick black flesh and jagged bone, only to realize the lair is breathing around you. " +
+            "Somewhere deeper inside, something enormous shifts in the dark, and every path forward feels like a step into its hunger.",
+        List.of(
+            new EventChoice("Slay", "You carve your way out through blood and ruin, carrying what the beast had already devoured.",
+                EventEffect.TRAPPED_IN_THE_LAIR_SLAY),
+            new EventChoice("Tame", "You lower your guard for a heartbeat, and one ancient terror answers with wary obedience.",
+                EventEffect.TRAPPED_IN_THE_LAIR_TAME),
+            new EventChoice("Examine", "You study the lair's pulsing growths and leave forever altered by what they reveal.",
+                EventEffect.TRAPPED_IN_THE_LAIR_EXAMINE)
         )),
 
     WANDERING_HEALER("Wandering Healer",

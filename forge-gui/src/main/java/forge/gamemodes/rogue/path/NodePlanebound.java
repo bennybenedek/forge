@@ -58,10 +58,10 @@ public class NodePlanebound extends RoguePathNode {
         int planeboundTypeBaseLife;
 
         if (getPlaneboundType().equals(RoguePlaneboundType.BOSS)) {
-            planeboundTypeBaseLife = 15;
+            return 30;
         }
         else if (getPlaneboundType().equals(RoguePlaneboundType.ELITE)) {
-            planeboundTypeBaseLife = 10;
+            planeboundTypeBaseLife = 5;
         }
         else {
             planeboundTypeBaseLife = 0;

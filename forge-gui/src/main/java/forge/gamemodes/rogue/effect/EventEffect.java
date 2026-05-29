@@ -331,7 +331,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     CROOKED_COUNSEL_NAZGUL("crooked_counsel_nazgul", "Join with the dark lord",
-        "Remove 9 random creatures from your deck. If you do, add 9 copies of [[Nazgûl]] to your deck.",
+        "Remove 9 random creatures from your deck. When you do, add 9 copies of [[Nazgûl]] to your deck.",
         EffectType.ONESHOT) {
 
         Predicate<PaperCard> getDeckCardFilter() {
@@ -362,7 +362,7 @@ public enum EventEffect implements RogueEffect {
             return isChoiceAvailable(run) ? null : "Your commander or deck does not allow Nazgûl.";
         }
     },
-    DISTORTION_SKIP_REWARDS("distortion_skip_rewards", "Distortion", "You skip all rewards after your next match.",
+    DISTORTION_SUFFER("distortion_suffer", "Distortion - Suffer", "You skip all rewards after your next match.",
         EffectType.CONSUME) {
         @Override
         public int getChargesForRank(int rank) { return 1; }
@@ -373,7 +373,7 @@ public enum EventEffect implements RogueEffect {
             run.consumeEffect(getId());
         }
     },
-    DISTORTION_FADED_REWARDS("distortion_faded_rewards", "Distortion - Faded Rewards",
+    DISTORTION_ENDURE("distortion_endure", "Distortion - Endure",
         "After your next 2 matches, gain 1 less {{Gold}} and see 3 fewer non-mythic cards in Card Rewards.",
         EffectType.CONSUME) {
         @Override
@@ -604,6 +604,56 @@ public enum EventEffect implements RogueEffect {
             RogueMetaProgress.getInstance().setTotalEchoes(0);
         }
     },
+    INFAMOUS_JUNCTION_RAISE_GANG("infamous_junction_raise_gang", "Raise a Gang",
+        "Remove all Human creatures from your deck. For each card removed this way, choose a Rogue or Mercenary to add to your deck.",
+        EffectType.ONESHOT) {
+        Predicate<PaperCard> getDeckCardFilter() {
+            return PaperCardPredicates.fromRules(
+                CardRulesPredicates.IS_CREATURE.and(CardRulesPredicates.subType("Human")));
+        }
+
+        @Override
+        public Predicate<PaperCard> getCardFilter() {
+            return PaperCardPredicates.fromRules(
+                CardRulesPredicates.IS_CREATURE
+                    .and(CardRulesPredicates.subType("Rogue")
+                        .or(CardRulesPredicates.subType("Mercenary"))));
+        }
+
+        @Override
+        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+            removeCardsFromDeck(run, ctx, getDeckCardFilter(), null);
+            if (ctx.removedCards.isEmpty()) {
+                return;
+            }
+
+            selectCardsForDeck(run, ctx, getCardFilter(),
+                Math.max(ctx.removedCards.size(), 20), ctx.removedCards.size(), ctx.removedCards.size(), null);
+        }
+    },
+    INFAMOUS_JUNCTION_ROB_BANK("infamous_junction_rob_bank", "Rob the Local Bank",
+        "Lose 3 life. Gain 8 {{Gold}}.",
+        EffectType.ONESHOT) {
+        @Override
+        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+            run.loseLife(3);
+            run.addGold(8);
+        }
+    },
+    INFAMOUS_JUNCTION_ROPE_CATTLE("infamous_junction_rope_cattle", "Rope the Lost Cattle",
+        "Gain a random Mount {{Fellow}}.",
+        EffectType.ONESHOT) {
+        @Override
+        public Predicate<PaperCard> getCardFilter() {
+            return PaperCardPredicates.fromRules(
+                CardRulesPredicates.IS_CREATURE.and(CardRulesPredicates.subType("Mount")));
+        }
+
+        @Override
+        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+            addCarryCards(run, ctx, getCardFilter(), 1, CarryCardType.FELLOW, List.of());
+        }
+    },
     LOST_DEPART("lost_depart", "Lost Connection - Depart", "You may not cast your Commander in the next match.",
         EffectType.CONSUME) {
         @Override
@@ -772,6 +822,62 @@ public enum EventEffect implements RogueEffect {
         @Override
         public void applyEffect(RogueRun run, NodeResultContext ctx) {
             run.loseLife(4);
+        }
+    },
+    TRAPPED_IN_THE_LAIR_EXAMINE("trapped_in_the_lair_examine", "Examine",
+        "Lose 4 {{Max. Life}}. Gain the {{Boon}} **Mutagen**. ![[Event Boon - Mutagen]]",
+        EffectType.ONESHOT) {
+        @Override
+        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+            run.setMaxLife(run.getMaxLife() - 4);
+            run.addEventEffect(this);
+        }
+
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            RogueEffect.addCardToCommandZone("Event Boon - Mutagen", human);
+        }
+
+        @Override
+        public boolean isChoiceAvailable(RogueRun run) {
+            return run.getMaxLife() > 4;
+        }
+
+        @Override
+        public String getUnavailableReason(RogueRun run) {
+            return isChoiceAvailable(run) ? null : "You don't have enough Max. Life.";
+        }
+    },
+    TRAPPED_IN_THE_LAIR_SLAY("trapped_in_the_lair_slay", "Slay",
+        "Gain a random {{Wound}}. Gain 3 random Food {{Item}}s.",
+        EffectType.ONESHOT) {
+        @Override
+        public Predicate<PaperCard> getCardFilter() {
+            return PaperCardPredicates.fromRules(
+                CardRulesPredicates.IS_ARTIFACT.and(CardRulesPredicates.subType("Food")));
+        }
+
+        @Override
+        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+            gainWound(run, ctx);
+            addCarryCards(run, ctx, getCardFilter(), 3, CarryCardType.ITEM, List.of());
+        }
+    },
+    TRAPPED_IN_THE_LAIR_TAME("trapped_in_the_lair_tame", "Tame",
+        "Lose 3 life. Gain a random legendary Beast {{Fellow}}.",
+        EffectType.ONESHOT) {
+        @Override
+        public Predicate<PaperCard> getCardFilter() {
+            return PaperCardPredicates.fromRules(
+                CardRulesPredicates.IS_CREATURE
+                    .and(CardRulesPredicates.IS_LEGENDARY)
+                    .and(CardRulesPredicates.subType("Beast")));
+        }
+
+        @Override
+        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+            run.loseLife(3);
+            addCarryCards(run, ctx, getCardFilter(), 1, CarryCardType.FELLOW, List.of());
         }
     };
 
