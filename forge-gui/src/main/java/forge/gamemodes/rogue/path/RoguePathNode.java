@@ -41,6 +41,10 @@ public abstract class RoguePathNode {
         this.columnIndex = columnIndex;
     }
 
+    public boolean isSideNode() {
+        return false;
+    }
+
     /**
      * Get a string representation of this node for display purposes.
      * Subclasses should override this to provide specific information.

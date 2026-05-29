@@ -77,8 +77,8 @@ public enum RogueEvent {
     DISTORTION("Distortion",
         "Time lurches sideways. Space is deformed. ",
         List.of(
-            new EventChoice("Suffer", "The silence consumed you.",
-                EventEffect.DISTORTION_SUFFER),
+            new EventChoice("Embrace", "You let the distortion have its way, and the road ahead comes back wrong.",
+                EventEffect.DISTORTION_EMBRACE),
             new EventChoice("Endure", "You salvage only fading fragments from the coming battles.",
                 EventEffect.DISTORTION_ENDURE)
         )),

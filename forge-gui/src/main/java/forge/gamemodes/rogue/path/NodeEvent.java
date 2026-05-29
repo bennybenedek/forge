@@ -28,6 +28,11 @@ public class NodeEvent extends RoguePathNode {
     public void setEventPlanebound(RoguePlanebound pb) { this.eventPlanebound = pb; }
 
     @Override
+    public boolean isSideNode() {
+        return true;
+    }
+
+    @Override
     public String toString() {
         return event != null ? "Event (" + event.getDisplayName() + ")" : "Event (???)";
     }

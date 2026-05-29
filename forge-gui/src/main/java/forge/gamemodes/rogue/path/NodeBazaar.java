@@ -11,6 +11,11 @@ public class NodeBazaar extends RoguePathNode {
     }
 
     @Override
+    public boolean isSideNode() {
+        return true;
+    }
+
+    @Override
     public String toString() {
         return "Bazaar (Shop)";
     }

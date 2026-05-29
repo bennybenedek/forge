@@ -5,6 +5,11 @@ import forge.game.player.RegisteredPlayer;
 import forge.gamemodes.rogue.*;
 import forge.gamemodes.rogue.RogueRun.CarryCardType;
 import forge.gamemodes.rogue.npc.NPC;
+import forge.gamemodes.rogue.path.NodeBazaar;
+import forge.gamemodes.rogue.path.NodeChest;
+import forge.gamemodes.rogue.path.NodeEvent;
+import forge.gamemodes.rogue.path.NodePlanebound;
+import forge.gamemodes.rogue.path.NodeSanctum;
 import forge.card.CardRulesPredicates;
 import forge.item.PaperCard;
 import forge.item.PaperCardPredicates;
@@ -362,15 +367,24 @@ public enum EventEffect implements RogueEffect {
             return isChoiceAvailable(run) ? null : "Your commander or deck does not allow Nazgûl.";
         }
     },
-    DISTORTION_SUFFER("distortion_suffer", "Distortion - Suffer", "You skip all rewards after your next match.",
-        EffectType.CONSUME) {
+    DISTORTION_EMBRACE("distortion_embrace", "Distortion - Embrace",
+        "Turn all uncompleted future {{Side Node}}s into {{Chest}} Nodes. All Planebounds of the next 2 rows gain 2 additional instances of {{Cursed}}.",
+        EffectType.ONESHOT) {
         @Override
-        public int getChargesForRank(int rank) { return 1; }
+        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+            if (run.getCurrentNode() == null || run.getPath() == null) {
+                return;
+            }
 
-        @Override
-        public void onBeforeRewards(MatchRewardContext ctx, RogueRun run) {
-            ctx.skipRewards = true;
-            run.consumeEffect(getId());
+            int currentRow = run.getCurrentNode().getRowIndex();
+            run.getPath().replaceNodes(
+                node -> node.getRowIndex() > currentRow
+                    && !node.isCompleted()
+                    && node.isSideNode()
+                    && !(node instanceof NodeChest),
+                NodeChest::new);
+            run.getPath().updateNextPlaneboundRows(currentRow, 2,
+                node -> node.setCursedCount(node.getCursedCount() + 2));
         }
     },
     DISTORTION_ENDURE("distortion_endure", "Distortion - Endure",

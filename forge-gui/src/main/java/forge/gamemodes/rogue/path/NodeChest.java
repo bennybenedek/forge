@@ -23,6 +23,11 @@ public class NodeChest extends RoguePathNode {
     public void setChestEffect(ChestEffect chestEffect) { this.chestEffect = chestEffect; }
 
     @Override
+    public boolean isSideNode() {
+        return true;
+    }
+
+    @Override
     public String toString() {
         return chestEffect != null ? "Loot (" + chestEffect.getDisplayName() + ")" : "Loot (Treasure)";
     }

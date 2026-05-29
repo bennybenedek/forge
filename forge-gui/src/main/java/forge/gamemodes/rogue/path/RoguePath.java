@@ -3,6 +3,9 @@ package forge.gamemodes.rogue.path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 /**
  * Represents the path (sequence of nodes) in a Rogue Commander run.
@@ -33,6 +36,68 @@ public class RoguePath {
 
     public void setNodes(List<RoguePathNode> nodes) {
         this.nodes = nodes;
+    }
+
+    public void replaceNodes(Predicate<RoguePathNode> filter, Supplier<? extends RoguePathNode> replacementFactory) {
+        if (filter == null || replacementFactory == null) {
+            return;
+        }
+
+        for (int i = 0; i < nodes.size(); i++) {
+            RoguePathNode node = nodes.get(i);
+            if (!filter.test(node)) {
+                continue;
+            }
+
+            RoguePathNode replacement = replacementFactory.get();
+            if (replacement == null) {
+                continue;
+            }
+
+            replacement.setRowIndex(node.getRowIndex());
+            replacement.setColumnIndex(node.getColumnIndex());
+            replacement.setCompleted(node.isCompleted());
+            nodes.set(i, replacement);
+        }
+    }
+
+    public void updatePlanebounds(Predicate<NodePlanebound> filter, Consumer<NodePlanebound> updater) {
+        if (filter == null || updater == null) {
+            return;
+        }
+
+        for (RoguePathNode node : nodes) {
+            if (node instanceof NodePlanebound planebound && filter.test(planebound)) {
+                updater.accept(planebound);
+            }
+        }
+    }
+
+    public void updateNextPlaneboundRows(int startRowExclusive, int planeboundRowCount,
+                                         Consumer<NodePlanebound> updater) {
+        if (updater == null || planeboundRowCount <= 0) {
+            return;
+        }
+
+        List<Integer> targetRows = new ArrayList<>();
+        for (int row = startRowExclusive + 1; row <= getMaxRow(); row++) {
+            boolean hasPlanebound = getNodesInRow(row).stream()
+                .anyMatch(NodePlanebound.class::isInstance);
+            if (!hasPlanebound) {
+                continue;
+            }
+
+            targetRows.add(row);
+            if (targetRows.size() >= planeboundRowCount) {
+                break;
+            }
+        }
+
+        if (targetRows.isEmpty()) {
+            return;
+        }
+
+        updatePlanebounds(node -> targetRows.contains(node.getRowIndex()), updater);
     }
 
     // Path queries
