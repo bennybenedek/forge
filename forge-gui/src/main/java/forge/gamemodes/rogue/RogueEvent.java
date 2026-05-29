@@ -178,6 +178,18 @@ public enum RogueEvent {
                 EventEffect.NEON_LID_SHRINE)
         )),
 
+    ON_THE_EDGE("On the Edge",
+        "A city-sized spacecraft drifts ahead of you in the black, its hull lit by running lights that still burn despite the silence. " +
+            "Scorched docking rings, torn cargo fins, and a thousand dead windows make it look abandoned, but the ship is still moving just enough to feel dangerous.",
+        List.of(
+            new EventChoice("Hijack", "You catch the drifting craft before it shears away and make it your own.",
+                EventEffect.ON_THE_EDGE_HIJACK),
+            new EventChoice("Board", "You invoke the ship's still functioning hyperdrive come back out somewhere else on the route entirely.",
+                EventEffect.ON_THE_EDGE_BOARD),
+            new EventChoice("Scavenge", "The wreck is full of spent frames and stubborn machine minds, and a few still wake when you pry them loose.",
+                EventEffect.ON_THE_EDGE_SCAVENGE)
+        )),
+
     PLANAR_EXCHANGE("Planar Exchange",
         "A shimmering portal offers to reshape your arsenal.",
         List.of(

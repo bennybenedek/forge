@@ -23,7 +23,7 @@ public enum KeywordHint {
     SANCTUM("Sanctum",
             "Rest to regain life and cure all wounds or cook a random food item."),
     CHEST("Chest",
-        "Contain a random reward, like gold, cards from your Reward Pool, or permanent buffs that last for the rest of the Run."),
+        "Contains a random reward, like gold, cards from your Reward Pool, or permanent buffs that last for the rest of the Run."),
     SIDE_NODE("Side Node",
         "A location or encounter on the Map in between matches, like a Sanctum, Event or Chest."),
     GOLD("Gold",

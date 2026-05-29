@@ -6,7 +6,7 @@ import forge.gamemodes.rogue.RogueMetaProgress;
 import forge.gamemodes.rogue.RogueRun;
 import forge.gamemodes.rogue.RogueTutorial;
 import forge.gamemodes.rogue.effect.EventEffect;
-import forge.gamemodes.rogue.effect.NodeResultContext;
+import forge.gamemodes.rogue.effect.EffectResultContext;
 import forge.gamemodes.rogue.effect.RogueEffect;
 import forge.gamemodes.rogue.npc.EventContext;
 import forge.gamemodes.rogue.npc.NPCEncounterComposite;
@@ -21,6 +21,13 @@ import java.util.List;
 import javax.swing.JOptionPane;
 
 class NodeEventHelper {
+
+    /** Outcome of event flow handling from trigger resolution up to node completion. */
+    private enum EventFlowOutcome {
+        COMPLETE_EVENT, // Current event should be completed by the caller.
+        DO_NOT_COMPLETE_EVENT, // Current event must not be completed by the caller.
+        EVENT_ALREADY_COMPLETED // Current event was already completed during nested trigger handling (e.g. other invoked Node)
+    }
 
     private final CSubmenuRogueMap map;
     private final NodeBazaarHelper bazaarHelper;
@@ -56,11 +63,11 @@ class NodeEventHelper {
         if (choice == null) {
             return;
         }
-        boolean handleEventWithoutCompletion = handleEventChoice(eventNode, event, choice, currentRun);
-        if (handleEventWithoutCompletion) {
+
+        EventFlowOutcome choiceOutcome = handleEventChoice(eventNode, event, choice, currentRun);
+        if (choiceOutcome != EventFlowOutcome.COMPLETE_EVENT) {
             return;
         }
-
         map.completeSideNode(eventNode);
     }
 
@@ -87,74 +94,100 @@ class NodeEventHelper {
         return picked != null ? picked : event;
     }
 
-    private boolean handleEventChoice(NodeEvent eventNode, RogueEvent event,
-                                      RogueEvent.EventChoice choice, RogueRun currentRun) {
+    private EventFlowOutcome handleEventChoice(NodeEvent eventNode, RogueEvent event,
+                                               RogueEvent.EventChoice choice, RogueRun currentRun) {
         EventEffect effect = choice.effect();
         if (!effect.isChoiceAvailable(currentRun)) {
-            return true;
+            return EventFlowOutcome.DO_NOT_COMPLETE_EVENT;
         }
 
-        NodeResultContext ctx = new NodeResultContext();
+        EffectResultContext ctx = new EffectResultContext();
         if (effect.getEffectType() == RogueEffect.EffectType.ONESHOT) {
             effect.applyEffect(currentRun, ctx);
-            if (handleEventTrigger(eventNode, ctx, currentRun)) {
-                return true;
+            EventFlowOutcome triggerOutcome = handleEventTrigger(eventNode, ctx, currentRun);
+            if (triggerOutcome != EventFlowOutcome.COMPLETE_EVENT) {
+                return triggerOutcome;
             }
         } else {
             currentRun.addEventEffect(effect);
         }
 
         if (map.checkSideNodeDefeat(event.getDisplayName())) {
-            return true;
+            return EventFlowOutcome.DO_NOT_COMPLETE_EVENT;
         }
 
         showEventResult(choice, ctx);
-        return false;
+        return EventFlowOutcome.COMPLETE_EVENT;
     }
 
-    private boolean handleEventTrigger(NodeEvent eventNode, NodeResultContext ctx, RogueRun currentRun) {
+    private EventFlowOutcome handleEventTrigger(NodeEvent eventNode, EffectResultContext ctx, RogueRun currentRun) {
         if (ctx.trigger == null) {
-            return false;
+            return EventFlowOutcome.COMPLETE_EVENT;
         }
 
         switch (ctx.trigger) {
             case BAZAAR:
                 ctx.addedCards = bazaarHelper.runBazaarShopping(currentRun, ctx.bazaarContext);
-                return false;
+                return EventFlowOutcome.COMPLETE_EVENT;
             case PLANEBOUND:
                 return handleEventPlanebound(eventNode, ctx, currentRun);
             case CHEST:
                 chestHelper.resolveChest(currentRun, new NodeChest());
                 map.completeSideNode(eventNode);
-                return true;
+                return EventFlowOutcome.EVENT_ALREADY_COMPLETED;
             case SANCTUM:
                 sanctumHelper.resolveSanctum(currentRun, new NodeSanctum());
                 map.completeSideNode(eventNode);
-                return true;
+                return EventFlowOutcome.EVENT_ALREADY_COMPLETED;
+            case MOVE:
+                return handleEventMove(ctx, currentRun);
             case CARD_REMOVAL:
                 handleEventCardRemoval(ctx, currentRun);
-                return false;
+                return EventFlowOutcome.COMPLETE_EVENT;
             case CARD_ADDITION:
                 handleEventCardAddition(ctx, currentRun);
-                return false;
+                return EventFlowOutcome.COMPLETE_EVENT;
             default:
-                return false;
+                return EventFlowOutcome.COMPLETE_EVENT;
         }
     }
 
-    private boolean handleEventPlanebound(NodeEvent eventNode, NodeResultContext ctx, RogueRun currentRun) {
+    private EventFlowOutcome handleEventMove(EffectResultContext ctx, RogueRun currentRun) {
+        if (currentRun.getPath() == null || ctx.moveNodeIndex < 0) {
+            return EventFlowOutcome.COMPLETE_EVENT;
+        }
+
+        if (ctx.moveNodeIndex >= currentRun.getPath().getNodeCount()) {
+            return EventFlowOutcome.COMPLETE_EVENT;
+        }
+
+        if (currentRun.getPath().getNode(ctx.moveNodeIndex) == null) {
+            return EventFlowOutcome.COMPLETE_EVENT;
+        }
+
+        int targetRow = currentRun.getPath().getNode(ctx.moveNodeIndex).getRowIndex();
+        int resetFromRow = Math.max(0, targetRow - 1);
+        currentRun.getPath().updateNodes(
+            node -> node.getRowIndex() >= resetFromRow,
+            node -> node.setCompleted(false));
+        currentRun.setCurrentNodeIndex(ctx.moveNodeIndex);
+        map.enterNode();
+        return EventFlowOutcome.DO_NOT_COMPLETE_EVENT;
+    }
+
+    private EventFlowOutcome handleEventPlanebound(NodeEvent eventNode, EffectResultContext ctx, RogueRun currentRun) {
         if (ctx.planebound == null) {
-            return false;
+            return EventFlowOutcome.COMPLETE_EVENT;
         }
 
         eventNode.setEventPlanebound(ctx.planebound);
         NodePlanebound tempNode = new NodePlanebound(ctx.planebound);
         tempNode.setRowIndex(eventNode.getRowIndex());
         planeboundHelper.handlePlaneboundNode(tempNode, currentRun);
-        return true;
+        return EventFlowOutcome.DO_NOT_COMPLETE_EVENT;
     }
 
-    private void handleEventCardRemoval(NodeResultContext ctx, RogueRun currentRun) {
+    private void handleEventCardRemoval(EffectResultContext ctx, RogueRun currentRun) {
         List<PaperCard> candidateCards = currentRun.getSelectableDeckCards(null);
         int removeCount = Math.min(ctx.removeCount, candidateCards.size());
         if (removeCount <= 0) {
@@ -182,7 +215,7 @@ class NodeEventHelper {
         }
     }
 
-    private void handleEventCardAddition(NodeResultContext ctx, RogueRun currentRun) {
+    private void handleEventCardAddition(EffectResultContext ctx, RogueRun currentRun) {
         int addMaxCount = Math.min(ctx.addMaxCount, getCandidateCardCount(ctx));
         int addMinCount = Math.min(ctx.addMinCount, addMaxCount);
         if (addMaxCount <= 0) {
@@ -216,7 +249,7 @@ class NodeEventHelper {
         ctx.addedCards = added;
     }
 
-    private int getCandidateCardCount(NodeResultContext ctx) {
+    private int getCandidateCardCount(EffectResultContext ctx) {
         return ctx.candidateCards == null ? 0 : ctx.candidateCards.size();
     }
 
@@ -227,12 +260,12 @@ class NodeEventHelper {
         return "Choose up to " + addMaxCount + " cards to add.";
     }
 
-    private void showEventResult(RogueEvent.EventChoice choice, NodeResultContext ctx) {
+    private void showEventResult(RogueEvent.EventChoice choice, EffectResultContext ctx) {
         map.showNodeResultDialog("Event Completed",
             getEventResultText(choice, ctx), buildNodeResultSections(ctx));
     }
 
-    private List<NodeResultPanel.CardSection> buildNodeResultSections(NodeResultContext ctx) {
+    private List<NodeResultPanel.CardSection> buildNodeResultSections(EffectResultContext ctx) {
         List<NodeResultPanel.CardSection> sections = new ArrayList<>();
         if (ctx.gainedWound != null) {
             sections.add(new NodeResultPanel.CardSection("Wound gained:",
@@ -247,7 +280,7 @@ class NodeEventHelper {
         return sections;
     }
 
-    private String getEventResultText(RogueEvent.EventChoice choice, NodeResultContext ctx) {
+    private String getEventResultText(RogueEvent.EventChoice choice, EffectResultContext ctx) {
         if (ctx.resultTextOverride != null) {
             return ctx.resultTextOverride;
         }

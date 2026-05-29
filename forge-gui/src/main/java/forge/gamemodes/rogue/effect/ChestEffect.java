@@ -8,26 +8,26 @@ public enum ChestEffect implements RogueEffect {
 
     FIND_GOLD("find_gold", "Treasure", "You found 10 gold.", EffectType.ONESHOT) {
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
             run.addGold(10);
         }
     },
     FIND_ECHOES("find_echoes", "Giant Soul", "You found 10 echoes.", EffectType.ONESHOT) {
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
             RogueMetaProgress.getInstance().addEchoes(10);
         }
     },
     CARD_REWARD("card_reward", "Card Cache", "Gain a Card Reward.", EffectType.ONESHOT) {
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
-            ctx.trigger = NodeResultContext.ActionTriggerType.CARD_REWARD;
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            ctx.trigger = EffectResultContext.ActionTriggerType.CARD_REWARD;
         }
     },
     MYTHIC_CARD_REWARD("mythic_card_reward", "Mythic Card Cache", "Gain a Mythic Card Reward.", EffectType.ONESHOT) {
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
-            ctx.trigger = NodeResultContext.ActionTriggerType.MYTHIC_CARD_REWARD;
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            ctx.trigger = EffectResultContext.ActionTriggerType.MYTHIC_CARD_REWARD;
         }
     },
 
@@ -66,7 +66,7 @@ public enum ChestEffect implements RogueEffect {
         this.effectType = effectType;
     }
 
-    public void applyEffect(RogueRun run, NodeResultContext ctx) { /* Override in ONESHOT constants to apply immediate chest effects. */ }
+    public void applyEffect(RogueRun run, EffectResultContext ctx) { /* Override in ONESHOT constants to apply immediate chest effects. */ }
 
     @Override
     public EffectType getEffectType() { return effectType; }

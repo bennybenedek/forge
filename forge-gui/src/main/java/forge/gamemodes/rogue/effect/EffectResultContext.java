@@ -8,17 +8,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Mutable context for node result handling.
- * Set by ONESHOT boons/loots that trigger follow-up actions or card effects.
+ * Mutable context for effect result handling.
+ * Set by ONESHOT effects that trigger follow-up actions or card effects.
  */
-public class NodeResultContext {
-    public enum ActionTriggerType { BAZAAR, PLANEBOUND, CARD_REMOVAL, CARD_ADDITION, CARD_REWARD, MYTHIC_CARD_REWARD, CHEST, SANCTUM }
+public class EffectResultContext {
+    public enum ActionTriggerType { BAZAAR, PLANEBOUND, CARD_REMOVAL, CARD_ADDITION, CARD_REWARD, MYTHIC_CARD_REWARD, CHEST, SANCTUM, MOVE }
 
     /** Set by ONESHOT effects that trigger another action (e.g., "opens a bazaar"). Null = no follow-up. */
     public ActionTriggerType trigger;
 
     /** Set by PLANEBOUND trigger to pass the picked planebound to the UI layer. */
     public RoguePlanebound planebound;
+
+    /** Set by MOVE trigger to pass the chosen destination node index to the UI layer. */
+    public int moveNodeIndex = -1;
 
     /** Set by card-selection triggers: which cards to show in CardSelectionDialog. */
     public List<PaperCard> candidateCards;
@@ -38,13 +41,13 @@ public class NodeResultContext {
     public List<PaperCard> removedCards;
     public List<PaperCard> addedCards;
 
-    /** Wound gained from this event, for result display. Null = not applicable. */
+    /** Wound gained from this effect, for result display. Null = not applicable. */
     public Wound gainedWound;
 
-    /** Optional replacement result text supplied by the effect itself. Null = use the choice result text. */
+    /** Optional replacement result text supplied by the effect itself. Null = use the effect result text. */
     public String resultTextOverride;
 
-    public NodeResultContext() {
+    public EffectResultContext() {
         removedCards = new ArrayList<>();
         addedCards = new ArrayList<>();
     }

@@ -106,7 +106,7 @@ public interface RogueEffect {
     /** Fired for both card reward and bazaar selections. */
     default void onCardSelection(CardSelectionContext ctx, RogueRun run) {}
 
-    default void addCarryCards(RogueRun run, NodeResultContext ctx, Predicate<PaperCard> filter,
+    default void addCarryCards(RogueRun run, EffectResultContext ctx, Predicate<PaperCard> filter,
                                int count, RogueRun.CarryCardType type, List<CardPrintOverride> printOverrides) {
         List<PaperCard> added = getAllCards(run, filter, count, printOverrides);
         for (PaperCard card : added) {
@@ -115,7 +115,7 @@ public interface RogueEffect {
         ctx.addedCards = added;
     }
 
-    default void addCardsToDeck(RogueRun run, NodeResultContext ctx, Predicate<PaperCard> filter,
+    default void addCardsToDeck(RogueRun run, EffectResultContext ctx, Predicate<PaperCard> filter,
                                 Integer cardCount, Integer copyCount, List<CardPrintOverride> printOverrides) {
         List<PaperCard> added = getAllCards(run, filter, cardCount, printOverrides);
         if (added.isEmpty()) {
@@ -135,7 +135,7 @@ public interface RogueEffect {
         ctx.addedCards = added;
     }
 
-    default void removeCardsFromDeck(RogueRun run, NodeResultContext ctx, Predicate<PaperCard> filter,
+    default void removeCardsFromDeck(RogueRun run, EffectResultContext ctx, Predicate<PaperCard> filter,
         Integer count) {
         List<PaperCard> removedCards;
 
@@ -150,7 +150,7 @@ public interface RogueEffect {
         }
     }
 
-    default void removeCarryCards(RogueRun run, NodeResultContext ctx, RogueRun.CarryCardType type) {
+    default void removeCarryCards(RogueRun run, EffectResultContext ctx, RogueRun.CarryCardType type) {
         if (!run.hasCarryCardOfType(type)) {
             return;
         }
@@ -168,7 +168,7 @@ public interface RogueEffect {
         }
     }
 
-    default void selectCardsForDeck(RogueRun run, NodeResultContext ctx, Predicate<PaperCard> filter,
+    default void selectCardsForDeck(RogueRun run, EffectResultContext ctx, Predicate<PaperCard> filter,
         Integer collectionCount, Integer minCount, Integer maxCount, List<CardPrintOverride> printOverrides) {
 
         List<PaperCard> collection = getAllCards(run, filter, null, printOverrides);
@@ -179,19 +179,19 @@ public interface RogueEffect {
         setCandidateCardsFromCollection(ctx, collection, minCount, maxCount, collectionCount);
     }
 
-    default void selectCardsForDeck(NodeResultContext ctx, List<PaperCard> collection,
+    default void selectCardsForDeck(EffectResultContext ctx, List<PaperCard> collection,
         Integer minCount, Integer maxCount) {
 
         setCandidateCardsFromCollection(ctx, collection, minCount, maxCount, null);
     }
 
-    default void selectCardsFromDeck(NodeResultContext ctx, int removeCount, int drawCount) {
-        ctx.trigger = NodeResultContext.ActionTriggerType.CARD_REMOVAL;
+    default void selectCardsFromDeck(EffectResultContext ctx, int removeCount, int drawCount) {
+        ctx.trigger = EffectResultContext.ActionTriggerType.CARD_REMOVAL;
         ctx.removeCount = removeCount;
         ctx.drawCount = drawCount;
     }
 
-    default void openCustomBazaar(NodeResultContext ctx, String title, List<PaperCard> inventory, Map<String, Integer> priceOverrides) {
+    default void openCustomBazaar(EffectResultContext ctx, String title, List<PaperCard> inventory, Map<String, Integer> priceOverrides) {
         BazaarContext bazaarContext = new BazaarContext();
         bazaarContext.title = title;
         bazaarContext.inventory.addAll(inventory);
@@ -201,10 +201,10 @@ public interface RogueEffect {
         }
 
         ctx.bazaarContext = bazaarContext;
-        ctx.trigger = NodeResultContext.ActionTriggerType.BAZAAR;
+        ctx.trigger = EffectResultContext.ActionTriggerType.BAZAAR;
     }
 
-    default void gainWound(RogueRun run, NodeResultContext ctx) {
+    default void gainWound(RogueRun run, EffectResultContext ctx) {
         List<Wound> available = new ArrayList<>(List.of(Wound.values()));
         List<RogueEffect> active = run.getActiveWounds();
         available.removeIf(w -> active.stream().anyMatch(a -> a == w));
@@ -285,7 +285,7 @@ public interface RogueEffect {
         return new ArrayList<>(cards.subList(0, Math.min(count, cards.size())));
     }
 
-    private static void setCandidateCardsFromCollection(NodeResultContext ctx, List<PaperCard> collection,
+    private static void setCandidateCardsFromCollection(EffectResultContext ctx, List<PaperCard> collection,
         Integer minCount, Integer maxCount, Integer collectionCount) {
 
         Collections.shuffle(collection, MyRandom.getRandom());
@@ -301,7 +301,7 @@ public interface RogueEffect {
         ctx.addMinCount = Math.min(minCount, candidates.size());
         ctx.addMaxCount = Math.min(maxCount, candidates.size());
         if (ctx.addMaxCount > 0) {
-            ctx.trigger = NodeResultContext.ActionTriggerType.CARD_ADDITION;
+            ctx.trigger = EffectResultContext.ActionTriggerType.CARD_ADDITION;
         }
     }
 

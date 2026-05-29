@@ -61,6 +61,18 @@ public class RoguePath {
         }
     }
 
+    public void updateNodes(Predicate<RoguePathNode> filter, Consumer<RoguePathNode> updater) {
+        if (filter == null || updater == null) {
+            return;
+        }
+
+        for (RoguePathNode node : nodes) {
+            if (filter.test(node)) {
+                updater.accept(node);
+            }
+        }
+    }
+
     public void updatePlanebounds(Predicate<NodePlanebound> filter, Consumer<NodePlanebound> updater) {
         if (filter == null || updater == null) {
             return;

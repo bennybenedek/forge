@@ -264,7 +264,7 @@ public enum CSubmenuRogueMap implements ICDoc {
     }
   }
 
-  private void enterNode() {
+  void enterNode() {
     if (currentRun == null) {
       return;
     }

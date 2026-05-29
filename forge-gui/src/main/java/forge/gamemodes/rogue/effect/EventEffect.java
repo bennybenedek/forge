@@ -5,14 +5,11 @@ import forge.game.player.RegisteredPlayer;
 import forge.gamemodes.rogue.*;
 import forge.gamemodes.rogue.RogueRun.CarryCardType;
 import forge.gamemodes.rogue.npc.NPC;
-import forge.gamemodes.rogue.path.NodeBazaar;
 import forge.gamemodes.rogue.path.NodeChest;
-import forge.gamemodes.rogue.path.NodeEvent;
-import forge.gamemodes.rogue.path.NodePlanebound;
-import forge.gamemodes.rogue.path.NodeSanctum;
 import forge.card.CardRulesPredicates;
 import forge.item.PaperCard;
 import forge.item.PaperCardPredicates;
+import forge.util.MyRandom;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -30,7 +27,7 @@ public enum EventEffect implements RogueEffect {
         }
 
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
             addCardsToDeck(run, ctx, getCardFilter(), 3, null, List.of());
         }
     },
@@ -43,7 +40,7 @@ public enum EventEffect implements RogueEffect {
         }
 
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
             run.loseLife(3);
             selectCardsForDeck(run, ctx, getCardFilter(), 20, 0, 5, null);
         }
@@ -60,7 +57,7 @@ public enum EventEffect implements RogueEffect {
         }
 
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
             removeCardsFromDeck(run, ctx, PaperCardPredicates.fromRules(CardRulesPredicates.IS_WHITE), null);
             addCarryCards(run, ctx, getCardFilter(), 2, CarryCardType.FELLOW, List.of());
         }
@@ -68,7 +65,7 @@ public enum EventEffect implements RogueEffect {
     AMBUSH_FIGHT("ambush_fight", "Fight!", "Fight a random Planebound on a random Plane!",
         EffectType.ONESHOT) {
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
             List<RoguePlanebound> all = RogueConfig.loadPlanebounds();
             all.removeIf(p -> p.type() != RoguePlaneboundType.NORMAL);
             Collections.shuffle(all);
@@ -81,13 +78,13 @@ public enum EventEffect implements RogueEffect {
 
             ctx.planebound = new RoguePlanebound(randomPlaneName, opponent.planeboundName(),
                 opponent.deckPath(), opponent.avatarIndex(), opponent.type());
-            ctx.trigger = NodeResultContext.ActionTriggerType.PLANEBOUND;
+            ctx.trigger = EffectResultContext.ActionTriggerType.PLANEBOUND;
         }
     },
     AMBUSH_BRIBE("ambush_bribe", "Lose 4 Gold", "You lose 4 gold.",
         EffectType.ONESHOT, 4) {
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
             run.spendGold(getGoldCost());
         }
 
@@ -111,7 +108,7 @@ public enum EventEffect implements RogueEffect {
         }
 
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
             addCarryCards(run, ctx, getCardFilter(), 1, RogueRun.CarryCardType.ITEM, List.of());
         }
     },
@@ -119,7 +116,7 @@ public enum EventEffect implements RogueEffect {
         "Gain the {{Boon}} **Confession**. ![[Event Boon - Confession]]",
         EffectType.ONESHOT) {
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
             run.addEventEffect(this);
         }
 
@@ -138,7 +135,7 @@ public enum EventEffect implements RogueEffect {
         }
 
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
             run.spendGold(getGoldCost());
             selectCardsForDeck(run, ctx, getCardFilter(), 20, 0, 5, null);
         }
@@ -166,7 +163,7 @@ public enum EventEffect implements RogueEffect {
         }
 
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
             addCarryCards(run, ctx, getCardFilter(), 1, RogueRun.CarryCardType.FELLOW, List.of());
         }
     },
@@ -182,7 +179,7 @@ public enum EventEffect implements RogueEffect {
         }
 
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
             addCarryCards(run, ctx, getCardFilter(), 3, RogueRun.CarryCardType.SCROLL, List.of());
         }
     },
@@ -209,7 +206,7 @@ public enum EventEffect implements RogueEffect {
         }
 
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
             openCustomBazaar(ctx, "Woodland Caravan",
                 run.getAllCardsForActiveCommander(getCardFilter()), null);
         }
@@ -238,7 +235,7 @@ public enum EventEffect implements RogueEffect {
         }
 
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
             gainWound(run, ctx);
             addCarryCards(run, ctx, getCardFilter(), 3, CarryCardType.FELLOW, List.of());
         }
@@ -252,7 +249,7 @@ public enum EventEffect implements RogueEffect {
         }
 
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
             removeCardsFromDeck(run, ctx, getDeckCardFilter(), null);
             if (!ctx.removedCards.isEmpty()) {
                 run.addGold(ctx.removedCards.size() * 2);
@@ -272,7 +269,7 @@ public enum EventEffect implements RogueEffect {
     CARAVAN_ROB("caravan_rob", "Caravan Plunder", "Lose 3 life, gain 8 {{Gold}}.",
         EffectType.ONESHOT) {
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
             run.loseLife(3);
             run.addGold(8);
         }
@@ -280,8 +277,8 @@ public enum EventEffect implements RogueEffect {
     CARAVAN_BROWSE("caravan_browse", "Browse Wares", "Opens a {{Bazaar}}.",
         EffectType.ONESHOT) {
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
-            ctx.trigger = NodeResultContext.ActionTriggerType.BAZAAR;
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            ctx.trigger = EffectResultContext.ActionTriggerType.BAZAAR;
         }
     },
     CROOKED_COUNSEL_FELLOWSHIP("crooked_counsel_fellowship", "Rally the Free Peoples",
@@ -300,7 +297,7 @@ public enum EventEffect implements RogueEffect {
         }
 
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
             removeCardsFromDeck(run, ctx, PaperCardPredicates.fromRules(CardRulesPredicates.IS_BLACK), null);
             List<PaperCard> fellowshipCards = run.getAllCardsForActiveCommander(getCardFilter());
             if (fellowshipCards.isEmpty()) {
@@ -319,7 +316,7 @@ public enum EventEffect implements RogueEffect {
         }
 
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
             run.loseLife(5);
             addCarryCards(run, ctx, getCardFilter(), 1, RogueRun.CarryCardType.ITEM,
                 List.of(new CardPrintOverride("The One Ring", "LTR", 2)));
@@ -349,7 +346,7 @@ public enum EventEffect implements RogueEffect {
         }
 
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
             if (run.getSelectableDeckCards(getDeckCardFilter()).size() < 9) {
                 return;
             }
@@ -371,7 +368,7 @@ public enum EventEffect implements RogueEffect {
         "Turn all uncompleted future {{Side Node}}s into {{Chest}} Nodes. All Planebounds of the next 2 rows gain 2 additional instances of {{Cursed}}.",
         EffectType.ONESHOT) {
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
             if (run.getCurrentNode() == null || run.getPath() == null) {
                 return;
             }
@@ -411,7 +408,7 @@ public enum EventEffect implements RogueEffect {
         }
 
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
 
             run.loseLife(3);
             addCarryCards(run, ctx, getCardFilter(), 1, RogueRun.CarryCardType.FELLOW, List.of());
@@ -426,29 +423,29 @@ public enum EventEffect implements RogueEffect {
         }
 
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
             addCarryCards(run, ctx, getCardFilter(), 1, RogueRun.CarryCardType.ITEM, List.of());
         }
     },
     FIND_CHEST("find_chest", "Hidden Chest", "You find a hidden {{Chest}}.",
         EffectType.ONESHOT) {
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
-            ctx.trigger = NodeResultContext.ActionTriggerType.CHEST;
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            ctx.trigger = EffectResultContext.ActionTriggerType.CHEST;
         }
     },
     FIND_SANCTUM("find_sanctum", "Hidden Sanctum", "You discover a hidden {{Sanctum}}.",
         EffectType.ONESHOT) {
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
-            ctx.trigger = NodeResultContext.ActionTriggerType.SANCTUM;
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            ctx.trigger = EffectResultContext.ActionTriggerType.SANCTUM;
         }
     },
     GAMECHANGER_TRUST("gamechanger_trust", "Trade for Gamechangers",
         "Remove 3 random cards from your deck. Choose 3 cards from the Gamechanger list to add to your deck.",
         EffectType.ONESHOT) {
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
             List<PaperCard> gamechangerCards = run.getGamechangerCardsForActiveCommander();
             int swapCount = Math.min(3, gamechangerCards.size());
             if (swapCount == 0) {
@@ -463,7 +460,7 @@ public enum EventEffect implements RogueEffect {
         "Shop from a selection of Gamechanger cards at doubled prices.",
         EffectType.ONESHOT) {
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
             List<PaperCard> gamechangerCards = run.getGamechangerCardsForActiveCommander();
             if (gamechangerCards.isEmpty()) {
                 return;
@@ -487,7 +484,7 @@ public enum EventEffect implements RogueEffect {
         }
 
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
             String setCode = "PIP";
             int artIndex = 1;
 
@@ -512,7 +509,7 @@ public enum EventEffect implements RogueEffect {
         }
 
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
             removeCardsFromDeck(
                 run, ctx, PaperCardPredicates.fromRules(
                     CardRulesPredicates.IS_ARTIFACT), null);
@@ -532,7 +529,7 @@ public enum EventEffect implements RogueEffect {
         }
 
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
             removeCardsFromDeck(run, ctx, PaperCardPredicates.fromRules(CardRulesPredicates.IS_CREATURE), 5);
             int removedCount = ctx.removedCards.size();
             addCardsToDeck(run, ctx, getCardFilter(), removedCount, null, List.of());
@@ -541,7 +538,7 @@ public enum EventEffect implements RogueEffect {
     HEALER_POTION("healer_potion", "Healer's Potion", "Gain 8 life, lose 5 gold.",
             EffectType.ONESHOT, 5) {
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
             run.gainLifeUpToMax(8);
             run.spendGold(getGoldCost());
         }
@@ -565,7 +562,7 @@ public enum EventEffect implements RogueEffect {
     HEALER_TREAT_WOUNDS("healer_treatment", "Healer's Treatment", "Clear all {{Wound}}s, lose 3 {{Gold}}.",
         EffectType.ONESHOT, 3) {
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
             run.clearWounds();
             run.spendGold(getGoldCost());
         }
@@ -589,7 +586,7 @@ public enum EventEffect implements RogueEffect {
     HEALER_STRENGTHEN("healer_strengthen", "Healer's Strength", "Gain 10 {{Max. Life}}, lose 7 {{Gold}}.",
         EffectType.ONESHOT, 7) {
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
             run.setMaxLife(run.getMaxLife() + 10);
             run.spendGold(getGoldCost());
         }
@@ -607,14 +604,14 @@ public enum EventEffect implements RogueEffect {
     HORROR_SURRENDER("horror_surrender", "Lose All Gold", "You lose all your {{Gold}}.",
         EffectType.ONESHOT) {
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
             run.setCurrentGold(0);
         }
     },
     HORROR_RESIST("horror_resist", "Lose All Echoes", "You lose all your {{Echoes}}.",
         EffectType.ONESHOT) {
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
             RogueMetaProgress.getInstance().setTotalEchoes(0);
         }
     },
@@ -635,7 +632,7 @@ public enum EventEffect implements RogueEffect {
         }
 
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
             removeCardsFromDeck(run, ctx, getDeckCardFilter(), null);
             if (ctx.removedCards.isEmpty()) {
                 return;
@@ -649,7 +646,7 @@ public enum EventEffect implements RogueEffect {
         "Lose 3 life. Gain 8 {{Gold}}.",
         EffectType.ONESHOT) {
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
             run.loseLife(3);
             run.addGold(8);
         }
@@ -664,7 +661,7 @@ public enum EventEffect implements RogueEffect {
         }
 
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
             addCarryCards(run, ctx, getCardFilter(), 1, CarryCardType.FELLOW, List.of());
         }
     },
@@ -690,7 +687,7 @@ public enum EventEffect implements RogueEffect {
         "Choose a new Commander for your deck for the rest of the Run.",
         EffectType.ONESHOT) {
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
             int commanderColorIdentityMask = run.getCommanderColorIdentityMask();
             Predicate<PaperCard> commanderFilter = card ->
                 card.getRules().getType().isCreature()
@@ -705,7 +702,7 @@ public enum EventEffect implements RogueEffect {
     MEET_NPC_TYVAR("meet_npc_tyvar", "Meet Tyvar Kell", "Tyvar Kell offers to train your Commander.",
         EffectType.ONESHOT) {
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
             RogueMetaProgress progress = RogueMetaProgress.getInstance();
             if (progress.getNPCLevel(NPC.TYVAR.id) < 1) {
                 progress.setNPCLevelIfHigher(NPC.TYVAR.id, 1);
@@ -722,7 +719,7 @@ public enum EventEffect implements RogueEffect {
         }
 
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
             removeCardsFromDeck(run, ctx, PaperCardPredicates.fromRules(CardRulesPredicates.IS_CREATURE), null);
             selectCardsForDeck(run, ctx, getCardFilter(), Math.max(ctx.removedCards.size(), 20), ctx.removedCards.size(), ctx.removedCards.size(), null);
         }
@@ -731,7 +728,7 @@ public enum EventEffect implements RogueEffect {
         "Lose 6 max life. Gain the {{Boon}} **Ninjutsu Mastery**. ![[Event Boon - Ninjutsu Mastery]]",
         EffectType.ONESHOT) {
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
             run.setMaxLife(run.getMaxLife() - 6);
             run.addEventEffect(this);
         }
@@ -761,9 +758,57 @@ public enum EventEffect implements RogueEffect {
         }
 
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
             int colorCount = Integer.bitCount(run.getCommanderColorIdentityMask());
             addCardsToDeck(run, ctx, getCardFilter(), colorCount, null, List.of());
+        }
+    },
+    ON_THE_EDGE_BOARD("on_the_edge_board", "Board",
+        "Move to a random other location on the map and enter it.",
+        EffectType.ONESHOT) {
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            if (run.getPath() == null || run.getPath().getNodeCount() <= 1) {
+                return;
+            }
+
+            int currentNodeIndex = run.getCurrentNodeIndex();
+            int moveNodeIndex = currentNodeIndex;
+            while (moveNodeIndex == currentNodeIndex) {
+                moveNodeIndex = MyRandom.getRandom().nextInt(run.getPath().getNodeCount());
+            }
+
+            ctx.moveNodeIndex = moveNodeIndex;
+            ctx.trigger = EffectResultContext.ActionTriggerType.MOVE;
+        }
+    },
+    ON_THE_EDGE_HIJACK("on_the_edge_hijack", "Hijack",
+        "Gain a random Spacecraft {{Item}}.",
+        EffectType.ONESHOT) {
+        @Override
+        public Predicate<PaperCard> getCardFilter() {
+            return PaperCardPredicates.fromRules(
+                CardRulesPredicates.IS_ARTIFACT.and(CardRulesPredicates.subType("Spacecraft")));
+        }
+
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            addCarryCards(run, ctx, getCardFilter(), 1, CarryCardType.ITEM, List.of());
+        }
+    },
+    ON_THE_EDGE_SCAVENGE("on_the_edge_scavenge", "Scavenge",
+        "Lose 3 life. Choose up to 5 out of 20 Robots to add to your deck.",
+        EffectType.ONESHOT) {
+        @Override
+        public Predicate<PaperCard> getCardFilter() {
+            return PaperCardPredicates.fromRules(
+                CardRulesPredicates.IS_CREATURE.and(CardRulesPredicates.subType("Robot")));
+        }
+
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            run.loseLife(3);
+            selectCardsForDeck(run, ctx, getCardFilter(), 20, 0, 5, null);
         }
     },
     NOTHING("nothing", "Nothing", "No effect.",
@@ -772,7 +817,7 @@ public enum EventEffect implements RogueEffect {
         "Choose 3 cards to remove (excluding basic lands), then receive 3 random cards from your {{Reward Pool}}.",
         EffectType.ONESHOT) {
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
             int exchangeCount = 3;
             selectCardsFromDeck(ctx, exchangeCount, exchangeCount);
         }
@@ -780,14 +825,14 @@ public enum EventEffect implements RogueEffect {
     PLANAR_RIFT_ENERGY("planar_rift_energy", "Planar Rift Energy", "Gain 6 {{Gold}}.",
             EffectType.ONESHOT) {
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
             run.addGold(5);
         }
     },
     PLANAR_RIFT_BOOST("planar_rift_boost", "Planar Rift - Commander Boost", "Gain the {{Boon}} **Commander Boost**. ![[Event Boon - Commander Boost]]",
         EffectType.ONESHOT) {
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
             run.addEventEffect(this);
         }
         @Override
@@ -799,7 +844,7 @@ public enum EventEffect implements RogueEffect {
             "Remove 3 random cards (excluding basic lands) from your deck. Add 3 random cards from your {{Reward Pool}}.",
             EffectType.ONESHOT) {
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
 
             RogueDeck rogueDeck = run.getSelectedRogueDeck();
             if (rogueDeck == null) return;
@@ -817,14 +862,14 @@ public enum EventEffect implements RogueEffect {
         "Choose 3 cards (excluding basic lands) to remove from your deck.",
         EffectType.ONESHOT) {
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
             selectCardsFromDeck(ctx, 3, 0);
         }
     },
     THORNS_ENDURE("thorns_endure", "Gain Wound", "Gain a random {{Wound}}.",
             EffectType.ONESHOT) {
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
             gainWound(run, ctx);
             if (ctx.gainedWound == null) {
                 ctx.resultTextOverride = "You already bear all wounds.";
@@ -834,7 +879,7 @@ public enum EventEffect implements RogueEffect {
     THORNS_PRESS("thorns_press", "Lose 4 Life", "You lose 4 life.",
             EffectType.ONESHOT) {
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
             run.loseLife(4);
         }
     },
@@ -842,7 +887,7 @@ public enum EventEffect implements RogueEffect {
         "Lose 4 {{Max. Life}}. Gain the {{Boon}} **Mutagen**. ![[Event Boon - Mutagen]]",
         EffectType.ONESHOT) {
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
             run.setMaxLife(run.getMaxLife() - 4);
             run.addEventEffect(this);
         }
@@ -872,7 +917,7 @@ public enum EventEffect implements RogueEffect {
         }
 
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
             gainWound(run, ctx);
             addCarryCards(run, ctx, getCardFilter(), 3, CarryCardType.ITEM, List.of());
         }
@@ -889,7 +934,7 @@ public enum EventEffect implements RogueEffect {
         }
 
         @Override
-        public void applyEffect(RogueRun run, NodeResultContext ctx) {
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
             run.loseLife(3);
             addCarryCards(run, ctx, getCardFilter(), 1, CarryCardType.FELLOW, List.of());
         }
@@ -912,7 +957,7 @@ public enum EventEffect implements RogueEffect {
         this.goldCost = goldCost;
     }
 
-    public void applyEffect(RogueRun run, NodeResultContext ctx) { /* Override in ONESHOT constants to apply immediate event effects. */}
+    public void applyEffect(RogueRun run, EffectResultContext ctx) { /* Override in ONESHOT constants to apply immediate event effects. */}
 
     @Override
     public EffectType getEffectType() { return effectType; }
