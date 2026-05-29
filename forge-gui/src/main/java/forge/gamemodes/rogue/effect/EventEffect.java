@@ -441,6 +441,44 @@ public enum EventEffect implements RogueEffect {
             ctx.trigger = EffectResultContext.ActionTriggerType.SANCTUM;
         }
     },
+    FINAL_PREPARATIONS_LEARN_SUMMONING("final_preparations_learn_summoning", "Learn Summoning",
+        "Gain a random Summon {{Fellow}}.",
+        EffectType.ONESHOT) {
+        @Override
+        public Predicate<PaperCard> getCardFilter() {
+            return card -> card.getName().startsWith("Summon:");
+        }
+
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            addCarryCards(run, ctx, getCardFilter(), 1, CarryCardType.FELLOW, List.of());
+        }
+    },
+    FINAL_PREPARATIONS_LEVEL_UP("final_preparations_level_up", "Level Up",
+        "Gain 3 {{Max. Life}}.",
+        EffectType.ONESHOT) {
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            run.setMaxLife(run.getMaxLife() + 3);
+        }
+    },
+    FINAL_PREPARATIONS_VISIT_SMITH("final_preparations_visit_smith", "Visit Smith",
+        "Shop from a selection of legendary Equipment cards.",
+        EffectType.ONESHOT) {
+        @Override
+        public Predicate<PaperCard> getCardFilter() {
+            return PaperCardPredicates.fromRules(
+                CardRulesPredicates.IS_ARTIFACT
+                    .and(CardRulesPredicates.IS_LEGENDARY)
+                    .and(CardRulesPredicates.subType("Equipment")));
+        }
+
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            openCustomBazaar(ctx, "Last-Stop Smithy",
+                run.getAllCardsForActiveCommander(getCardFilter()), null);
+        }
+    },
     GAMECHANGER_TRUST("gamechanger_trust", "Trade for Gamechangers",
         "Remove 3 random cards from your deck. Choose 3 cards from the Gamechanger list to add to your deck.",
         EffectType.ONESHOT) {
@@ -535,7 +573,7 @@ public enum EventEffect implements RogueEffect {
             addCardsToDeck(run, ctx, getCardFilter(), removedCount, null, List.of());
         }
     },
-    HEALER_POTION("healer_potion", "Healer's Potion", "Gain 8 life, lose 5 gold.",
+    HEALER_POTION("healer_potion", "Healer's Potion", "Pay 5 {{Gold}}, gain 8 life.",
             EffectType.ONESHOT, 5) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
@@ -559,7 +597,7 @@ public enum EventEffect implements RogueEffect {
             return null;
         }
     },
-    HEALER_TREAT_WOUNDS("healer_treatment", "Healer's Treatment", "Clear all {{Wound}}s, lose 3 {{Gold}}.",
+    HEALER_TREAT_WOUNDS("healer_treatment", "Healer's Treatment", "Pay 3 {{Gold}}, clear all {{Wound}}s.",
         EffectType.ONESHOT, 3) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
@@ -583,7 +621,7 @@ public enum EventEffect implements RogueEffect {
             return null;
         }
     },
-    HEALER_STRENGTHEN("healer_strengthen", "Healer's Strength", "Gain 10 {{Max. Life}}, lose 7 {{Gold}}.",
+    HEALER_STRENGTHEN("healer_strengthen", "Healer's Strength", "Pay 7 {{Gold}}, gain 10 {{Max. Life}}.",
         EffectType.ONESHOT, 7) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {

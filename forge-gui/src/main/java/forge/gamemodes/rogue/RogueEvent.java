@@ -92,6 +92,17 @@ public enum RogueEvent {
                 EventEffect.DRIFTED_STEAL)
         )),
 
+    FINAL_PREPARATIONS("Final Preparations",
+        "At the edge of the world, crystal light spills across the city, still glowing as if nothing could ever end. Mercenaries laugh over cheap drinks and weary travelers barter for one last advantage. Every smile carries the quiet knowledge that by morning, you and half these faces may be gone.",
+        List.of(
+            new EventChoice("Visit Smith", "Steel rings on the anvil late into the night, and you leave the market carrying one last heirloom worthy of the road ahead.",
+                EventEffect.FINAL_PREPARATIONS_VISIT_SMITH),
+            new EventChoice("Learn Summoning", "Old rites and half-forgotten names answer your call, and one great presence agrees to walk beside you.",
+                EventEffect.FINAL_PREPARATIONS_LEARN_SUMMONING),
+            new EventChoice("Level Up", "A night's rest, a hot meal, and one last round of hard-earned lessons leave you stronger for what comes next.",
+                EventEffect.FINAL_PREPARATIONS_LEVEL_UP)
+        )),
+
     GAMECHANGER("Gamechanger",
         "A suspicious figure eyes your deck with open contempt. \"Worthless,\" they sneer. " +
             "\"Once you change your game, you won't need half this library anymore.\"",
