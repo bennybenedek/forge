@@ -1,6 +1,5 @@
 package forge.screens.home.rogue;
 
-import forge.gamemodes.rogue.CardRewardHelper;
 import forge.gamemodes.rogue.RogueRun;
 import forge.gamemodes.rogue.RogueTutorial;
 import forge.gamemodes.rogue.effect.ChestEffect;
@@ -14,9 +13,14 @@ import javax.swing.JOptionPane;
 class NodeChestHelper {
 
     private final CSubmenuRogueMap map;
+    private EffectResultHelper effectResultHelper;
 
     NodeChestHelper(CSubmenuRogueMap map) {
         this.map = map;
+    }
+
+    void setEffectResultHelper(EffectResultHelper effectResultHelper) {
+        this.effectResultHelper = effectResultHelper;
     }
 
     void handleChestNode(NodeChest chestNode, RogueRun currentRun) {
@@ -24,11 +28,13 @@ class NodeChestHelper {
             return;
         }
 
-        resolveChest(currentRun, chestNode);
-        map.completeSideNode(chestNode);
+        NodeFlowOutcome chestOutcome = resolveChest(currentRun, chestNode);
+        if (chestOutcome == NodeFlowOutcome.COMPLETE_NODE) {
+            map.completeSideNode(chestNode);
+        }
     }
 
-    void resolveChest(RogueRun currentRun, NodeChest chestNode) {
+    NodeFlowOutcome resolveChest(RogueRun currentRun, NodeChest chestNode) {
         ChestEffect chestEffect = chestNode.getChestEffect();
         if (chestEffect == null) {
             ChestEffect[] allChestEffects = ChestEffect.values();
@@ -52,16 +58,13 @@ class NodeChestHelper {
         EffectResultContext ctx = new EffectResultContext();
         if (chestEffect.getEffectType() == RogueEffect.EffectType.ONESHOT) {
             chestEffect.applyEffect(currentRun, ctx);
-            boolean mythicOnly = ctx.trigger == EffectResultContext.ActionTriggerType.MYTHIC_CARD_REWARD;
-            if (ctx.trigger == EffectResultContext.ActionTriggerType.CARD_REWARD
-                || ctx.trigger == EffectResultContext.ActionTriggerType.MYTHIC_CARD_REWARD) {
-                CardRewardHelper.runReward(currentRun,
-                    (title, cards, max, label, enabled, gold) ->
-                        new CardRewardDialog(title, cards, max, label, enabled, gold).show(),
-                    mythicOnly);
+            if (effectResultHelper == null) {
+                return NodeFlowOutcome.COMPLETE_NODE;
             }
+            return effectResultHelper.handleEffectTrigger(chestNode, ctx, currentRun);
         } else {
             currentRun.addChestEffect(chestEffect);
         }
+        return NodeFlowOutcome.COMPLETE_NODE;
     }
 }

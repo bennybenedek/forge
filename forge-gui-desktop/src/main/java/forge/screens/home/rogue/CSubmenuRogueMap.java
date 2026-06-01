@@ -40,8 +40,13 @@ public enum CSubmenuRogueMap implements ICDoc {
   private final NodeChestHelper nodeChestHelper = new NodeChestHelper(this);
   private final NodePlaneboundHelper nodePlaneboundHelper = new NodePlaneboundHelper();
   private final NodeSanctumHelper nodeSanctumHelper = new NodeSanctumHelper(this);
-  private final NodeEventHelper nodeEventHelper =
-      new NodeEventHelper(this, nodeBazaarHelper, nodeChestHelper, nodeSanctumHelper, nodePlaneboundHelper);
+  private final EffectResultHelper effectResultHelper =
+      new EffectResultHelper(this, nodeBazaarHelper, nodeChestHelper, nodeSanctumHelper, nodePlaneboundHelper);
+  private final NodeEventHelper nodeEventHelper = new NodeEventHelper(this, effectResultHelper);
+
+  CSubmenuRogueMap() {
+    nodeChestHelper.setEffectResultHelper(effectResultHelper);
+  }
 
   // Test run data (for MVP - will be replaced with proper loading later)
   private RogueRun currentRun;
