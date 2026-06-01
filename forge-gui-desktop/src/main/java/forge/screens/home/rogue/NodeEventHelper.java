@@ -104,7 +104,7 @@ class NodeEventHelper {
         EffectResultContext ctx = new EffectResultContext();
         if (effect.getEffectType() == RogueEffect.EffectType.ONESHOT) {
             effect.applyEffect(currentRun, ctx);
-            EventFlowOutcome triggerOutcome = handleEventTrigger(eventNode, ctx, currentRun);
+            EventFlowOutcome triggerOutcome = handleEffectResultContext(eventNode, ctx, currentRun);
             if (triggerOutcome != EventFlowOutcome.COMPLETE_EVENT) {
                 return triggerOutcome;
             }
@@ -120,7 +120,7 @@ class NodeEventHelper {
         return EventFlowOutcome.COMPLETE_EVENT;
     }
 
-    private EventFlowOutcome handleEventTrigger(NodeEvent eventNode, EffectResultContext ctx, RogueRun currentRun) {
+    private EventFlowOutcome handleEffectResultContext(NodeEvent eventNode, EffectResultContext ctx, RogueRun currentRun) {
         if (ctx.trigger == null) {
             return EventFlowOutcome.COMPLETE_EVENT;
         }
@@ -142,8 +142,7 @@ class NodeEventHelper {
             case MOVE:
                 return handleEventMove(ctx, currentRun);
             case CARD_REMOVAL:
-                handleEventCardRemoval(ctx, currentRun);
-                return EventFlowOutcome.COMPLETE_EVENT;
+                return handleEventCardRemoval(ctx, currentRun);
             case CARD_ADDITION:
                 handleEventCardAddition(ctx, currentRun);
                 return EventFlowOutcome.COMPLETE_EVENT;
@@ -187,19 +186,19 @@ class NodeEventHelper {
         return EventFlowOutcome.DO_NOT_COMPLETE_EVENT;
     }
 
-    private void handleEventCardRemoval(EffectResultContext ctx, RogueRun currentRun) {
-        List<PaperCard> candidateCards = currentRun.getSelectableDeckCards(null);
-        int removeCount = Math.min(ctx.removeCount, candidateCards.size());
-        if (removeCount <= 0) {
-            return;
+    private EventFlowOutcome handleEventCardRemoval(EffectResultContext ctx, RogueRun currentRun) {
+        int removeMaxCount = Math.min(ctx.cardSelectionMaxCount, getCandidateCardCount(ctx));
+        int removeMinCount = Math.min(ctx.cardSelectionMinCount, removeMaxCount);
+        if (removeMaxCount <= 0) {
+            return EventFlowOutcome.COMPLETE_EVENT;
         }
 
         List<PaperCard> removed = new CardSelectionDialog(
             "Card Selection",
-            "Choose " + removeCount + " cards to remove.",
-            candidateCards, removeCount, removeCount).show();
-        if (removed.isEmpty()) {
-            return;
+            getCardRemovalSubtitle(removeMinCount, removeMaxCount),
+            ctx.candidateCards, removeMinCount, removeMaxCount).show();
+        if (removed.size() < removeMinCount) {
+            return EventFlowOutcome.DO_NOT_COMPLETE_EVENT;
         }
 
         for (PaperCard card : removed) {
@@ -207,17 +206,24 @@ class NodeEventHelper {
         }
         ctx.removedCards = removed;
 
-        if (ctx.drawCount > 0) {
-            List<PaperCard> added = currentRun.getSelectedRogueDeck().drawRewardOptions(ctx.drawCount, null);
-            currentRun.addCardsToDeck(added, false);
-            currentRun.getSelectedRogueDeck().removeFromCardPools(added);
-            ctx.addedCards = added;
+        if (ctx.replacementCards != null && !ctx.replacementCards.isEmpty()) {
+            currentRun.addCardsToDeck(ctx.replacementCards, false);
+            if (currentRun.getSelectedRogueDeck() != null) {
+                currentRun.getSelectedRogueDeck().removeFromCardPools(ctx.replacementCards);
+            }
+            ctx.addedCards.addAll(ctx.replacementCards);
         }
+        if (ctx.replacementCarryCard != null && ctx.replacementCarryCard.card() != null) {
+            currentRun.addCarryCard(ctx.replacementCarryCard.card(), ctx.replacementCarryCard.type(),
+                ctx.replacementCarryCard.sourceId());
+            ctx.addedCards.add(ctx.replacementCarryCard.card());
+        }
+        return EventFlowOutcome.COMPLETE_EVENT;
     }
 
     private void handleEventCardAddition(EffectResultContext ctx, RogueRun currentRun) {
-        int addMaxCount = Math.min(ctx.addMaxCount, getCandidateCardCount(ctx));
-        int addMinCount = Math.min(ctx.addMinCount, addMaxCount);
+        int addMaxCount = Math.min(ctx.cardSelectionMaxCount, getCandidateCardCount(ctx));
+        int addMinCount = Math.min(ctx.cardSelectionMinCount, addMaxCount);
         if (addMaxCount <= 0) {
             return;
         }
@@ -258,6 +264,13 @@ class NodeEventHelper {
             return addMaxCount == 1 ? "Choose 1 card to add." : "Choose " + addMaxCount + " cards to add.";
         }
         return "Choose up to " + addMaxCount + " cards to add.";
+    }
+
+    private String getCardRemovalSubtitle(int removeMinCount, int removeMaxCount) {
+        if (removeMinCount == removeMaxCount) {
+            return removeMaxCount == 1 ? "Choose 1 card to remove." : "Choose " + removeMaxCount + " cards to remove.";
+        }
+        return "Choose up to " + removeMaxCount + " cards to remove.";
     }
 
     private void showEventResult(RogueEvent.EventChoice choice, EffectResultContext ctx) {

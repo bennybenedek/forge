@@ -92,6 +92,17 @@ public enum RogueEvent {
                 EventEffect.DRIFTED_STEAL)
         )),
 
+    ETERNAL_CRUSADE("Eternal Crusade",
+        "Smoke rolls through the shattered outpost as armored giants march toward the front lines without a word. Beneath the failing lumen lights, prayers echo through the halls while you hear something wounded and hungry clawing in the dark.",
+        List.of(
+            new EventChoice("Secure Specimen", "The containment seals groan, then fail on your terms alone. What emerges is obedient enough for now.",
+                EventEffect.ETERNAL_CRUSADE_SECURE_SPECIMEN),
+            new EventChoice("Join Space Marines", "You kneel with the crusade, and ceramite discipline hardens every battle still ahead.",
+                EventEffect.ETERNAL_CRUSADE_JOIN_SPACE_MARINES),
+            new EventChoice("Offer Sacrifice", "The throne drinks deep, and in the hush that follows, its ancient engines stir to life beside you.",
+                EventEffect.ETERNAL_CRUSADE_OFFER_SACRIFICE)
+        )),
+
     FINAL_PREPARATIONS("Final Preparations",
         "At the edge of the world, crystal light spills across the city, still glowing as if nothing could ever end. Mercenaries laugh over cheap drinks and weary travelers barter for one last advantage. Every smile carries the quiet knowledge that by morning, you and half these faces may be gone.",
         List.of(

@@ -71,7 +71,10 @@ public interface RogueEffect {
     default String getPreviewCardName() { return TextHelper.extractFirstCardName(getRawDescription()); }
 
     /** Optional shared card-pool filter for effects that repeatedly use one DB-backed card selection rule. */
-    default Predicate<PaperCard> getCardFilter() { return null; }
+    default Predicate<PaperCard> getDBCardsFilter() { return null; }
+
+    /** Optional shared deck filter for effects that repeatedly use one deck-card selection rule. */
+    default Predicate<PaperCard> getDeckCardFilter() { return card -> true; }
 
     /** Number of charges for CONSUME effects at the given rank. -1 = permanent (default). */
     default int getChargesForRank(int rank) { return -1; }
@@ -185,10 +188,22 @@ public interface RogueEffect {
         setCandidateCardsFromCollection(ctx, collection, minCount, maxCount, null);
     }
 
-    default void selectCardsFromDeck(EffectResultContext ctx, int removeCount, int drawCount) {
-        ctx.trigger = EffectResultContext.ActionTriggerType.CARD_REMOVAL;
-        ctx.removeCount = removeCount;
-        ctx.drawCount = drawCount;
+    default void selectCardsFromDeck(RogueRun run, EffectResultContext ctx, Predicate<PaperCard> filter,
+        int removeMinCount, int removeMaxCount, List<PaperCard> replacementCards,
+        EffectResultContext.CarryCardReward replacementCarryCard) {
+        List<PaperCard> candidateCards = run.getSelectableDeckCards(filter);
+        if (candidateCards.isEmpty()) {
+            return;
+        }
+
+        ctx.candidateCards = candidateCards;
+        ctx.cardSelectionMinCount = Math.min(removeMinCount, candidateCards.size());
+        ctx.cardSelectionMaxCount = Math.min(removeMaxCount, candidateCards.size());
+        ctx.replacementCards = replacementCards;
+        ctx.replacementCarryCard = replacementCarryCard;
+        if (ctx.cardSelectionMaxCount > 0) {
+            ctx.trigger = EffectResultContext.ActionTriggerType.CARD_REMOVAL;
+        }
     }
 
     default void openCustomBazaar(EffectResultContext ctx, String title, List<PaperCard> inventory, Map<String, Integer> priceOverrides) {
@@ -298,9 +313,9 @@ public interface RogueEffect {
         }
 
         ctx.candidateCards = candidates;
-        ctx.addMinCount = Math.min(minCount, candidates.size());
-        ctx.addMaxCount = Math.min(maxCount, candidates.size());
-        if (ctx.addMaxCount > 0) {
+        ctx.cardSelectionMinCount = Math.min(minCount, candidates.size());
+        ctx.cardSelectionMaxCount = Math.min(maxCount, candidates.size());
+        if (ctx.cardSelectionMaxCount > 0) {
             ctx.trigger = EffectResultContext.ActionTriggerType.CARD_ADDITION;
         }
     }
