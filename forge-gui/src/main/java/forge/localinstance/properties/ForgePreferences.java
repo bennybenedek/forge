@@ -255,10 +255,11 @@ public class ForgePreferences extends PreferencesStore<ForgePreferences.FPref> {
         PRELOAD_CUSTOM_DRAFTS ("false"),
 
         DECK_DEFAULT_CARD_LIMIT ("4"),
+        DECKGEN_CARDBASED ("true"),
         DECKGEN_SINGLETONS ("false"),
         DECKGEN_ARTIFACTS ("false"),
         DECKGEN_NOSMALL ("false"),
-        DECKGEN_CARDBASED ("true"),
+        DECKGEN_MAXIMUM_COMMANDER_BRACKET("5"),
 
         PHASE_AI_UPKEEP ("false"),
         PHASE_AI_DRAW ("false"),
@@ -285,7 +286,6 @@ public class ForgePreferences extends PreferencesStore<ForgePreferences.FPref> {
         PHASE_HUMAN_MAIN2 ("true"),
         PHASE_HUMAN_EOT ("false"),
         PHASE_HUMAN_CLEANUP ("false"),
-        PROMPT_FOR_AUTOSELL ("true"),
 
         ZONE_LOC_HUMAN_HAND(""),
         ZONE_LOC_HUMAN_LIBRARY(""),
@@ -325,12 +325,16 @@ public class ForgePreferences extends PreferencesStore<ForgePreferences.FPref> {
         SHORTCUT_YIELD_AUTO_PASS ("80"),
         SHORTCUT_MACRO_RECORD ("16 82"),
         SHORTCUT_MACRO_NEXT_ACTION ("16 50"),
+        SHORTCUT_MACRO_REPEAT_ACTIONS ("16 51"),
         SHORTCUT_CARD_ZOOM("90"),
         SHORTCUT_SHOWHOTKEYS("72"),
         SHORTCUT_PANELTABS("17 84"),
         SHORTCUT_CARDOVERLAYS("17 79"),
 
-        LAST_IMPORTED_CUBE_ID("");
+        LAST_IMPORTED_CUBE_ID(""),
+
+        PROMPT_FOR_AUTOSELL ("true"),
+        ADV_COMMANDER_AUTOSELL_VARIANT("true");
 
         private final String strDefaultVal;
 

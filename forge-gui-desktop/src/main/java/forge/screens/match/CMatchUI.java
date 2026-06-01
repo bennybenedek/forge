@@ -74,7 +74,6 @@ import forge.gui.FThreads;
 import forge.gui.GuiBase;
 import forge.gui.GuiChoose;
 import forge.gui.GuiDialog;
-import forge.gui.interfaces.IGuiGame.OrderResult;
 import forge.gui.GuiUtils;
 import forge.gui.MenuScroller;
 import forge.gui.SOverlayUtils;
@@ -295,6 +294,10 @@ public final class CMatchUI
     }
     CPrompt getCPrompt() {
         return cPrompt;
+    }
+    /** True if either prompt input button (OK/Cancel) is currently enabled. */
+    public boolean isInputButtonEnabled() {
+        return view.getBtnOK().isEnabled() || view.getBtnCancel().isEnabled();
     }
     public CStack getCStack() {
         return cStack;
@@ -536,7 +539,7 @@ public final class CMatchUI
                 if (isNetGame()) {
                     netLog.debug("updateHand for player {}, vHand={}, handSize={}",
                             owner.getId(), (vHand != null ? "exists" : "NULL"),
-                            (owner.getHand() != null ? String.valueOf(owner.getHand().size()) : "null"));
+                            String.valueOf(owner.getHand().size()));
                 }
                 if (vHand != null) {
                     vHand.getLayoutControl().updateHand();
@@ -655,12 +658,8 @@ public final class CMatchUI
         // update zones on tabletop and floating zones - non-selectable cards may be rendered differently
         FThreads.invokeInEdtNowOrLater(() -> {
             for (final PlayerView p : getGameView().getPlayers()) {
-                if (p.getCards(ZoneType.Battlefield) != null) {
-                    updateCards(isNetGame() ? p.getCards(ZoneType.Battlefield).threadSafeIterable() : p.getCards(ZoneType.Battlefield));
-                }
-                if (p.getCards(ZoneType.Hand) != null) {
-                    updateCards(isNetGame() ? p.getCards(ZoneType.Hand).threadSafeIterable() : p.getCards(ZoneType.Hand));
-                }
+                updateCardsNetSafe(p.getCards(ZoneType.Battlefield));
+                updateCardsNetSafe(p.getCards(ZoneType.Hand));
             }
             FloatingZone.refreshAll();
         });
@@ -672,12 +671,8 @@ public final class CMatchUI
         // update zones on tabletop and floating zones - non-selectable cards may be rendered differently
         FThreads.invokeInEdtNowOrLater(() -> {
             for (final PlayerView p : getGameView().getPlayers()) {
-                if (p.getCards(ZoneType.Battlefield) != null) {
-                    updateCards(isNetGame() ? p.getCards(ZoneType.Battlefield).threadSafeIterable() : p.getCards(ZoneType.Battlefield));
-                }
-                if (p.getCards(ZoneType.Hand) != null) {
-                    updateCards(isNetGame() ? p.getCards(ZoneType.Hand).threadSafeIterable() : p.getCards(ZoneType.Hand));
-                }
+                updateCardsNetSafe(p.getCards(ZoneType.Battlefield));
+                updateCardsNetSafe(p.getCards(ZoneType.Hand));
             }
             FloatingZone.refreshAll();
             FloatingZone.clearAllHotkeyAffordance();
@@ -697,9 +692,7 @@ public final class CMatchUI
         super.refreshField();
         FThreads.invokeInEdtNowOrLater(() -> {
             for (final PlayerView p : getGameView().getPlayers()) {
-                if (p.getCards(ZoneType.Battlefield) != null) {
-                    updateCards(isNetGame() ? p.getCards(ZoneType.Battlefield).threadSafeIterable() : p.getCards(ZoneType.Battlefield));
-                }
+                updateCardsNetSafe(p.getCards(ZoneType.Battlefield));
             }
             FloatingZone.refreshAll();
         });
@@ -810,10 +803,14 @@ public final class CMatchUI
     @Override
     public void updateButtons(final PlayerView owner, final String label1, final String label2, final boolean enable1, final boolean enable2, final boolean focus1) {
         final FButton btn1 = view.getBtnOK(), btn2 = view.getBtnCancel();
-        btn1.setText(label1);
-        btn2.setText(label2);
+        final boolean macroReplaying = getGameController() != null && getGameController().macros().isReplaying();
+        final boolean actualEnable1 = macroReplaying ? false : enable1;
+        final boolean actualEnable2 = macroReplaying ? true : enable2;
+        final boolean actualFocus1 = macroReplaying ? false : focus1;
+        btn1.setText(macroReplaying ? "" : label1);
+        btn2.setText(macroReplaying ? Localizer.getInstance().getMessage("lblCancel") : label2);
 
-        final FButton toFocus = enable1 && focus1 ? btn1 : (enable2 ? btn2 : null);
+        final FButton toFocus = actualEnable1 && actualFocus1 ? btn1 : (actualEnable2 ? btn2 : null);
 
         //pfps This seems wrong so I've commented it out for now and put a replacement in the runnable
         // Remove focusable so the right button grabs focus properly
@@ -826,10 +823,10 @@ public final class CMatchUI
             // The only button that is focusable is the enabled default button
             // This prevents the user from somehow focusing on on some other button
             // and then using the keyboard to try to select it
-            btn1.setEnabled(enable1);
-            btn2.setEnabled(enable2);
-            btn1.setFocusable(enable1 && focus1);
-            btn2.setFocusable(enable2 && !focus1);
+            btn1.setEnabled(actualEnable1);
+            btn2.setEnabled(actualEnable2);
+            btn1.setFocusable(actualEnable1 && actualFocus1);
+            btn2.setFocusable(actualEnable2 && !actualFocus1);
             // ensure we don't steal focus from an overlay
             if (toFocus != null && !FNetOverlay.SINGLETON_INSTANCE.getTxtInput().hasFocus() ) {
                 toFocus.requestFocus(); // focus here even if another window has focus - shouldn't have to do it this way but some popups grab window focus
@@ -841,6 +838,7 @@ public final class CMatchUI
         } else {
             FThreads.invokeInEdtAndWait(focusRoutine);
         }
+        getCDock().refreshMacroButtons();
     }
 
     @Override
@@ -1055,19 +1053,13 @@ public final class CMatchUI
         return null; //delay ability until choice made
     }
 
-    @Override
-    public void showPromptMessage(final PlayerView playerView, final String message) {
-        cancelWaitingTimer();
-        cPrompt.setMessage(message);
-        notePromptMessage(message);
-    }
     public void showPromptMessageNoCancel(final PlayerView playerView, final String message) {
-        cPrompt.setMessage(message);
+        cPrompt.setMessage(message, null);
         notePromptMessage(message);
     }
 
     @Override
-    public void showCardPromptMessage(PlayerView playerView, String message, CardView card) {
+    public void showPromptMessage(PlayerView playerView, String message, CardView card) {
         cancelWaitingTimer();
         cPrompt.setMessage(message, card);
         notePromptMessage(message);

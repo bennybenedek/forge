@@ -98,3 +98,5 @@ __pycache__
 # Ignore Claude configuration
 nul
 .claude
+# EDHREC commander matrix tool intermediates
+forge-gui/tools/build
