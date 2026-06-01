@@ -115,7 +115,7 @@ public interface RogueEffect {
         for (PaperCard card : added) {
             run.addCarryCard(card, type, getId());
         }
-        ctx.addedCards = added;
+        ctx.addedCards.addAll(added);
     }
 
     default void addCardsToDeck(RogueRun run, EffectResultContext ctx, Predicate<PaperCard> filter,
@@ -135,7 +135,7 @@ public interface RogueEffect {
         }
 
         run.addCardsToDeck(added, false);
-        ctx.addedCards = added;
+        ctx.addedCards.addAll(added);
     }
 
     default void removeCardsFromDeck(RogueRun run, EffectResultContext ctx, Predicate<PaperCard> filter,
@@ -206,7 +206,7 @@ public interface RogueEffect {
         }
     }
 
-    default void openCustomBazaar(EffectResultContext ctx, String title, List<PaperCard> inventory, Map<String, Integer> priceOverrides) {
+    default void triggerCustomBazaar(EffectResultContext ctx, String title, List<PaperCard> inventory, Map<String, Integer> priceOverrides) {
         BazaarContext bazaarContext = new BazaarContext();
         bazaarContext.title = title;
         bazaarContext.inventory.addAll(inventory);
@@ -217,6 +217,36 @@ public interface RogueEffect {
 
         ctx.bazaarContext = bazaarContext;
         ctx.trigger = EffectResultContext.ActionTriggerType.BAZAAR;
+    }
+
+    default void triggerChest(EffectResultContext ctx) {
+        ctx.trigger = EffectResultContext.ActionTriggerType.CHEST;
+    }
+
+    default void triggerSanctum(EffectResultContext ctx) {
+        ctx.trigger = EffectResultContext.ActionTriggerType.SANCTUM;
+    }
+
+    default void triggerPlanebound(EffectResultContext ctx, RoguePlaneboundType type) {
+        List<RoguePlanebound> all = RogueConfig.loadPlanebounds();
+        all.removeIf(p -> p.type() != type);
+        Collections.shuffle(all);
+        if (all.isEmpty()) {
+            return;
+        }
+
+        RoguePlanebound opponent = all.get(0);
+        List<PaperCard> planes = RogueConfig.getAllPlanes().toFlatList();
+        Collections.shuffle(planes);
+        String randomPlaneName = planes.isEmpty() ? opponent.planeName() : planes.get(0).getName();
+
+        ctx.planebound = new RoguePlanebound(randomPlaneName, opponent.planeboundName(),
+            opponent.deckPath(), opponent.avatarIndex(), opponent.type());
+        ctx.trigger = EffectResultContext.ActionTriggerType.PLANEBOUND;
+    }
+
+    default int rollD20() {
+        return MyRandom.getRandom().nextInt(20) + 1;
     }
 
     default void gainWound(RogueRun run, EffectResultContext ctx) {

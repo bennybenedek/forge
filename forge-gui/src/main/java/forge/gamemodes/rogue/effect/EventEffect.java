@@ -10,7 +10,6 @@ import forge.card.CardRulesPredicates;
 import forge.item.PaperCard;
 import forge.item.PaperCardPredicates;
 import forge.util.MyRandom;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Predicate;
@@ -71,19 +70,7 @@ public enum EventEffect implements RogueEffect {
         EffectType.ONESHOT) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            List<RoguePlanebound> all = RogueConfig.loadPlanebounds();
-            all.removeIf(p -> p.type() != RoguePlaneboundType.NORMAL);
-            Collections.shuffle(all);
-            if (all.isEmpty()) return;
-            RoguePlanebound opponent = all.get(0);
-
-            List<PaperCard> planes = RogueConfig.getAllPlanes().toFlatList();
-            Collections.shuffle(planes);
-            String randomPlaneName = planes.isEmpty() ? opponent.planeName() : planes.get(0).getName();
-
-            ctx.planebound = new RoguePlanebound(randomPlaneName, opponent.planeboundName(),
-                opponent.deckPath(), opponent.avatarIndex(), opponent.type());
-            ctx.trigger = EffectResultContext.ActionTriggerType.PLANEBOUND;
+            triggerPlanebound(ctx, RoguePlaneboundType.NORMAL);
         }
     },
     AMBUSH_BRIBE("ambush_bribe", "Lose 4 Gold", "You lose 4 gold.",
@@ -131,8 +118,8 @@ public enum EventEffect implements RogueEffect {
         }
     },
     AMONG_MURDERERS_HIRE("among_murderers_hire", "Hire",
-        "Pay 3 {{Gold}}. Choose up to 5 out of 20 Detectives to add to your deck.",
-        EffectType.ONESHOT, 3) {
+        "Pay 4 {{Gold}}. Choose up to 5 out of 20 Detectives to add to your deck.",
+        EffectType.ONESHOT, 4) {
         @Override
         public Predicate<PaperCard> getDBCardsFilter() {
             return PaperCardPredicates.fromRules(
@@ -212,7 +199,7 @@ public enum EventEffect implements RogueEffect {
 
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            openCustomBazaar(ctx, "Woodland Caravan",
+            triggerCustomBazaar(ctx, "Woodland Caravan",
                 run.getAllCardsForActiveCommander(getDBCardsFilter()), null);
         }
     },
@@ -498,18 +485,18 @@ public enum EventEffect implements RogueEffect {
             return isChoiceAvailable(run) ? null : "You need at least 3 creatures in your deck.";
         }
     },
-    FIND_CHEST("find_chest", "Hidden Chest", "You find a hidden {{Chest}}.",
+    SATCHEL_OPEN("satchel_open", "Open the Satchel", "You find a hidden {{Chest}}.",
         EffectType.ONESHOT) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            ctx.trigger = EffectResultContext.ActionTriggerType.CHEST;
+            triggerChest(ctx);
         }
     },
-    FIND_SANCTUM("find_sanctum", "Hidden Sanctum", "You discover a hidden {{Sanctum}}.",
+    SHRINE_KNEEL("shrine_kneel", "Kneel", "You discover a hidden {{Sanctum}}.",
         EffectType.ONESHOT) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            ctx.trigger = EffectResultContext.ActionTriggerType.SANCTUM;
+            triggerSanctum(ctx);
         }
     },
     FINAL_PREPARATIONS_LEARN_SUMMONING("final_preparations_learn_summoning", "Learn Summoning",
@@ -546,7 +533,7 @@ public enum EventEffect implements RogueEffect {
 
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            openCustomBazaar(ctx, "Last-Stop Smithy",
+            triggerCustomBazaar(ctx, "Last-Stop Smithy",
                 run.getAllCardsForActiveCommander(getDBCardsFilter()), null);
         }
     },
@@ -581,7 +568,7 @@ public enum EventEffect implements RogueEffect {
                     BazaarPricing.getCardPrice(card) * 2);
             }
 
-            openCustomBazaar(ctx, "Gamechanger Shop", gamechangerCards, priceOverrides);
+            triggerCustomBazaar(ctx, "Gamechanger Shop", gamechangerCards, priceOverrides);
         }
     },
     GROUND_ZERO_SPECIAL("ground_zero_special", "You're S.P.E.C.I.A.L.", "Add all 7 Bobblehead artifacts to your deck. ![[Charisma Bobblehead|PIP|1]] ![[Intelligence Bobblehead|PIP|1]] ![[Strength Bobblehead|PIP|1]]",
@@ -781,6 +768,91 @@ public enum EventEffect implements RogueEffect {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             addCarryCards(run, ctx, getDBCardsFilter(), 1, CarryCardType.FELLOW, List.of());
+        }
+    },
+    LOST_NOT_FORGOTTEN_PARTY("lost_not_forgotten_party", "Stumble Into Party",
+        "Add a random Wizard, Warrior, Cleric and Rogue to your deck.",
+        EffectType.ONESHOT) {
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            addCardsToDeck(run, ctx, getWizardFilter(), 1, null, null);
+            addCardsToDeck(run, ctx, getWarriorFilter(), 1, null, null);
+            addCardsToDeck(run, ctx, getClericFilter(), 1, null, null);
+            addCardsToDeck(run, ctx, getRogueFilter(), 1, null, null);
+        }
+
+        private Predicate<PaperCard> getWizardFilter() {
+            return PaperCardPredicates.fromRules(
+                CardRulesPredicates.IS_CREATURE.and(CardRulesPredicates.subType("Wizard")));
+        }
+
+        private Predicate<PaperCard> getWarriorFilter() {
+            return PaperCardPredicates.fromRules(
+                CardRulesPredicates.IS_CREATURE.and(CardRulesPredicates.subType("Warrior")));
+        }
+
+        private Predicate<PaperCard> getClericFilter() {
+            return PaperCardPredicates.fromRules(
+                CardRulesPredicates.IS_CREATURE.and(CardRulesPredicates.subType("Cleric")));
+        }
+
+        private Predicate<PaperCard> getRogueFilter() {
+            return PaperCardPredicates.fromRules(
+                CardRulesPredicates.IS_CREATURE.and(CardRulesPredicates.subType("Rogue")));
+        }
+    },
+    LOST_NOT_FORGOTTEN_LEVEL_UP("lost_not_forgotten_level_up", "Level Up",
+        "Pay 4 {{Gold}}. Choose up to 5 Classes to add to your deck.",
+        EffectType.ONESHOT, 4) {
+        @Override
+        public Predicate<PaperCard> getDBCardsFilter() {
+            return PaperCardPredicates.fromRules(CardRulesPredicates.subType("Class"));
+        }
+
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            run.spendGold(getGoldCost());
+            selectCardsForDeck(run, ctx, getDBCardsFilter(), 20, 0, 5, null);
+        }
+
+        @Override
+        public boolean isChoiceAvailable(RogueRun run) {
+            return run.hasEnoughGold(getGoldCost());
+        }
+
+        @Override
+        public String getUnavailableReason(RogueRun run) {
+            return run.hasEnoughGold(getGoldCost()) ? null : getInsufficientGoldReason();
+        }
+    },
+    LOST_NOT_FORGOTTEN_VENTURE_DEEPER("lost_not_forgotten_venture_deeper", "Venture deeper",
+        "Roll a d20.\n1: Trap - Gain a random {{Wound}}\n2-9: Enemies - Fight a random Planebound on a random Plane.\n10-19: Find Loot - Gain the {{Item}} [[Treasure Chest]].\n20: Find Treasure Vault - Gain 20 {{Gold}} and find a {{Chest}}.",
+        EffectType.ONESHOT) {
+        @Override
+        public Predicate<PaperCard> getDBCardsFilter() {
+            return card -> card.getName().equals("Treasure Chest");
+        }
+
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            int result = rollD20();
+            if (result == 1) {
+                gainWound(run, ctx);
+                ctx.resultTextOverride = "A hidden plate sinks beneath your boot, and the dungeon answers with pain that lingers long after the darts fall silent.";
+                return;
+            }
+            if (result <= 9) {
+                triggerPlanebound(ctx, RoguePlaneboundType.NORMAL);
+                return;
+            }
+            if (result <= 19) {
+                addCarryCards(run, ctx, getDBCardsFilter(), 1, CarryCardType.ITEM, List.of());
+                ctx.resultTextOverride = "Behind a false stone you uncover an old prize, still waiting for hands bold enough to claim it.";
+                return;
+            }
+
+            run.addGold(20);
+            triggerChest(ctx);
         }
     },
     LOST_DEPART("lost_depart", "Lost Connection - Depart", "You may not cast your Commander in the next match.",

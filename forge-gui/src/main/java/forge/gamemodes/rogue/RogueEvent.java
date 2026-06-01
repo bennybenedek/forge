@@ -156,6 +156,17 @@ public enum RogueEvent {
                 EventEffect.INFAMOUS_JUNCTION_ROPE_CATTLE)
         )),
 
+    LOST_NOT_FORGOTTEN("Lost, But not Forgotten",
+        "Torchlight gutters in the dungeon's stale air as the corridors close around you, slick with age, moss, and old blood. Somewhere ahead, chains rattle, stones shift, and the dark promises either treasure or a grave no one will remember.",
+        List.of(
+            new EventChoice("Stumble Into Party", "Four seasoned adventurers emerge from the gloom as though they had been tracking your steps for miles.",
+                EventEffect.LOST_NOT_FORGOTTEN_PARTY),
+            new EventChoice("Level Up", "By torchlight and hard-won instinct, you refine a few more tricks fit for the depths below.",
+                EventEffect.LOST_NOT_FORGOTTEN_LEVEL_UP),
+            new EventChoice("Venture deeper", "You press onward into the dark, where every chamber holds either fortune or ruin.",
+                EventEffect.LOST_NOT_FORGOTTEN_VENTURE_DEEPER)
+        )),
+
     LOST_CONNECTION("Lost",
         "Your connection to your spark flickers. You reach for your Commander's presence, but the link has gone cold.",
         List.of(
@@ -243,14 +254,14 @@ public enum RogueEvent {
         "Hidden beneath a crumbled pillar, you find a satchel of cards bound in leather; remnants of a Planeswalker who walked here before you.",
         List.of(
             new EventChoice("Open the Satchel", "You find a hidden chest.",
-                EventEffect.FIND_CHEST)
+                EventEffect.SATCHEL_OPEN)
         )),
 
     SHRINE("Shrine",
         "A crumbling shrine pulses faintly with restorative energy. As you kneel, you immediately feel its soothing powers.",
         List.of(
             new EventChoice("Kneel", "You discover a hidden Sanctum.",
-                EventEffect.FIND_SANCTUM)
+                EventEffect.SHRINE_KNEEL)
         )),
 
     THORNS("Thorns",
