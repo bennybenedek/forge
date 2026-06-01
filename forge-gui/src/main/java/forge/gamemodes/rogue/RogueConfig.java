@@ -21,6 +21,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.Charset;
 import java.util.*;
 import java.util.function.Predicate;
+import org.checkerframework.checker.nullness.qual.NonNull;
 
 /**
  * Configuration for Rogue Commander mode.
@@ -297,15 +298,27 @@ public class RogueConfig {
     }
 
     public static List<PaperCard> getAllCards(Predicate<PaperCard> filter) {
-        Predicate<PaperCard> rogueBaseFilter =
-            card -> !card.getRules().isCustom()
-                && !EXCLUDED_RANDOM_DRAW_SET_CODES.contains(card.getEdition());
-        Predicate<PaperCard> effectiveFilter =
-            filter != null ? rogueBaseFilter.and(filter) : rogueBaseFilter;
+        Predicate<PaperCard> effectiveFilter = getAllFilters(filter);
 
         return FModel.getMagicDb().getCommonCards().getUniqueCards().stream()
                 .filter(effectiveFilter)
                 .toList();
+    }
+
+    private static @NonNull Predicate<PaperCard> getAllFilters(Predicate<PaperCard> filter) {
+        Predicate<PaperCard> rogueBaseFilter =
+            card -> !card.getRules().isCustom()
+                && !EXCLUDED_RANDOM_DRAW_SET_CODES.contains(card.getEdition());
+        Predicate<PaperCard> nonDigitalFilter =
+            card -> {
+                CardEdition edition = db.getCardEdition(card.getEdition());
+                return !card.isRebalanced()
+                    && edition != null
+                    && edition.getType() != CardEdition.Type.ONLINE;
+            };
+        return filter != null
+                ? rogueBaseFilter.and(nonDigitalFilter).and(filter)
+                : rogueBaseFilter.and(nonDigitalFilter);
     }
 
     /**
