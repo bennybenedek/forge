@@ -36,6 +36,7 @@ public class RogueConfig {
     // Cache all plane cards to avoid reloading them repeatedly
     private static CardPool cachedPlanarPool = null;
     private static List<PaperCard> cachedGamechangerCards = null;
+    private static List<PaperCard> cachedCommanderBanlistCards = null;
 
     private static boolean rogueCardsLoaded = false;
 
@@ -220,6 +221,31 @@ public class RogueConfig {
             }
         }
         return new ArrayList<>(cachedGamechangerCards);
+    }
+
+    /**
+     * Load the shared Commander banlist card pool from res/rogue/util/commander_banlist.dck.
+     * Returns a cached copy to avoid repeated deck file parsing.
+     */
+    public static List<PaperCard> getCommanderBanlistCards() {
+        if (cachedCommanderBanlistCards == null) {
+            File deckFile = new File(ForgeConstants.RES_DIR, "rogue/util/commander_banlist.dck");
+            if (!deckFile.exists()) {
+                System.err.println("Warning: Commander banlist deck not found: "
+                    + deckFile.getAbsolutePath());
+                cachedCommanderBanlistCards = List.of();
+            } else {
+                Deck deck = DeckSerializer.fromFile(deckFile);
+                if (deck == null) {
+                    System.err.println("Warning: Failed to load Commander banlist deck from "
+                        + deckFile.getAbsolutePath());
+                    cachedCommanderBanlistCards = List.of();
+                } else {
+                    cachedCommanderBanlistCards = new ArrayList<>(deck.getMain().toFlatList());
+                }
+            }
+        }
+        return new ArrayList<>(cachedCommanderBanlistCards);
     }
 
     /**

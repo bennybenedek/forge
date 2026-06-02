@@ -259,6 +259,12 @@ public class RogueRun {
         return filterDuplicateCards(commanderLegalCards);
     }
 
+    public List<PaperCard> getBanlistCardsForActiveCommander() {
+        List<PaperCard> candidateCards = RogueConfig.getCommanderBanlistCards();
+        List<PaperCard> commanderLegalCards = filterCardsByCommanderColorIdentity(candidateCards);
+        return filterDuplicateCards(commanderLegalCards);
+    }
+
     // Deck management
     public List<PaperCard> getSelectableDeckCards(Predicate<PaperCard> filter) {
         if (currentDeck == null) {

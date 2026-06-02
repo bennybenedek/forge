@@ -175,6 +175,73 @@ public enum EventEffect implements RogueEffect {
             addCarryCards(run, ctx, getDBCardsFilter(), 3, RogueRun.CarryCardType.SCROLL, List.of());
         }
     },
+    BREAKING_OLD_LAWS_DUPLICATE("breaking_the_old_laws_duplicate", "Duplicate",
+        "Lose 3 Life. Choose a card from your deck. Add 3 copies of the chosen card to your deck.",
+        EffectType.ONESHOT) {
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            List<PaperCard> candidateCards = run.getSelectableDeckCards(null);
+            if (candidateCards.isEmpty()) {
+                return;
+            }
+
+            run.loseLife(3);
+            selectCardsForDeck(ctx, candidateCards, 1, 1);
+            ctx.cardSelectionCopyCount = 3;
+        }
+    },
+    BREAKING_OLD_LAWS_BLACK_MARKET("breaking_the_old_laws_black_market", "Black Market",
+        "Shop from a selection of cards from the Commander Banlist at doubled prices.",
+        EffectType.ONESHOT) {
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            List<PaperCard> banlistCards = run.getBanlistCardsForActiveCommander();
+            if (banlistCards.isEmpty()) {
+                return;
+            }
+
+            var priceOverrides = new HashMap<String, Integer>();
+            for (PaperCard card : banlistCards) {
+                priceOverrides.put(card.getName(), BazaarPricing.getCardPrice(card) * 2);
+            }
+
+            triggerCustomBazaar(ctx, "Black Market", banlistCards, priceOverrides);
+        }
+    },
+    BREAKING_OLD_LAWS_PARTNER_UP("breaking_the_old_laws_partner_up", "Partner Up",
+        "Lose 4 {{Max. Life}}. Gain the {{Boon}} **Partnership**. ![[Event Boon - Partnership]] Choose 1 out of 20 Partners for your commander.",
+        EffectType.ONESHOT) {
+        @Override
+        public Predicate<PaperCard> getDBCardsFilter() {
+            return PaperCardPredicates.fromRules(
+                CardRulesPredicates.IS_CREATURE
+                    .and(CardRulesPredicates.IS_LEGENDARY)
+                    .and(CardRulesPredicates.hasKeyword("Partner")));
+        }
+
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            run.setMaxLife(run.getMaxLife() - 4);
+            run.addEventEffect(this);
+            ctx.addSection = DeckSection.Commander;
+            selectCardsForDeck(run, ctx, getDBCardsFilter(), 20, 1, 1, null);
+        }
+
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            RogueEffect.addCardToCommandZone("Event Boon - Partnership", human);
+        }
+
+        @Override
+        public boolean isChoiceAvailable(RogueRun run) {
+            return run.getMaxLife() > 4;
+        }
+
+        @Override
+        public String getUnavailableReason(RogueRun run) {
+            return isChoiceAvailable(run) ? null : "You don't have enough Max. Life.";
+        }
+    },
     BURROWED_BROWSE("burrowed_browse", "Browse",
         "Shop from a selection of Woodland creatures.",
         EffectType.ONESHOT) {
@@ -483,20 +550,6 @@ public enum EventEffect implements RogueEffect {
         @Override
         public String getUnavailableReason(RogueRun run) {
             return isChoiceAvailable(run) ? null : "You need at least 3 creatures in your deck.";
-        }
-    },
-    SATCHEL_OPEN("satchel_open", "Open the Satchel", "You find a hidden {{Chest}}.",
-        EffectType.ONESHOT) {
-        @Override
-        public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            triggerChest(ctx);
-        }
-    },
-    SHRINE_KNEEL("shrine_kneel", "Kneel", "You discover a hidden {{Sanctum}}.",
-        EffectType.ONESHOT) {
-        @Override
-        public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            triggerSanctum(ctx);
         }
     },
     FINAL_PREPARATIONS_LEARN_SUMMONING("final_preparations_learn_summoning", "Learn Summoning",
@@ -1065,6 +1118,20 @@ public enum EventEffect implements RogueEffect {
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             selectCardsFromDeck(run, ctx, PaperCardPredicates.fromRules(CardRulesPredicates.NOT_BASIC_LAND),
                 3, 3, null, null);
+        }
+    },
+    SATCHEL_OPEN("satchel_open", "Open the Satchel", "You find a hidden {{Chest}}.",
+        EffectType.ONESHOT) {
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            triggerChest(ctx);
+        }
+    },
+    SHRINE_KNEEL("shrine_kneel", "Kneel", "You discover a hidden {{Sanctum}}.",
+        EffectType.ONESHOT) {
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            triggerSanctum(ctx);
         }
     },
     THORNS_ENDURE("thorns_endure", "Gain Wound", "Gain a random {{Wound}}.",

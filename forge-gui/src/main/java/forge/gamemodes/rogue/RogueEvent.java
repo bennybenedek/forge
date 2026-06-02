@@ -51,6 +51,17 @@ public enum RogueEvent {
                 EventEffect.BENDING_STUDY)
         )),
 
+    BREAKING_THE_OLD_LAWS("Breaking the Old Laws",
+        "A horned figure waits beside a cracked monolith, tracing old commandments with one claw before laughing them into dust. \"All these laws, all these rules... for what?\" the demon asks. \"I think it's time for me to break these chains for you. Just for a little price.\"",
+        List.of(
+            new EventChoice("Duplicate", "The demon splits the chosen pattern three times over and leaves the copy's hunger in your hands.",
+                EventEffect.BREAKING_OLD_LAWS_DUPLICATE),
+            new EventChoice("Black Market", "Forbidden wares slide from hidden shelves while the demon names prices with a grin that promises regret.",
+                EventEffect.BREAKING_OLD_LAWS_BLACK_MARKET),
+            new EventChoice("Partner Up", "The pact scars your life away, but a second legend answers your command and the old rules fall with them.",
+                EventEffect.BREAKING_OLD_LAWS_PARTNER_UP)
+        )),
+
     BURROWED_INTO_TROUBLE("Burrowed into Trouble",
         "A trader's caravan creaks beneath the weight of iron cages. Squirrels, otters, raccoons, and other small woodland creatures peer out with wide, mournful eyes while the trader smiles and asks what price your pity will bear.",
         List.of(

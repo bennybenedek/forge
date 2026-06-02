@@ -11,6 +11,7 @@ import forge.gamemodes.rogue.path.NodeSanctum;
 import forge.gamemodes.rogue.path.RoguePathNode;
 import forge.item.PaperCard;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 class EffectResultHelper {
@@ -173,6 +174,13 @@ class EffectResultHelper {
                 currentRun.getCurrentDeck().getOrCreate(DeckSection.Commander).add(card);
             }
         } else {
+            if (ctx.cardSelectionCopyCount > 1) {
+                List<PaperCard> copiedCards = new ArrayList<>();
+                for (PaperCard card : added) {
+                    copiedCards.addAll(Collections.nCopies(ctx.cardSelectionCopyCount, card));
+                }
+                added = copiedCards;
+            }
             currentRun.addCardsToDeck(added, false);
         }
         ctx.addedCards = added;

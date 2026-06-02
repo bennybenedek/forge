@@ -32,6 +32,7 @@ public class EffectResultContext {
     public List<PaperCard> candidateCards;
     public int cardSelectionMinCount;
     public int cardSelectionMaxCount;
+    public int cardSelectionCopyCount = 1;
     public DeckSection addSection = DeckSection.Main;
     public boolean replaceCurrentCardsInAddSection;
     public List<PaperCard> replacementCards;
