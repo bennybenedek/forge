@@ -3,12 +3,14 @@ package forge.screens.home.rogue;
 import forge.item.PaperCard;
 import forge.toolbox.FLabel;
 import forge.toolbox.FSkin.SkinnedPanel;
+import forge.toolbox.FTextArea;
 import forge.toolbox.FTextPane;
 import forge.view.arcane.CardPanel;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
+import javax.swing.BorderFactory;
 import javax.swing.text.StyleConstants;
 import net.miginfocom.swing.MigLayout;
 
@@ -23,6 +25,9 @@ public class NodeResultPanel extends SkinnedPanel {
     private static final int CARD_SPACING = 12;
     private static final int MAX_CARDS_PER_ROW = 4;
     private static final int DEFAULT_MIN_WIDTH = 650;
+    private static final int PANEL_INSET = 10;
+    private static final int TEXT_WRAP_SAFETY_MARGIN = 20;
+    private static final int TEXT_RIGHT_PADDING = 8;
 
     private final List<ReadOnlyCardPanel> allCardPanels = new ArrayList<>();
     private CardUtil zoomUtil;
@@ -57,11 +62,23 @@ public class NodeResultPanel extends SkinnedPanel {
         super(new MigLayout("insets 10, gap 0, wrap", "[grow, center]", ""));
         setOpaque(false);
 
+        boolean hasCards = sections.stream().anyMatch(
+                s -> s.cards() != null && !s.cards().isEmpty());
+        int maxCardsInRow = sections.stream()
+                .filter(s -> s.cards() != null)
+                .mapToInt(s -> Math.min(s.cards().size(), MAX_CARDS_PER_ROW))
+                .max().orElse(0);
+        int desiredWidth = hasCards
+                ? Math.max(DEFAULT_MIN_WIDTH, maxCardsInRow * (CARD_WIDTH + CARD_SPACING) - CARD_SPACING + 40)
+                : DEFAULT_MIN_WIDTH;
+        desiredWidth = Math.max(desiredWidth, minWidth);
+        int textWidth = Math.max(1, desiredWidth - (PANEL_INSET * 2) - TEXT_WRAP_SAFETY_MARGIN);
+
         // Result text
-        FTextPane txtMessage = new FTextPane(message);
-        txtMessage.setFont(txtMessage.getFont().deriveFont(14f));
-        txtMessage.setTextAlignment(messageAlignment.styleConstant);
+        Component txtMessage = createMessageComponent(message, 14f, textWidth, messageAlignment);
         add(txtMessage, "w 100%!, ax center, gap 0 0 0 10px, wrap");
+
+        int desiredHeight = PANEL_INSET * 2 + txtMessage.getPreferredSize().height + 10;
 
         // Result sections
         for (CardSection section : sections) {
@@ -74,13 +91,13 @@ public class NodeResultPanel extends SkinnedPanel {
                         .fontStyle(Font.BOLD)
                         .build();
                 add(lblSection, "w 100%!, h 22px!, gap 5px 0 5px 3px, wrap");
+                desiredHeight += 22 + 10;
             }
 
             if (section.text() != null && !section.text().isBlank()) {
-                FTextPane txtSection = new FTextPane(section.text());
-                txtSection.setFont(txtSection.getFont().deriveFont(13f));
-                txtSection.setTextAlignment(MessageAlignment.LEFT.styleConstant);
-                add(txtSection, "w 100%!, gap 0 0 0 5px, wrap");
+                FTextArea txtSection = createWrappedTextArea(section.text(), 13f, textWidth);
+                add(txtSection, "w 100%!, ax center, gap 0 0 0 5px, wrap");
+                desiredHeight += txtSection.getPreferredSize().height + 5;
             }
 
             if (section.cards() != null && !section.cards().isEmpty()) {
@@ -96,33 +113,7 @@ public class NodeResultPanel extends SkinnedPanel {
                 }
 
                 add(cardRow, "ax center, wrap");
-            }
-        }
 
-        // Calculate preferred size based on full content.
-        boolean hasCards = sections.stream().anyMatch(
-                s -> s.cards() != null && !s.cards().isEmpty());
-        boolean hasSections = sections.stream().anyMatch(NodeResultPanel::hasContent);
-        int maxCardsInRow = sections.stream()
-                .filter(s -> s.cards() != null)
-                .mapToInt(s -> Math.min(s.cards().size(), MAX_CARDS_PER_ROW))
-                .max().orElse(0);
-        int desiredWidth = hasCards
-                ? Math.max(DEFAULT_MIN_WIDTH, maxCardsInRow * (CARD_WIDTH + CARD_SPACING) - CARD_SPACING + 40)
-                : DEFAULT_MIN_WIDTH;
-        int desiredHeight = 50; // message + padding
-        for (CardSection section : sections) {
-            if (!hasContent(section)) {
-                continue;
-            }
-
-            desiredHeight += hasLabel(section) ? 25 : 0;
-
-            if (section.text() != null && !section.text().isBlank()) {
-                desiredHeight += 35;
-            }
-
-            if (section.cards() != null && !section.cards().isEmpty()) {
                 int cardsPerRow = Math.min(section.cards().size(), MAX_CARDS_PER_ROW);
                 int rowCount = (int) Math.ceil(section.cards().size() / (double) cardsPerRow);
                 desiredHeight += rowCount * CARD_HEIGHT
@@ -130,14 +121,32 @@ public class NodeResultPanel extends SkinnedPanel {
                         + 10;
             }
         }
-        if (!hasSections) {
-            desiredHeight = 50; // text-only
-        }
-        desiredWidth = Math.max(desiredWidth, minWidth);
         desiredHeight = Math.max(desiredHeight, minHeight);
         Dimension size = new Dimension(desiredWidth, desiredHeight);
         setPreferredSize(size);
         setMinimumSize(size);
+    }
+
+    private static Component createMessageComponent(String text, float fontSize, int width,
+                                                    MessageAlignment alignment) {
+        if (alignment == MessageAlignment.CENTER) {
+            FTextPane textPane = new FTextPane(text);
+            textPane.setFont(textPane.getFont().deriveFont(fontSize));
+            textPane.setTextAlignment(alignment.styleConstant);
+            textPane.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, TEXT_RIGHT_PADDING));
+            textPane.setSize(width, Short.MAX_VALUE);
+            return textPane;
+        }
+
+        return createWrappedTextArea(text, fontSize, width);
+    }
+
+    private static FTextArea createWrappedTextArea(String text, float fontSize, int width) {
+        FTextArea textArea = new FTextArea(text);
+        textArea.setFont(textArea.getFont().deriveFont(fontSize));
+        textArea.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, TEXT_RIGHT_PADDING));
+        textArea.setSize(width, Short.MAX_VALUE);
+        return textArea;
     }
 
     private static boolean hasLabel(CardSection section) {

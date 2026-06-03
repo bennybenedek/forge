@@ -216,7 +216,7 @@ public enum EventEffect implements RogueEffect {
             return PaperCardPredicates.fromRules(
                 CardRulesPredicates.IS_CREATURE
                     .and(CardRulesPredicates.IS_LEGENDARY)
-                    .and(CardRulesPredicates.hasKeyword("Partner")));
+                    .and(rules -> rules.hasKeyword("Partner")));
         }
 
         @Override
