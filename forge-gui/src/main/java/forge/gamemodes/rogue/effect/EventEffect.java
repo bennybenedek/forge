@@ -624,7 +624,7 @@ public enum EventEffect implements RogueEffect {
             triggerCustomBazaar(ctx, "Gamechanger Shop", gamechangerCards, priceOverrides);
         }
     },
-    GROUND_ZERO_SPECIAL("ground_zero_special", "You're S.P.E.C.I.A.L.", "Add all 7 Bobblehead artifacts to your deck. ![[Charisma Bobblehead|PIP|1]] ![[Intelligence Bobblehead|PIP|1]] ![[Strength Bobblehead|PIP|1]]",
+    GROUND_ZERO_SPECIAL("ground_zero_special", "You're S.P.E.C.I.A.L.", "Add all 7 **Bobblehead** artifacts to your deck. ![[Charisma Bobblehead|PIP|1]] ![[Intelligence Bobblehead|PIP|1]] ![[Strength Bobblehead|PIP|1]]",
         EffectType.ONESHOT) {
         @Override
         public Predicate<PaperCard> getDBCardsFilter() {

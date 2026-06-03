@@ -20,6 +20,7 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.GraphicsConfiguration;
 import java.awt.Insets;
 import java.awt.MouseInfo;
@@ -43,6 +44,7 @@ import javax.swing.Timer;
  * Shared anchored preview popup for Rogue Commander dialogs.
  */
 public class RoguePreviewPopup {
+    private static final Color KEYWORD_TITLE_COLOR = new Color(0xEE, 0x8C, 0xDD);
     private static final int CARD_PREVIEW_WIDTH = 220;
     private static final int CARD_PREVIEW_HEIGHT = Math.round(CARD_PREVIEW_WIDTH * CardPanel.ASPECT_RATIO);
     private static final int KEYWORD_PREVIEW_WIDTH = 220;
@@ -474,10 +476,11 @@ public class RoguePreviewPopup {
                     .fontStyle(Font.BOLD)
                     .fontAlign(SwingConstants.LEFT)
                     .build();
+            title.setForeground(KEYWORD_TITLE_COLOR);
             title.setBorder(BorderFactory.createEmptyBorder(KEYWORD_TITLE_TOP, KEYWORD_SIDE_PADDING, 0, KEYWORD_SIDE_PADDING));
 
-            FTextArea body = new FTextArea(hint.getHintText());
-            body.setFont(body.getFont().deriveFont(13f));
+            FTextArea body = new PreviewTextArea(hint.getHintText());
+            body.setFont(body.getFont().deriveFont(13.5f));
             body.setBorder(BorderFactory.createEmptyBorder(KEYWORD_BODY_TOP, KEYWORD_SIDE_PADDING, KEYWORD_BODY_BOTTOM, KEYWORD_SIDE_PADDING));
 
             int contentWidth = KEYWORD_PREVIEW_WIDTH - (KEYWORD_SIDE_PADDING * 2);
@@ -492,6 +495,24 @@ public class RoguePreviewPopup {
             registerHoverTracking(this);
             registerHoverTracking(title);
             registerHoverTracking(body);
+        }
+    }
+
+    @SuppressWarnings("serial")
+    private static class PreviewTextArea extends FTextArea {
+        private PreviewTextArea(String text) {
+            super(text);
+        }
+
+        @Override
+        protected void paintComponent(Graphics g) {
+            Graphics2D g2d = (Graphics2D) g.create();
+            g2d.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
+            g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+            g2d.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
+            g2d.setRenderingHint(RenderingHints.KEY_FRACTIONALMETRICS, RenderingHints.VALUE_FRACTIONALMETRICS_ON);
+            super.paintComponent(g2d);
+            g2d.dispose();
         }
     }
 }

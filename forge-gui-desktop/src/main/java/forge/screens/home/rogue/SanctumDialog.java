@@ -59,8 +59,10 @@ public class SanctumDialog {
         .fontAlign(SwingConstants.CENTER)
         .build();
 
-    String restDescription = "Gain " + effectiveHealAmount + " Life & Cure All Wounds";
-    FButton btnRest = RogueButtonHelper.createChoiceButton("Rest", restDescription);
+    String restDescription = "Gain " + effectiveHealAmount + " Life & Cure All {{Wound}}s.";
+    FButton btnRest = RogueButtonHelper.createChoiceButton(
+        "Rest", TextHelper.stripPreviewMarkers(restDescription),
+        TextHelper.extractPreviewReferences(restDescription));
     btnRest.addActionListener(e -> {
       hidePreview();
       choice = SanctumChoice.HEAL;
@@ -71,8 +73,9 @@ public class SanctumDialog {
     if (!restEnabled && restDisabledReason != null && !restDisabledReason.isEmpty()) {
       btnRest.setToolTipText(restDisabledReason);
     }
+    previewTargets.add(new PreviewTarget(btnRest, TextHelper.extractPreviewReferences(restDescription)));
 
-    String cookDescription = "Craft a random food {{Item}}.";
+    String cookDescription = "Gain a random Food {{Item}}.";
     FButton btnCook = RogueButtonHelper.createChoiceButton(
         "Cook", TextHelper.stripPreviewMarkers(cookDescription),
         TextHelper.extractPreviewReferences(cookDescription));
@@ -94,6 +97,7 @@ public class SanctumDialog {
       optionPane.setResult(CHOICE_RESULT);
       optionPane.setVisible(false);
     });
+    previewTargets.add(new PreviewTarget(btnReflect, TextHelper.extractPreviewReferences(reflectDescription)));
 
     panel.add(lblTitle, "w 100%!, h 60px!, ax center, gap 0 0 20px 10px, wrap");
     panel.add(lblDescription, "w 100%!, h 30px!, ax center, gap 0 0 10px 20px, wrap");
