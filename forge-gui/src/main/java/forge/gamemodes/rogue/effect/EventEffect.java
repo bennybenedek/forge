@@ -1127,6 +1127,51 @@ public enum EventEffect implements RogueEffect {
             triggerChest(ctx);
         }
     },
+    STREET_OF_CONCEALMENT_ACCEPT("street_of_concealment_accept", "Accept",
+        "Gain the {{Boon}} **Concealment**. ![[Event Boon - Concealment]]",
+        EffectType.ONESHOT) {
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            run.addEventEffect(this);
+        }
+
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            RogueEffect.addCardToCommandZone("Event Boon - Concealment", human);
+        }
+    },
+    STREET_OF_GREED_ACCEPT("street_of_greed_accept", "Accept",
+        "Gain 666 {{Gold}}. Gain the {{Boon}} **Arrogance**. ![[Event Boon - Arrogance]]",
+        EffectType.ONESHOT) {
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            run.addGold(666);
+            run.addEventEffect(this);
+        }
+
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            RogueEffect.addCardToCommandZone("Event Boon - Arrogance", human);
+        }
+    },
+    STREET_OF_FORCEFULNESS_ACCEPT("street_of_forcefulness_accept", "Accept",
+        "Gain the {{Boon}} **Forcefulness**. ![[Event Boon - Forcefulness]] You cannot gain Life during the Run in any way.",
+        EffectType.ONESHOT) {
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            run.addEventEffect(this);
+        }
+
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            RogueEffect.addCardToCommandZone("Event Boon - Forcefulness", human);
+        }
+
+        @Override
+        public void onBeforeGainLife(GainLifeContext ctx, RogueRun run) {
+            ctx.amount = 0;
+        }
+    },
     SHRINE_KNEEL("shrine_kneel", "Kneel", "You discover a hidden {{Sanctum}}.",
         EffectType.ONESHOT) {
         @Override

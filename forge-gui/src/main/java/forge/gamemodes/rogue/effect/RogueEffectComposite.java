@@ -47,6 +47,11 @@ public enum RogueEffectComposite implements RogueEffect {
     }
 
     @Override
+    public void onBeforeGainLife(GainLifeContext ctx, RogueRun run) {
+        forEachEffect(run, e -> e.onBeforeGainLife(ctx, run));
+    }
+
+    @Override
     public void onMatchWin(RogueRun run) {
         forEachEffect(run, e -> e.onMatchWin(run));
     }

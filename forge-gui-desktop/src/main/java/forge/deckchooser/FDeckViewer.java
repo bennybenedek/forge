@@ -123,20 +123,29 @@ public class FDeckViewer extends FDialog {
         this.btnClose.setFocusable(false);
         this.btnClose.addActionListener(arg0 -> FDeckViewer.this.setVisible(false));
 
+        GraphicsConfiguration gc = this.getGraphicsConfiguration();
+        if (gc == null) {
+            gc = GraphicsEnvironment.getLocalGraphicsEnvironment().getDefaultScreenDevice().getDefaultConfiguration();
+        }
+        Rectangle screenBounds = gc.getBounds();
+        Insets screenInsets = Toolkit.getDefaultToolkit().getScreenInsets(gc);
+        int usableWidth = Math.max(1, screenBounds.width - screenInsets.left - screenInsets.right);
+        int usableHeight = Math.max(1, screenBounds.height - screenInsets.top - screenInsets.bottom);
+
         final int width;
         final int height;
         if (FModel.getPreferences().getPrefBoolean(ForgePreferences.FPref.UI_SMALL_DECK_VIEWER)) {
-            width = 800;
-            height = 600;
+            width = Math.min(800, usableWidth);
+            height = Math.min(600, usableHeight);
         }
         else {
-            GraphicsDevice gd = this.getGraphicsConfiguration().getDevice();
-            width = (int) (gd.getDisplayMode().getWidth() * 0.7);
-            height = (int) (gd.getDisplayMode().getHeight() * 0.8);
+            width = Math.max(1, (int) (usableWidth * 0.8));
+            height = Math.max(1, (int) (usableHeight * 0.85));
         }
 
-        this.setPreferredSize(new Dimension(width, height));
-        this.setSize(width, height);
+        Dimension initialSize = new Dimension(width, height);
+        this.setPreferredSize(initialSize);
+        this.setSize(initialSize);
 
         this.cardPicture.setOpaque(false);
 

@@ -59,7 +59,7 @@ public class SanctumDialog {
         .fontAlign(SwingConstants.CENTER)
         .build();
 
-    String restDescription = "Gain " + effectiveHealAmount + " Life & Cure All {{Wound}}s.";
+    String restDescription = "Gain " + effectiveHealAmount + " Life & Cure all {{Wound}}s.";
     FButton btnRest = RogueButtonHelper.createChoiceButton(
         "Rest", TextHelper.stripPreviewMarkers(restDescription),
         TextHelper.extractPreviewReferences(restDescription));

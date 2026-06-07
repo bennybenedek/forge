@@ -10,7 +10,9 @@ import forge.gamemodes.rogue.effect.ChestEffect;
 import forge.gamemodes.rogue.effect.Cursed;
 import forge.gamemodes.rogue.effect.EchoBoon;
 import forge.gamemodes.rogue.effect.EventEffect;
+import forge.gamemodes.rogue.effect.GainLifeContext;
 import forge.gamemodes.rogue.effect.RogueEffect;
+import forge.gamemodes.rogue.effect.RogueEffectComposite;
 import forge.gamemodes.rogue.effect.Wound;
 import forge.gamemodes.rogue.effect.Wrathful;
 import forge.gamemodes.rogue.effect.NPCEffect;
@@ -499,7 +501,9 @@ public class RogueRun {
 
     // Life management
     public void gainLifeUpToMax(int amount) {
-        this.setCurrentLife(Math.min(currentLife + amount, maxLife));
+        GainLifeContext ctx = new GainLifeContext(amount);
+        RogueEffectComposite.INSTANCE.onBeforeGainLife(ctx, this);
+        this.setCurrentLife(Math.min(currentLife + Math.max(0, ctx.amount), maxLife));
     }
 
     public void loseLife(int amount) {

@@ -268,6 +268,33 @@ public enum RogueEvent {
                 EventEffect.SATCHEL_OPEN)
         )),
 
+    STREET_OF_CONCEALMENT("Street of Concealment",
+        "Capenna...again. Neon glows through the rain while brass horns mutter somewhere above the avenue, and you cannot say what dragged you back into this city of polished towers and rotten basements. In a narrow cellar behind a shuttered club, a devil in a sharp coat offers a contract with a smile too patient to trust.",
+        List.of(
+            new EventChoice("Accept", "The ink dries, the devil vanishes, and your commander slips beyond every guard's grasp at the cost of ever standing in anyone's way again.",
+                EventEffect.STREET_OF_CONCEALMENT_ACCEPT),
+            new EventChoice("Decline", "You leave the contract unsigned and climb back into Capenna's wet, watchful streets.",
+                EventEffect.NOTHING)
+        )),
+
+    STREET_OF_GREED("Street of Greed",
+        "Not this again. Capenna's skyline glitters like a promise while the gutters below swallow rain, blood, and every bad decision the city ever sold. In the back room of a cellar casino, a devil waits beside stacked chips and unsigned paper, already certain you came for the contract.",
+        List.of(
+            new EventChoice("Accept", "Wealth floods your hands at once, but from then on every creature you command arrives bent beneath the weight of your bargain.",
+                EventEffect.STREET_OF_GREED_ACCEPT),
+            new EventChoice("Decline", "You leave the contract on the table and step back into Capenna's hungry night.",
+                EventEffect.NOTHING)
+        )),
+
+    STREET_OF_FORCEFULNESS("Street of Forcefulness",
+        "How did you get here? Capenna never answers, only ushers you beneath its bright skyline and into another room where the air tastes of ink, smoke, and old debts. In a private office behind the club floor, a devil nudges a contract toward you and calls brute certainty a virtue worth buying.",
+        List.of(
+            new EventChoice("Accept", "The pact hardens your hand and strips away every softer mercy that might have sustained you later.",
+                EventEffect.STREET_OF_FORCEFULNESS_ACCEPT),
+            new EventChoice("Decline", "You leave the contract unsigned and let Capenna keep its promise to someone else.",
+                EventEffect.NOTHING)
+        )),
+
     SHRINE("Shrine",
         "A crumbling shrine pulses faintly with restorative energy. As you kneel, you immediately feel its soothing powers.",
         List.of(
