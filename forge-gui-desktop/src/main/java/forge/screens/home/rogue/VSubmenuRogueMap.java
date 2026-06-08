@@ -132,7 +132,7 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
       lblDescension.setVisible(descLevel > 0);
       if (descLevel > 0) lblDescension.setText("Descension: " + descLevel);
 
-      // Populate active effects (echo boons, descension, event boons, chest boons, wounds)
+      // Populate active effects (echo boons, descension, event traits, chest traits, wounds...)
       pnlEffects.removeAll();
       List<RogueEffect> allEffects = RogueEffectComposite.getAllEffects(run);
       for (int i = 0; i < allEffects.size(); i++) {
@@ -142,6 +142,7 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
         String prefix = "";
         if (effect instanceof WoundEffect) prefix = "Wound - ";
         else if (effect instanceof EchoEffect) prefix = "Echo Boon - ";
+        else if (effect instanceof NPCEffect) prefix = "NPC Trait - ";
         else if (effect instanceof ChestEffect) prefix = "Chest - ";
         else if (effect instanceof DescensionLevel) prefix = "Descension - ";
         FLabel effectLbl = new FLabel.Builder().text(prefix + effect.getDisplayName()).fontSize(11).build();
@@ -197,7 +198,7 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
     infoRow.add(lblRemovalCredits);
     infoRow.add(lblDescension);
 
-    // Active effects panel (echo boons, descension, event boons, chest boons, wounds)
+    // Active effects panel (echo boons, descension, event traits, chest traits, wounds)
     pnlEffects = new JPanel(new MigLayout("insets 0, gap 8 1"));
     pnlEffects.setOpaque(false);
     infoRow.add(pnlEffects);

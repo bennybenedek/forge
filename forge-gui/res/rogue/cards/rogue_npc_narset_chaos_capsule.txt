@@ -1,4 +1,4 @@
-Name:Narset - Chaosbound
+Name:Narset - Chaos Capsule
 ManaCost:no cost
 Types:Artifact
 A:AB$ ChaosEnsues | Cost$ Sac<1/CARDNAME> | SpellDescription$ Sacrifice CARDNAME: Chaos ensues.

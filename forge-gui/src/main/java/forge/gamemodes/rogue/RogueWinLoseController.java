@@ -97,7 +97,7 @@ public class RogueWinLoseController {
             RogueEffectComposite.INSTANCE.onMatchWin(currentRun);
             int gainedLife = currentRun.getCurrentLife() - lifeBefore;
             if (gainedLife > 0) {
-                view.showMessage("Gained " + gainedLife + " life.", "Boon Effect", FSkinProp.ICO_QUEST_CHARM);
+                view.showMessage("Gained " + gainedLife + " life.", "Effect", FSkinProp.ICO_QUEST_CHARM);
             }
 
             // Won the match but life is still <= 0 (e.g. "can't lose the game" effect) — run is lost

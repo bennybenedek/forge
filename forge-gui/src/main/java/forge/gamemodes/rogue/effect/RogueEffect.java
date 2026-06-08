@@ -17,7 +17,7 @@ import java.util.function.Predicate;
 /**
  * Interface for effects that trigger at specific points during a Rogue Commander run.
  * All methods are no-ops by default — override only the triggers relevant to each effect.
- * All state is read from RogueRun (echo boons, event boons, descension are snapshotted there).
+ * All state is read from RogueRun (echo boons, event traits, descension are snapshotted there).
  */
 public interface RogueEffect {
 
@@ -45,7 +45,7 @@ public interface RogueEffect {
 
     /** Tooltip text for long-lived effect displays such as the RogueMap header. */
     default String getTooltipText() {
-        if (!getRawDescription().contains("{{Boon}}")) {
+        if (!getRawDescription().contains("{{Trait}}")) {
             return getDescription();
         }
 
@@ -79,8 +79,8 @@ public interface RogueEffect {
     /** Number of charges for CONSUME effects at the given rank. -1 = permanent (default). */
     default int getChargesForRank(int rank) { return -1; }
 
-    /** Fired when this effect is added to a run. Use to initialize carry cards, etc. */
-    default void onGranted(RogueRun run) {}
+    /** Fired once immediately for ONESHOT effects. May also grant or mutate run state. */
+    default void applyEffect(RogueRun run, EffectResultContext ctx) {}
 
     /** Fired once when a new run is created. Adjust starting life, gold, etc. */
     default void onRunStart(RogueRun run) {}

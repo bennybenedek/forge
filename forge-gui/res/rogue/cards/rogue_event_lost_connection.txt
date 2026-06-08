@@ -1,5 +1,5 @@
-Name:Event Boon - Depart
+Name:Event Trait - Depart
 ManaCost:no cost
-Types:Boon
+Types:Trait
 S:Mode$ CantBeCast | ValidCard$ Card.IsCommander | Caster$ You | Origin$ Command | EffectZone$ Command | Description$ You can't cast your Commander.
 Oracle:You can't cast your Commander.

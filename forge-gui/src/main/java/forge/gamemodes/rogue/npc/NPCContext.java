@@ -8,5 +8,5 @@ import java.util.List;
  */
 public record NPCContext(NPC npc, String flavorText, List<NPCChoice> choices) {
 
-    public record NPCChoice(String label, NPCEffect boon) {}
+    public record NPCChoice(String label, NPCEffect npcEffect) {}
 }

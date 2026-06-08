@@ -54,7 +54,7 @@ public enum CSubmenuRogueAether implements ICDoc {
 
       panel.getBtnUpgrade().addActionListener(e -> upgradeBoon(type));
       // Panel click toggles active state (when unlocked)
-      panel.setToggleCallback(p -> toggleBoonActive(p.getType(), !p.isActive()));
+      panel.setToggleCallback(p -> toggleBoonActive(p.getBoon(), !p.isActive()));
     }
   }
 

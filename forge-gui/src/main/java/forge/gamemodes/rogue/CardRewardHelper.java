@@ -55,7 +55,7 @@ public class CardRewardHelper {
     }
 
     /**
-     * Run a generic Rogue card reward selection with boon adjustments, reroll loop, pool removal,
+     * Run a generic Rogue card reward selection with effect adjustments, reroll loop, pool removal,
      * and deck addition. This shared overload is used for non-match reward sources such as chests.
      *
      * @param run        current run

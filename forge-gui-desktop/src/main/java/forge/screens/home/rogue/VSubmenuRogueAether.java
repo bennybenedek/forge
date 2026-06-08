@@ -58,7 +58,7 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
       .fontSize(14)
       .build();
 
-  // Boon panels - one for each boon type
+  // Boon panels - one for each boon
   private final Map<EchoEffect, BoonPanel> boonPanels = new EnumMap<>(EchoEffect.class);
 
   // Aether Upgrade card (persistent so listener can be wired once in initialize)
@@ -80,8 +80,8 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
     btnResetBoons.setIcon(FSkin.getImage(FSkinProp.ICO_DELETE).resize(24, 24).getIcon());
 
     // Create boon panels once at construction time (so listeners can be attached in initialize)
-    for (EchoEffect type : EchoEffect.values()) {
-      boonPanels.put(type, new BoonPanel(type));
+    for (EchoEffect boon : EchoEffect.values()) {
+      boonPanels.put(boon, new BoonPanel(boon));
     }
   }
 
@@ -165,9 +165,9 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
 
   private BoonGridPanel createBoonGrid(int upgradeLevel, JComponent card) {
     List<BoonPanel> visible = new ArrayList<>();
-    for (EchoEffect type : EchoEffect.values()) {
-      if (type.isAccessibleAt(upgradeLevel)) {
-        visible.add(boonPanels.get(type));
+    for (EchoEffect boon : EchoEffect.values()) {
+      if (boon.isAccessibleAt(upgradeLevel)) {
+        visible.add(boonPanels.get(boon));
       }
     }
     return new BoonGridPanel(visible, card);
@@ -216,10 +216,10 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
 
     // Update boon panels
     for (Map.Entry<EchoEffect, BoonPanel> entry : boonPanels.entrySet()) {
-      EchoEffect type = entry.getKey();
+      EchoEffect boon = entry.getKey();
       BoonPanel panel = entry.getValue();
-      int rank = boonRanks.getOrDefault(type, 0);
-      boolean isActive = activeBoons.contains(type);
+      int rank = boonRanks.getOrDefault(boon, 0);
+      boolean isActive = activeBoons.contains(boon);
       panel.update(rank, isActive, echoes, activeBoonCount, upgradeLevel);
     }
   }
@@ -418,7 +418,7 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
    */
   public static class BoonPanel extends FSkin.SkinnedPanel {
 
-    private final EchoEffect type;
+    private final EchoEffect boon;
     private final FLabel lblName;
     private final FLabel lblDescription;
     private final FLabel lblRank;
@@ -435,9 +435,9 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
     // Click callback for toggling active state
     private Consumer<BoonPanel> toggleCallback;
 
-    public BoonPanel(EchoEffect type) {
+    public BoonPanel(EchoEffect boon) {
       super(new MigLayout("insets 15 15 15 15, gap 5, wrap, fill"));
-      this.type = type;
+      this.boon = boon;
 
       // Create and cache own icon instance at construction time
       final javax.swing.Icon rawEchoIcon = FSkin.getImage(FSkinProp.ICO_QUEST_GOLD).resize(20, 20).getIcon();
@@ -453,20 +453,20 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
       setBackground(FSkin.getColor(FSkin.Colors.CLR_THEME2));
 
       lblName = new FLabel.Builder()
-          .text(type.getDisplayName())
+          .text(boon.getDisplayName())
           .fontSize(16)
           .fontStyle(Font.BOLD)
           .fontAlign(SwingConstants.CENTER)
           .build();
 
       lblDescription = new FLabel.Builder()
-          .text(type.getDescription())
+          .text(boon.getDescription())
           .fontSize(14)
           .fontAlign(SwingConstants.CENTER)
           .build();
 
       lblRank = new FLabel.Builder()
-          .text("Rank: 0/" + type.getMaxRank())
+          .text("Rank: 0/" + boon.getMaxRank())
           .fontSize(12)
           .fontAlign(SwingConstants.CENTER)
           .build();
@@ -528,7 +528,7 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
     public void update(int rank, boolean active, int echoes, int activeBoonCount, int upgradeLevel) {
       this.currentRank = rank;
       this.isActive = active;
-      int effectiveMax = type.getEffectiveMaxRank(upgradeLevel);
+      int effectiveMax = boon.getEffectiveMaxRank(upgradeLevel);
       // Compute actual slot count
       int boonSlots = 3;
       for (int l = 1; l <= upgradeLevel; l++) {
@@ -540,14 +540,14 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
       lblRank.setText("Rank: " + rank + "/" + effectiveMax);
 
       // Update description to show all rank values with current rank highlighted
-      lblDescription.setText(type.getDescriptionWithAllRanks(rank, upgradeLevel));
+      lblDescription.setText(boon.getDescriptionWithAllRanks(rank, upgradeLevel));
 
       // Update upgrade button using cached icon instance
       if (rank >= effectiveMax) {
         btnUpgrade.setText("Max Rank");
         btnUpgrade.setEnabled(false);
       } else {
-        int cost = type.getEchoCostForRank(rank + 1);
+        int cost = boon.getEchoCostForRank(rank + 1);
         btnUpgrade.setText(rank == 0 ? "Unlock: " + cost : "Upgrade: " + cost);
         btnUpgrade.setIcon(cachedEchoIcon);
         btnUpgrade.setEnabled(echoes >= cost);
@@ -619,8 +619,8 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
       }
     }
 
-    public EchoEffect getType() {
-      return type;
+    public EchoEffect getBoon() {
+      return boon;
     }
 
     public FButton getBtnUpgrade() {

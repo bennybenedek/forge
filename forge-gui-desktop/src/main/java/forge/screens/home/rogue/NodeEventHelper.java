@@ -18,9 +18,9 @@ import javax.swing.JOptionPane;
 class NodeEventHelper {
 
     private final CSubmenuRogueMap map;
-    private final EffectResultHelper effectResultHelper;
+    private final NodeEffectResultHelper effectResultHelper;
 
-    NodeEventHelper(CSubmenuRogueMap map, EffectResultHelper effectResultHelper) {
+    NodeEventHelper(CSubmenuRogueMap map, NodeEffectResultHelper effectResultHelper) {
         this.map = map;
         this.effectResultHelper = effectResultHelper;
     }

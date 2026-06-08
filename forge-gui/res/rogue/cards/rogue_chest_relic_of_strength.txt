@@ -1,5 +1,5 @@
-Name:Chest Boon - Relic Of Strength
+Name:Chest Trait - Relic Of Strength
 ManaCost:no cost
-Types:Boon
+Types:Trait
 S:Mode$ Continuous | Affected$ Creature.IsCommander+YouCtrl | AddPower$ 2 | AddToughness$ 2 | EffectZone$ Command | Description$ Your commander gets +2/+2.
 Oracle:Your commander gets +2/+2.

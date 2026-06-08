@@ -36,14 +36,14 @@ public enum ChestEffect implements RogueEffect {
             EffectType.PERMANENT) {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            RogueEffect.addCardToCommandZone("Chest Boon - Relic Of Strength", human);
+            RogueEffect.addCardToCommandZone("Chest Trait - Relic Of Strength", human);
         }
     },
     COST_REDUCTION("cost_reduction", "Relic Of Agility", "Permanent spells you cast cost {1} less for the rest of the Run.",
             EffectType.PERMANENT) {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            RogueEffect.addCardToCommandZone("Chest Boon - Relic Of Agility", human);
+            RogueEffect.addCardToCommandZone("Chest Trait - Relic Of Agility", human);
         }
     },
     EXTRA_DRAW("extra_draw", "Relic Of Wisdom", "Draw 1 extra card at the start of each match for the rest of the Run.",

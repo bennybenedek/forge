@@ -13,13 +13,13 @@ import javax.swing.JOptionPane;
 class NodeChestHelper {
 
     private final CSubmenuRogueMap map;
-    private EffectResultHelper effectResultHelper;
+    private NodeEffectResultHelper effectResultHelper;
 
     NodeChestHelper(CSubmenuRogueMap map) {
         this.map = map;
     }
 
-    void setEffectResultHelper(EffectResultHelper effectResultHelper) {
+    void setEffectResultHelper(NodeEffectResultHelper effectResultHelper) {
         this.effectResultHelper = effectResultHelper;
     }
 

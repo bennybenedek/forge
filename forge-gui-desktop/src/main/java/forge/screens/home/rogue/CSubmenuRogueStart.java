@@ -4,7 +4,9 @@ import forge.ImageCache;
 import forge.ImageKeys;
 import forge.gamemodes.rogue.*;
 import forge.gamemodes.rogue.effect.DescensionLevel;
+import forge.gamemodes.rogue.effect.EffectResultContext;
 import forge.gamemodes.rogue.effect.NPCEffect;
+import forge.gamemodes.rogue.effect.RogueEffect;
 import forge.gamemodes.rogue.effect.RogueEffectComposite;
 import forge.gamemodes.rogue.npc.NPCContext;
 import forge.gamemodes.rogue.npc.NPC;
@@ -392,10 +394,22 @@ public enum CSubmenuRogueStart implements ICDoc {
     RoguePathGenerator.generateRandomPath(newRun);
     RogueEffectComposite.INSTANCE.onRunStart(newRun);
 
-    // Show NPC encounter dialogs (e.g. Tyvar offering boon choices)
+    // Show NPC encounter dialogs (e.g. Tyvar offering npcEffect choices)
     for (NPCContext ctx : NPCEncounterComposite.INSTANCE.onRunStart(progress)) {
       NPCEffect chosen = new NPCDialog(ctx).show();
-      if (chosen != null) newRun.addNPCEffect(chosen);
+      if (chosen == null) {
+        continue;
+      }
+
+      if (chosen.getEffectType() == RogueEffect.EffectType.ONESHOT) {
+        EffectResultContext effectCtx = new EffectResultContext();
+        chosen.applyEffect(newRun, effectCtx);
+        if (!EffectResultHelper.handleTrigger(effectCtx, newRun)) {
+          continue;
+        }
+      } else {
+        newRun.addNPCEffect(chosen);
+      }
     }
 
     // Generate unique name for the run (used as filename)

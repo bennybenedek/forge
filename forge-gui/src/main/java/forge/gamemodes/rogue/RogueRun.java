@@ -692,7 +692,8 @@ public class RogueRun {
         wrathfulEffect); }
     public void addCursed(CursedEffect cursedEffect)        { activeCursed = addEffect(activeCursed,
         cursedEffect); }
-    public void addNPCEffect(NPCEffect npcEffect)       { activeNPCEffects = addEffect(activeNPCEffects, npcEffect); npcEffect.onGranted(this); }
+    public void addNPCEffect(NPCEffect npcEffect)           { activeNPCEffects = addEffect(activeNPCEffects,
+        npcEffect); }
 
     private List<RogueRunEffect> addEffect(List<RogueRunEffect> list, RogueEffect effect) {
         if (list == null) list = new ArrayList<>();

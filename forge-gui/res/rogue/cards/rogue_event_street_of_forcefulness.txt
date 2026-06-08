@@ -1,6 +1,6 @@
-Name:Event Boon - Forcefulness
+Name:Event Trait - Forcefulness
 ManaCost:no cost
-Types:Boon
+Types:Trait
 S:Mode$ ReduceCost | ValidCard$ Card | Activator$ You | Type$ Spell | Amount$ 2 | EffectZone$ Command | Description$ Spells you cast cost {2} less to cast.
 S:Mode$ CantGainLife | ValidPlayer$ You | EffectZone$ Command | Description$ You can't gain life.
 Oracle:Spells you cast cost {2} less to cast.\nYou can't gain life.

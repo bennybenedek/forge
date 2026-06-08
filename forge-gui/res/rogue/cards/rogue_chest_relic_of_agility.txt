@@ -1,5 +1,5 @@
-Name:Chest Boon - Relic Of Agility
+Name:Chest Trait - Relic Of Agility
 ManaCost:no cost
-Types:Boon
+Types:Trait
 S:Mode$ ReduceCost | ValidCard$ Permanent | Activator$ You | Type$ Spell | Amount$ 1 | EffectZone$ Command | Description$ Permanent spells you cast cost {1} less to cast.
 Oracle:Permanent spells you cast cost {1} less to cast.

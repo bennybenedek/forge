@@ -24,7 +24,7 @@ import javax.swing.SwingConstants;
 import net.miginfocom.swing.MigLayout;
 
 /**
- * Dialog for NPC encounters. Shows avatar, flavor text, and boon choice buttons.
+ * Dialog for NPC encounters. Shows avatar, flavor text, and npcEffect choice buttons.
  */
 public class NPCDialog {
 
@@ -75,17 +75,17 @@ public class NPCDialog {
             desiredHeight += btn.getPreferredSize().height + 10 + 10;
         } else {
             for (NPCChoice choice : ctx.choices()) {
-                String desc = choice.boon() != null ? choice.boon().getDescription() : "";
+                String desc = choice.npcEffect() != null ? choice.npcEffect().getDescription() : "";
                 FButton btn = RogueButtonHelper.createChoiceButton(choice.label(), desc,
-                        choice.boon() == null ? List.of() : choice.boon().getPreviewReferences());
+                        choice.npcEffect() == null ? List.of() : choice.npcEffect().getPreviewReferences());
                 btn.addActionListener(e -> {
                     hidePreview();
-                    selectedBoon = choice.boon();
+                    selectedBoon = choice.npcEffect();
                     optionPane.setResult(0);
                     optionPane.setVisible(false);
                 });
                 previewTargets.add(new PreviewTarget(btn,
-                        choice.boon() == null ? List.of() : choice.boon().getPreviewReferences()));
+                        choice.npcEffect() == null ? List.of() : choice.npcEffect().getPreviewReferences()));
                 panel.add(btn, "w 80%!, ax center, gap 0 0 10px 10px, wrap");
                 desiredHeight += btn.getPreferredSize().height + 10 + 10;
             }

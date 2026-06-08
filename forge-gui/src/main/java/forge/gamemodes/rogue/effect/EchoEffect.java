@@ -10,7 +10,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Enum defining all available Boons (Run effects) in Rogue Commander mode.
+ * Enum defining all available Echo effects (=Boons) in Rogue Commander mode.
  * Each constant implements its own RogueRunEffect trigger methods.
  */
 public enum EchoEffect implements RogueEffect {
@@ -21,7 +21,7 @@ public enum EchoEffect implements RogueEffect {
         "Begin each Run with additional Max Life.",
         new int[]{3, 6, 9, 12},     // Echo costs per rank (rank 1-4)
         new int[]{3, 6, 9, 12},     // Effect values: +3/+6/+9/+12 life
-        3, 0) {
+        3, 0, EffectType.PERMANENT) {
         @Override
         public void onRunStart(RogueRun run) {
             int bonus = getEffectValueAtRank(run.getRunEffectRank(getId()));
@@ -33,7 +33,7 @@ public enum EchoEffect implements RogueEffect {
         "Gain additional starting Gold at the beginning of each Run.",
         new int[]{3, 6, 9, 12},    // Echo costs per rank
         new int[]{3, 6, 9, 12},    // Effect values: +3/+6/+9/+12 gold
-        3, 0) {
+        3, 0, EffectType.PERMANENT) {
         @Override
         public void onRunStart(RogueRun run) {
             int bonus = getEffectValueAtRank(run.getRunEffectRank(getId()));
@@ -45,7 +45,7 @@ public enum EchoEffect implements RogueEffect {
         "Gain life after each Plane match victory.",
         new int[]{2, 4, 8, 16},     // Echo costs per rank
         new int[]{2, 4, 6, 8},      // Effect values: gain 2/4/6/8 life
-        3, 0) {
+        3, 0, EffectType.PERMANENT) {
         @Override
         public void onMatchWin(RogueRun run) {
             if (run.getCurrentLife() >= run.getMaxLife()) return;
@@ -58,7 +58,7 @@ public enum EchoEffect implements RogueEffect {
         "Free rerolls in Card Rewards and Bazaar before gold costs apply.",
         new int[]{2, 4, 8, 12},     // Echo costs (rank 1-3)
         new int[]{1, 2, 3, 4},      // Effect values: 1/2/3 free rerolls
-        3, 0) {
+        3, 0, EffectType.PERMANENT) {
         @Override
         public void onCardSelection(CardSelectionContext ctx, RogueRun run) {
             ctx.freeRerolls += getEffectValueAtRank(run.getRunEffectRank(getId()));
@@ -69,7 +69,7 @@ public enum EchoEffect implements RogueEffect {
         "More cards from Card Rewards and Bazaar will be mythic rarity.",
         new int[]{3, 6, 9, 12},    // Echo costs per rank
         new int[]{1, 2, 3, 4},     // Effect values: +1/+2/+3/+4 extra mythics
-        3, 0) {
+        3, 0, EffectType.PERMANENT) {
         @Override
         public void onCardSelection(CardSelectionContext ctx, RogueRun run) {
             ctx.extraMythics += getEffectValueAtRank(run.getRunEffectRank(getId()));
@@ -80,10 +80,7 @@ public enum EchoEffect implements RogueEffect {
         "Survive defeat and revive with 5 life.",
         new int[]{10, 20},         // Echo costs (rank 1-2)
         new int[]{1, 2},           // Effect values: 1/2 revive charges
-        1, 0) {
-        @Override
-        public EffectType getEffectType() { return EffectType.CONSUME; }
-
+        1, 0, EffectType.CONSUME) {
         @Override
         public int getChargesForRank(int rank) { return getEffectValueAtRank(rank); }
 
@@ -101,7 +98,7 @@ public enum EchoEffect implements RogueEffect {
         "Start each match with 1 additional opening hand card.",
         new int[]{8, 12},          // Echo costs (rank 1-2)
         new int[]{1, 2},           // Effect values: +1/+2 cards
-        1, 1) {
+        1, 1, EffectType.PERMANENT) {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             int extra = getEffectValueAtRank(run.getRunEffectRank(getId()));
@@ -113,7 +110,7 @@ public enum EchoEffect implements RogueEffect {
         "Keep additional cards from Card Rewards.",
         new int[]{8, 12},       // Echo costs (rank 1-2)
         new int[]{1, 2},        // Effect values: +1/+2 extra picks
-        1, 1) {
+        1, 1, EffectType.PERMANENT) {
         @Override
         public void onCardReward(CardRewardContext ctx, RogueRun run) {
             ctx.maxPicks += getEffectValueAtRank(run.getRunEffectRank(getId()));
@@ -124,7 +121,7 @@ public enum EchoEffect implements RogueEffect {
         "Begin each match with basic lands from your deck already on the battlefield.",
         new int[]{5, 10, 20},      // Echo costs (rank 1-3)
         new int[]{1, 2, 3},        // Effect values: 1/2/3 tapped lands
-        2, 1) {
+        2, 1, EffectType.PERMANENT) {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             int count = getEffectValueAtRank(run.getRunEffectRank(getId()));
@@ -145,11 +142,11 @@ public enum EchoEffect implements RogueEffect {
         "Reduce the Mana Cost for casting your Commander.",
         new int[]{4, 8, 12, 16},   // Echo costs (rank 1-4)
         new int[]{1, 2, 3, 4},     // Effect values: {1}/{2}/{3}/{4} less
-        3, 1) {
+        3, 1, EffectType.PERMANENT) {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             int reduction = getEffectValueAtRank(run.getRunEffectRank(getId()));
-            if (reduction > 0) RogueEffect.addCardToCommandZone("Echo Boon - Fractured Binding " + reduction, human);
+            if (reduction > 0) RogueEffect.addCardToCommandZone("Trait - Fractured Binding " + reduction, human);
         }
     };
 
@@ -160,9 +157,11 @@ public enum EchoEffect implements RogueEffect {
     private final int[] effectValues;
     private final int maxRank;
     private final int requiredUpgradeLevel; // 0 = always accessible; 1 = requires Aether Upgrade 1
+    private final EffectType effectType;
 
     EchoEffect(String id, String displayName, String description,
-             int[] echoCosts, int[] effectValues, int maxRank, int requiredUpgradeLevel) {
+             int[] echoCosts, int[] effectValues, int maxRank, int requiredUpgradeLevel,
+             EffectType effectType) {
         this.id = id;
         this.displayName = displayName;
         this.description = description;
@@ -170,6 +169,12 @@ public enum EchoEffect implements RogueEffect {
         this.effectValues = effectValues;
         this.maxRank = maxRank;
         this.requiredUpgradeLevel = requiredUpgradeLevel;
+        this.effectType = effectType;
+    }
+
+    @Override
+    public EffectType getEffectType() {
+        return effectType;
     }
 
     @Override

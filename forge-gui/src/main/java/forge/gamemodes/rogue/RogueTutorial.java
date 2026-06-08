@@ -91,7 +91,7 @@ public enum RogueTutorial {
 
   CHEST(
       "A Chest",
-      "Chests contain a random reward - gold, echoes, cards from your Reward Pool, or permanent buffs that last for the rest of the Run."
+      "Chests contain a random reward - gold, echoes, cards from your Reward Pool, or permanent positive Traits that last for the rest of the Run."
   ),
 
   SANCTUM(
