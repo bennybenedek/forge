@@ -40,8 +40,17 @@ public interface RogueEffect {
     /** Raw description for preview-aware UI. Override in concrete types. */
     default String getRawDescription() { return ""; }
 
+    /** Optional representative card used for UI and runtime behavior. */
+    default String getEffectCardName(RogueRun run) { return null; }
+
     /** Description for tooltips and display text. */
     default String getDescription() { return TextHelper.stripPreviewMarkers(getRawDescription()); }
+
+    /** Resolved display name for active-effect UI such as the RogueMap header. */
+    default String getMapDisplayName(RogueRun run) {
+        PaperCard effectCard = getEffectCard(run);
+        return effectCard != null ? effectCard.getName() : getDisplayName();
+    }
 
     /** Tooltip text for long-lived effect displays such as the RogueMap header. */
     default String getTooltipText() {
@@ -62,6 +71,17 @@ public interface RogueEffect {
             return getDescription();
         }
         return card.getRules().getOracleText();
+    }
+
+    /** Run-aware tooltip text that prefers dynamic representative cards when available. */
+    default String getTooltipText(RogueRun run) {
+        PaperCard effectCard = getEffectCard(run);
+        if (effectCard != null && effectCard.getRules() != null
+            && effectCard.getRules().getOracleText() != null
+            && !effectCard.getRules().getOracleText().isBlank()) {
+            return effectCard.getRules().getOracleText();
+        }
+        return getTooltipText();
     }
 
     /** Preview references extracted from the raw description. */
@@ -111,6 +131,24 @@ public interface RogueEffect {
 
     /** Fired for both card reward and bazaar selections. */
     default void onCardSelection(CardSelectionContext ctx, RogueRun run) {}
+
+    default void addEffectCardToCommandZone(RegisteredPlayer human, RogueRun run) {
+        String effectCardName = getEffectCardName(run);
+        if (effectCardName != null) {
+            addCardToCommandZone(effectCardName, human);
+        }
+    }
+
+    default void addEffectCardToBattlefield(RegisteredPlayer human, RogueRun run) {
+        String effectCardName = getEffectCardName(run);
+        if (effectCardName != null) {
+            addCardToBattlefield(effectCardName, human);
+        }
+    }
+
+    default PaperCard getEffectCard(RogueRun run) {
+        return resolveEffectCard(getEffectCardName(run));
+    }
 
     default void addCarryCards(RogueRun run, EffectResultContext ctx, Predicate<PaperCard> filter,
                                int count, RogueRun.CarryCardType type, List<CardPrintOverride> printOverrides) {
@@ -290,6 +328,28 @@ public interface RogueEffect {
         for (IPaperCard card : cards)
             main.remove((PaperCard) card, 1);
         human.addExtraCardsOnBattlefield(cards);
+    }
+
+    static String previewCardReference(String effectCardName) {
+        if (effectCardName == null || effectCardName.isBlank()) {
+            return "";
+        }
+        return "![["
+            + effectCardName + "]]";
+    }
+
+    static String appendPreviewReference(String description, String effectCardName) {
+        if (effectCardName == null || effectCardName.isBlank()) {
+            return description;
+        }
+        return description + " " + previewCardReference(effectCardName);
+    }
+
+    static PaperCard resolveEffectCard(String effectCardName) {
+        if (effectCardName == null || effectCardName.isBlank()) {
+            return null;
+        }
+        return RogueConfig.getCard(effectCardName, null, null);
     }
 
     // Load all cards needed for effect

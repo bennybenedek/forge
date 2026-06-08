@@ -16,7 +16,7 @@ public enum CursedEffect implements PlaneboundEffect {
             "Cursed - Bargain") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            RogueEffect.addCardToCommandZone(cardName, human);
+            addEffectCardToCommandZone(human, run);
             run.consumeEffect(getId());
         }
     },
@@ -25,7 +25,7 @@ public enum CursedEffect implements PlaneboundEffect {
             "Cursed - Foresight") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            RogueEffect.addCardToCommandZone(cardName, human);
+            addEffectCardToCommandZone(human, run);
             run.consumeEffect(getId());
         }
     },
@@ -69,13 +69,13 @@ public enum CursedEffect implements PlaneboundEffect {
     private final String id;
     private final String displayName;
     private final String description;
-    protected final String cardName;
+    private final String effectCardName;
 
-    CursedEffect(String id, String displayName, String description, String cardName) {
+    CursedEffect(String id, String displayName, String description, String effectCardName) {
         this.id = id;
         this.displayName = displayName;
-        this.description = description;
-        this.cardName = cardName;
+        this.description = RogueEffect.appendPreviewReference(description, effectCardName);
+        this.effectCardName = effectCardName;
     }
 
     @Override
@@ -89,6 +89,9 @@ public enum CursedEffect implements PlaneboundEffect {
 
     @Override
     public String getRawDescription() { return description; }
+
+    @Override
+    public String getEffectCardName(RogueRun run) { return effectCardName; }
 
     public static CursedEffect getRandomExcluding(Set<CursedEffect> exclude) {
         return PlaneboundEffect.getRandomExcluding(values(), exclude);

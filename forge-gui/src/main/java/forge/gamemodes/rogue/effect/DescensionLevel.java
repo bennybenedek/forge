@@ -71,10 +71,11 @@ public enum DescensionLevel implements RogueEffect {
     },
 
     LEVEL_3(3, "Bloodthirsty",
-        "Whenever a creature an opponent controls deals damage to you, it deals 1 additional damage.") {
+        "Whenever a creature an opponent controls deals damage to you, it deals 1 additional damage.",
+        "Descension - Bloodthirsty") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            RogueEffect.addCardToCommandZone("Descension - Bloodthirsty", human);
+            addEffectCardToCommandZone(human, run);
         }
     },
 
@@ -119,21 +120,28 @@ public enum DescensionLevel implements RogueEffect {
     },
 
     LEVEL_5(5, "Taxing Mana",
-        "Every spell you cast costs {1} more to cast.") {
+        "Every spell you cast costs {1} more to cast.",
+        "Descension - Taxing Mana") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            RogueEffect.addCardToCommandZone("Descension - Taxing Mana", human);
+            addEffectCardToCommandZone(human, run);
         }
     };
 
     public final int level;
     public final String name;
     public final String description;
+    private final String effectCardName;
 
     DescensionLevel(int level, String name, String description) {
+        this(level, name, description, null);
+    }
+
+    DescensionLevel(int level, String name, String description, String effectCardName) {
         this.level = level;
         this.name = name;
-        this.description = description;
+        this.description = RogueEffect.appendPreviewReference(description, effectCardName);
+        this.effectCardName = effectCardName;
     }
 
     @Override
@@ -141,6 +149,9 @@ public enum DescensionLevel implements RogueEffect {
 
     @Override
     public String getRawDescription() { return description; }
+
+    @Override
+    public String getEffectCardName(RogueRun run) { return effectCardName; }
 
     public static DescensionLevel forLevel(int level) {
         for (DescensionLevel dl : values()) {

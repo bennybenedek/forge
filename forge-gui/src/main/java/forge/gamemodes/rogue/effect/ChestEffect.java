@@ -32,18 +32,20 @@ public enum ChestEffect implements RogueEffect {
     },
 
     // PERMANENT loots
-    COMMANDER_STRENGTH("commander_strength", "Relic Of Strength", "Your commander gets +2/+2 for the rest of the Run.",
-            EffectType.PERMANENT) {
+    COMMANDER_STRENGTH("commander_strength", "Relic Of Strength",
+            "Your commander gets +2/+2 for the rest of the Run.",
+            EffectType.PERMANENT, "Chest Trait - Relic Of Strength") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            RogueEffect.addCardToCommandZone("Chest Trait - Relic Of Strength", human);
+            addEffectCardToCommandZone(human, run);
         }
     },
-    COST_REDUCTION("cost_reduction", "Relic Of Agility", "Permanent spells you cast cost {1} less for the rest of the Run.",
-            EffectType.PERMANENT) {
+    COST_REDUCTION("cost_reduction", "Relic Of Agility",
+            "Permanent spells you cast cost {1} less for the rest of the Run.",
+            EffectType.PERMANENT, "Chest Trait - Relic Of Agility") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            RogueEffect.addCardToCommandZone("Chest Trait - Relic Of Agility", human);
+            addEffectCardToCommandZone(human, run);
         }
     },
     EXTRA_DRAW("extra_draw", "Relic Of Wisdom", "Draw 1 extra card at the start of each match for the rest of the Run.",
@@ -58,12 +60,19 @@ public enum ChestEffect implements RogueEffect {
     private final String displayName;
     private final String description;
     private final EffectType effectType;
+    private final String effectCardName;
 
     ChestEffect(String id, String displayName, String description, EffectType effectType) {
+        this(id, displayName, description, effectType, null);
+    }
+
+    ChestEffect(String id, String displayName, String description, EffectType effectType,
+                String effectCardName) {
         this.id = id;
         this.displayName = displayName;
-        this.description = description;
+        this.description = RogueEffect.appendPreviewReference(description, effectCardName);
         this.effectType = effectType;
+        this.effectCardName = effectCardName;
     }
 
     public void applyEffect(RogueRun run, EffectResultContext ctx) { /* Override in ONESHOT constants to apply immediate chest effects. */ }
@@ -79,6 +88,9 @@ public enum ChestEffect implements RogueEffect {
 
     @Override
     public String getRawDescription() { return description; }
+
+    @Override
+    public String getEffectCardName(RogueRun run) { return effectCardName; }
 
     public static ChestEffect fromId(String id) {
         for (ChestEffect cl : values())

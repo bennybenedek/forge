@@ -139,14 +139,10 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
         RogueEffect effect = allEffects.get(i);
         int col = i / 3;
         int row = i % 3;
-        String prefix = "";
-        if (effect instanceof WoundEffect) prefix = "Wound - ";
-        else if (effect instanceof EchoEffect) prefix = "Echo Boon - ";
-        else if (effect instanceof NPCEffect) prefix = "NPC Trait - ";
-        else if (effect instanceof ChestEffect) prefix = "Chest - ";
-        else if (effect instanceof DescensionLevel) prefix = "Descension - ";
-        FLabel effectLbl = new FLabel.Builder().text(prefix + effect.getDisplayName()).fontSize(11).build();
-        effectLbl.setToolTipText(effect.getTooltipText());
+        String prefix = effect.getEffectCardName(run) == null ? getEffectPrefix(effect) : "";
+        FLabel effectLbl = new FLabel.Builder()
+            .text(prefix + effect.getMapDisplayName(run)).fontSize(11).build();
+        effectLbl.setToolTipText(effect.getTooltipText(run));
         pnlEffects.add(effectLbl, "cell " + col + " " + row);
       }
       pnlEffects.revalidate();
@@ -237,6 +233,18 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
 
   public PathVisualizerPanel getPathVisualizer() {
     return pathVisualizer;
+  }
+
+  private String getEffectPrefix(RogueEffect effect) {
+    if (effect instanceof WoundEffect) return "Wound - ";
+    if (effect instanceof EchoEffect) return "Echo Boon - ";
+    if (effect instanceof NPCEffect) return "NPC Trait - ";
+    if (effect instanceof EventEffect) return "Event Trait - ";
+    if (effect instanceof ChestEffect) return "Chest Trait - ";
+    if (effect instanceof DescensionLevel) return "Descension - ";
+    if (effect instanceof WrathfulEffect) return "Wrathful - ";
+    if (effect instanceof CursedEffect) return "Cursed - ";
+    return "";
   }
 
   @Override

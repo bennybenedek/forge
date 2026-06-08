@@ -105,8 +105,8 @@ public enum EventEffect implements RogueEffect {
         }
     },
     AMONG_MURDERERS_CONFESS("among_murderers_confess", "Confess",
-        "Gain the {{Trait}} **Confession**. ![[Event Trait - Confession]]",
-        EffectType.ONESHOT) {
+        "Gain the {{Trait}} **Confession**.",
+        EffectType.ONESHOT, "Event Trait - Confession") {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             run.addEventEffect(this);
@@ -114,7 +114,7 @@ public enum EventEffect implements RogueEffect {
 
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            RogueEffect.addCardToCommandZone("Event Trait - Confession", human);
+            addEffectCardToCommandZone(human, run);
         }
     },
     AMONG_MURDERERS_HIRE("among_murderers_hire", "Hire",
@@ -209,8 +209,9 @@ public enum EventEffect implements RogueEffect {
         }
     },
     BREAKING_OLD_LAWS_PARTNER_UP("breaking_the_old_laws_partner_up", "Partner Up",
-        "Lose 4 {{Max. Life}}. Gain the {{Trait}} **Partnership**. ![[Event Trait - Partnership]] Choose 1 out of 20 Partners for your commander.",
-        EffectType.ONESHOT) {
+        "Lose 4 {{Max. Life}}. Gain the {{Trait}} **Partnership**. Choose 1 out of 20 Partners "
+            + "for your commander.",
+        EffectType.ONESHOT, "Event Trait - Partnership") {
         @Override
         public Predicate<PaperCard> getDBCardsFilter() {
             return PaperCardPredicates.fromRules(
@@ -229,7 +230,7 @@ public enum EventEffect implements RogueEffect {
 
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            RogueEffect.addCardToCommandZone("Event Trait - Partnership", human);
+            addEffectCardToCommandZone(human, run);
         }
 
         @Override
@@ -508,8 +509,9 @@ public enum EventEffect implements RogueEffect {
         }
     },
     ETERNAL_CRUSADE_JOIN_SPACE_MARINES("eternal_crusade_join_space_marines", "Join Space Marines",
-        "All future Planebounds gain 2 additional instances of {{Wrathful}}. Gain the {{Trait}} **Codex Astartes**. ![[Event Trait - Codex Astartes]]",
-        EffectType.ONESHOT) {
+        "All future Planebounds gain 2 additional instances of {{Wrathful}}. Gain the {{Trait}} "
+            + "**Codex Astartes**.",
+        EffectType.ONESHOT, "Event Trait - Codex Astartes") {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             if (run.getCurrentNode() != null && run.getPath() != null) {
@@ -523,7 +525,7 @@ public enum EventEffect implements RogueEffect {
 
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            RogueEffect.addCardToCommandZone("Event Trait - Codex Astartes", human);
+            addEffectCardToCommandZone(human, run);
         }
     },
     ETERNAL_CRUSADE_OFFER_SACRIFICE("eternal_crusade_offer_sacrifice", "Offer Sacrifice",
@@ -908,22 +910,24 @@ public enum EventEffect implements RogueEffect {
             triggerChest(ctx);
         }
     },
-    LOST_DEPART("lost_depart", "Lost Connection - Depart", "You may not cast your Commander in the next match.",
-        EffectType.CONSUME) {
+    LOST_DEPART("lost_depart", "Lost Connection - Depart",
+        "You may not cast your Commander in the next match.",
+        EffectType.CONSUME, "Event Trait - Depart") {
         @Override
         public int getChargesForRank(int rank) { return 1; }
 
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            RogueEffect.addCardToCommandZone("Event Trait - Depart", human);
+            addEffectCardToCommandZone(human, run);
             run.consumeEffect(getId());
         }
     },
-    LOST_PERSIST("lost_weakened", "Lost Connection - Commander Weakened", "Gain the {{Trait}} **Commander Weakened**. ![[Event Trait - Commander Weakened]]",
-        EffectType.PERMANENT) {
+    LOST_PERSIST("lost_weakened", "Lost Connection - Commander Weakened",
+        "Gain the {{Trait}} **Commander Weakened**.",
+        EffectType.PERMANENT, "Event Trait - Commander Weakened") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            RogueEffect.addCardToCommandZone("Event Trait - Commander Weakened", human);
+            addEffectCardToCommandZone(human, run);
         }
     },
     LOST_REPLACE("lost_replace", "Lost Connection - Replace",
@@ -973,8 +977,8 @@ public enum EventEffect implements RogueEffect {
         }
     },
     NEON_LID_NINJA("neon_lid_ninja", "Path of the Ninja",
-        "Lose 6 max life. Gain the {{Trait}} **Ninjutsu Mastery**. ![[Event Trait - Ninjutsu Mastery]]",
-        EffectType.ONESHOT) {
+        "Lose 6 max life. Gain the {{Trait}} **Ninjutsu Mastery**.",
+        EffectType.ONESHOT, "Event Trait - Ninjutsu Mastery") {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             run.setMaxLife(run.getMaxLife() - 6);
@@ -983,7 +987,7 @@ public enum EventEffect implements RogueEffect {
 
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            RogueEffect.addCardToCommandZone("Event Trait - Ninjutsu Mastery", human);
+            addEffectCardToCommandZone(human, run);
         }
 
         @Override
@@ -1082,15 +1086,16 @@ public enum EventEffect implements RogueEffect {
             run.addGold(5);
         }
     },
-    PLANAR_RIFT_BOOST("planar_rift_boost", "Planar Rift - Commander Boost", "Gain the {{Trait}} **Commander Boost**. ![[Event Trait - Commander Boost]]",
-        EffectType.ONESHOT) {
+    PLANAR_RIFT_BOOST("planar_rift_boost", "Planar Rift - Commander Boost",
+        "Gain the {{Trait}} **Commander Boost**.",
+        EffectType.ONESHOT, "Event Trait - Commander Boost") {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             run.addEventEffect(this);
         }
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            RogueEffect.addCardToCommandZone("Event Trait - Commander Boost", human);
+            addEffectCardToCommandZone(human, run);
         }
     },
     PLANAR_TRIBUTE_REPLACE("planar_tribute_replace", "Planar Shuffle",
@@ -1128,8 +1133,8 @@ public enum EventEffect implements RogueEffect {
         }
     },
     STREET_OF_CONCEALMENT_ACCEPT("street_of_concealment_accept", "Accept",
-        "Gain the {{Trait}} **Concealment**. ![[Event Trait - Concealment]]",
-        EffectType.ONESHOT) {
+        "Gain the {{Trait}} **Concealment**.",
+        EffectType.ONESHOT, "Event Trait - Concealment") {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             run.addEventEffect(this);
@@ -1137,12 +1142,12 @@ public enum EventEffect implements RogueEffect {
 
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            RogueEffect.addCardToCommandZone("Event Trait - Concealment", human);
+            addEffectCardToCommandZone(human, run);
         }
     },
     STREET_OF_GREED_ACCEPT("street_of_greed_accept", "Accept",
-        "Gain 666 {{Gold}}. Gain the {{Trait}} **Arrogance**. ![[Event Trait - Arrogance]]",
-        EffectType.ONESHOT) {
+        "Gain 666 {{Gold}}. Gain the {{Trait}} **Arrogance**.",
+        EffectType.ONESHOT, "Event Trait - Arrogance") {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             run.addGold(666);
@@ -1151,12 +1156,12 @@ public enum EventEffect implements RogueEffect {
 
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            RogueEffect.addCardToCommandZone("Event Trait - Arrogance", human);
+            addEffectCardToCommandZone(human, run);
         }
     },
     STREET_OF_FORCEFULNESS_ACCEPT("street_of_forcefulness_accept", "Accept",
-        "Gain the {{Trait}} **Forcefulness**. ![[Event Trait - Forcefulness]] You cannot gain Life during the Run in any way.",
-        EffectType.ONESHOT) {
+        "Gain the {{Trait}} **Forcefulness**. You cannot gain Life during the Run in any way.",
+        EffectType.ONESHOT, "Event Trait - Forcefulness") {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             run.addEventEffect(this);
@@ -1164,7 +1169,7 @@ public enum EventEffect implements RogueEffect {
 
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            RogueEffect.addCardToCommandZone("Event Trait - Forcefulness", human);
+            addEffectCardToCommandZone(human, run);
         }
 
         @Override
@@ -1197,8 +1202,8 @@ public enum EventEffect implements RogueEffect {
         }
     },
     TRAPPED_IN_THE_LAIR_EXAMINE("trapped_in_the_lair_examine", "Examine",
-        "Lose 4 {{Max. Life}}. Gain the {{Trait}} **Mutagen**. ![[Event Trait - Mutagen]]",
-        EffectType.ONESHOT) {
+        "Lose 4 {{Max. Life}}. Gain the {{Trait}} **Mutagen**.",
+        EffectType.ONESHOT, "Event Trait - Mutagen") {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             run.setMaxLife(run.getMaxLife() - 4);
@@ -1207,7 +1212,7 @@ public enum EventEffect implements RogueEffect {
 
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            RogueEffect.addCardToCommandZone("Event Trait - Mutagen", human);
+            addEffectCardToCommandZone(human, run);
         }
 
         @Override
@@ -1258,16 +1263,28 @@ public enum EventEffect implements RogueEffect {
     private final String description;
     private final EffectType effectType;
     private final int goldCost;
+    private final String effectCardName;
     EventEffect(String id, String displayName, String description, EffectType effectType) {
-        this(id, displayName, description, effectType, 0);
+        this(id, displayName, description, effectType, 0, null);
+    }
+
+    EventEffect(String id, String displayName, String description, EffectType effectType,
+                String effectCardName) {
+        this(id, displayName, description, effectType, 0, effectCardName);
     }
 
     EventEffect(String id, String displayName, String description, EffectType effectType, int goldCost) {
+        this(id, displayName, description, effectType, goldCost, null);
+    }
+
+    EventEffect(String id, String displayName, String description, EffectType effectType, int goldCost,
+                String effectCardName) {
         this.id = id;
         this.displayName = displayName;
-        this.description = description;
+        this.description = RogueEffect.appendPreviewReference(description, effectCardName);
         this.effectType = effectType;
         this.goldCost = goldCost;
+        this.effectCardName = effectCardName;
     }
 
     public void applyEffect(RogueRun run, EffectResultContext ctx) { /* Override in ONESHOT constants to apply immediate event effects. */}
@@ -1283,6 +1300,9 @@ public enum EventEffect implements RogueEffect {
 
     @Override
     public String getRawDescription() { return description; }
+
+    @Override
+    public String getEffectCardName(RogueRun run) { return effectCardName; }
 
     public int getGoldCost() { return goldCost; }
 
