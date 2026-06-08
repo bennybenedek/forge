@@ -726,7 +726,7 @@ public enum EventEffect implements RogueEffect {
 
         @Override
         public boolean isChoiceAvailable(RogueRun run) {
-            return run.hasEnoughGold(getGoldCost()) && !run.getActiveWounds().isEmpty();
+            return run.hasEnoughGold(getGoldCost()) && !run.getActiveWoundEffects().isEmpty();
         }
 
         @Override
@@ -734,7 +734,7 @@ public enum EventEffect implements RogueEffect {
             if (!run.hasEnoughGold(getGoldCost())) {
                 return getInsufficientGoldReason();
             }
-            if (run.getActiveWounds().isEmpty()) {
+            if (run.getActiveWoundEffects().isEmpty()) {
                 return "You have no active wounds.";
             }
             return null;
@@ -1184,7 +1184,7 @@ public enum EventEffect implements RogueEffect {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             gainWound(run, ctx);
-            if (ctx.gainedWound == null) {
+            if (ctx.gainedWoundEffect == null) {
                 ctx.resultTextOverride = "You already bear all wounds.";
             }
         }

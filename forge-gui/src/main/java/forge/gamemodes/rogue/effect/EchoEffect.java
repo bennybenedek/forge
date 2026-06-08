@@ -10,10 +10,10 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Enum defining all available Boons (permanent upgrades) in Rogue Commander mode.
+ * Enum defining all available Boons (Run effects) in Rogue Commander mode.
  * Each constant implements its own RogueRunEffect trigger methods.
  */
-public enum EchoBoon implements RogueEffect {
+public enum EchoEffect implements RogueEffect {
 
     // Base boons (requiredUpgradeLevel=0) — always visible
 
@@ -161,7 +161,7 @@ public enum EchoBoon implements RogueEffect {
     private final int maxRank;
     private final int requiredUpgradeLevel; // 0 = always accessible; 1 = requires Aether Upgrade 1
 
-    EchoBoon(String id, String displayName, String description,
+    EchoEffect(String id, String displayName, String description,
              int[] echoCosts, int[] effectValues, int maxRank, int requiredUpgradeLevel) {
         this.id = id;
         this.displayName = displayName;
@@ -290,8 +290,8 @@ public enum EchoBoon implements RogueEffect {
     /**
      * Find a BoonType by its ID.
      */
-    public static EchoBoon fromId(String id) {
-        for (EchoBoon type : values()) {
+    public static EchoEffect fromId(String id) {
+        for (EchoEffect type : values()) {
             if (type.id.equals(id)) {
                 return type;
             }

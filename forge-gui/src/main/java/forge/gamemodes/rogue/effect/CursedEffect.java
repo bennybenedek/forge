@@ -9,7 +9,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-public enum Cursed implements PlaneboundBoon {
+public enum CursedEffect implements PlaneboundEffect {
 
     SPELL_DISCOUNT("cursed_spell_discount", "Bargain",
             "All of Planebound's spells cost {1} less to cast.",
@@ -71,7 +71,7 @@ public enum Cursed implements PlaneboundBoon {
     private final String description;
     protected final String cardName;
 
-    Cursed(String id, String displayName, String description, String cardName) {
+    CursedEffect(String id, String displayName, String description, String cardName) {
         this.id = id;
         this.displayName = displayName;
         this.description = description;
@@ -79,7 +79,7 @@ public enum Cursed implements PlaneboundBoon {
     }
 
     @Override
-    public BoonCategory getCategory() { return BoonCategory.CURSED; }
+    public PlaneboundEffectCategory getCategory() { return PlaneboundEffectCategory.CURSED; }
 
     @Override
     public String getId() { return id; }
@@ -90,12 +90,12 @@ public enum Cursed implements PlaneboundBoon {
     @Override
     public String getRawDescription() { return description; }
 
-    public static Cursed getRandomExcluding(Set<Cursed> exclude) {
-        return PlaneboundBoon.getRandomExcluding(values(), exclude);
+    public static CursedEffect getRandomExcluding(Set<CursedEffect> exclude) {
+        return PlaneboundEffect.getRandomExcluding(values(), exclude);
     }
 
-    public static Cursed fromId(String id) {
-        for (Cursed c : values())
+    public static CursedEffect fromId(String id) {
+        for (CursedEffect c : values())
             if (c.id.equals(id)) return c;
         return null;
     }

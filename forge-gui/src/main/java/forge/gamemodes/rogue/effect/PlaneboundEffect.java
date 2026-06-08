@@ -9,11 +9,11 @@ import java.util.Set;
  * Shared interface for planebound node effects (Wrathful, Cursed).
  * Provides common CONSUME behavior and shared utility methods.
  */
-public interface PlaneboundBoon extends RogueEffect {
+public interface PlaneboundEffect extends RogueEffect {
 
-    enum BoonCategory { WRATHFUL, CURSED }
+    enum PlaneboundEffectCategory { WRATHFUL, CURSED }
 
-    BoonCategory getCategory();
+    PlaneboundEffectCategory getCategory();
 
     @Override
     default EffectType getEffectType() { return EffectType.CONSUME; }
@@ -22,7 +22,7 @@ public interface PlaneboundBoon extends RogueEffect {
     default int getChargesForRank(int rank) { return 1; }
 
     /** Pick a random enum value excluding the given set. Falls back to any value if all excluded. */
-    static <E extends Enum<E> & PlaneboundBoon> E getRandomExcluding(E[] values, Set<E> exclude) {
+    static <E extends Enum<E> & PlaneboundEffect> E getRandomExcluding(E[] values, Set<E> exclude) {
         List<E> candidates = new ArrayList<>();
         for (E v : values) {
             if (!exclude.contains(v)) candidates.add(v);
@@ -34,9 +34,9 @@ public interface PlaneboundBoon extends RogueEffect {
     }
 
     /** Cross-type lookup: tries Wrathful first, then Cursed. */
-    static PlaneboundBoon fromId(String id) {
-        Wrathful w = Wrathful.fromId(id);
+    static PlaneboundEffect fromId(String id) {
+        WrathfulEffect w = WrathfulEffect.fromId(id);
         if (w != null) return w;
-        return Cursed.fromId(id);
+        return CursedEffect.fromId(id);
     }
 }

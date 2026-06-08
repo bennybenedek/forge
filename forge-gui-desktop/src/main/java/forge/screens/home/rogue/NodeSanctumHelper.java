@@ -37,7 +37,7 @@ class NodeSanctumHelper {
         int baseHealAmount = sanctumNode.getHealAmount();
         int missingLife = Math.max(0, currentRun.getMaxLife() - currentRun.getCurrentLife());
         int effectiveHealAmount = Math.min(baseHealAmount, missingLife);
-        boolean hasWounds = !currentRun.getActiveWounds().isEmpty();
+        boolean hasWounds = !currentRun.getActiveWoundEffects().isEmpty();
         boolean restEnabled = effectiveHealAmount > 0 || hasWounds;
         String restDisabledReason = restEnabled
             ? null

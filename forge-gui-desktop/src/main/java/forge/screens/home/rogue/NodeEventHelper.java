@@ -108,9 +108,9 @@ class NodeEventHelper {
 
     private List<NodeResultPanel.CardSection> buildNodeResultSections(EffectResultContext ctx) {
         List<NodeResultPanel.CardSection> sections = new ArrayList<>();
-        if (ctx.gainedWound != null) {
+        if (ctx.gainedWoundEffect != null) {
             sections.add(new NodeResultPanel.CardSection("Wound gained:",
-                ctx.gainedWound.getDisplayName() + " - " + ctx.gainedWound.getDescription()));
+                ctx.gainedWoundEffect.getDisplayName() + " - " + ctx.gainedWoundEffect.getDescription()));
         }
         if (ctx.removedCards != null && !ctx.removedCards.isEmpty()) {
             sections.add(new NodeResultPanel.CardSection("Cards removed:", ctx.removedCards));

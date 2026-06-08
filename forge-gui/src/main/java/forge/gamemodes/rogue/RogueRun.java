@@ -6,16 +6,7 @@ import forge.deck.Deck;
 import forge.deck.DeckSection;
 import forge.deck.CardPool;
 import forge.gamemodes.match.HostedMatch;
-import forge.gamemodes.rogue.effect.ChestEffect;
-import forge.gamemodes.rogue.effect.Cursed;
-import forge.gamemodes.rogue.effect.EchoBoon;
-import forge.gamemodes.rogue.effect.EventEffect;
-import forge.gamemodes.rogue.effect.GainLifeContext;
-import forge.gamemodes.rogue.effect.RogueEffect;
-import forge.gamemodes.rogue.effect.RogueEffectComposite;
-import forge.gamemodes.rogue.effect.Wound;
-import forge.gamemodes.rogue.effect.Wrathful;
-import forge.gamemodes.rogue.effect.NPCEffect;
+import forge.gamemodes.rogue.effect.*;
 import forge.gamemodes.rogue.path.RoguePath;
 import forge.gamemodes.rogue.path.RoguePathNode;
 import forge.item.PaperCard;
@@ -662,7 +653,7 @@ public class RogueRun {
     // Echo boon management
     public void snapshotEchoBoons(RogueMetaProgress progress) {
         activeEchoBoons = new ArrayList<>();
-        for (EchoBoon boon : progress.getActiveEchoBoons()) {
+        for (EchoEffect boon : progress.getActiveEchoBoons()) {
             int rank = progress.getBoonRank(boon);
             int charges = boon.getChargesForRank(rank);
             activeEchoBoons.add(new RogueRunEffect(boon.getId(), rank, charges));
@@ -683,21 +674,24 @@ public class RogueRun {
         return result;
     }
 
-    public List<RogueEffect> getActiveEchoBoons()  { return mapEffects(activeEchoBoons, EchoBoon::fromId); }
+    public List<RogueEffect> getActiveEchoEffects()  { return mapEffects(activeEchoBoons, EchoEffect::fromId); }
     public List<RogueEffect> getActiveEventEffects() { return mapEffects(activeEventEffects, EventEffect::fromId); }
     public List<RogueEffect> getActiveChestEffects() { return mapEffects(activeChestEffects, ChestEffect::fromId); }
-    public List<RogueEffect> getActiveWounds()     { return mapEffects(activeWounds, Wound::fromId); }
-    public List<RogueEffect> getActiveWrathful()   { return mapEffects(activeWrathful, Wrathful::fromId); }
-    public List<RogueEffect> getActiveCursed()    { return mapEffects(activeCursed, Cursed::fromId); }
+    public List<RogueEffect> getActiveWoundEffects()     { return mapEffects(activeWounds, WoundEffect::fromId); }
+    public List<RogueEffect> getActiveWrathfulEffects()   { return mapEffects(activeWrathful, WrathfulEffect::fromId); }
+    public List<RogueEffect> getActiveCursedEffects()    { return mapEffects(activeCursed, CursedEffect::fromId); }
     public List<RogueEffect> getActiveNPCEffects() { return mapEffects(activeNPCEffects, NPCEffect::fromId); }
 
     public void addEventEffect(EventEffect eventEffect)   { activeEventEffects = addEffect(
         activeEventEffects, eventEffect); }
     public void addChestEffect(ChestEffect chestEffect)    { activeChestEffects = addEffect(
         activeChestEffects, chestEffect); }
-    public void addWound(Wound wound)           { activeWounds = addEffect(activeWounds, wound); }
-    public void addWrathful(Wrathful wrathful)  { activeWrathful = addEffect(activeWrathful, wrathful); }
-    public void addCursed(Cursed cursed)        { activeCursed = addEffect(activeCursed, cursed); }
+    public void addWound(WoundEffect woundEffect)           { activeWounds = addEffect(activeWounds,
+        woundEffect); }
+    public void addWrathful(WrathfulEffect wrathfulEffect)  { activeWrathful = addEffect(activeWrathful,
+        wrathfulEffect); }
+    public void addCursed(CursedEffect cursedEffect)        { activeCursed = addEffect(activeCursed,
+        cursedEffect); }
     public void addNPCEffect(NPCEffect npcEffect)       { activeNPCEffects = addEffect(activeNPCEffects, npcEffect); npcEffect.onGranted(this); }
 
     private List<RogueRunEffect> addEffect(List<RogueRunEffect> list, RogueEffect effect) {

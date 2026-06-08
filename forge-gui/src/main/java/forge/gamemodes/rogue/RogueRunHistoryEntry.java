@@ -1,7 +1,7 @@
 package forge.gamemodes.rogue;
 
 import forge.deck.Deck;
-import forge.gamemodes.rogue.effect.EchoBoon;
+import forge.gamemodes.rogue.effect.EchoEffect;
 import forge.gamemodes.rogue.effect.RogueEffect;
 import forge.gamemodes.rogue.path.*;
 import java.text.SimpleDateFormat;
@@ -44,8 +44,8 @@ public class RogueRunHistoryEntry {
 
         // Capture active boons from run snapshot
         entry.activeBoonNames = new ArrayList<>();
-        for (RogueEffect effect : run.getActiveEchoBoons()) {
-            if (effect instanceof EchoBoon boon) {
+        for (RogueEffect effect : run.getActiveEchoEffects()) {
+            if (effect instanceof EchoEffect boon) {
                 entry.activeBoonNames.add(boon.getDisplayName());
             }
         }

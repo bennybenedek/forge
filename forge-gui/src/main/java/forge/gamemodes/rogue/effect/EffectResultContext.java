@@ -43,7 +43,7 @@ public class EffectResultContext {
     public List<PaperCard> addedCards;
 
     /** Wound gained from this effect, for result display. Null = not applicable. */
-    public Wound gainedWound;
+    public WoundEffect gainedWoundEffect;
 
     /** Optional replacement result text supplied by the effect itself. Null = use the effect result text. */
     public String resultTextOverride;

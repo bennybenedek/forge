@@ -140,9 +140,9 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
         int col = i / 3;
         int row = i % 3;
         String prefix = "";
-        if (effect instanceof Wound) prefix = "Wound - ";
-        else if (effect instanceof EchoBoon) prefix = "Echo - ";
-        else if (effect instanceof ChestEffect) prefix = "Loot - ";
+        if (effect instanceof WoundEffect) prefix = "Wound - ";
+        else if (effect instanceof EchoEffect) prefix = "Echo Boon - ";
+        else if (effect instanceof ChestEffect) prefix = "Chest - ";
         else if (effect instanceof DescensionLevel) prefix = "Descension - ";
         FLabel effectLbl = new FLabel.Builder().text(prefix + effect.getDisplayName()).fontSize(11).build();
         effectLbl.setToolTipText(effect.getTooltipText());

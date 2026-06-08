@@ -24,7 +24,7 @@ public interface RogueEffect {
     /**
      * Lifecycle type for effects.
      * ONESHOT: fire-and-forget, applied once immediately, never stored or dispatched.
-     * PERMANENT: stored in run, dispatched at trigger points, persists for the whole run.
+     * PERMANENT: stored in run, dispatched at trigger points, persists for the whole run (=Trait)
      * CONSUME: stored in run, dispatched at trigger points, removed after all charges consumed
      */
     enum EffectType { ONESHOT, PERMANENT, CONSUME }
@@ -253,13 +253,13 @@ public interface RogueEffect {
     }
 
     default void gainWound(RogueRun run, EffectResultContext ctx) {
-        List<Wound> available = new ArrayList<>(List.of(Wound.values()));
-        List<RogueEffect> active = run.getActiveWounds();
+        List<WoundEffect> available = new ArrayList<>(List.of(WoundEffect.values()));
+        List<RogueEffect> active = run.getActiveWoundEffects();
         available.removeIf(w -> active.stream().anyMatch(a -> a == w));
         if (available.isEmpty()) return;
-        Wound wound = available.get(MyRandom.getRandom().nextInt(available.size()));
-        run.addWound(wound);
-        ctx.gainedWound = wound;
+        WoundEffect woundEffect = available.get(MyRandom.getRandom().nextInt(available.size()));
+        run.addWound(woundEffect);
+        ctx.gainedWoundEffect = woundEffect;
     }
 
     static void addCardToCommandZone(String cardName, RegisteredPlayer human) {

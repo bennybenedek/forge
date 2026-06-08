@@ -3,7 +3,7 @@ package forge.screens.home.rogue;
 import forge.gamemodes.rogue.AetherUpgrade;
 import forge.gamemodes.rogue.RogueMetaProgress;
 import forge.gamemodes.rogue.RogueTutorial;
-import forge.gamemodes.rogue.effect.EchoBoon;
+import forge.gamemodes.rogue.effect.EchoEffect;
 import forge.gui.framework.EDocID;
 import forge.gui.framework.ICDoc;
 import forge.localinstance.properties.ForgePreferences;
@@ -47,9 +47,9 @@ public enum CSubmenuRogueAether implements ICDoc {
     }
 
     // Setup listeners for each boon panel
-    for (Map.Entry<EchoBoon, VSubmenuRogueAether.BoonPanel> entry : view.getBoonPanels()
+    for (Map.Entry<EchoEffect, VSubmenuRogueAether.BoonPanel> entry : view.getBoonPanels()
         .entrySet()) {
-      EchoBoon type = entry.getKey();
+      EchoEffect type = entry.getKey();
       VSubmenuRogueAether.BoonPanel panel = entry.getValue();
 
       panel.getBtnUpgrade().addActionListener(e -> upgradeBoon(type));
@@ -67,12 +67,12 @@ public enum CSubmenuRogueAether implements ICDoc {
   private void refreshDisplay() {
     RogueMetaProgress progress = RogueMetaProgress.getInstance();
 
-    Map<EchoBoon, Integer> boonRanks = new EnumMap<>(EchoBoon.class);
-    for (EchoBoon type : EchoBoon.values()) {
+    Map<EchoEffect, Integer> boonRanks = new EnumMap<>(EchoEffect.class);
+    for (EchoEffect type : EchoEffect.values()) {
       boonRanks.put(type, progress.getBoonRank(type));
     }
 
-    Set<EchoBoon> activeBoons = progress.getActiveEchoBoons();
+    Set<EchoEffect> activeBoons = progress.getActiveEchoBoons();
 
     view.updateDisplay(
         progress.getTotalEchoes(),
@@ -99,7 +99,7 @@ public enum CSubmenuRogueAether implements ICDoc {
     }
   }
 
-  private void upgradeBoon(EchoBoon type) {
+  private void upgradeBoon(EchoEffect type) {
     RogueMetaProgress progress = RogueMetaProgress.getInstance();
     int rankBefore = progress.getBoonRank(type);
     if (progress.upgradeBoon(type)) {
@@ -111,7 +111,7 @@ public enum CSubmenuRogueAether implements ICDoc {
     }
   }
 
-  private void toggleBoonActive(EchoBoon type, boolean active) {
+  private void toggleBoonActive(EchoEffect type, boolean active) {
     RogueMetaProgress progress = RogueMetaProgress.getInstance();
     if (active) {
       progress.activateBoon(type);

@@ -12,10 +12,7 @@ import forge.gamemodes.rogue.RoguePlanebound;
 import forge.gamemodes.rogue.RogueRun;
 import forge.gamemodes.rogue.RogueRun.CarryCard;
 import forge.gamemodes.rogue.RogueTutorial;
-import forge.gamemodes.rogue.effect.Cursed;
-import forge.gamemodes.rogue.effect.RogueEffect;
-import forge.gamemodes.rogue.effect.RogueEffectComposite;
-import forge.gamemodes.rogue.effect.Wrathful;
+import forge.gamemodes.rogue.effect.*;
 import forge.gamemodes.rogue.path.NodePlanebound;
 import forge.gui.GuiBase;
 import forge.gui.SOverlayUtils;
@@ -152,10 +149,10 @@ class NodePlaneboundHelper {
             new MigLayout("insets 5, gap 0, wrap", "[grow]"));
         effectsPanel.setOpaque(false);
 
-        Set<Wrathful> usedWrathful = new HashSet<>();
+        Set<WrathfulEffect> usedWrathfulEffect = new HashSet<>();
         for (int i = 0; i < wrathfulCount; i++) {
-            Wrathful w = Wrathful.getRandomExcluding(usedWrathful);
-            usedWrathful.add(w);
+            WrathfulEffect w = WrathfulEffect.getRandomExcluding(usedWrathfulEffect);
+            usedWrathfulEffect.add(w);
             currentRun.addWrathful(w);
             JLabel lbl = new JLabel(w.getDisplayName() + " - " + w.getDescription(), flameIcon, SwingConstants.LEFT);
             lbl.setFont(FSkin.getRelativeFont(12).getBaseFont());
@@ -165,10 +162,10 @@ class NodePlaneboundHelper {
             effectsPanel.add(lbl, "growx, h 24px!, wrap");
         }
 
-        Set<Cursed> usedCursed = new HashSet<>();
+        Set<CursedEffect> usedCursedEffect = new HashSet<>();
         for (int i = 0; i < cursedCount; i++) {
-            Cursed c = Cursed.getRandomExcluding(usedCursed);
-            usedCursed.add(c);
+            CursedEffect c = CursedEffect.getRandomExcluding(usedCursedEffect);
+            usedCursedEffect.add(c);
             currentRun.addCursed(c);
             JLabel lbl = new JLabel(c.getDisplayName() + " - " + c.getDescription(), pentagramIcon, SwingConstants.LEFT);
             lbl.setFont(FSkin.getRelativeFont(12).getBaseFont());

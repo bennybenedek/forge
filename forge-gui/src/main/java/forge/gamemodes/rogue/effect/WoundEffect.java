@@ -3,7 +3,7 @@ package forge.gamemodes.rogue.effect;
 import forge.game.player.RegisteredPlayer;
 import forge.gamemodes.rogue.RogueRun;
 
-public enum Wound implements RogueEffect {
+public enum WoundEffect implements RogueEffect {
 
     LEG("leg", "Leg", "Every spell you cast costs {1} more.",
             EffectType.PERMANENT) {
@@ -32,7 +32,7 @@ public enum Wound implements RogueEffect {
     private final String description;
     private final EffectType effectType;
 
-    Wound(String id, String displayName, String description, EffectType effectType) {
+    WoundEffect(String id, String displayName, String description, EffectType effectType) {
         this.id = id;
         this.displayName = displayName;
         this.description = description;
@@ -51,8 +51,8 @@ public enum Wound implements RogueEffect {
     @Override
     public String getRawDescription() { return description; }
 
-    public static Wound fromId(String id) {
-        for (Wound w : values())
+    public static WoundEffect fromId(String id) {
+        for (WoundEffect w : values())
             if (w.id.equals(id)) return w;
         return null;
     }

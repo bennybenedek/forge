@@ -5,7 +5,7 @@ import com.thoughtworks.xstream.security.NoTypePermission;
 import com.thoughtworks.xstream.security.NullPermission;
 import com.thoughtworks.xstream.security.PrimitiveTypePermission;
 import forge.gamemodes.rogue.effect.DescensionLevel;
-import forge.gamemodes.rogue.effect.EchoBoon;
+import forge.gamemodes.rogue.effect.EchoEffect;
 import forge.gui.GuiBase;
 import forge.item.PaperCard;
 import forge.localinstance.properties.ForgeConstants;
@@ -401,7 +401,7 @@ public class RogueMetaProgress {
     /**
      * Get the current rank of a boon (0 = not unlocked).
      */
-    public int getBoonRank(EchoBoon type) {
+    public int getBoonRank(EchoEffect type) {
         if (boonRanks == null) {
             boonRanks = new HashMap<>();
         }
@@ -412,27 +412,27 @@ public class RogueMetaProgress {
      * Attempt to upgrade a boon to the next rank.
      * @return true if upgrade was successful, false if not enough echoes or already max rank
      */
-    public boolean upgradeBoon(EchoBoon type) {
+    public boolean upgradeBoon(EchoEffect boon) {
         if (boonRanks == null) {
             boonRanks = new HashMap<>();
         }
 
-        if (!type.isAccessibleAt(aetherUpgradeLevel)) {
+        if (!boon.isAccessibleAt(aetherUpgradeLevel)) {
             return false;
         }
 
-        int currentRank = getBoonRank(type);
-        if (currentRank >= type.getEffectiveMaxRank(aetherUpgradeLevel)) {
+        int currentRank = getBoonRank(boon);
+        if (currentRank >= boon.getEffectiveMaxRank(aetherUpgradeLevel)) {
             return false; // Already max rank
         }
 
-        int cost = type.getEchoCostForRank(currentRank + 1);
+        int cost = boon.getEchoCostForRank(currentRank + 1);
         if (totalEchoes < cost) {
             return false; // Not enough echoes
         }
 
         totalEchoes -= cost;
-        boonRanks.put(type.getId(), currentRank + 1);
+        boonRanks.put(boon.getId(), currentRank + 1);
         save();
         return true;
     }
@@ -440,24 +440,24 @@ public class RogueMetaProgress {
     /**
      * Check if a boon is currently active.
      */
-    public boolean isBoonActive(EchoBoon type) {
+    public boolean isBoonActive(EchoEffect boon) {
         if (activeEchoBoons == null) {
             activeEchoBoons = new HashSet<>();
         }
-        return activeEchoBoons.contains(type.getId());
+        return activeEchoBoons.contains(boon.getId());
     }
 
     /**
      * Get all currently active boons.
      */
-    public Set<EchoBoon> getActiveEchoBoons() {
-        Set<EchoBoon> active = new HashSet<>();
+    public Set<EchoEffect> getActiveEchoBoons() {
+        Set<EchoEffect> active = new HashSet<>();
         if (activeEchoBoons == null) {
             activeEchoBoons = new HashSet<>();
             return active;
         }
         for (String id : activeEchoBoons) {
-            EchoBoon type = EchoBoon.fromId(id);
+            EchoEffect type = EchoEffect.fromId(id);
             if (type != null) {
                 active.add(type);
             }
@@ -478,7 +478,7 @@ public class RogueMetaProgress {
     /**
      * Activate a boon (max slots determined by getActiveBoonSlots()).
      */
-    public void activateBoon(EchoBoon type) {
+    public void activateBoon(EchoEffect type) {
         if (activeEchoBoons == null) {
             activeEchoBoons = new HashSet<>();
         }
@@ -510,11 +510,11 @@ public class RogueMetaProgress {
     /**
      * Deactivate a boon.
      */
-    public void deactivateBoon(EchoBoon type) {
+    public void deactivateBoon(EchoEffect boon) {
         if (activeEchoBoons == null) {
             activeEchoBoons = new HashSet<>();
         }
-        activeEchoBoons.remove(type.getId());
+        activeEchoBoons.remove(boon.getId());
         save();
     }
 
@@ -532,11 +532,11 @@ public class RogueMetaProgress {
 
         // Calculate total echoes spent on all boons
         int refund = 0;
-        for (EchoBoon type : EchoBoon.values()) {
-            int rank = getBoonRank(type);
+        for (EchoEffect boon : EchoEffect.values()) {
+            int rank = getBoonRank(boon);
             // Sum costs for each rank from 1 to current rank
             for (int r = 1; r <= rank; r++) {
-                refund += type.getEchoCostForRank(r);
+                refund += boon.getEchoCostForRank(r);
             }
         }
 

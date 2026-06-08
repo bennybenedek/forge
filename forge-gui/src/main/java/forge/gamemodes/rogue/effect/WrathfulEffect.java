@@ -4,7 +4,7 @@ import forge.game.player.RegisteredPlayer;
 import forge.gamemodes.rogue.RogueRun;
 import java.util.Set;
 
-public enum Wrathful implements PlaneboundBoon {
+public enum WrathfulEffect implements PlaneboundEffect {
 
     COMMANDER_BOOST("wrathful_commander_boost", "Might",
             "Planebound Commander gets +2/+2.",
@@ -39,7 +39,7 @@ public enum Wrathful implements PlaneboundBoon {
     private final String description;
     protected final String cardName;
 
-    Wrathful(String id, String displayName, String description, String cardName) {
+    WrathfulEffect(String id, String displayName, String description, String cardName) {
         this.id = id;
         this.displayName = displayName;
         this.description = description;
@@ -47,7 +47,7 @@ public enum Wrathful implements PlaneboundBoon {
     }
 
     @Override
-    public BoonCategory getCategory() { return BoonCategory.WRATHFUL; }
+    public PlaneboundEffectCategory getCategory() { return PlaneboundEffectCategory.WRATHFUL; }
 
     @Override
     public String getId() { return id; }
@@ -58,12 +58,12 @@ public enum Wrathful implements PlaneboundBoon {
     @Override
     public String getRawDescription() { return description; }
 
-    public static Wrathful getRandomExcluding(Set<Wrathful> exclude) {
-        return PlaneboundBoon.getRandomExcluding(values(), exclude);
+    public static WrathfulEffect getRandomExcluding(Set<WrathfulEffect> exclude) {
+        return PlaneboundEffect.getRandomExcluding(values(), exclude);
     }
 
-    public static Wrathful fromId(String id) {
-        for (Wrathful w : values())
+    public static WrathfulEffect fromId(String id) {
+        for (WrathfulEffect w : values())
             if (w.id.equals(id)) return w;
         return null;
     }
