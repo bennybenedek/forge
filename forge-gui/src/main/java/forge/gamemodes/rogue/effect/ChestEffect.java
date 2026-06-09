@@ -6,25 +6,26 @@ import forge.gamemodes.rogue.RogueRun;
 
 public enum ChestEffect implements RogueEffect {
 
-    FIND_GOLD("find_gold", "Treasure", "You found 10 gold.", EffectType.ONESHOT) {
+    FIND_GOLD("find_gold", "Treasure", "You found 10 gold.", EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             run.addGold(10);
         }
     },
-    FIND_ECHOES("find_echoes", "Giant Soul", "You found 10 echoes.", EffectType.ONESHOT) {
+    FIND_ECHOES("find_echoes", "Giant Soul", "You found 10 echoes.", EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             RogueMetaProgress.getInstance().addEchoes(10);
         }
     },
-    CARD_REWARD("card_reward", "Card Cache", "Gain a Card Reward.", EffectType.ONESHOT) {
+    CARD_REWARD("card_reward", "Card Cache", "Gain a Card Reward.", EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             ctx.trigger = EffectResultContext.ActionTriggerType.CARD_REWARD;
         }
     },
-    MYTHIC_CARD_REWARD("mythic_card_reward", "Mythic Card Cache", "Gain a Mythic Card Reward.", EffectType.ONESHOT) {
+    MYTHIC_CARD_REWARD("mythic_card_reward", "Mythic Card Cache", "Gain a Mythic Card Reward.",
+        EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             ctx.trigger = EffectResultContext.ActionTriggerType.MYTHIC_CARD_REWARD;
@@ -33,23 +34,23 @@ public enum ChestEffect implements RogueEffect {
 
     // PERMANENT loots
     COMMANDER_STRENGTH("commander_strength", "Relic Of Strength",
-            "Your commander gets +2/+2 for the rest of the Run.",
-            EffectType.PERMANENT, "Chest Trait - Relic Of Strength") {
+        "Your commander gets +2/+2 for the rest of the Run.",
+        EffectType.PERMANENT, "Chest Trait - Relic Of Strength") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human, run);
+            addEffectCardToCommandZone(human);
         }
     },
     COST_REDUCTION("cost_reduction", "Relic Of Agility",
-            "Permanent spells you cast cost {1} less for the rest of the Run.",
-            EffectType.PERMANENT, "Chest Trait - Relic Of Agility") {
+        "Permanent spells you cast cost {1} less for the rest of the Run.",
+        EffectType.PERMANENT, "Chest Trait - Relic Of Agility") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human, run);
+            addEffectCardToCommandZone(human);
         }
     },
     EXTRA_DRAW("extra_draw", "Relic Of Wisdom", "Draw 1 extra card at the start of each match for the rest of the Run.",
-            EffectType.PERMANENT) {
+            EffectType.PERMANENT, null) {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             human.setStartingHand(human.getStartingHand() + 1);
@@ -62,15 +63,11 @@ public enum ChestEffect implements RogueEffect {
     private final EffectType effectType;
     private final String effectCardName;
 
-    ChestEffect(String id, String displayName, String description, EffectType effectType) {
-        this(id, displayName, description, effectType, null);
-    }
-
     ChestEffect(String id, String displayName, String description, EffectType effectType,
                 String effectCardName) {
         this.id = id;
         this.displayName = displayName;
-        this.description = RogueEffect.appendPreviewReference(description, effectCardName);
+        this.description = description;
         this.effectType = effectType;
         this.effectCardName = effectCardName;
     }
@@ -90,7 +87,7 @@ public enum ChestEffect implements RogueEffect {
     public String getRawDescription() { return description; }
 
     @Override
-    public String getEffectCardName(RogueRun run) { return effectCardName; }
+    public String getEffectCardName() { return effectCardName; }
 
     public static ChestEffect fromId(String id) {
         for (ChestEffect cl : values())

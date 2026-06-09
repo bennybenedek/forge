@@ -18,7 +18,7 @@ public enum EventEffect implements RogueEffect {
 
     AFTER_DUSK_INSANE("after_dusk_insane", "Turn Insane",
         "Add 3 random Nightmare cards to your deck.",
-        EffectType.ONESHOT) {
+        EffectType.ONESHOT, null) {
         @Override
         public Predicate<PaperCard> getDBCardsFilter() {
             return PaperCardPredicates.fromRules(
@@ -32,7 +32,7 @@ public enum EventEffect implements RogueEffect {
     },
     AFTER_DUSK_EXPLORE("after_dusk_explore", "Explore Mansion",
         "Lose 3 life. Choose up to 5 Room cards to add to your deck.",
-        EffectType.ONESHOT) {
+        EffectType.ONESHOT, null) {
         @Override
         public Predicate<PaperCard> getDBCardsFilter() {
             return PaperCardPredicates.fromRules(CardRulesPredicates.subType("Room"));
@@ -46,7 +46,7 @@ public enum EventEffect implements RogueEffect {
     },
     AFTER_DUSK_FEED("after_dusk_feed", "Feed Monsters",
         "Remove all white cards from your deck. Gain 2 random legendary Horror {{Fellow}}s.",
-        EffectType.ONESHOT) {
+        EffectType.ONESHOT, null) {
         @Override
         public Predicate<PaperCard> getDBCardsFilter() {
             return PaperCardPredicates.fromRules(
@@ -67,14 +67,14 @@ public enum EventEffect implements RogueEffect {
         }
     },
     AMBUSH_FIGHT("ambush_fight", "Fight!", "Fight a random Planebound on a random Plane!",
-        EffectType.ONESHOT) {
+        EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             triggerPlanebound(ctx, RoguePlaneboundType.NORMAL);
         }
     },
     AMBUSH_BRIBE("ambush_bribe", "Lose 4 Gold", "You lose 4 gold.",
-        EffectType.ONESHOT, 4) {
+        EffectType.ONESHOT, 4, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             run.spendGold(getGoldCost());
@@ -92,7 +92,7 @@ public enum EventEffect implements RogueEffect {
     },
     AMONG_MURDERERS_INVESTIGATE("among_murderers_investigate", "Investigate",
         "Gain a random Clue {{Item}}.",
-        EffectType.ONESHOT) {
+        EffectType.ONESHOT, null) {
         @Override
         public Predicate<PaperCard> getDBCardsFilter() {
             return PaperCardPredicates.fromRules(
@@ -114,12 +114,12 @@ public enum EventEffect implements RogueEffect {
 
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human, run);
+            addEffectCardToCommandZone(human);
         }
     },
     AMONG_MURDERERS_HIRE("among_murderers_hire", "Hire",
         "Pay 4 {{Gold}}. Choose up to 5 out of 20 Detectives to add to your deck.",
-        EffectType.ONESHOT, 4) {
+        EffectType.ONESHOT, 4, null) {
         @Override
         public Predicate<PaperCard> getDBCardsFilter() {
             return PaperCardPredicates.fromRules(
@@ -147,7 +147,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     BENDING_WALK("bending_walk", "Walk with a Companion", "Gain a random Ally {{Fellow}}.",
-        EffectType.ONESHOT) {
+        EffectType.ONESHOT, null) {
         @Override
         public Predicate<PaperCard> getDBCardsFilter() {
             return PaperCardPredicates.fromRules(
@@ -161,7 +161,7 @@ public enum EventEffect implements RogueEffect {
     },
     BENDING_STUDY("bending_study", "Study the Scrolls",
         "Gain 3 random Lesson {{Scroll}}s.",
-        EffectType.ONESHOT) {
+        EffectType.ONESHOT, null) {
         @Override
         public Predicate<PaperCard> getDBCardsFilter() {
             return PaperCardPredicates.fromRules(
@@ -177,7 +177,7 @@ public enum EventEffect implements RogueEffect {
     },
     BREAKING_OLD_LAWS_DUPLICATE("breaking_the_old_laws_duplicate", "Duplicate",
         "Lose 3 Life. Choose a card from your deck. Add 3 copies of the chosen card to your deck.",
-        EffectType.ONESHOT) {
+        EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             List<PaperCard> candidateCards = run.getSelectableDeckCards(null);
@@ -192,7 +192,7 @@ public enum EventEffect implements RogueEffect {
     },
     BREAKING_OLD_LAWS_BLACK_MARKET("breaking_the_old_laws_black_market", "Black Market",
         "Shop from a selection of cards from the Commander Banlist at doubled prices.",
-        EffectType.ONESHOT) {
+        EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             List<PaperCard> banlistCards = run.getBanlistCardsForActiveCommander();
@@ -230,7 +230,7 @@ public enum EventEffect implements RogueEffect {
 
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human, run);
+            addEffectCardToCommandZone(human);
         }
 
         @Override
@@ -245,7 +245,7 @@ public enum EventEffect implements RogueEffect {
     },
     BURROWED_BROWSE("burrowed_browse", "Browse",
         "Shop from a selection of Woodland creatures.",
-        EffectType.ONESHOT) {
+        EffectType.ONESHOT, null) {
         @Override
         public Predicate<PaperCard> getDBCardsFilter() {
             Predicate<PaperCard> creatureFilter = PaperCardPredicates.fromRules(
@@ -273,7 +273,7 @@ public enum EventEffect implements RogueEffect {
     },
     BURROWED_FREE("burrowed_free", "Free",
         "Gain a random {{Wound}}. Gain 3 random legendary Woodland {{Fellow}}s.",
-        EffectType.ONESHOT) {
+        EffectType.ONESHOT, null) {
         @Override
         public Predicate<PaperCard> getDBCardsFilter() {
             Predicate<PaperCard> creatureFilter = PaperCardPredicates.fromRules(
@@ -302,7 +302,7 @@ public enum EventEffect implements RogueEffect {
     },
     BURROWED_SELL("burrowed_sell", "Sell",
         "Sell all non-Human creatures from your deck for 2 {{Gold}} each.",
-        EffectType.ONESHOT) {
+        EffectType.ONESHOT, null) {
         @Override
         public Predicate<PaperCard> getDeckCardFilter() {
             return PaperCardPredicates.fromRules(
@@ -328,7 +328,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     CARAVAN_ROB("caravan_rob", "Caravan Plunder", "Lose 3 life, gain 8 {{Gold}}.",
-        EffectType.ONESHOT) {
+        EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             run.loseLife(3);
@@ -336,7 +336,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     CARAVAN_BROWSE("caravan_browse", "Browse Wares", "Opens a {{Bazaar}}.",
-        EffectType.ONESHOT) {
+        EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             ctx.trigger = EffectResultContext.ActionTriggerType.BAZAAR;
@@ -344,7 +344,7 @@ public enum EventEffect implements RogueEffect {
     },
     CROOKED_COUNSEL_FELLOWSHIP("crooked_counsel_fellowship", "Rally the Free Peoples",
         "Remove all black cards from your deck. Choose up to 9 creatures from a set of legendary Halflings, Humans, Elves, Dwarves, and Wizards to add to your deck.",
-        EffectType.ONESHOT) {
+        EffectType.ONESHOT, null) {
         @Override
         public Predicate<PaperCard> getDBCardsFilter() {
             return PaperCardPredicates.fromRules(
@@ -375,7 +375,7 @@ public enum EventEffect implements RogueEffect {
     },
     CROOKED_COUNSEL_RING("crooked_counsel_ring", "Keep to your own path",
         "Lose 5 life. Gain the legendary artifact {{Item}} [[The One Ring|LTR|2]].",
-        EffectType.ONESHOT) {
+        EffectType.ONESHOT, null) {
         @Override
         public Predicate<PaperCard> getDBCardsFilter() {
             return card -> card.getName().equals("The One Ring");
@@ -400,7 +400,7 @@ public enum EventEffect implements RogueEffect {
     },
     CROOKED_COUNSEL_NAZGUL("crooked_counsel_nazgul", "Join with the dark lord",
         "Remove 9 random creatures from your deck. When you do, add 9 copies of [[Nazgûl]] to your deck.",
-        EffectType.ONESHOT) {
+        EffectType.ONESHOT, null) {
 
         @Override
         public Predicate<PaperCard> getDeckCardFilter() {
@@ -433,7 +433,7 @@ public enum EventEffect implements RogueEffect {
     },
     DISTORTION_EMBRACE("distortion_embrace", "Distortion - Embrace",
         "Turn all uncompleted future {{Side Node}}s into {{Chest}} Nodes. All Planebounds of the next 2 rows gain 2 additional instances of {{Cursed}}.",
-        EffectType.ONESHOT) {
+        EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             if (run.getCurrentNode() == null || run.getPath() == null) {
@@ -453,7 +453,7 @@ public enum EventEffect implements RogueEffect {
     },
     DISTORTION_ENDURE("distortion_endure", "Distortion - Endure",
         "After your next 2 matches, gain 1 less {{Gold}} and see 3 fewer non-mythic cards in Card Rewards.",
-        EffectType.CONSUME) {
+        EffectType.CONSUME, null) {
         @Override
         public int getChargesForRank(int rank) { return 2; }
 
@@ -465,7 +465,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     DRIFTED_RESCUE("drifted_rescue", "Rescue Pilot", "Lose 3 Life. Gain a random legendary Human {{Fellow}}.",
-        EffectType.ONESHOT) {
+        EffectType.ONESHOT, null) {
         @Override
         public Predicate<PaperCard> getDBCardsFilter() {
             return PaperCardPredicates.fromRules(
@@ -482,7 +482,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     DRIFTED_STEAL("drifted_steal", "Steal Vehicle", "Gain a random Vehicle {{Item}}.",
-        EffectType.ONESHOT) {
+        EffectType.ONESHOT, null) {
         @Override
         public Predicate<PaperCard> getDBCardsFilter() {
             return PaperCardPredicates.fromRules(
@@ -496,7 +496,7 @@ public enum EventEffect implements RogueEffect {
     },
     ETERNAL_CRUSADE_SECURE_SPECIMEN("eternal_crusade_secure_specimen", "Secure Specimen",
         "Gain a random Tyranid {{Fellow}}.",
-        EffectType.ONESHOT) {
+        EffectType.ONESHOT, null) {
         @Override
         public Predicate<PaperCard> getDBCardsFilter() {
             return PaperCardPredicates.fromRules(
@@ -525,12 +525,12 @@ public enum EventEffect implements RogueEffect {
 
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human, run);
+            addEffectCardToCommandZone(human);
         }
     },
     ETERNAL_CRUSADE_OFFER_SACRIFICE("eternal_crusade_offer_sacrifice", "Offer Sacrifice",
         "Choose 3 creatures to remove from your deck. When you do, gain the legendary {{Item}} [[The Golden Throne|40K|1]].",
-        EffectType.ONESHOT) {
+        EffectType.ONESHOT, null) {
         @Override
         public Predicate<PaperCard> getDeckCardFilter() {
             return PaperCardPredicates.fromRules(CardRulesPredicates.IS_CREATURE);
@@ -556,7 +556,7 @@ public enum EventEffect implements RogueEffect {
     },
     FINAL_PREPARATIONS_LEARN_SUMMONING("final_preparations_learn_summoning", "Learn Summoning",
         "Gain a random Summon {{Fellow}}.",
-        EffectType.ONESHOT) {
+        EffectType.ONESHOT, null) {
         @Override
         public Predicate<PaperCard> getDBCardsFilter() {
             return card -> card.getName().startsWith("Summon:");
@@ -569,7 +569,7 @@ public enum EventEffect implements RogueEffect {
     },
     FINAL_PREPARATIONS_LEVEL_UP("final_preparations_level_up", "Level Up",
         "Gain 3 {{Max. Life}}.",
-        EffectType.ONESHOT) {
+        EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             run.setMaxLife(run.getMaxLife() + 3);
@@ -577,7 +577,7 @@ public enum EventEffect implements RogueEffect {
     },
     FINAL_PREPARATIONS_VISIT_SMITH("final_preparations_visit_smith", "Visit Smith",
         "Shop from a selection of legendary Equipment cards.",
-        EffectType.ONESHOT) {
+        EffectType.ONESHOT, null) {
         @Override
         public Predicate<PaperCard> getDBCardsFilter() {
             return PaperCardPredicates.fromRules(
@@ -594,7 +594,7 @@ public enum EventEffect implements RogueEffect {
     },
     GAMECHANGER_TRUST("gamechanger_trust", "Trade for Gamechangers",
         "Remove 3 random cards from your deck. Choose 3 cards from the Gamechanger list to add to your deck.",
-        EffectType.ONESHOT) {
+        EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             List<PaperCard> gamechangerCards = run.getGamechangerCardsForActiveCommander();
@@ -609,7 +609,7 @@ public enum EventEffect implements RogueEffect {
     },
     GAMECHANGER_CHOOSE("gamechanger_choose", "Browse Gamechangers",
         "Shop from a selection of Gamechanger cards at doubled prices.",
-        EffectType.ONESHOT) {
+        EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             List<PaperCard> gamechangerCards = run.getGamechangerCardsForActiveCommander();
@@ -627,7 +627,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     GROUND_ZERO_SPECIAL("ground_zero_special", "You're S.P.E.C.I.A.L.", "Add all 7 **Bobblehead** artifacts to your deck. ![[Charisma Bobblehead|PIP|1]] ![[Intelligence Bobblehead|PIP|1]] ![[Strength Bobblehead|PIP|1]]",
-        EffectType.ONESHOT) {
+        EffectType.ONESHOT, null) {
         @Override
         public Predicate<PaperCard> getDBCardsFilter() {
             return PaperCardPredicates.fromRules(
@@ -652,7 +652,7 @@ public enum EventEffect implements RogueEffect {
     },
     GROUND_ZERO_REPAIR("ground_zero_repair", "Use Workbench",
         "Remove all artifact cards from your deck and lose all {{Item}}s. Gain 3 random Robot {{Fellow}}s.",
-        EffectType.ONESHOT) {
+        EffectType.ONESHOT, null) {
         @Override
         public Predicate<PaperCard> getDBCardsFilter() {
             return PaperCardPredicates.fromRules(
@@ -672,7 +672,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     GROUND_ZERO_MUTATE("ground_zero_mutate", "Explore Wasteland", "Remove 5 random creatures from your deck. For each creature removed this way, add a random radiation mutant to your deck.",
-        EffectType.ONESHOT) {
+        EffectType.ONESHOT, null) {
 
         @Override
         public Predicate<PaperCard> getDBCardsFilter() {
@@ -695,7 +695,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     HEALER_POTION("healer_potion", "Healer's Potion", "Pay 5 {{Gold}}, gain 8 life.",
-            EffectType.ONESHOT, 5) {
+            EffectType.ONESHOT, 5, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             run.gainLifeUpToMax(8);
@@ -719,7 +719,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     HEALER_TREAT_WOUNDS("healer_treatment", "Healer's Treatment", "Pay 3 {{Gold}}, clear all {{Wound}}s.",
-        EffectType.ONESHOT, 3) {
+        EffectType.ONESHOT, 3, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             run.clearWounds();
@@ -743,7 +743,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     HEALER_STRENGTHEN("healer_strengthen", "Healer's Strength", "Pay 7 {{Gold}}, gain 10 {{Max. Life}}.",
-        EffectType.ONESHOT, 7) {
+        EffectType.ONESHOT, 7, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             run.setMaxLife(run.getMaxLife() + 10);
@@ -761,14 +761,14 @@ public enum EventEffect implements RogueEffect {
         }
     },
     HORROR_SURRENDER("horror_surrender", "Lose All Gold", "You lose all your {{Gold}}.",
-        EffectType.ONESHOT) {
+        EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             run.setCurrentGold(0);
         }
     },
     HORROR_RESIST("horror_resist", "Lose All Echoes", "You lose all your {{Echoes}}.",
-        EffectType.ONESHOT) {
+        EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             RogueMetaProgress.getInstance().setTotalEchoes(0);
@@ -776,7 +776,7 @@ public enum EventEffect implements RogueEffect {
     },
     INFAMOUS_JUNCTION_RAISE_GANG("infamous_junction_raise_gang", "Raise a Gang",
         "Remove all Human creatures from your deck. For each card removed this way, choose a Rogue or Mercenary to add to your deck.",
-        EffectType.ONESHOT) {
+        EffectType.ONESHOT, null) {
         @Override
         public Predicate<PaperCard> getDeckCardFilter() {
             return PaperCardPredicates.fromRules(
@@ -804,7 +804,7 @@ public enum EventEffect implements RogueEffect {
     },
     INFAMOUS_JUNCTION_ROB_BANK("infamous_junction_rob_bank", "Rob the Local Bank",
         "Lose 3 life. Gain 8 {{Gold}}.",
-        EffectType.ONESHOT) {
+        EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             run.loseLife(3);
@@ -813,7 +813,7 @@ public enum EventEffect implements RogueEffect {
     },
     INFAMOUS_JUNCTION_ROPE_CATTLE("infamous_junction_rope_cattle", "Rope the Lost Cattle",
         "Gain a random Mount {{Fellow}}.",
-        EffectType.ONESHOT) {
+        EffectType.ONESHOT, null) {
         @Override
         public Predicate<PaperCard> getDBCardsFilter() {
             return PaperCardPredicates.fromRules(
@@ -827,7 +827,7 @@ public enum EventEffect implements RogueEffect {
     },
     LOST_NOT_FORGOTTEN_PARTY("lost_not_forgotten_party", "Stumble Into Party",
         "Add a random Wizard, Warrior, Cleric and Rogue to your deck.",
-        EffectType.ONESHOT) {
+        EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             addCardsToDeck(run, ctx, getWizardFilter(), 1, null, null);
@@ -858,7 +858,7 @@ public enum EventEffect implements RogueEffect {
     },
     LOST_NOT_FORGOTTEN_LEVEL_UP("lost_not_forgotten_level_up", "Level Up",
         "Pay 4 {{Gold}}. Choose up to 5 Classes to add to your deck.",
-        EffectType.ONESHOT, 4) {
+        EffectType.ONESHOT, 4, null) {
         @Override
         public Predicate<PaperCard> getDBCardsFilter() {
             return PaperCardPredicates.fromRules(CardRulesPredicates.subType("Class"));
@@ -882,7 +882,7 @@ public enum EventEffect implements RogueEffect {
     },
     LOST_NOT_FORGOTTEN_VENTURE_DEEPER("lost_not_forgotten_venture_deeper", "Venture deeper",
         "Roll a d20.\n1: Trap - Gain a random {{Wound}}\n2-9: Enemies - Fight a random Planebound on a random Plane.\n10-19: Find Loot - Gain the {{Item}} [[Treasure Chest]].\n20: Find Treasure Vault - Gain 20 {{Gold}} and find a {{Chest}}.",
-        EffectType.ONESHOT) {
+        EffectType.ONESHOT, null) {
         @Override
         public Predicate<PaperCard> getDBCardsFilter() {
             return card -> card.getName().equals("Treasure Chest");
@@ -918,7 +918,7 @@ public enum EventEffect implements RogueEffect {
 
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human, run);
+            addEffectCardToCommandZone(human);
             run.consumeEffect(getId());
         }
     },
@@ -927,12 +927,12 @@ public enum EventEffect implements RogueEffect {
         EffectType.PERMANENT, "Event Trait - Commander Weakened") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human, run);
+            addEffectCardToCommandZone(human);
         }
     },
     LOST_REPLACE("lost_replace", "Lost Connection - Replace",
         "Choose a new Commander for your deck for the rest of the Run.",
-        EffectType.ONESHOT) {
+        EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             int commanderColorIdentityMask = run.getCommanderColorIdentityMask();
@@ -947,7 +947,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     MEET_NPC_TYVAR("meet_npc_tyvar", "Meet Tyvar Kell", "Tyvar Kell offers to train your Commander.",
-        EffectType.ONESHOT) {
+        EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             RogueMetaProgress progress = RogueMetaProgress.getInstance();
@@ -958,7 +958,7 @@ public enum EventEffect implements RogueEffect {
     },
     NEON_LID_SAMURAI("neon_lid_samurai", "Path of the Samurai",
         "Remove all creatures from your deck. For each creature removed this way, choose a Samurai to add to your deck.",
-        EffectType.ONESHOT) {
+        EffectType.ONESHOT, null) {
         @Override
         public Predicate<PaperCard> getDBCardsFilter() {
             return PaperCardPredicates.fromRules(
@@ -987,7 +987,7 @@ public enum EventEffect implements RogueEffect {
 
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human, run);
+            addEffectCardToCommandZone(human);
         }
 
         @Override
@@ -1002,7 +1002,7 @@ public enum EventEffect implements RogueEffect {
     },
     NEON_LID_SHRINE("neon_lid_shrine", "Path of Inner Peace",
         "For each color of your commander, add a random legendary Shrine to your deck.",
-        EffectType.ONESHOT) {
+        EffectType.ONESHOT, null) {
         @Override
         public Predicate<PaperCard> getDBCardsFilter() {
             return PaperCardPredicates.fromRules(
@@ -1017,7 +1017,7 @@ public enum EventEffect implements RogueEffect {
     },
     ON_THE_EDGE_BOARD("on_the_edge_board", "Board",
         "Move to a random other location on the map and enter it.",
-        EffectType.ONESHOT) {
+        EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             if (run.getPath() == null || run.getPath().getNodeCount() <= 1) {
@@ -1036,7 +1036,7 @@ public enum EventEffect implements RogueEffect {
     },
     ON_THE_EDGE_HIJACK("on_the_edge_hijack", "Hijack",
         "Gain a random Spacecraft {{Item}}.",
-        EffectType.ONESHOT) {
+        EffectType.ONESHOT, null) {
         @Override
         public Predicate<PaperCard> getDBCardsFilter() {
             return PaperCardPredicates.fromRules(
@@ -1050,7 +1050,7 @@ public enum EventEffect implements RogueEffect {
     },
     ON_THE_EDGE_SCAVENGE("on_the_edge_scavenge", "Scavenge",
         "Lose 3 life. Choose up to 5 out of 20 Robots to add to your deck.",
-        EffectType.ONESHOT) {
+        EffectType.ONESHOT, null) {
         @Override
         public Predicate<PaperCard> getDBCardsFilter() {
             return PaperCardPredicates.fromRules(
@@ -1064,10 +1064,10 @@ public enum EventEffect implements RogueEffect {
         }
     },
     NOTHING("nothing", "Nothing", "No effect.",
-        EffectType.ONESHOT),
+        EffectType.ONESHOT, null),
     PLANAR_EXCHANGE_EXCHANGE("planar_exchange_exchange", "Planar Exchange",
         "Choose 3 cards to remove (excluding basic lands), then receive 3 random cards from your {{Reward Pool}}.",
-        EffectType.ONESHOT) {
+        EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             int exchangeCount = 3;
@@ -1080,7 +1080,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     PLANAR_RIFT_ENERGY("planar_rift_energy", "Planar Rift Energy", "Gain 6 {{Gold}}.",
-            EffectType.ONESHOT) {
+            EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             run.addGold(5);
@@ -1095,12 +1095,12 @@ public enum EventEffect implements RogueEffect {
         }
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human, run);
+            addEffectCardToCommandZone(human);
         }
     },
     PLANAR_TRIBUTE_REPLACE("planar_tribute_replace", "Planar Shuffle",
             "Remove 3 random cards (excluding basic lands) from your deck. Add 3 random cards from your {{Reward Pool}}.",
-            EffectType.ONESHOT) {
+            EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
 
@@ -1118,7 +1118,7 @@ public enum EventEffect implements RogueEffect {
     },
     PLANAR_TRIBUTE_REMOVE("planar_tribute_remove", "Planar Sacrifice",
         "Choose 3 cards (excluding basic lands) to remove from your deck.",
-        EffectType.ONESHOT) {
+        EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             selectCardsFromDeck(run, ctx, PaperCardPredicates.fromRules(CardRulesPredicates.NOT_BASIC_LAND),
@@ -1126,7 +1126,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     SATCHEL_OPEN("satchel_open", "Open the Satchel", "You find a hidden {{Chest}}.",
-        EffectType.ONESHOT) {
+        EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             triggerChest(ctx);
@@ -1142,7 +1142,7 @@ public enum EventEffect implements RogueEffect {
 
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human, run);
+            addEffectCardToCommandZone(human);
         }
     },
     STREET_OF_GREED_ACCEPT("street_of_greed_accept", "Accept",
@@ -1156,7 +1156,7 @@ public enum EventEffect implements RogueEffect {
 
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human, run);
+            addEffectCardToCommandZone(human);
         }
     },
     STREET_OF_FORCEFULNESS_ACCEPT("street_of_forcefulness_accept", "Accept",
@@ -1169,7 +1169,7 @@ public enum EventEffect implements RogueEffect {
 
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human, run);
+            addEffectCardToCommandZone(human);
         }
 
         @Override
@@ -1178,14 +1178,14 @@ public enum EventEffect implements RogueEffect {
         }
     },
     SHRINE_KNEEL("shrine_kneel", "Kneel", "You discover a hidden {{Sanctum}}.",
-        EffectType.ONESHOT) {
+        EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             triggerSanctum(ctx);
         }
     },
     THORNS_ENDURE("thorns_endure", "Gain Wound", "Gain a random {{Wound}}.",
-            EffectType.ONESHOT) {
+            EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             gainWound(run, ctx);
@@ -1195,7 +1195,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     THORNS_PRESS("thorns_press", "Lose 4 Life", "You lose 4 life.",
-            EffectType.ONESHOT) {
+            EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             run.loseLife(4);
@@ -1212,7 +1212,7 @@ public enum EventEffect implements RogueEffect {
 
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human, run);
+            addEffectCardToCommandZone(human);
         }
 
         @Override
@@ -1227,7 +1227,7 @@ public enum EventEffect implements RogueEffect {
     },
     TRAPPED_IN_THE_LAIR_SLAY("trapped_in_the_lair_slay", "Slay",
         "Gain a random {{Wound}}. Gain 3 random Food {{Item}}s.",
-        EffectType.ONESHOT) {
+        EffectType.ONESHOT, null) {
         @Override
         public Predicate<PaperCard> getDBCardsFilter() {
             return PaperCardPredicates.fromRules(
@@ -1242,7 +1242,7 @@ public enum EventEffect implements RogueEffect {
     },
     TRAPPED_IN_THE_LAIR_TAME("trapped_in_the_lair_tame", "Tame",
         "Lose 3 life. Gain a random legendary Beast {{Fellow}}.",
-        EffectType.ONESHOT) {
+        EffectType.ONESHOT, null) {
         @Override
         public Predicate<PaperCard> getDBCardsFilter() {
             return PaperCardPredicates.fromRules(
@@ -1264,24 +1264,16 @@ public enum EventEffect implements RogueEffect {
     private final EffectType effectType;
     private final int goldCost;
     private final String effectCardName;
-    EventEffect(String id, String displayName, String description, EffectType effectType) {
-        this(id, displayName, description, effectType, 0, null);
-    }
-
     EventEffect(String id, String displayName, String description, EffectType effectType,
                 String effectCardName) {
         this(id, displayName, description, effectType, 0, effectCardName);
-    }
-
-    EventEffect(String id, String displayName, String description, EffectType effectType, int goldCost) {
-        this(id, displayName, description, effectType, goldCost, null);
     }
 
     EventEffect(String id, String displayName, String description, EffectType effectType, int goldCost,
                 String effectCardName) {
         this.id = id;
         this.displayName = displayName;
-        this.description = RogueEffect.appendPreviewReference(description, effectCardName);
+        this.description = description;
         this.effectType = effectType;
         this.goldCost = goldCost;
         this.effectCardName = effectCardName;
@@ -1302,7 +1294,7 @@ public enum EventEffect implements RogueEffect {
     public String getRawDescription() { return description; }
 
     @Override
-    public String getEffectCardName(RogueRun run) { return effectCardName; }
+    public String getEffectCardName() { return effectCardName; }
 
     public int getGoldCost() { return goldCost; }
 
@@ -1322,3 +1314,4 @@ public enum EventEffect implements RogueEffect {
         return null;
     }
 }
+

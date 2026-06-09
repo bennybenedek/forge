@@ -142,19 +142,13 @@ public enum EchoEffect implements RogueEffect {
         "Reduce the Mana Cost for casting your Commander.",
         new int[]{4, 8, 12, 16},   // Echo costs (rank 1-4)
         new int[]{1, 2, 3, 4},     // Effect values: {1}/{2}/{3}/{4} less
-        3, 1, EffectType.PERMANENT, "Trait - Fractured Binding") {
-        @Override
-        public String getEffectCardName(RogueRun run) {
-            int reduction = getEffectValueAtRank(run.getRunEffectRank(getId()));
-            String baseEffectCardName = super.getEffectCardName(run);
-            return reduction > 0 && baseEffectCardName != null
-                ? baseEffectCardName + " " + reduction
-                : null;
-        }
-
+        3, 1, EffectType.PERMANENT) {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human, run);
+            int reduction = getEffectValueAtRank(run.getRunEffectRank(getId()));
+            if (reduction > 0) {
+                RogueEffect.addCardToCommandZone("Trait - Fractured Binding " + reduction, human);
+            }
         }
     };
 
@@ -166,18 +160,9 @@ public enum EchoEffect implements RogueEffect {
     private final int maxRank;
     private final int requiredUpgradeLevel; // 0 = always accessible; 1 = requires Aether Upgrade 1
     private final EffectType effectType;
-    private final String effectCardName;
-
     EchoEffect(String id, String displayName, String description,
              int[] echoCosts, int[] effectValues, int maxRank, int requiredUpgradeLevel,
              EffectType effectType) {
-        this(id, displayName, description, echoCosts, effectValues, maxRank, requiredUpgradeLevel,
-            effectType, null);
-    }
-
-    EchoEffect(String id, String displayName, String description,
-             int[] echoCosts, int[] effectValues, int maxRank, int requiredUpgradeLevel,
-             EffectType effectType, String effectCardName) {
         this.id = id;
         this.displayName = displayName;
         this.description = description;
@@ -186,7 +171,6 @@ public enum EchoEffect implements RogueEffect {
         this.maxRank = maxRank;
         this.requiredUpgradeLevel = requiredUpgradeLevel;
         this.effectType = effectType;
-        this.effectCardName = effectCardName;
     }
 
     @Override
@@ -206,9 +190,6 @@ public enum EchoEffect implements RogueEffect {
 
     @Override
     public String getRawDescription() { return description; }
-
-    @Override
-    public String getEffectCardName(RogueRun run) { return effectCardName; }
 
     public int getMaxRank() {
         return maxRank;

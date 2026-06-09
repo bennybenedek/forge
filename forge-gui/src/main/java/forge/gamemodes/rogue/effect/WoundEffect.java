@@ -10,18 +10,18 @@ public enum WoundEffect implements RogueEffect {
             EffectType.PERMANENT, "Wound - Leg") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human, run);
+            addEffectCardToCommandZone(human);
         }
     },
     HEAD("head", "Head", "Start each match with 1 less card in hand.",
-            EffectType.PERMANENT) {
+            EffectType.PERMANENT, null) {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             human.setStartingHand(human.getStartingHand() - 1);
         }
     },
     EYE("eye", "Eye", "Planes on the path are not revealed when you reach them.",
-            EffectType.PERMANENT) {
+            EffectType.PERMANENT, null) {
         @Override
         public void onPathUpdate(PathUpdateContext ctx, RogueRun run) {
             ctx.hidePlanes = true;
@@ -34,15 +34,11 @@ public enum WoundEffect implements RogueEffect {
     private final EffectType effectType;
     private final String effectCardName;
 
-    WoundEffect(String id, String displayName, String description, EffectType effectType) {
-        this(id, displayName, description, effectType, null);
-    }
-
     WoundEffect(String id, String displayName, String description, EffectType effectType,
                 String effectCardName) {
         this.id = id;
         this.displayName = displayName;
-        this.description = RogueEffect.appendPreviewReference(description, effectCardName);
+        this.description = description;
         this.effectType = effectType;
         this.effectCardName = effectCardName;
     }
@@ -60,7 +56,7 @@ public enum WoundEffect implements RogueEffect {
     public String getRawDescription() { return description; }
 
     @Override
-    public String getEffectCardName(RogueRun run) { return effectCardName; }
+    public String getEffectCardName() { return effectCardName; }
 
     public static WoundEffect fromId(String id) {
         for (WoundEffect w : values())

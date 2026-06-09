@@ -8,28 +8,28 @@ public enum WrathfulEffect implements PlaneboundEffect {
 
     COMMANDER_BOOST("wrathful_commander_boost", "Might",
             "Planebound Commander gets +2/+2.",
-            "Wrathful - Might") {
+        "Wrathful - Might") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human, run);
+            addEffectCardToCommandZone(human);
             run.consumeEffect(getId());
         }
     },
     UPKEEP_HEAL("wrathful_upkeep_heal", "Resilience",
             "Planebound gains 1 life at the beginning of each of their upkeeps.",
-            "Wrathful - Resilience") {
+        "Wrathful - Resilience") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human, run);
+            addEffectCardToCommandZone(human);
             run.consumeEffect(getId());
         }
     },
     COMMANDER_DISCOUNT("wrathful_commander_discount", "Haste",
             "Planebound Commander costs {1} less to cast.",
-            "Wrathful - Haste") {
+        "Wrathful - Haste") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human, run);
+            addEffectCardToCommandZone(human);
             run.consumeEffect(getId());
         }
     };
@@ -42,7 +42,7 @@ public enum WrathfulEffect implements PlaneboundEffect {
     WrathfulEffect(String id, String displayName, String description, String effectCardName) {
         this.id = id;
         this.displayName = displayName;
-        this.description = RogueEffect.appendPreviewReference(description, effectCardName);
+        this.description = description;
         this.effectCardName = effectCardName;
     }
 
@@ -59,7 +59,7 @@ public enum WrathfulEffect implements PlaneboundEffect {
     public String getRawDescription() { return description; }
 
     @Override
-    public String getEffectCardName(RogueRun run) { return effectCardName; }
+    public String getEffectCardName() { return effectCardName; }
 
     public static WrathfulEffect getRandomExcluding(Set<WrathfulEffect> exclude) {
         return PlaneboundEffect.getRandomExcluding(values(), exclude);

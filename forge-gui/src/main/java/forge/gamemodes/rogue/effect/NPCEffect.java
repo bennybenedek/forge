@@ -15,7 +15,7 @@ public enum NPCEffect implements RogueEffect {
         EffectType.PERMANENT, "Tyvar Trait - Might") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human, run);
+            addEffectCardToCommandZone(human);
         }
     },
     TYVAR_DISCOUNT("npc_tyvar_discount", "Tyvar's Efficiency",
@@ -23,7 +23,7 @@ public enum NPCEffect implements RogueEffect {
         EffectType.PERMANENT, "Tyvar Trait - Efficiency") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human, run);
+            addEffectCardToCommandZone(human);
         }
     },
     TYVAR_HASTE("npc_tyvar_haste", "Tyvar's Fury",
@@ -31,13 +31,14 @@ public enum NPCEffect implements RogueEffect {
         EffectType.PERMANENT, "Tyvar Trait - Fury") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human, run);
+            addEffectCardToCommandZone(human);
         }
     },
 
     // Narset traits
     NARSET_TRAVELER("npc_narset_traveler", "Traveler",
-        "Start each match with a [[Fractured Powerstone]] on the battlefield.", EffectType.PERMANENT) {
+        "Start each match with a [[Fractured Powerstone]] on the battlefield.",
+        EffectType.PERMANENT, null) {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             RogueEffect.addCardToBattlefield("Fractured Powerstone", human);
@@ -45,10 +46,10 @@ public enum NPCEffect implements RogueEffect {
     },
     NARSET_ALCHEMIST("npc_narset_alchemist", "Alchemist",
         "Start the Run with an [[Ichor Elixir]] {{Item}} in the command zone.",
-        EffectType.ONESHOT, "Ichor Elixir", false) {
+        EffectType.ONESHOT, "Ichor Elixir") {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            PaperCard ichorElixir = getEffectCard(run);
+            PaperCard ichorElixir = getEffectCard();
             run.addCarryCard(ichorElixir, RogueRun.CarryCardType.ITEM, getId());
         }
     },
@@ -57,7 +58,7 @@ public enum NPCEffect implements RogueEffect {
         EffectType.PERMANENT, "Narset - Chaos Capsule") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToBattlefield(human, run);
+            addEffectCardToBattlefield(human);
         }
     },
     NARSET_GOD_OF_CHAOS("npc_narset_god_of_chaos", "God of Chaos",
@@ -65,7 +66,7 @@ public enum NPCEffect implements RogueEffect {
         EffectType.PERMANENT, "Narset Trait - God of Chaos") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human, run);
+            addEffectCardToCommandZone(human);
         }
     };
 
@@ -75,22 +76,11 @@ public enum NPCEffect implements RogueEffect {
     private final EffectType effectType;
     private final String effectCardName;
 
-    NPCEffect(String id, String displayName, String description, EffectType effectType) {
-        this(id, displayName, description, effectType, null, false);
-    }
-
     NPCEffect(String id, String displayName, String description, EffectType effectType,
               String effectCardName) {
-        this(id, displayName, description, effectType, effectCardName, true);
-    }
-
-    NPCEffect(String id, String displayName, String description, EffectType effectType,
-              String effectCardName, boolean appendEffectCardPreview) {
         this.id = id;
         this.displayName = displayName;
-        this.description = appendEffectCardPreview
-            ? RogueEffect.appendPreviewReference(description, effectCardName)
-            : description;
+        this.description = description;
         this.effectType = effectType;
         this.effectCardName = effectCardName;
     }
@@ -108,7 +98,7 @@ public enum NPCEffect implements RogueEffect {
     public String getRawDescription() { return description; }
 
     @Override
-    public String getEffectCardName(RogueRun run) { return effectCardName; }
+    public String getEffectCardName() { return effectCardName; }
 
     public static NPCEffect fromId(String id) {
         for (NPCEffect b : values())

@@ -19,7 +19,8 @@ import java.util.*;
 public enum DescensionLevel implements RogueEffect {
 
     LEVEL_1(1, "Wrathful",
-        "Some Planebounds on the path become Wrathful, gaining random buffs for the match.") {
+        "Some Planebounds on the path become Wrathful, gaining random buffs for the match.",
+        null) {
         @Override
         public void afterPathGeneration(RogueRun run) {
             List<NodePlanebound> planeboundNodes = new ArrayList<>();
@@ -45,7 +46,8 @@ public enum DescensionLevel implements RogueEffect {
     },
 
     LEVEL_2(2, "Cursed",
-        "Some Planebounds on the path become Cursed, gaining powerful buffs for the opponent.") {
+        "Some Planebounds on the path become Cursed, gaining powerful buffs for the opponent.",
+        null) {
         @Override
         public void afterPathGeneration(RogueRun run) {
             List<NodePlanebound> planeboundNodes = new ArrayList<>();
@@ -75,12 +77,13 @@ public enum DescensionLevel implements RogueEffect {
         "Descension - Bloodthirsty") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human, run);
+            addEffectCardToCommandZone(human);
         }
     },
 
     LEVEL_4(4, "Elite Paths",
-        "2 random Normal Planes of the Path are replaced by Elite Planes.") {
+        "2 random Normal Planes of the Path are replaced by Elite Planes.",
+        null) {
         @Override
         public void afterPathGeneration(RogueRun run) {
             List<RoguePathNode> nodes = run.getPath().getNodes();
@@ -124,7 +127,7 @@ public enum DescensionLevel implements RogueEffect {
         "Descension - Taxing Mana") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human, run);
+            addEffectCardToCommandZone(human);
         }
     };
 
@@ -133,14 +136,10 @@ public enum DescensionLevel implements RogueEffect {
     public final String description;
     private final String effectCardName;
 
-    DescensionLevel(int level, String name, String description) {
-        this(level, name, description, null);
-    }
-
     DescensionLevel(int level, String name, String description, String effectCardName) {
         this.level = level;
         this.name = name;
-        this.description = RogueEffect.appendPreviewReference(description, effectCardName);
+        this.description = description;
         this.effectCardName = effectCardName;
     }
 
@@ -151,7 +150,7 @@ public enum DescensionLevel implements RogueEffect {
     public String getRawDescription() { return description; }
 
     @Override
-    public String getEffectCardName(RogueRun run) { return effectCardName; }
+    public String getEffectCardName() { return effectCardName; }
 
     public static DescensionLevel forLevel(int level) {
         for (DescensionLevel dl : values()) {
