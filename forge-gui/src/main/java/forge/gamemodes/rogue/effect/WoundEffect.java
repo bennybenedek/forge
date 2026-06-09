@@ -32,15 +32,15 @@ public enum WoundEffect implements RogueEffect {
     private final String displayName;
     private final String description;
     private final EffectType effectType;
-    private final String effectCardName;
+    private final String effectCardReference;
 
     WoundEffect(String id, String displayName, String description, EffectType effectType,
-                String effectCardName) {
+                String effectCardReference) {
         this.id = id;
         this.displayName = displayName;
         this.description = description;
         this.effectType = effectType;
-        this.effectCardName = effectCardName;
+        this.effectCardReference = effectCardReference;
     }
 
     @Override
@@ -56,7 +56,7 @@ public enum WoundEffect implements RogueEffect {
     public String getRawDescription() { return description; }
 
     @Override
-    public String getEffectCardName() { return effectCardName; }
+    public String getEffectCardReference() { return effectCardReference; }
 
     public static WoundEffect fromId(String id) {
         for (WoundEffect w : values())

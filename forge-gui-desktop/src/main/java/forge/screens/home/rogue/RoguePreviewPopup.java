@@ -1,9 +1,11 @@
 package forge.screens.home.rogue;
 
+import forge.gamemodes.rogue.CardPrintOverride;
 import forge.gamemodes.rogue.KeywordHint;
 import forge.gamemodes.rogue.PreviewReference;
 import forge.gamemodes.rogue.PreviewReferenceType;
 import forge.gamemodes.rogue.RogueConfig;
+import forge.gamemodes.rogue.TextHelper;
 import forge.gui.CardPicturePanel;
 import forge.item.PaperCard;
 import forge.model.FModel;
@@ -337,15 +339,29 @@ public class RoguePreviewPopup {
         return width;
     }
 
-    private static PaperCard resolveCard(String cardName) {
-        if (cardName == null || cardName.isBlank()) {
+    private static PaperCard resolveCard(String cardReference) {
+        if (cardReference == null || cardReference.isBlank()) {
+            return null;
+        }
+
+        CardPrintOverride referenceParts = TextHelper.parseCardReference(cardReference);
+        if (referenceParts.cardName().isEmpty()) {
             return null;
         }
 
         RogueConfig.loadRogueCards();
-        PaperCard card = FModel.getMagicDb().getCommonCards().getCard(cardName);
+        PaperCard card;
+        if (referenceParts.setCode() == null || referenceParts.setCode().isEmpty()) {
+            card = FModel.getMagicDb().getCommonCards().getCard(referenceParts.cardName());
+        } else if (referenceParts.artIndex() == null) {
+            card = FModel.getMagicDb().getCommonCards().getCard(referenceParts.cardName(),
+                referenceParts.setCode());
+        } else {
+            card = FModel.getMagicDb().getCommonCards().getCard(referenceParts.cardName(),
+                referenceParts.setCode(), referenceParts.artIndex());
+        }
         if (card == null) {
-            card = FModel.getMagicDb().getVariantCards().getCard(cardName);
+            card = FModel.getMagicDb().getVariantCards().getCard(referenceParts.cardName());
         }
         return card;
     }

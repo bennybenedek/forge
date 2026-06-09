@@ -37,13 +37,13 @@ public enum WrathfulEffect implements PlaneboundEffect {
     private final String id;
     private final String displayName;
     private final String description;
-    private final String effectCardName;
+    private final String effectCardReference;
 
-    WrathfulEffect(String id, String displayName, String description, String effectCardName) {
+    WrathfulEffect(String id, String displayName, String description, String effectCardReference) {
         this.id = id;
         this.displayName = displayName;
         this.description = description;
-        this.effectCardName = effectCardName;
+        this.effectCardReference = effectCardReference;
     }
 
     @Override
@@ -59,7 +59,7 @@ public enum WrathfulEffect implements PlaneboundEffect {
     public String getRawDescription() { return description; }
 
     @Override
-    public String getEffectCardName() { return effectCardName; }
+    public String getEffectCardReference() { return effectCardReference; }
 
     public static WrathfulEffect getRandomExcluding(Set<WrathfulEffect> exclude) {
         return PlaneboundEffect.getRandomExcluding(values(), exclude);

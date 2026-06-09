@@ -74,15 +74,15 @@ public enum NPCEffect implements RogueEffect {
     private final String displayName;
     private final String description;
     private final EffectType effectType;
-    private final String effectCardName;
+    private final String effectCardReference;
 
     NPCEffect(String id, String displayName, String description, EffectType effectType,
-              String effectCardName) {
+              String effectCardReference) {
         this.id = id;
         this.displayName = displayName;
         this.description = description;
         this.effectType = effectType;
-        this.effectCardName = effectCardName;
+        this.effectCardReference = effectCardReference;
     }
 
     @Override
@@ -98,7 +98,7 @@ public enum NPCEffect implements RogueEffect {
     public String getRawDescription() { return description; }
 
     @Override
-    public String getEffectCardName() { return effectCardName; }
+    public String getEffectCardReference() { return effectCardReference; }
 
     public static NPCEffect fromId(String id) {
         for (NPCEffect b : values())

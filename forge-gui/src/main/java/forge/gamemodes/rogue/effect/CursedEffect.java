@@ -69,13 +69,13 @@ public enum CursedEffect implements PlaneboundEffect {
     private final String id;
     private final String displayName;
     private final String description;
-    private final String effectCardName;
+    private final String effectCardReference;
 
-    CursedEffect(String id, String displayName, String description, String effectCardName) {
+    CursedEffect(String id, String displayName, String description, String effectCardReference) {
         this.id = id;
         this.displayName = displayName;
         this.description = description;
-        this.effectCardName = effectCardName;
+        this.effectCardReference = effectCardReference;
     }
 
     @Override
@@ -91,7 +91,7 @@ public enum CursedEffect implements PlaneboundEffect {
     public String getRawDescription() { return description; }
 
     @Override
-    public String getEffectCardName() { return effectCardName; }
+    public String getEffectCardReference() { return effectCardReference; }
 
     public static CursedEffect getRandomExcluding(Set<CursedEffect> exclude) {
         return PlaneboundEffect.getRandomExcluding(values(), exclude);

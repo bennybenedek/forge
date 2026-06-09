@@ -375,22 +375,23 @@ public enum EventEffect implements RogueEffect {
     },
     CROOKED_COUNSEL_RING("crooked_counsel_ring", "Keep to your own path",
         "Lose 5 life. Gain the legendary artifact {{Item}} [[The One Ring|LTR|2]].",
-        EffectType.ONESHOT, null) {
+        EffectType.ONESHOT, "The One Ring|LTR|2") {
         @Override
         public Predicate<PaperCard> getDBCardsFilter() {
-            return card -> card.getName().equals("The One Ring");
+            return card -> card.getName().equals(TextHelper.extractCardNameFromReference(getEffectCardReference()));
         }
 
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             run.loseLife(5);
             addCarryCards(run, ctx, getDBCardsFilter(), 1, RogueRun.CarryCardType.ITEM,
-                List.of(new CardPrintOverride("The One Ring", "LTR", 2)));
+                List.of(new CardPrintOverride(TextHelper.extractCardNameFromReference(getEffectCardReference()),
+                    "LTR", 2)));
         }
 
         @Override
         public boolean isChoiceAvailable(RogueRun run) {
-            return run.canAddCardToDeck(RogueConfig.getCard("The One Ring", "LTR", 2));
+            return run.canAddCardToDeck(getEffectCard());
         }
 
         @Override
@@ -1263,20 +1264,20 @@ public enum EventEffect implements RogueEffect {
     private final String description;
     private final EffectType effectType;
     private final int goldCost;
-    private final String effectCardName;
+    private final String effectCardReference;
     EventEffect(String id, String displayName, String description, EffectType effectType,
-                String effectCardName) {
-        this(id, displayName, description, effectType, 0, effectCardName);
+                String effectCardReference) {
+        this(id, displayName, description, effectType, 0, effectCardReference);
     }
 
     EventEffect(String id, String displayName, String description, EffectType effectType, int goldCost,
-                String effectCardName) {
+                String effectCardReference) {
         this.id = id;
         this.displayName = displayName;
         this.description = description;
         this.effectType = effectType;
         this.goldCost = goldCost;
-        this.effectCardName = effectCardName;
+        this.effectCardReference = effectCardReference;
     }
 
     public void applyEffect(RogueRun run, EffectResultContext ctx) { /* Override in ONESHOT constants to apply immediate event effects. */}
@@ -1294,7 +1295,7 @@ public enum EventEffect implements RogueEffect {
     public String getRawDescription() { return description; }
 
     @Override
-    public String getEffectCardName() { return effectCardName; }
+    public String getEffectCardReference() { return effectCardReference; }
 
     public int getGoldCost() { return goldCost; }
 

@@ -2,6 +2,7 @@ package forge.screens.home.rogue;
 
 import forge.gamemodes.rogue.PreviewReference;
 import forge.gamemodes.rogue.PreviewReferenceType;
+import forge.gamemodes.rogue.TextHelper;
 import forge.toolbox.FButton;
 import java.awt.Color;
 import java.awt.Dimension;
@@ -171,18 +172,9 @@ public final class RogueButtonHelper {
 
   private static String extractHighlightToken(PreviewReference reference, PreviewReferenceType type) {
     if (type == PreviewReferenceType.CARD) {
-      return extractCardDisplayName(reference.token());
+      return TextHelper.extractCardNameFromReference(reference.token());
     }
     return reference.token() == null ? "" : reference.token().trim();
-  }
-
-  private static String extractCardDisplayName(String token) {
-    if (token == null || token.isBlank()) {
-      return "";
-    }
-
-    int separatorIndex = token.indexOf('|');
-    return separatorIndex >= 0 ? token.substring(0, separatorIndex).trim() : token;
   }
 
   private enum HighlightStyle {

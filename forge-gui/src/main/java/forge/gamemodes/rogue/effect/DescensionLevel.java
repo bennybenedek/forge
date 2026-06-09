@@ -134,13 +134,13 @@ public enum DescensionLevel implements RogueEffect {
     public final int level;
     public final String name;
     public final String description;
-    private final String effectCardName;
+    private final String effectCardReference;
 
-    DescensionLevel(int level, String name, String description, String effectCardName) {
+    DescensionLevel(int level, String name, String description, String effectCardReference) {
         this.level = level;
         this.name = name;
         this.description = description;
-        this.effectCardName = effectCardName;
+        this.effectCardReference = effectCardReference;
     }
 
     @Override
@@ -150,7 +150,7 @@ public enum DescensionLevel implements RogueEffect {
     public String getRawDescription() { return description; }
 
     @Override
-    public String getEffectCardName() { return effectCardName; }
+    public String getEffectCardReference() { return effectCardReference; }
 
     public static DescensionLevel forLevel(int level) {
         for (DescensionLevel dl : values()) {

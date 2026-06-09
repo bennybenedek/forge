@@ -16,7 +16,7 @@ import java.util.function.Predicate;
 
 /**
  * Interface for effects that trigger at specific points during a Rogue Commander run.
- * All methods are no-ops by default — override only the triggers relevant to each effect.
+ * All methods are no-ops by default - override only the triggers relevant to each effect.
  * All state is read from RogueRun (echo boons, event traits, descension are snapshotted there).
  */
 public interface RogueEffect {
@@ -40,16 +40,22 @@ public interface RogueEffect {
     /** Raw description for preview-aware UI. Override in concrete types. */
     default String getRawDescription() { return ""; }
 
-    /** Optional representative card used for UI and runtime behavior. */
-    default String getEffectCardName() { return null; }
+    /** Optional representative card reference used for UI and runtime behavior. */
+    default String getEffectCardReference() { return null; }
 
-    /** Paper card associated with an effect, load by name. */
+    /** Paper card associated with an effect, resolved from the optional reference token. */
     default PaperCard getEffectCard() {
-        String effectCardName = getEffectCardName();
-        if (effectCardName == null || effectCardName.isBlank()) {
+        String effectCardReference = getEffectCardReference();
+        if (effectCardReference == null || effectCardReference.isBlank()) {
             return null;
         }
-        return RogueConfig.getCard(effectCardName, null, null);
+
+        CardPrintOverride effectCardReferenceParts = TextHelper.parseCardReference(effectCardReference);
+        if (effectCardReferenceParts.cardName().isEmpty()) {
+            return null;
+        }
+        return RogueConfig.getCard(effectCardReferenceParts.cardName(),
+            effectCardReferenceParts.setCode(), effectCardReferenceParts.artIndex());
     }
 
     /** Description for tooltips and display text. */
@@ -58,7 +64,12 @@ public interface RogueEffect {
     /** Resolved display name for active-effect UI such as the RogueMap header. */
     default String getMapDisplayName() {
         PaperCard effectCard = getEffectCard();
-        return effectCard != null ? effectCard.getName() : getDisplayName();
+        if (effectCard != null) {
+            return effectCard.getName();
+        }
+
+        String effectCardDisplayName = TextHelper.extractCardNameFromReference(getEffectCardReference());
+        return !effectCardDisplayName.isEmpty() ? effectCardDisplayName : getDisplayName();
     }
 
     /** Tooltip text for long-lived effect displays such as the RogueMap header. */
@@ -81,7 +92,9 @@ public interface RogueEffect {
             return getDescription();
         }
 
-        PaperCard card = RogueConfig.getCard(cardReferences.get(0).token(), null, null);
+        CardPrintOverride cardReference = TextHelper.parseCardReference(cardReferences.get(0).token());
+        PaperCard card = cardReference.cardName().isEmpty() ? null
+            : RogueConfig.getCard(cardReference.cardName(), cardReference.setCode(), cardReference.artIndex());
         if (card == null || card.getRules() == null || card.getRules().getOracleText() == null
             || card.getRules().getOracleText().isBlank()) {
             return getDescription();
@@ -92,16 +105,22 @@ public interface RogueEffect {
     /** Preview references parsed from raw description plus the optional effect-card preview. */
     default List<PreviewReference> getPreviewReferences() {
         List<PreviewReference> references = new ArrayList<>(TextHelper.extractPreviewReferences(getRawDescription()));
-        String effectCardName = getEffectCardName();
-        if (effectCardName == null || effectCardName.isBlank()) {
+        String effectCardReference = getEffectCardReference();
+        if (effectCardReference == null || effectCardReference.isBlank()) {
+            return references;
+        }
+
+        String effectCardDisplayName = TextHelper.extractCardNameFromReference(effectCardReference);
+        if (effectCardDisplayName.isEmpty()) {
             return references;
         }
 
         boolean alreadyReferenced = references.stream()
             .anyMatch(reference -> reference.type() == PreviewReferenceType.CARD
-                && effectCardName.equals(reference.token()));
+                && effectCardDisplayName.equals(TextHelper.extractCardNameFromReference(reference.token())));
         if (!alreadyReferenced) {
-            references.add(new PreviewReference(PreviewReferenceType.CARD, effectCardName, references.size()));
+            references.add(new PreviewReference(PreviewReferenceType.CARD, effectCardReference,
+                references.size()));
         }
         return references;
     }

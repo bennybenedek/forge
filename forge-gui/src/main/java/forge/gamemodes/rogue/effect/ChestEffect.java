@@ -61,15 +61,15 @@ public enum ChestEffect implements RogueEffect {
     private final String displayName;
     private final String description;
     private final EffectType effectType;
-    private final String effectCardName;
+    private final String effectCardReference;
 
     ChestEffect(String id, String displayName, String description, EffectType effectType,
-                String effectCardName) {
+                String effectCardReference) {
         this.id = id;
         this.displayName = displayName;
         this.description = description;
         this.effectType = effectType;
-        this.effectCardName = effectCardName;
+        this.effectCardReference = effectCardReference;
     }
 
     public void applyEffect(RogueRun run, EffectResultContext ctx) { /* Override in ONESHOT constants to apply immediate chest effects. */ }
@@ -87,7 +87,7 @@ public enum ChestEffect implements RogueEffect {
     public String getRawDescription() { return description; }
 
     @Override
-    public String getEffectCardName() { return effectCardName; }
+    public String getEffectCardReference() { return effectCardReference; }
 
     public static ChestEffect fromId(String id) {
         for (ChestEffect cl : values())

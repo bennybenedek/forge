@@ -43,7 +43,7 @@ public final class TextHelper {
         while (matcher.find()) {
             String token = matcher.group(CARD_TOKEN_GROUP).trim();
             String replacement = matcher.group(CARD_HIDDEN_GROUP) == null
-                ? extractCardDisplayName(token)
+                ? extractCardNameFromReference(token)
                 : "";
             matcher.appendReplacement(sb, Matcher.quoteReplacement(replacement));
         }
@@ -71,7 +71,7 @@ public final class TextHelper {
             return null;
         }
 
-        String cardName = extractCardDisplayName(matcher.group(CARD_TOKEN_GROUP).trim());
+        String cardName = extractCardNameFromReference(matcher.group(CARD_TOKEN_GROUP).trim());
         return cardName.isEmpty() ? null : cardName;
     }
 
@@ -109,13 +109,35 @@ public final class TextHelper {
         return references;
     }
 
-    private static String extractCardDisplayName(String token) {
+    public static String extractCardNameFromReference(String token) {
         if (token == null || token.isBlank()) {
             return "";
         }
 
         int separatorIndex = token.indexOf('|');
         return separatorIndex >= 0 ? token.substring(0, separatorIndex).trim() : token;
+    }
+
+    public static CardPrintOverride parseCardReference(String token) {
+        String cardName = extractCardNameFromReference(token);
+        if (cardName.isEmpty()) {
+            return new CardPrintOverride("", null, null);
+        }
+
+        String[] referenceParts = token.split("\\|", 3);
+        String setCode = referenceParts.length > 1 && !referenceParts[1].isBlank()
+            ? referenceParts[1].trim()
+            : null;
+        Integer artIndex = null;
+        if (referenceParts.length > 2 && !referenceParts[2].isBlank()) {
+            try {
+                artIndex = Integer.parseInt(referenceParts[2].trim());
+            } catch (NumberFormatException ignored) {
+                artIndex = null;
+            }
+        }
+
+        return new CardPrintOverride(cardName, setCode, artIndex);
     }
 
     private static String normalizeStrippedPreviewText(String text) {
