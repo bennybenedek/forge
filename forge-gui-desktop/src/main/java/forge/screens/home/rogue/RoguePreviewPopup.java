@@ -1,6 +1,6 @@
 package forge.screens.home.rogue;
 
-import forge.gamemodes.rogue.CardPrintOverride;
+import forge.gamemodes.rogue.CardReference;
 import forge.gamemodes.rogue.KeywordHint;
 import forge.gamemodes.rogue.PreviewReference;
 import forge.gamemodes.rogue.PreviewReferenceType;
@@ -344,7 +344,7 @@ public class RoguePreviewPopup {
             return null;
         }
 
-        CardPrintOverride referenceParts = TextHelper.parseCardReference(cardReference);
+        CardReference referenceParts = TextHelper.parseCardReference(cardReference);
         if (referenceParts.cardName().isEmpty()) {
             return null;
         }

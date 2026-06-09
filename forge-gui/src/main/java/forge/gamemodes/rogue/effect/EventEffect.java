@@ -385,7 +385,7 @@ public enum EventEffect implements RogueEffect {
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             run.loseLife(5);
             addCarryCards(run, ctx, getDBCardsFilter(), 1, RogueRun.CarryCardType.ITEM,
-                List.of(new CardPrintOverride(TextHelper.extractCardNameFromReference(getEffectCardReference()),
+                List.of(new CardReference(TextHelper.extractCardNameFromReference(getEffectCardReference()),
                     "LTR", 2)));
         }
 
@@ -641,13 +641,13 @@ public enum EventEffect implements RogueEffect {
             int artIndex = 1;
 
             addCardsToDeck(run, ctx, getDBCardsFilter(), null, null, List.of(
-                new CardPrintOverride("Agility Bobblehead", setCode, artIndex),
-                new CardPrintOverride("Charisma Bobblehead", setCode, artIndex),
-                new CardPrintOverride("Endurance Bobblehead", setCode, artIndex),
-                new CardPrintOverride("Intelligence Bobblehead", setCode, artIndex),
-                new CardPrintOverride("Luck Bobblehead", setCode, artIndex),
-                new CardPrintOverride("Perception Bobblehead", setCode, artIndex),
-                new CardPrintOverride("Strength Bobblehead", setCode, artIndex)
+                new CardReference("Agility Bobblehead", setCode, artIndex),
+                new CardReference("Charisma Bobblehead", setCode, artIndex),
+                new CardReference("Endurance Bobblehead", setCode, artIndex),
+                new CardReference("Intelligence Bobblehead", setCode, artIndex),
+                new CardReference("Luck Bobblehead", setCode, artIndex),
+                new CardReference("Perception Bobblehead", setCode, artIndex),
+                new CardReference("Strength Bobblehead", setCode, artIndex)
             ));
         }
     },
@@ -1280,6 +1280,7 @@ public enum EventEffect implements RogueEffect {
         this.effectCardReference = effectCardReference;
     }
 
+    @Override
     public void applyEffect(RogueRun run, EffectResultContext ctx) { /* Override in ONESHOT constants to apply immediate event effects. */}
 
     @Override

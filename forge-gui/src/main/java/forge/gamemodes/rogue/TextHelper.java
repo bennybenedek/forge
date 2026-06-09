@@ -13,7 +13,6 @@ public final class TextHelper {
     private static final int INNER_MARKER_GROUP = 1;
     private static final int CARD_HIDDEN_GROUP = 1;
     private static final int CARD_TOKEN_GROUP = 2;
-    private static final int PREVIEW_CARD_HIDDEN_GROUP = 1;
     private static final int PREVIEW_CARD_TOKEN_GROUP = 2;
     private static final int KEYWORD_TOKEN_GROUP = 3;
     private static final Pattern CARD_MARKER_PATTERN = Pattern.compile("(!)?\\[\\[(.+?)]]");
@@ -21,10 +20,6 @@ public final class TextHelper {
     private static final Pattern PREVIEW_MARKER_PATTERN = Pattern.compile("(!)?\\[\\[(.+?)]]|\\{\\{(.+?)}}");
 
     private TextHelper() {
-    }
-
-    public static String stripCardMarkers(String text) {
-        return stripPreviewMarkers(text);
     }
 
     public static String stripPreviewMarkers(String text) {
@@ -59,20 +54,6 @@ public final class TextHelper {
         }
         matcher.appendTail(sb);
         return sb.toString();
-    }
-
-    public static String extractFirstCardName(String text) {
-        if (text == null || text.isEmpty()) {
-            return null;
-        }
-
-        Matcher matcher = CARD_MARKER_PATTERN.matcher(text);
-        if (!matcher.find()) {
-            return null;
-        }
-
-        String cardName = extractCardNameFromReference(matcher.group(CARD_TOKEN_GROUP).trim());
-        return cardName.isEmpty() ? null : cardName;
     }
 
     public static List<PreviewReference> extractPreviewReferences(String text) {
@@ -118,10 +99,10 @@ public final class TextHelper {
         return separatorIndex >= 0 ? token.substring(0, separatorIndex).trim() : token;
     }
 
-    public static CardPrintOverride parseCardReference(String token) {
+    public static CardReference parseCardReference(String token) {
         String cardName = extractCardNameFromReference(token);
         if (cardName.isEmpty()) {
-            return new CardPrintOverride("", null, null);
+            return new CardReference("", null, null);
         }
 
         String[] referenceParts = token.split("\\|", 3);
@@ -137,7 +118,7 @@ public final class TextHelper {
             }
         }
 
-        return new CardPrintOverride(cardName, setCode, artIndex);
+        return new CardReference(cardName, setCode, artIndex);
     }
 
     private static String normalizeStrippedPreviewText(String text) {

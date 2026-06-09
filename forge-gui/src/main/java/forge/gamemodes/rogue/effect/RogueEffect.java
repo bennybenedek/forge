@@ -50,7 +50,7 @@ public interface RogueEffect {
             return null;
         }
 
-        CardPrintOverride effectCardReferenceParts = TextHelper.parseCardReference(effectCardReference);
+        CardReference effectCardReferenceParts = TextHelper.parseCardReference(effectCardReference);
         if (effectCardReferenceParts.cardName().isEmpty()) {
             return null;
         }
@@ -92,7 +92,7 @@ public interface RogueEffect {
             return getDescription();
         }
 
-        CardPrintOverride cardReference = TextHelper.parseCardReference(cardReferences.get(0).token());
+        CardReference cardReference = TextHelper.parseCardReference(cardReferences.get(0).token());
         PaperCard card = cardReference.cardName().isEmpty() ? null
             : RogueConfig.getCard(cardReference.cardName(), cardReference.setCode(), cardReference.artIndex());
         if (card == null || card.getRules() == null || card.getRules().getOracleText() == null
@@ -124,9 +124,6 @@ public interface RogueEffect {
         }
         return references;
     }
-
-    /** Optional preview card reference extracted from the raw description. */
-    default String getPreviewCardName() { return TextHelper.extractFirstCardName(getRawDescription()); }
 
     /** Optional shared card-pool filter for effects that repeatedly use one DB-backed card selection rule. */
     default Predicate<PaperCard> getDBCardsFilter() { return null; }
@@ -185,8 +182,8 @@ public interface RogueEffect {
     }
 
     default void addCarryCards(RogueRun run, EffectResultContext ctx, Predicate<PaperCard> filter,
-                               int count, RogueRun.CarryCardType type, List<CardPrintOverride> printOverrides) {
-        List<PaperCard> added = getAllCards(run, filter, count, printOverrides);
+                               int count, RogueRun.CarryCardType type, List<CardReference> cardReferences) {
+        List<PaperCard> added = getAllCards(run, filter, count, cardReferences);
         for (PaperCard card : added) {
             run.addCarryCard(card, type, getId());
         }
@@ -194,8 +191,8 @@ public interface RogueEffect {
     }
 
     default void addCardsToDeck(RogueRun run, EffectResultContext ctx, Predicate<PaperCard> filter,
-                                Integer cardCount, Integer copyCount, List<CardPrintOverride> printOverrides) {
-        List<PaperCard> added = getAllCards(run, filter, cardCount, printOverrides);
+                                Integer cardCount, Integer copyCount, List<CardReference> cardReferences) {
+        List<PaperCard> added = getAllCards(run, filter, cardCount, cardReferences);
         if (added.isEmpty()) {
             return;
         }
@@ -247,9 +244,9 @@ public interface RogueEffect {
     }
 
     default void selectCardsForDeck(RogueRun run, EffectResultContext ctx, Predicate<PaperCard> filter,
-        Integer collectionCount, Integer minCount, Integer maxCount, List<CardPrintOverride> printOverrides) {
+        Integer collectionCount, Integer minCount, Integer maxCount, List<CardReference> cardReferences) {
 
-        List<PaperCard> collection = getAllCards(run, filter, null, printOverrides);
+        List<PaperCard> collection = getAllCards(run, filter, null, cardReferences);
         if (collection.isEmpty()) {
             return;
         }
@@ -366,7 +363,7 @@ public interface RogueEffect {
 
     // Load all cards needed for effect
     private static List<PaperCard> getAllCards(RogueRun run, Predicate<PaperCard> filter,
-        Integer count, List<CardPrintOverride> printOverrides) {
+        Integer count, List<CardReference> cardReferences) {
 
         List<PaperCard> result = run.getAllCardsForActiveCommander(filter);
         if (result.isEmpty()) {
@@ -378,7 +375,7 @@ public interface RogueEffect {
             return List.of();
         }
 
-        selectedCards = setExactPrints(selectedCards, printOverrides);
+        selectedCards = setExactPrints(selectedCards, cardReferences);
         return selectedCards;
     }
 
@@ -426,21 +423,21 @@ public interface RogueEffect {
     }
 
     // Override found cards with specific set / art if requested
-    private static List<PaperCard> setExactPrints(List<PaperCard> cards, List<CardPrintOverride> printOverrides) {
-        if (cards == null || cards.isEmpty() || printOverrides == null || printOverrides.isEmpty()) {
+    private static List<PaperCard> setExactPrints(List<PaperCard> cards, List<CardReference> cardReferences) {
+        if (cards == null || cards.isEmpty() || cardReferences == null || cardReferences.isEmpty()) {
             return cards;
         }
 
         List<PaperCard> exactPrints = new ArrayList<>(cards.size());
         for (PaperCard card : cards) {
             PaperCard exactCard = card;
-            for (CardPrintOverride printOverride : printOverrides) {
-                if (!printOverride.matches(card)) {
+            for (CardReference cardReference : cardReferences) {
+                if (!cardReference.matches(card)) {
                     continue;
                 }
 
-                PaperCard resolved = RogueConfig.getCard(printOverride.cardName(),
-                    printOverride.setCode(), printOverride.artIndex());
+                PaperCard resolved = RogueConfig.getCard(cardReference.cardName(),
+                    cardReference.setCode(), cardReference.artIndex());
                 if (resolved != null) {
                     exactCard = resolved;
                 }
