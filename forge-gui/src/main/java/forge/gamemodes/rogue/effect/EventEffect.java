@@ -377,26 +377,9 @@ public enum EventEffect implements RogueEffect {
         "Lose 5 life. Gain the legendary artifact {{Item}} [[The One Ring|LTR|2]].",
         EffectType.ONESHOT, "The One Ring|LTR|2") {
         @Override
-        public Predicate<PaperCard> getDBCardsFilter() {
-            return card -> card.getName().equals(TextHelper.extractCardNameFromReference(getEffectCardReference()));
-        }
-
-        @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             run.loseLife(5);
-            addCarryCards(run, ctx, getDBCardsFilter(), 1, RogueRun.CarryCardType.ITEM,
-                List.of(new CardReference(TextHelper.extractCardNameFromReference(getEffectCardReference()),
-                    "LTR", 2)));
-        }
-
-        @Override
-        public boolean isChoiceAvailable(RogueRun run) {
-            return run.canAddCardToDeck(getEffectCard());
-        }
-
-        @Override
-        public String getUnavailableReason(RogueRun run) {
-            return isChoiceAvailable(run) ? null : "You already have The One Ring.";
+            addEffectCardAsCarryCard(run, ctx, RogueRun.CarryCardType.ITEM);
         }
     },
     CROOKED_COUNSEL_NAZGUL("crooked_counsel_nazgul", "Join with the dark lord",

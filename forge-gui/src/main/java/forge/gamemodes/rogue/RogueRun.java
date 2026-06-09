@@ -395,6 +395,14 @@ public class RogueRun {
         }
     }
 
+    public boolean canAddCardAsCarryCard(PaperCard card) {
+        if (card == null) {
+            return false;
+        }
+
+      return !filterCardsByCommanderColorIdentity(List.of(card)).isEmpty();
+    }
+
     public List<PaperCard> filterDuplicateCards(Collection<PaperCard> cards) {
         if (cards == null || cards.isEmpty()) {
             return List.of();

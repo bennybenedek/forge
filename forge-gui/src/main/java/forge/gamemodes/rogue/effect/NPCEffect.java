@@ -2,6 +2,7 @@ package forge.gamemodes.rogue.effect;
 
 import forge.game.player.RegisteredPlayer;
 import forge.gamemodes.rogue.RogueRun;
+import forge.gamemodes.rogue.RogueRun.CarryCardType;
 import forge.item.PaperCard;
 
 /**
@@ -38,10 +39,10 @@ public enum NPCEffect implements RogueEffect {
     // Narset traits
     NARSET_TRAVELER("npc_narset_traveler", "Traveler",
         "Start each match with a [[Fractured Powerstone]] on the battlefield.",
-        EffectType.PERMANENT, null) {
+        EffectType.PERMANENT, "Fractured Powerstone") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            RogueEffect.addCardToBattlefield("Fractured Powerstone", human);
+            RogueEffect.addCardToBattlefield(getEffectCard(), human);
         }
     },
     NARSET_ALCHEMIST("npc_narset_alchemist", "Alchemist",
@@ -49,8 +50,7 @@ public enum NPCEffect implements RogueEffect {
         EffectType.ONESHOT, "Ichor Elixir") {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            PaperCard ichorElixir = getEffectCard();
-            run.addCarryCard(ichorElixir, RogueRun.CarryCardType.ITEM, getId());
+            addEffectCardAsCarryCard(run, ctx, CarryCardType.ITEM);
         }
     },
     NARSET_CHAOSBOUND("npc_narset_chaosbound", "Chaosbound",
