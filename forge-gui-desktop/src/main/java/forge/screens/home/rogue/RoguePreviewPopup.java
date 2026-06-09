@@ -371,20 +371,25 @@ public class RoguePreviewPopup {
             return List.of();
         }
 
-        List<ResolvedPreviewItem> items = new ArrayList<>();
+        List<ResolvedPreviewItem> cardItems = new ArrayList<>();
+        List<ResolvedPreviewItem> keywordItems = new ArrayList<>();
         for (PreviewReference reference : references) {
             if (reference.type() == PreviewReferenceType.CARD) {
                 PaperCard card = resolveCard(reference.token());
                 if (card != null) {
-                    items.add(ResolvedPreviewItem.forCard(card));
+                    cardItems.add(ResolvedPreviewItem.forCard(card));
                 }
             } else if (reference.type() == PreviewReferenceType.KEYWORD) {
                 KeywordHint hint = KeywordHint.fromToken(reference.token());
                 if (hint != null) {
-                    items.add(ResolvedPreviewItem.forKeyword(hint));
+                    keywordItems.add(ResolvedPreviewItem.forKeyword(hint));
                 }
             }
         }
+
+        List<ResolvedPreviewItem> items = new ArrayList<>(cardItems.size() + keywordItems.size());
+        items.addAll(cardItems);
+        items.addAll(keywordItems);
         return items;
     }
 
