@@ -10,14 +10,15 @@ import java.util.regex.Pattern;
  * Shared text helpers for Rogue Commander UI markup.
  */
 public final class TextHelper {
-    private static final int INNER_MARKER_GROUP = 1;
     private static final int CARD_HIDDEN_GROUP = 1;
     private static final int CARD_TOKEN_GROUP = 2;
+    private static final int KEYWORD_HIDDEN_GROUP = 1;
+    private static final int KEYWORD_TOKEN_GROUP = 2;
     private static final int PREVIEW_CARD_TOKEN_GROUP = 2;
-    private static final int KEYWORD_TOKEN_GROUP = 3;
+    private static final int PREVIEW_KEYWORD_TOKEN_GROUP = 4;
     private static final Pattern CARD_MARKER_PATTERN = Pattern.compile("(!)?\\[\\[(.+?)]]");
-    private static final Pattern KEYWORD_MARKER_PATTERN = Pattern.compile("\\{\\{(.+?)}}");
-    private static final Pattern PREVIEW_MARKER_PATTERN = Pattern.compile("(!)?\\[\\[(.+?)]]|\\{\\{(.+?)}}");
+    private static final Pattern KEYWORD_MARKER_PATTERN = Pattern.compile("(!)?\\{\\{(.+?)}}");
+    private static final Pattern PREVIEW_MARKER_PATTERN = Pattern.compile("(!)?\\[\\[(.+?)]]|(!)?\\{\\{(.+?)}}");
 
     private TextHelper() {
     }
@@ -28,7 +29,7 @@ public final class TextHelper {
         }
 
         String withoutCardMarkers = stripCardPattern(text);
-        String withoutKeywordMarkers = stripPattern(withoutCardMarkers, KEYWORD_MARKER_PATTERN);
+        String withoutKeywordMarkers = stripKeywordPattern(withoutCardMarkers);
         return normalizeStrippedPreviewText(withoutKeywordMarkers);
     }
 
@@ -46,11 +47,13 @@ public final class TextHelper {
         return sb.toString();
     }
 
-    private static String stripPattern(String text, Pattern pattern) {
-        Matcher matcher = pattern.matcher(text);
+    private static String stripKeywordPattern(String text) {
+        Matcher matcher = KEYWORD_MARKER_PATTERN.matcher(text);
         StringBuffer sb = new StringBuffer();
         while (matcher.find()) {
-            matcher.appendReplacement(sb, Matcher.quoteReplacement(matcher.group(INNER_MARKER_GROUP).trim()));
+            String token = matcher.group(KEYWORD_TOKEN_GROUP).trim();
+            String replacement = matcher.group(KEYWORD_HIDDEN_GROUP) == null ? token : "";
+            matcher.appendReplacement(sb, Matcher.quoteReplacement(replacement));
         }
         matcher.appendTail(sb);
         return sb.toString();
@@ -72,8 +75,8 @@ public final class TextHelper {
                 if (!token.isEmpty() && !cards.containsKey(token)) {
                     cards.put(token, new PreviewReference(PreviewReferenceType.CARD, token, order++));
                 }
-            } else if (matcher.group(KEYWORD_TOKEN_GROUP) != null) {
-                String token = matcher.group(KEYWORD_TOKEN_GROUP).trim();
+            } else if (matcher.group(PREVIEW_KEYWORD_TOKEN_GROUP) != null) {
+                String token = matcher.group(PREVIEW_KEYWORD_TOKEN_GROUP).trim();
                 if (!token.isEmpty() && !keywords.containsKey(token)) {
                     keywords.put(token, new PreviewReference(PreviewReferenceType.KEYWORD, token, order++));
                 }

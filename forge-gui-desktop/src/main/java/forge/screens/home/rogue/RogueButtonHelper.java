@@ -77,9 +77,27 @@ public final class RogueButtonHelper {
 
     String highlightedDescription = description;
     for (String token : tokens) {
-      highlightedDescription = highlightWholeWord(highlightedDescription, token, prefix, suffix, allowSimplePlural);
+      highlightedDescription = highlightWholeWordOutsideExistingHighlights(
+          highlightedDescription, token, prefix, suffix, allowSimplePlural);
     }
     return highlightedDescription;
+  }
+
+  private static String highlightWholeWordOutsideExistingHighlights(String text, String token, String prefix,
+      String suffix, boolean allowSimplePlural) {
+    Matcher matcher = HIGHLIGHT_PATTERN.matcher(text);
+    StringBuilder sb = new StringBuilder();
+    int lastIndex = 0;
+
+    while (matcher.find()) {
+      sb.append(highlightWholeWord(text.substring(lastIndex, matcher.start()), token, prefix, suffix,
+          allowSimplePlural));
+      sb.append(matcher.group());
+      lastIndex = matcher.end();
+    }
+
+    sb.append(highlightWholeWord(text.substring(lastIndex), token, prefix, suffix, allowSimplePlural));
+    return sb.toString();
   }
 
   private static String highlightWholeWord(String text, String token, String prefix, String suffix,

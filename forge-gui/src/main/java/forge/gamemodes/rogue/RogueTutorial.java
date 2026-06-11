@@ -35,7 +35,7 @@ public enum RogueTutorial {
 
   PRE_BATTLE(
       "Planebound Battles",
-      "Battles on Plane-Nodes are played as a match of 'Duel Commander' (you against the Planebound) with added 'Planechase' rules. So don't forget to check your command zone for casting your Commander and rolling the Planar Die. Other than in a normal Planechase Match,"
+      "Battles on Plane-Nodes are played as a match of 'Commander' (you against the Planebound) with added 'Planechase' rules. So don't forget to check your command zone for casting your Commander and rolling the Planar Die. Other than in a normal Planechase Match,"
           +
           "you will stay on the current Plane throughout the battle. 'Chaos' and 'When you Planeswalk...' effects will be resolved as normal, but no effect will cause a plane change.\n"
           +
@@ -85,7 +85,7 @@ public enum RogueTutorial {
 
   EVENT(
       "An Event",
-      "Events are random encounters that can have a variety of choices and outcomes for your Run."
+      "Events are random encounters that can have a variety of choices and outcomes for your Run. "
           + "Some events may offer powerful rewards, but often at a cost."
   ),
 

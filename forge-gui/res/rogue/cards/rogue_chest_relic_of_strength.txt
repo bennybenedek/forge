@@ -1,5 +1,5 @@
 Name:Chest Trait - Relic Of Strength
 ManaCost:no cost
 Types:Trait
-S:Mode$ Continuous | Affected$ Creature.IsCommander+YouCtrl | AddPower$ 2 | AddToughness$ 2 | EffectZone$ Command | Description$ Your commander gets +2/+2.
+S:Mode$ Continuous | Affected$ Creature.IsCommander+YouCtrl | AddPower$ 2 | AddToughness$ 2 | AddKeyword$ Trample | EffectZone$ Command | Description$ Your commander gets +2/+2 and has Trample.
 Oracle:Your commander gets +2/+2.

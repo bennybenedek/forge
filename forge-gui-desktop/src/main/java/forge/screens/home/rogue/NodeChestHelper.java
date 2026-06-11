@@ -53,7 +53,10 @@ class NodeChestHelper {
         }
 
         RogueTutorialHelper.showIfNotSeen(RogueTutorial.CHEST);
-        new ChestDialog(chestEffect).show();
+        boolean rewardAccepted = new ChestDialog(chestEffect).show();
+        if (!rewardAccepted) {
+            return NodeFlowOutcome.COMPLETE_NODE;
+        }
 
         EffectResultContext ctx = new EffectResultContext();
         if (chestEffect.getEffectType() == RogueEffect.EffectType.ONESHOT) {

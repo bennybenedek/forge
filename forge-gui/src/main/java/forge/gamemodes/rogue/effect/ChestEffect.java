@@ -6,25 +6,21 @@ import forge.gamemodes.rogue.RogueRun;
 
 public enum ChestEffect implements RogueEffect {
 
-    FIND_GOLD("find_gold", "Treasure", "You found 10 gold.", EffectType.ONESHOT, null) {
+    // ONESHOT effects
+    TREASURE("treasure", "Treasure", "Gain 10 {{Gold}} and 10 {{Echoes}}.", EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             run.addGold(10);
-        }
-    },
-    FIND_ECHOES("find_echoes", "Giant Soul", "You found 10 echoes.", EffectType.ONESHOT, null) {
-        @Override
-        public void applyEffect(RogueRun run, EffectResultContext ctx) {
             RogueMetaProgress.getInstance().addEchoes(10);
         }
     },
-    CARD_REWARD("card_reward", "Card Cache", "Gain a Card Reward.", EffectType.ONESHOT, null) {
+    CARD_REWARD("card_reward", "Card Cache", "Gain a {{Card Reward}}.", EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             ctx.trigger = EffectResultContext.ActionTriggerType.CARD_REWARD;
         }
     },
-    MYTHIC_CARD_REWARD("mythic_card_reward", "Mythic Card Cache", "Gain a Mythic Card Reward.",
+    MYTHIC_CARD_REWARD("mythic_card_reward", "Mythic Card Cache", "Gain a mythic {{Card Reward}}.",
         EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
@@ -32,28 +28,29 @@ public enum ChestEffect implements RogueEffect {
         }
     },
 
-    // PERMANENT loots
-    COMMANDER_STRENGTH("commander_strength", "Relic Of Strength",
-        "Your commander gets +2/+2 for the rest of the Run.",
+    // PERMANENT / CONSUME effects (Traits)
+    RELIC_OF_STRENGTH("relic_of_strength", "Relic Of Strength",
+        "Gain the {{Trait}} **Relic Of Strength**.",
         EffectType.PERMANENT, "Chest Trait - Relic Of Strength") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
         }
     },
-    COST_REDUCTION("cost_reduction", "Relic Of Agility",
-        "Permanent spells you cast cost {1} less for the rest of the Run.",
+    RELIC_OF_AGILITY("relic_of_agility", "Relic Of Agility",
+        "Gain the {{Trait}} **Relic Of Agility**.",
         EffectType.PERMANENT, "Chest Trait - Relic Of Agility") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
         }
     },
-    EXTRA_DRAW("extra_draw", "Relic Of Wisdom", "Draw 1 extra card at the start of each match for the rest of the Run.",
-            EffectType.PERMANENT, null) {
+    RELIC_OF_WISDOM("relic_of_wisdom", "Relic Of Wisdom", "Gain the {{Trait}} **Relic Of Wisdom**.",
+            EffectType.PERMANENT, "Chest Trait - Relic Of Wisdom") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             human.setStartingHand(human.getStartingHand() + 1);
+            addEffectCardToCommandZone(human);
         }
     };
 
@@ -72,6 +69,7 @@ public enum ChestEffect implements RogueEffect {
         this.effectCardReference = effectCardReference;
     }
 
+    @Override
     public void applyEffect(RogueRun run, EffectResultContext ctx) { /* Override in ONESHOT constants to apply immediate chest effects. */ }
 
     @Override

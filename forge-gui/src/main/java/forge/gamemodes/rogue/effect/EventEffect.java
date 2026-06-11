@@ -17,7 +17,7 @@ import java.util.function.Predicate;
 public enum EventEffect implements RogueEffect {
 
     AFTER_DUSK_INSANE("after_dusk_insane", "Turn Insane",
-        "Add 3 random Nightmare cards to your deck.",
+        "Add 3 random Nightmare cards to your deck. !{{Gold}}",
         EffectType.ONESHOT, null) {
         @Override
         public Predicate<PaperCard> getDBCardsFilter() {
@@ -31,7 +31,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     AFTER_DUSK_EXPLORE("after_dusk_explore", "Explore Mansion",
-        "Lose 3 life. Choose up to 5 Room cards to add to your deck.",
+        "Lose 3 Life. Choose up to 5 Room cards to add to your deck.",
         EffectType.ONESHOT, null) {
         @Override
         public Predicate<PaperCard> getDBCardsFilter() {
@@ -66,7 +66,7 @@ public enum EventEffect implements RogueEffect {
             addCarryCards(run, ctx, getDBCardsFilter(), 2, CarryCardType.FELLOW, List.of());
         }
     },
-    AMBUSH_FIGHT("ambush_fight", "Fight!", "Fight a random Planebound on a random Plane!",
+    AMBUSH_FIGHT("ambush_fight", "Fight!", "Fight a random {{Planebound}} on a random Plane!",
         EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
@@ -191,7 +191,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     BREAKING_OLD_LAWS_BLACK_MARKET("breaking_the_old_laws_black_market", "Black Market",
-        "Shop from a selection of cards from the Commander Banlist at doubled prices.",
+        "Shop from a selection of cards from the Commander Banlist at doubled prices. Opens a {{Bazaar}}.",
         EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
@@ -327,7 +327,7 @@ public enum EventEffect implements RogueEffect {
             return isChoiceAvailable(run) ? null : "Your deck has no non-Human creatures to sell.";
         }
     },
-    CARAVAN_ROB("caravan_rob", "Caravan Plunder", "Lose 3 life, gain 8 {{Gold}}.",
+    CARAVAN_ROB("caravan_rob", "Caravan Plunder", "Lose 3 Life, gain 8 {{Gold}}.",
         EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
@@ -374,7 +374,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     CROOKED_COUNSEL_RING("crooked_counsel_ring", "Keep to your own path",
-        "Lose 5 life. Gain the legendary artifact {{Item}} [[The One Ring|LTR|2]].",
+        "Lose 5 Life. Gain the legendary artifact {{Item}} [[The One Ring|LTR|2]].",
         EffectType.ONESHOT, "The One Ring|LTR|2") {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
@@ -416,7 +416,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     DISTORTION_EMBRACE("distortion_embrace", "Distortion - Embrace",
-        "Turn all uncompleted future {{Side Node}}s into {{Chest}} Nodes. All Planebounds of the next 2 rows gain 2 additional instances of {{Cursed}}.",
+        "Turn all uncompleted future {{Side Node}}s into {{Chest}} Nodes. All {{Planebound}}s of the next 2 rows gain 2 additional instances of {{Cursed}}.",
         EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
@@ -435,8 +435,8 @@ public enum EventEffect implements RogueEffect {
                 node -> node.setCursedCount(node.getCursedCount() + 2));
         }
     },
-    DISTORTION_ENDURE("distortion_endure", "Distortion - Endure",
-        "After your next 2 matches, gain 1 less {{Gold}} and see 3 fewer non-mythic cards in Card Rewards.",
+    DISTORTION_ENDURE("distortion_endure", "Distorted Reality",
+        "Gain the {{Trait}} **Distorted Reality**: After your next 2 matches, gain 1 less {{Gold}} and see 3 fewer non-mythic cards in {{Card Reward}}s.",
         EffectType.CONSUME, null) {
         @Override
         public int getChargesForRank(int rank) { return 2; }
@@ -493,7 +493,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     ETERNAL_CRUSADE_JOIN_SPACE_MARINES("eternal_crusade_join_space_marines", "Join Space Marines",
-        "All future Planebounds gain 2 additional instances of {{Wrathful}}. Gain the {{Trait}} "
+        "All future {{Planebound}}s gain 2 additional instances of {{Wrathful}}. Gain the {{Trait}} "
             + "**Codex Astartes**.",
         EffectType.ONESHOT, "Event Trait - Codex Astartes") {
         @Override
@@ -560,7 +560,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     FINAL_PREPARATIONS_VISIT_SMITH("final_preparations_visit_smith", "Visit Smith",
-        "Shop from a selection of legendary Equipment cards.",
+        "Shop from a selection of legendary Equipment cards. Opens a {{Bazaar}}.",
         EffectType.ONESHOT, null) {
         @Override
         public Predicate<PaperCard> getDBCardsFilter() {
@@ -577,7 +577,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     GAMECHANGER_TRUST("gamechanger_trust", "Trade for Gamechangers",
-        "Remove 3 random cards from your deck. Choose 3 cards from the Gamechanger list to add to your deck.",
+        "Remove 3 random cards from your deck. Choose 3 cards from the Gamechanger list to add to your deck. Opens a {{Bazaar}}.",
         EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
@@ -678,7 +678,7 @@ public enum EventEffect implements RogueEffect {
             addCardsToDeck(run, ctx, getDBCardsFilter(), removedCount, null, List.of());
         }
     },
-    HEALER_POTION("healer_potion", "Healer's Potion", "Pay 5 {{Gold}}, gain 8 life.",
+    HEALER_POTION("healer_potion", "Healer's Potion", "Pay 5 {{Gold}}, gain 8 Life.",
             EffectType.ONESHOT, 5, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
@@ -697,7 +697,7 @@ public enum EventEffect implements RogueEffect {
                 return getInsufficientGoldReason();
             }
             if (run.getCurrentLife() >= run.getMaxLife()) {
-                return "You are already at maximum life.";
+                return "You are already at maximum Life.";
             }
             return null;
         }
@@ -787,7 +787,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     INFAMOUS_JUNCTION_ROB_BANK("infamous_junction_rob_bank", "Rob the Local Bank",
-        "Lose 3 life. Gain 8 {{Gold}}.",
+        "Lose 3 Life. Gain 8 {{Gold}}.",
         EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
@@ -865,12 +865,8 @@ public enum EventEffect implements RogueEffect {
         }
     },
     LOST_NOT_FORGOTTEN_VENTURE_DEEPER("lost_not_forgotten_venture_deeper", "Venture deeper",
-        "Roll a d20.\n1: Trap - Gain a random {{Wound}}\n2-9: Enemies - Fight a random Planebound on a random Plane.\n10-19: Find Loot - Gain the {{Item}} [[Treasure Chest]].\n20: Find Treasure Vault - Gain 20 {{Gold}} and find a {{Chest}}.",
-        EffectType.ONESHOT, null) {
-        @Override
-        public Predicate<PaperCard> getDBCardsFilter() {
-            return card -> card.getName().equals("Treasure Chest");
-        }
+        "Roll a d20.\n1: Trap - Gain a random {{Wound}}.\n2-9: Enemies - Fight a random {{Planebound}} on a random Plane.\n10-19: Find Loot - Gain the {{Item}} **Treasure Chest**.\n20: Find Treasure Vault - Gain 20 {{Gold}} and find a {{Chest}}.",
+        EffectType.ONESHOT, "Treasure Chest") {
 
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
@@ -885,7 +881,7 @@ public enum EventEffect implements RogueEffect {
                 return;
             }
             if (result <= 19) {
-                addCarryCards(run, ctx, getDBCardsFilter(), 1, CarryCardType.ITEM, List.of());
+                addEffectCardAsCarryCard(run, ctx, CarryCardType.ITEM);
                 ctx.resultTextOverride = "Behind a false stone you uncover an old prize, still waiting for hands bold enough to claim it.";
                 return;
             }
@@ -961,7 +957,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     NEON_LID_NINJA("neon_lid_ninja", "Path of the Ninja",
-        "Lose 6 max life. Gain the {{Trait}} **Ninjutsu Mastery**.",
+        "Lose 6 {{Max. Life}}. Gain the {{Trait}} **Ninjutsu Mastery**.",
         EffectType.ONESHOT, "Event Trait - Ninjutsu Mastery") {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
@@ -1033,7 +1029,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     ON_THE_EDGE_SCAVENGE("on_the_edge_scavenge", "Scavenge",
-        "Lose 3 life. Choose up to 5 out of 20 Robots to add to your deck.",
+        "Lose 3 Life. Choose up to 5 out of 20 Robots to add to your deck.",
         EffectType.ONESHOT, null) {
         @Override
         public Predicate<PaperCard> getDBCardsFilter() {
@@ -1178,7 +1174,7 @@ public enum EventEffect implements RogueEffect {
             }
         }
     },
-    THORNS_PRESS("thorns_press", "Lose 4 Life", "You lose 4 life.",
+    THORNS_PRESS("thorns_press", "Lose 4 Life", "You lose 4 Life.",
             EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
@@ -1225,7 +1221,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     TRAPPED_IN_THE_LAIR_TAME("trapped_in_the_lair_tame", "Tame",
-        "Lose 3 life. Gain a random legendary Beast {{Fellow}}.",
+        "Lose 3 Life. Gain a random legendary Beast {{Fellow}}.",
         EffectType.ONESHOT, null) {
         @Override
         public Predicate<PaperCard> getDBCardsFilter() {
@@ -1290,7 +1286,7 @@ public enum EventEffect implements RogueEffect {
     }
 
     protected String getInsufficientGoldReason() {
-        return goldCost > 0 ? "You need " + goldCost + " Gold." : null;
+        return goldCost > 0 ? "You don't have enough Gold." : null;
     }
 
     public static EventEffect fromId(String id) {
