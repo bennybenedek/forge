@@ -1,0 +1,4 @@
+Name:Echo Boon - Lingering Aura 1
+ManaCost:no cost
+Types:Trait
+Oracle:Gain 2 life after each match victory.

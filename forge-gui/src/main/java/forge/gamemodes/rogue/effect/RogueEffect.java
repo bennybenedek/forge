@@ -43,6 +43,15 @@ public interface RogueEffect {
     /** Optional representative card reference used for UI and runtime behavior. */
     default String getEffectCardReference() { return null; }
 
+    /** Optional ranked card reference for effects whose representative card varies by rank. */
+    default String getEffectCardReferenceForRank(int rank) {
+        String effectCardReference = getEffectCardReference();
+        if (effectCardReference == null || effectCardReference.isBlank() || rank <= 0) {
+            return effectCardReference;
+        }
+        return effectCardReference + " " + rank;
+    }
+
     /** Paper card associated with an effect, resolved from the optional reference token. */
     default PaperCard getEffectCard() {
         String effectCardReference = getEffectCardReference();
@@ -60,6 +69,16 @@ public interface RogueEffect {
 
     /** Description for tooltips and display text. */
     default String getDescription() { return TextHelper.stripPreviewMarkers(getRawDescription()); }
+
+    /** Description variant for ranked effects with current rank highlighted. */
+    default String getDescriptionWithAllRanks(int currentRank, int upgradeLevel) {
+        return getDescription();
+    }
+
+    /** Active description for run-context displays such as the RogueMap header tooltip. */
+    default String getActiveDescription(RogueRun run) {
+        return getTooltipText();
+    }
 
     /** Resolved display name for active-effect UI such as the RogueMap header. */
     default String getMapDisplayName() {

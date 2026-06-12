@@ -142,7 +142,7 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
         String prefix = effect.getEffectCardReference() == null ? getEffectPrefix(effect) : "";
         FLabel effectLbl = new FLabel.Builder()
             .text(prefix + effect.getMapDisplayName()).fontSize(11).build();
-        effectLbl.setToolTipText(effect.getTooltipText());
+        effectLbl.setToolTipText(effect.getActiveDescription(run));
         pnlEffects.add(effectLbl, "cell " + col + " " + row);
       }
       pnlEffects.revalidate();

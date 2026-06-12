@@ -460,7 +460,7 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
           .build();
 
       lblDescription = new FLabel.Builder()
-          .text(boon.getDescription())
+          .text("")
           .fontSize(14)
           .fontAlign(SwingConstants.CENTER)
           .build();
