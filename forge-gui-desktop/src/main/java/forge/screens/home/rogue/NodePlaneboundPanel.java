@@ -30,6 +30,7 @@ public class NodePlaneboundPanel extends NodePanel implements ImageFetcher.Callb
   // Plane cards are horizontal, so width > height (rotated 90 degrees from normal cards)
   private static final int CARD_WIDTH = 250;  // Wider (was height)
   private static final int CARD_HEIGHT = 180; // Shorter (was width)
+  private static final int FACE_DOWN_PLANE_SLEEVE_INDEX = 18;
 
   private static final ImageIcon FLAME_ICON = createFlameIcon(14, 18);
   private static final ImageIcon PENTAGRAM_ICON = createPentagramIcon(14, 18);
@@ -77,13 +78,9 @@ public class NodePlaneboundPanel extends NodePanel implements ImageFetcher.Callb
 
     if (showFaceDown) {
       // Show card back
-      BufferedImage cardBack = ImageCache.getOriginalImage(
-          ImageKeys.getTokenKey(ImageKeys.HIDDEN_CARD), true, null);
+      BufferedImage cardBack = getFaceDownPlaneBackImage();
       GuiBase.getInterface().getImageFetcher().fetchImage(
-          ImageKeys.getTokenKey(ImageKeys.HIDDEN_CARD), () -> {
-            setHiddenCardBackImage(ImageCache.getOriginalImage(
-                ImageKeys.getTokenKey(ImageKeys.HIDDEN_CARD), true, null));
-          });
+          ImageKeys.getTokenKey(ImageKeys.HIDDEN_CARD), () -> setHiddenCardBackImage(getFaceDownPlaneBackImage()));
       setHiddenCardBackImage(cardBack);
     }
 
@@ -287,6 +284,14 @@ public class NodePlaneboundPanel extends NodePanel implements ImageFetcher.Callb
     cardImage.setItem(rotateImage90Clockwise(cardBack));
     cardImage.revalidate();
     cardImage.repaint();
+  }
+
+  private static BufferedImage getFaceDownPlaneBackImage() {
+    BufferedImage sleeveBack = FSkin.getSleeveImage(FACE_DOWN_PLANE_SLEEVE_INDEX);
+    if (sleeveBack != null) {
+      return sleeveBack;
+    }
+    return ImageCache.getOriginalImage(ImageKeys.getTokenKey(ImageKeys.HIDDEN_CARD), true, null);
   }
 
   /**
