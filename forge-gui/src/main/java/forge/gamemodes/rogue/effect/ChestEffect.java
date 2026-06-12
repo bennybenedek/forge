@@ -52,7 +52,7 @@ public enum ChestEffect implements RogueEffect {
         }
     },
     RELIC_OF_WEALTH("relic_of_wealth", "Relic Of Wealth",
-        "Gain the {{Trait}} **Relic Of Wealth**.",
+        "Gain the {{Trait}} **Relic Of Wealth**. !{{Gold}}",
         EffectType.PERMANENT, "Chest Trait - Relic Of Wealth") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
