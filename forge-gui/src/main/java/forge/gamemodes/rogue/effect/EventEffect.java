@@ -17,7 +17,7 @@ import java.util.function.Predicate;
 public enum EventEffect implements RogueEffect {
 
     AFTER_DUSK_INSANE("after_dusk_insane", "Turn Insane",
-        "Add 3 random Nightmare cards to your deck. !{{Gold}}",
+        "Add 3 random Nightmare cards to your deck.",
         EffectType.ONESHOT, null) {
         @Override
         public Predicate<PaperCard> getDBCardsFilter() {
@@ -436,8 +436,8 @@ public enum EventEffect implements RogueEffect {
         }
     },
     DISTORTION_ENDURE("distortion_endure", "Distorted Reality",
-        "Gain the {{Trait}} **Distorted Reality**: After your next 2 matches, gain 1 less {{Gold}} and see 3 fewer non-mythic cards in {{Card Reward}}s.",
-        EffectType.CONSUME, null) {
+        "Gain the {{Trait}} **Distorted Reality**. !{{Gold}} !{{Card Reward}}",
+        EffectType.CONSUME, "Event Trait - Distorted Reality") {
         @Override
         public int getChargesForRank(int rank) { return 2; }
 

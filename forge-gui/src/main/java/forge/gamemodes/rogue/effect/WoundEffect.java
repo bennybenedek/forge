@@ -14,14 +14,15 @@ public enum WoundEffect implements RogueEffect {
         }
     },
     HEAD("head", "Head", "Start each match with 1 less card in hand.",
-            EffectType.PERMANENT, null) {
+            EffectType.PERMANENT, "Wound - Head") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             human.setStartingHand(human.getStartingHand() - 1);
+            addEffectCardToCommandZone(human);
         }
     },
     EYE("eye", "Eye", "Planes on the path are not revealed when you reach them.",
-            EffectType.PERMANENT, null) {
+            EffectType.PERMANENT, "Wound - Eye") {
         @Override
         public void onPathUpdate(PathUpdateContext ctx, RogueRun run) {
             ctx.hidePlanes = true;

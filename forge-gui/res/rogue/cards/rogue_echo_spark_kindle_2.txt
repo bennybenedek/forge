@@ -1,0 +1,4 @@
+Name:Echo Boon - Spark Kindle 2
+ManaCost:no cost
+Types:Trait
+Oracle:Begin each match with 2 basic lands from your deck already on the battlefield.
