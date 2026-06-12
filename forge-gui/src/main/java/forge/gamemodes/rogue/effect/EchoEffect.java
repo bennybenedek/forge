@@ -27,7 +27,7 @@ public enum EchoEffect implements RogueEffect {
         @Override
         public void onRunStart(RogueRun run) {
             int bonus = getEffectValueAtRank(run.getRunEffectRank(getId()));
-            if (bonus > 0) run.setMaxLife(run.getMaxLife() + bonus);
+            if (bonus > 0) run.addMaxLife(bonus);
         }
     },
 

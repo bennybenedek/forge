@@ -222,7 +222,7 @@ public enum EventEffect implements RogueEffect {
 
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            run.setMaxLife(run.getMaxLife() - 4);
+            run.loseMaxLife(4);
             run.addEventEffect(this);
             ctx.addSection = DeckSection.Commander;
             selectCardsForDeck(run, ctx, getDBCardsFilter(), 20, 1, 1, null);
@@ -556,7 +556,7 @@ public enum EventEffect implements RogueEffect {
         EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            run.setMaxLife(run.getMaxLife() + 3);
+            run.addMaxLife(3);
         }
     },
     FINAL_PREPARATIONS_VISIT_SMITH("final_preparations_visit_smith", "Visit Smith",
@@ -730,7 +730,7 @@ public enum EventEffect implements RogueEffect {
         EffectType.ONESHOT, 7, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            run.setMaxLife(run.getMaxLife() + 10);
+            run.addMaxLife(10);
             run.spendGold(getGoldCost());
         }
 
@@ -961,7 +961,7 @@ public enum EventEffect implements RogueEffect {
         EffectType.ONESHOT, "Event Trait - Ninjutsu Mastery") {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            run.setMaxLife(run.getMaxLife() - 6);
+            run.loseMaxLife(6);
             run.addEventEffect(this);
         }
 
@@ -1186,7 +1186,7 @@ public enum EventEffect implements RogueEffect {
         EffectType.ONESHOT, "Event Trait - Mutagen") {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            run.setMaxLife(run.getMaxLife() - 4);
+            run.loseMaxLife(4);
             run.addEventEffect(this);
         }
 

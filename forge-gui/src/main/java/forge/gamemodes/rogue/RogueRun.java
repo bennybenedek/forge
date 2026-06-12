@@ -591,6 +591,14 @@ public class RogueRun {
         this.setCurrentLife(this.maxLife);
     }
 
+    public void addMaxLife(int amount) {
+        this.setMaxLife(maxLife + amount);
+    }
+
+    public void loseMaxLife(int amount) {
+        this.setMaxLife(Math.max(maxLife - amount, 0));
+    }
+
     public void setMaxLife(int maxLife) {
         int oldMaxLife = this.maxLife;
         if (oldMaxLife <= 0) {

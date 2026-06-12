@@ -3,7 +3,6 @@ package forge.gamemodes.rogue.effect;
 import forge.game.player.RegisteredPlayer;
 import forge.gamemodes.rogue.RogueRun;
 import forge.gamemodes.rogue.RogueRun.CarryCardType;
-import forge.item.PaperCard;
 
 /**
  * NPC effets granted during run start encounters.

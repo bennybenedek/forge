@@ -7,17 +7,16 @@ import forge.gamemodes.rogue.RogueRun;
 public enum ChestEffect implements RogueEffect {
 
     // ONESHOT effects
-    TREASURE("treasure", "Treasure", "Gain 10 {{Gold}} and 10 {{Echoes}}.", EffectType.ONESHOT, null) {
-        @Override
-        public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            run.addGold(10);
-            RogueMetaProgress.getInstance().addEchoes(10);
-        }
-    },
     CARD_REWARD("card_reward", "Card Cache", "Gain a {{Card Reward}}.", EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             ctx.trigger = EffectResultContext.ActionTriggerType.CARD_REWARD;
+        }
+    },
+    CHARM_OF_VITALITY("charm_of_vitality", "Charm Of Vitality", "Gain 10 {{Max. Life}}.", EffectType.ONESHOT, null) {
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            run.addMaxLife(10);
         }
     },
     MYTHIC_CARD_REWARD("mythic_card_reward", "Mythic Card Cache", "Gain a mythic {{Card Reward}}.",
@@ -25,6 +24,13 @@ public enum ChestEffect implements RogueEffect {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             ctx.trigger = EffectResultContext.ActionTriggerType.MYTHIC_CARD_REWARD;
+        }
+    },
+    TREASURE("treasure", "Treasure", "Gain 10 {{Gold}} and 10 {{Echoes}}.", EffectType.ONESHOT, null) {
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            run.addGold(10);
+            RogueMetaProgress.getInstance().addEchoes(10);
         }
     },
 
@@ -43,6 +49,19 @@ public enum ChestEffect implements RogueEffect {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
+        }
+    },
+    RELIC_OF_WEALTH("relic_of_wealth", "Relic Of Wealth",
+        "Gain the {{Trait}} **Relic Of Wealth**.",
+        EffectType.PERMANENT, "Chest Trait - Relic Of Wealth") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+        }
+
+        @Override
+        public void onBeforeRewards(MatchRewardContext ctx, RogueRun run) {
+            ctx.goldRewardAdjustment += 4;
         }
     },
     RELIC_OF_WISDOM("relic_of_wisdom", "Relic Of Wisdom", "Gain the {{Trait}} **Relic Of Wisdom**.",
