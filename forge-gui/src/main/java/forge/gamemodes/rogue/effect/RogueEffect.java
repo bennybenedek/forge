@@ -67,6 +67,11 @@ public interface RogueEffect {
             effectCardReferenceParts.setCode(), effectCardReferenceParts.artIndex());
     }
 
+    /** Human-facing display name derived from an effect card reference when needed. */
+    default String getEffectCardDisplayName() {
+        return TextHelper.extractEffectCardDisplayNameFromReference(getEffectCardReference());
+    }
+
     /** Description for tooltips and display text. */
     default String getDescription() { return TextHelper.stripPreviewMarkers(getRawDescription()); }
 
@@ -87,7 +92,7 @@ public interface RogueEffect {
             return effectCard.getName();
         }
 
-        String effectCardDisplayName = TextHelper.extractCardNameFromReference(getEffectCardReference());
+        String effectCardDisplayName = getEffectCardDisplayName();
         return !effectCardDisplayName.isEmpty() ? effectCardDisplayName : getDisplayName();
     }
 

@@ -10,6 +10,17 @@ import java.util.regex.Pattern;
  * Shared text helpers for Rogue Commander UI markup.
  */
 public final class TextHelper {
+    private static final String[] EFFECT_CARD_NAME_PREFIXES = {
+        "Chest Trait - ",
+        "Event Trait - ",
+        "Tyvar Trait - ",
+        "Narset Trait - ",
+        "Echo Boon - ",
+        "Wound - ",
+        "Wrathful - ",
+        "Cursed - ",
+        "Descension - "
+    };
     private static final int CARD_HIDDEN_GROUP = 1;
     private static final int CARD_TOKEN_GROUP = 2;
     private static final int KEYWORD_HIDDEN_GROUP = 1;
@@ -100,6 +111,20 @@ public final class TextHelper {
 
         int separatorIndex = token.indexOf('|');
         return separatorIndex >= 0 ? token.substring(0, separatorIndex).trim() : token;
+    }
+
+    public static String extractEffectCardDisplayNameFromReference(String token) {
+        String cardName = extractCardNameFromReference(token);
+        if (cardName.isEmpty()) {
+            return "";
+        }
+
+        for (String prefix : EFFECT_CARD_NAME_PREFIXES) {
+            if (cardName.startsWith(prefix)) {
+                return cardName.substring(prefix.length()).trim();
+            }
+        }
+        return cardName;
     }
 
     public static CardReference parseCardReference(String token) {

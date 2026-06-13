@@ -5,15 +5,16 @@ import forge.gamemodes.rogue.RogueMetaProgress;
 import forge.gamemodes.rogue.RogueRun;
 
 public enum ChestEffect implements RogueEffect {
-
     // ONESHOT effects
-    CARD_REWARD("card_reward", "Card Cache", "Gain a {{Card Reward}}.", EffectType.ONESHOT, null) {
+    CARD_REWARD("card_reward", "Card Cache", "Gain a {{Card Reward}}.", EffectType.ONESHOT,
+        null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             ctx.trigger = EffectResultContext.ActionTriggerType.CARD_REWARD;
         }
     },
-    CHARM_OF_VITALITY("charm_of_vitality", "Charm Of Vitality", "Gain 10 {{Max. Life}}.", EffectType.ONESHOT, null) {
+    CHARM_OF_VITALITY("charm_of_vitality", "Charm Of Vitality", "Gain 10 {{Max. Life}}.",
+        EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             run.addMaxLife(10);
@@ -26,7 +27,8 @@ public enum ChestEffect implements RogueEffect {
             ctx.trigger = EffectResultContext.ActionTriggerType.MYTHIC_CARD_REWARD;
         }
     },
-    TREASURE("treasure", "Treasure", "Gain 10 {{Gold}} and 10 {{Echoes}}.", EffectType.ONESHOT, null) {
+    TREASURE("treasure", "Treasure", "Gain 10 {{Gold}} and 10 {{Echoes}}.", EffectType.ONESHOT,
+        null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             run.addGold(10);
@@ -36,7 +38,7 @@ public enum ChestEffect implements RogueEffect {
 
     // PERMANENT / CONSUME effects (Traits)
     RELIC_OF_STRENGTH("relic_of_strength", "Relic Of Strength",
-        "Gain the {{Trait}} **Relic Of Strength**.",
+        "Gain the {{Trait}} **%s**.",
         EffectType.PERMANENT, "Chest Trait - Relic Of Strength") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
@@ -44,7 +46,7 @@ public enum ChestEffect implements RogueEffect {
         }
     },
     RELIC_OF_AGILITY("relic_of_agility", "Relic Of Agility",
-        "Gain the {{Trait}} **Relic Of Agility**.",
+        "Gain the {{Trait}} **%s**.",
         EffectType.PERMANENT, "Chest Trait - Relic Of Agility") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
@@ -52,7 +54,7 @@ public enum ChestEffect implements RogueEffect {
         }
     },
     RELIC_OF_WEALTH("relic_of_wealth", "Relic Of Wealth",
-        "Gain the {{Trait}} **Relic Of Wealth**. !{{Gold}}",
+        "Gain the {{Trait}} **%s**. !{{Gold}}",
         EffectType.PERMANENT, "Chest Trait - Relic Of Wealth") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
@@ -64,7 +66,8 @@ public enum ChestEffect implements RogueEffect {
             ctx.goldRewardAdjustment += 4;
         }
     },
-    RELIC_OF_WISDOM("relic_of_wisdom", "Relic Of Wisdom", "Gain the {{Trait}} **Relic Of Wisdom**.",
+    RELIC_OF_WISDOM("relic_of_wisdom", "Relic Of Wisdom",
+            "Gain the {{Trait}} **%s**.",
             EffectType.PERMANENT, "Chest Trait - Relic Of Wisdom") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
@@ -101,7 +104,17 @@ public enum ChestEffect implements RogueEffect {
     public String getDisplayName() { return displayName; }
 
     @Override
-    public String getRawDescription() { return description; }
+    public String getRawDescription() {
+        if (description == null || !description.contains("%s")) {
+            return description;
+        }
+
+        String effectCardDisplayName = getEffectCardDisplayName();
+        if (effectCardDisplayName.isBlank()) {
+            return description;
+        }
+        return description.formatted(effectCardDisplayName);
+    }
 
     @Override
     public String getEffectCardReference() { return effectCardReference; }
