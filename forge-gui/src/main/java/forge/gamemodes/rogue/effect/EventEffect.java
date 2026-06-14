@@ -1272,7 +1272,7 @@ public enum EventEffect implements RogueEffect {
     public String getDisplayName() { return displayName; }
 
     @Override
-    public String getRawDescription() { return description; }
+    public String getRawDescription() { return formatEffectCardDescription(description); }
 
     @Override
     public String getEffectCardReference() { return effectCardReference; }

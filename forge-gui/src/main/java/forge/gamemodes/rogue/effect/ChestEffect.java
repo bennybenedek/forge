@@ -38,7 +38,7 @@ public enum ChestEffect implements RogueEffect {
 
     // PERMANENT / CONSUME effects (Traits)
     RELIC_OF_STRENGTH("relic_of_strength", "Relic Of Strength",
-        "Gain the {{Trait}} **%s**.",
+        "Gain the {{Trait}} %s.",
         EffectType.PERMANENT, "Chest Trait - Relic Of Strength") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
@@ -46,7 +46,7 @@ public enum ChestEffect implements RogueEffect {
         }
     },
     RELIC_OF_AGILITY("relic_of_agility", "Relic Of Agility",
-        "Gain the {{Trait}} **%s**.",
+        "Gain the {{Trait}} %s.",
         EffectType.PERMANENT, "Chest Trait - Relic Of Agility") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
@@ -54,7 +54,7 @@ public enum ChestEffect implements RogueEffect {
         }
     },
     RELIC_OF_WEALTH("relic_of_wealth", "Relic Of Wealth",
-        "Gain the {{Trait}} **%s**. !{{Gold}}",
+        "Gain the {{Trait}} %s. !{{Gold}}",
         EffectType.PERMANENT, "Chest Trait - Relic Of Wealth") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
@@ -67,7 +67,7 @@ public enum ChestEffect implements RogueEffect {
         }
     },
     RELIC_OF_WISDOM("relic_of_wisdom", "Relic Of Wisdom",
-            "Gain the {{Trait}} **%s**.",
+            "Gain the {{Trait}} %s.",
             EffectType.PERMANENT, "Chest Trait - Relic Of Wisdom") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
@@ -104,17 +104,7 @@ public enum ChestEffect implements RogueEffect {
     public String getDisplayName() { return displayName; }
 
     @Override
-    public String getRawDescription() {
-        if (description == null || !description.contains("%s")) {
-            return description;
-        }
-
-        String effectCardDisplayName = getEffectCardDisplayName();
-        if (effectCardDisplayName.isBlank()) {
-            return description;
-        }
-        return description.formatted(effectCardDisplayName);
-    }
+    public String getRawDescription() { return formatEffectCardDescription(description); }
 
     @Override
     public String getEffectCardReference() { return effectCardReference; }

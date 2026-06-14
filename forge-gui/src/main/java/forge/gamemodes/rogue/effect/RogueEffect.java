@@ -72,6 +72,25 @@ public interface RogueEffect {
         return TextHelper.extractEffectCardDisplayNameFromReference(getEffectCardReference());
     }
 
+    /** Formatted card mention for UI description text when an effect references a representative card. */
+    default String getFormattedEffectCardDisplayName() {
+        String effectCardDisplayName = getEffectCardDisplayName();
+        return effectCardDisplayName.isBlank() ? "" : "**" + effectCardDisplayName + "**";
+    }
+
+    /** Resolves a `%s` placeholder in description text to the formatted effect-card mention, if available. */
+    default String formatEffectCardDescription(String description) {
+        if (description == null || !description.contains("%s")) {
+            return description;
+        }
+
+        String effectCardMention = getFormattedEffectCardDisplayName();
+        if (effectCardMention.isBlank()) {
+            return description;
+        }
+        return description.formatted(effectCardMention);
+    }
+
     /** Description for tooltips and display text. */
     default String getDescription() { return TextHelper.stripPreviewMarkers(getRawDescription()); }
 
