@@ -61,6 +61,38 @@ public enum ChestEffect implements RogueEffect {
             addEffectCardToCommandZone(human);
         }
     },
+    IDOL_OF_MANY_EYES("idol_of_many_eyes", "Idol Of Many Eyes",
+        "Gain the {{Trait}} %s.",
+        EffectType.PERMANENT, "Chest Trait - Idol Of Many Eyes") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+        }
+    },
+    IDOL_OF_DREAD("idol_of_dread", "Idol Of Dread",
+        "Gain the {{Trait}} %s.",
+        EffectType.PERMANENT, "Chest Trait - Idol Of Dread") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+        }
+    },
+    IDOL_OF_THE_RINGCALLER("idol_of_the_ringcaller", "Idol Of The Ringcaller",
+        "Gain the {{Trait}} %s.",
+        EffectType.PERMANENT, "Chest Trait - Idol Of The Ringcaller") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+        }
+    },
+    IDOL_OF_THE_COLOSSUS("idol_of_the_colossus", "Idol Of The Colossus",
+        "Gain the {{Trait}} %s.",
+        EffectType.PERMANENT, "Chest Trait - Idol Of The Colossus") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+        }
+    },
     RELIC_OF_WEALTH("relic_of_wealth", "Relic Of Wealth",
         "Gain the {{Trait}} %s. !{{Gold}}",
         EffectType.PERMANENT, "Chest Trait - Relic Of Wealth") {
