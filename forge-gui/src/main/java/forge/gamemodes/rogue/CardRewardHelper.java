@@ -112,8 +112,8 @@ public class CardRewardHelper {
                     combineFilters(PaperCardPredicates.IS_MYTHIC_RARE, notAlreadyOwned));
 
             rewardOptions = new ArrayList<>();
-            rewardOptions.addAll(nonMythicCards);
             rewardOptions.addAll(mythicCards);
+            rewardOptions.addAll(nonMythicCards);
 
             if (rewardOptions.isEmpty()) return null;
 
