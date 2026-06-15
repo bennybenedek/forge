@@ -11,7 +11,7 @@ import forge.gamemodes.rogue.RogueRun.CarryCardType;
 public enum NPCEffect implements RogueEffect {
 
     TYVAR_MIGHT("npc_tyvar_might", "Tyvar's Might",
-        "Gain the {{Trait}} **Tyvar's Might**.",
+        "Gain the {{Trait}} %s.",
         EffectType.PERMANENT, "Tyvar Trait - Might") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
@@ -19,7 +19,7 @@ public enum NPCEffect implements RogueEffect {
         }
     },
     TYVAR_DISCOUNT("npc_tyvar_discount", "Tyvar's Efficiency",
-        "Gain the {{Trait}} **Tyvar's Efficiency**.",
+        "Gain the {{Trait}} %s.",
         EffectType.PERMANENT, "Tyvar Trait - Efficiency") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
@@ -27,7 +27,7 @@ public enum NPCEffect implements RogueEffect {
         }
     },
     TYVAR_HASTE("npc_tyvar_haste", "Tyvar's Fury",
-        "Gain the {{Trait}} **Tyvar's Fury**.",
+        "Gain the {{Trait}} %s.",
         EffectType.PERMANENT, "Tyvar Trait - Fury") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
@@ -53,7 +53,7 @@ public enum NPCEffect implements RogueEffect {
         }
     },
     NARSET_CHAOSBOUND("npc_narset_chaosbound", "Chaosbound",
-        "Start each match with a **Chaos Capsule** on the battlefield.",
+        "Start each match with a %s on the battlefield.",
         EffectType.PERMANENT, "Narset - Chaos Capsule") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
@@ -61,7 +61,7 @@ public enum NPCEffect implements RogueEffect {
         }
     },
     NARSET_GOD_OF_CHAOS("npc_narset_god_of_chaos", "God of Chaos",
-        "Gain the {{Trait}} **God of Chaos**.",
+        "Gain the {{Trait}} %s.",
         EffectType.PERMANENT, "Narset Trait - God of Chaos") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
@@ -94,7 +94,7 @@ public enum NPCEffect implements RogueEffect {
     public String getDisplayName() { return displayName; }
 
     @Override
-    public String getRawDescription() { return description; }
+    public String getRawDescription() { return formatEffectCardDescription(description); }
 
     @Override
     public String getEffectCardReference() { return effectCardReference; }

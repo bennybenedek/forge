@@ -105,7 +105,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     AMONG_MURDERERS_CONFESS("among_murderers_confess", "Confess",
-        "Gain the {{Trait}} **Confession**.",
+        "Gain the {{Trait}} %s.",
         EffectType.ONESHOT, "Event Trait - Confession") {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
@@ -209,7 +209,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     BREAKING_OLD_LAWS_PARTNER_UP("breaking_the_old_laws_partner_up", "Partner Up",
-        "Lose 4 {{Max. Life}}. Gain the {{Trait}} **Partnership**. Choose 1 out of 20 Partners "
+        "Lose 4 {{Max. Life}}. Gain the {{Trait}} %s. Choose 1 out of 20 Partners "
             + "for your commander.",
         EffectType.ONESHOT, "Event Trait - Partnership") {
         @Override
@@ -374,7 +374,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     CROOKED_COUNSEL_RING("crooked_counsel_ring", "Keep to your own path",
-        "Lose 5 Life. Gain the legendary artifact {{Item}} [[The One Ring|LTR|2]].",
+        "Lose 5 Life. Gain the legendary artifact {{Item}} %s.",
         EffectType.ONESHOT, "The One Ring|LTR|2") {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
@@ -436,7 +436,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     DISTORTION_ENDURE("distortion_endure", "Distorted Reality",
-        "Gain the {{Trait}} **Distorted Reality**. !{{Gold}} !{{Card Reward}}",
+        "Gain the {{Trait}} %s. !{{Gold}} !{{Card Reward}}",
         EffectType.CONSUME, "Event Trait - Distorted Reality") {
         @Override
         public int getChargesForRank(int rank) { return 2; }
@@ -494,7 +494,7 @@ public enum EventEffect implements RogueEffect {
     },
     ETERNAL_CRUSADE_JOIN_SPACE_MARINES("eternal_crusade_join_space_marines", "Join Space Marines",
         "All future {{Planebound}}s gain 2 additional instances of {{Wrathful}}. Gain the {{Trait}} "
-            + "**Codex Astartes**.",
+            + "%s.",
         EffectType.ONESHOT, "Event Trait - Codex Astartes") {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
@@ -865,7 +865,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     LOST_NOT_FORGOTTEN_VENTURE_DEEPER("lost_not_forgotten_venture_deeper", "Venture deeper",
-        "Roll a d20.\n1: Trap - Gain a random {{Wound}}.\n2-9: Enemies - Fight a random {{Planebound}} on a random Plane.\n10-19: Find Loot - Gain the {{Item}} **Treasure Chest**.\n20: Find Treasure Vault - Gain 20 {{Gold}} and find a {{Chest}}.",
+        "Roll a d20.\n1: Trap - Gain a random {{Wound}}.\n2-9: Enemies - Fight a random {{Planebound}} on a random Plane.\n10-19: Find Loot - Gain the {{Item}} %s.\n20: Find Treasure Vault - Gain 20 {{Gold}} and find a {{Chest}}.",
         EffectType.ONESHOT, "Treasure Chest") {
 
         @Override
@@ -903,7 +903,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     LOST_PERSIST("lost_weakened", "Lost Connection - Commander Weakened",
-        "Gain the {{Trait}} **Commander Weakened**.",
+        "Gain the {{Trait}} %s.",
         EffectType.PERMANENT, "Event Trait - Commander Weakened") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
@@ -957,7 +957,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     NEON_LID_NINJA("neon_lid_ninja", "Path of the Ninja",
-        "Lose 6 {{Max. Life}}. Gain the {{Trait}} **Ninjutsu Mastery**.",
+        "Lose 6 {{Max. Life}}. Gain the {{Trait}} %s.",
         EffectType.ONESHOT, "Event Trait - Ninjutsu Mastery") {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
@@ -1067,7 +1067,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     PLANAR_RIFT_BOOST("planar_rift_boost", "Planar Rift - Commander Boost",
-        "Gain the {{Trait}} **Commander Boost**.",
+        "Gain the {{Trait}} %s.",
         EffectType.ONESHOT, "Event Trait - Commander Boost") {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
@@ -1113,7 +1113,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     STREET_OF_CONCEALMENT_ACCEPT("street_of_concealment_accept", "Accept",
-        "Gain the {{Trait}} **Concealment**.",
+        "Gain the {{Trait}} %s.",
         EffectType.ONESHOT, "Event Trait - Concealment") {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
@@ -1126,7 +1126,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     STREET_OF_GREED_ACCEPT("street_of_greed_accept", "Accept",
-        "Gain 666 {{Gold}}. Gain the {{Trait}} **Arrogance**.",
+        "Gain 666 {{Gold}}. Gain the {{Trait}} %s.",
         EffectType.ONESHOT, "Event Trait - Arrogance") {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
@@ -1140,7 +1140,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     STREET_OF_FORCEFULNESS_ACCEPT("street_of_forcefulness_accept", "Accept",
-        "Gain the {{Trait}} **Forcefulness**. You cannot gain Life during the Run in any way.",
+        "Gain the {{Trait}} %s. You cannot gain Life during the Run in any way.",
         EffectType.ONESHOT, "Event Trait - Forcefulness") {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
@@ -1182,7 +1182,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     TRAPPED_IN_THE_LAIR_EXAMINE("trapped_in_the_lair_examine", "Examine",
-        "Lose 4 {{Max. Life}}. Gain the {{Trait}} **Mutagen**.",
+        "Lose 4 {{Max. Life}}. Gain the {{Trait}} %s.",
         EffectType.ONESHOT, "Event Trait - Mutagen") {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
