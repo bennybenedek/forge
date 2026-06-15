@@ -53,6 +53,14 @@ public enum ChestEffect implements RogueEffect {
             addEffectCardToCommandZone(human);
         }
     },
+    IDOL_OF_EMBERS("idol_of_embers", "Idol Of Embers",
+        "Gain the {{Trait}} %s.",
+        EffectType.PERMANENT, "Chest Trait - Idol Of Embers") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+        }
+    },
     RELIC_OF_WEALTH("relic_of_wealth", "Relic Of Wealth",
         "Gain the {{Trait}} %s. !{{Gold}}",
         EffectType.PERMANENT, "Chest Trait - Relic Of Wealth") {
