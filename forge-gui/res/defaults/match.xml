@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<layout serial="">
+<layout serial="2026061501">
 	<cell x="0.0" y="0.0" w="0.2" h="0.643" sel="REPORT_STACK">
 		<doc>REPORT_STACK</doc>
 		<doc>REPORT_COMBAT</doc>
@@ -26,5 +26,7 @@
 	</cell>
 	<cell x="0.8" y="0.466" w="0.2" h="0.534" sel="ZONE_COMMAND">
 		<doc>ZONE_COMMAND</doc>
+		<doc>ZONE_GRAVEYARD</doc>
+		<doc>ZONE_EXILE</doc>
 	</cell>
 </layout>
