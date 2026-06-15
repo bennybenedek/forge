@@ -109,6 +109,30 @@ public enum ChestEffect implements RogueEffect {
             addEffectCardToCommandZone(human);
         }
     },
+    LANTERN_OF_THE_DEAD("lantern_of_the_dead", "Lantern Of The Dead",
+        "Gain the {{Trait}} %s.",
+        EffectType.PERMANENT, "Chest Trait - Lantern Of The Dead") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+        }
+    },
+    LANTERN_OF_HIGH_SCORE("lantern_of_high_score", "Lantern Of High Score",
+        "Gain the {{Trait}} %s.",
+        EffectType.PERMANENT, "Chest Trait - Lantern Of High Score") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+        }
+    },
+    LANTERN_OF_EXCAVATION("lantern_of_excavation", "Lantern Of Excavation",
+        "Gain the {{Trait}} %s.",
+        EffectType.PERMANENT, "Chest Trait - Lantern Of Excavation") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+        }
+    },
     RELIC_OF_WEALTH("relic_of_wealth", "Relic Of Wealth",
         "Gain the {{Trait}} %s. !{{Gold}}",
         EffectType.PERMANENT, "Chest Trait - Relic Of Wealth") {
