@@ -937,7 +937,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     NEON_LID_SAMURAI("neon_lid_samurai", "Path of the Samurai",
-        "Remove all creatures from your deck. For each creature removed this way, choose a Samurai to add to your deck.",
+        "Remove all Human creatures from your deck. For each creature removed this way, choose a Samurai to add to your deck.",
         EffectType.ONESHOT, null) {
         @Override
         public Predicate<PaperCard> getDBCardsFilter() {
@@ -947,7 +947,8 @@ public enum EventEffect implements RogueEffect {
 
         @Override
         public Predicate<PaperCard> getDeckCardFilter() {
-            return PaperCardPredicates.fromRules(CardRulesPredicates.IS_CREATURE);
+            return PaperCardPredicates.fromRules(
+                CardRulesPredicates.IS_CREATURE.and(CardRulesPredicates.subType("Human")));
         }
 
         @Override

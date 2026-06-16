@@ -1,4 +1,4 @@
-Name:Chest Trait - Lantern Of The Dead
+Name:Chest Trait - Charm Of The Dead
 ManaCost:no cost
 Types:Trait
 T:Mode$ Phase | Phase$ End of Turn | ValidPlayer$ You | TriggerZones$ Command | CheckSVar$ Y | Execute$ TrigGainLife | TriggerDescription$ At the beginning of your end step, if one or more creatures died this turn, you gain that much life.

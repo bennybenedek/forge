@@ -6,8 +6,6 @@ import forge.gamemodes.rogue.RogueRun;
 
 public enum ChestEffect implements RogueEffect {
 
-
-
     // ONESHOT effects
     CARD_CACHE("card_cache", "Card Cache", "Gain a {{Card Reward}}.", EffectType.ONESHOT,
         null) {
@@ -16,7 +14,7 @@ public enum ChestEffect implements RogueEffect {
             ctx.trigger = EffectResultContext.ActionTriggerType.CARD_REWARD;
         }
     },
-    CARD_CACHE_MYTHIC("mythic_card_reward", "Mythic Card Cache", "Gain a mythic {{Card Reward}}.",
+    CARD_CACHE_MYTHIC("card_cache_mythic", "Mythic Card Cache", "Gain a mythic {{Card Reward}}.",
         EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
@@ -40,6 +38,62 @@ public enum ChestEffect implements RogueEffect {
     },
 
     // PERMANENT / CONSUME effects (Traits)
+    CHARM_OF_ASCENDANCY("charm_of_ascendancy", "Charm Of Ascendancy",
+        TRAIT_GAIN_DESCRIPTION,
+        EffectType.PERMANENT, "Chest Trait - Charm Of Ascendancy") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+        }
+    },
+    CHARM_OF_EXCAVATION("charm_of_excavation", "Charm Of Excavation",
+        TRAIT_GAIN_DESCRIPTION,
+        EffectType.PERMANENT, "Chest Trait - Charm Of Excavation") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+        }
+    },
+    CHARM_OF_HIGH_SCORE("charm_of_high_score", "Charm Of High Score",
+        TRAIT_GAIN_DESCRIPTION,
+        EffectType.PERMANENT, "Chest Trait - Charm Of High Score") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+        }
+    },
+    CHARM_OF_THE_DEAD("charm_of_the_dead", "Charm Of The Dead",
+        TRAIT_GAIN_DESCRIPTION,
+        EffectType.PERMANENT, "Chest Trait - Charm Of The Dead") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+        }
+    },
+    CHARM_OF_THE_OCELOT("charm_of_the_ocelot", "Charm Of The Ocelot",
+        TRAIT_GAIN_DESCRIPTION,
+        EffectType.PERMANENT, "Chest Trait - Charm Of The Ocelot") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+        }
+    },
+    CHARM_OF_THE_TRAVELER("charm_of_the_traveler", "Charm Of The Traveler",
+        TRAIT_GAIN_DESCRIPTION,
+        EffectType.PERMANENT, "Chest Trait - Charm Of The Traveler") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+        }
+    },
+    CHARM_OF_WILDERNESS("charm_of_wilderness", "Charm Of Wilderness",
+        TRAIT_GAIN_DESCRIPTION,
+        EffectType.PERMANENT, "Chest Trait - Charm Of Wilderness") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+        }
+    },
     IDOL_OF_EMBERS("idol_of_embers", "Idol Of Embers",
         TRAIT_GAIN_DESCRIPTION,
         EffectType.PERMANENT, "Chest Trait - Idol Of Embers") {
@@ -96,57 +150,25 @@ public enum ChestEffect implements RogueEffect {
             addEffectCardToCommandZone(human);
         }
     },
-    LANTERN_OF_THE_DEAD("lantern_of_the_dead", "Lantern Of The Dead",
+    SHIELD_OF_CONVALESCENCE("shield_of_convalescence", "Shield Of Convalescence",
         TRAIT_GAIN_DESCRIPTION,
-        EffectType.PERMANENT, "Chest Trait - Lantern Of The Dead") {
+        EffectType.PERMANENT, "Chest Trait - Shield Of Convalescence") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
         }
     },
-    LANTERN_OF_HIGH_SCORE("lantern_of_high_score", "Lantern Of High Score",
+    SHIELD_OF_CONVALESCENT_CARE("shield_of_convalescent_care", "Shield Of Convalescent Care",
         TRAIT_GAIN_DESCRIPTION,
-        EffectType.PERMANENT, "Chest Trait - Lantern Of High Score") {
+        EffectType.PERMANENT, "Chest Trait - Shield Of Convalescent Care") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
         }
     },
-    LANTERN_OF_EXCAVATION("lantern_of_excavation", "Lantern Of Excavation",
+    SHIELD_OF_FAITH("shield_of_faith", "Shield Of Faith",
         TRAIT_GAIN_DESCRIPTION,
-        EffectType.PERMANENT, "Chest Trait - Lantern Of Excavation") {
-        @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-        }
-    },
-    LANTERN_OF_THE_TRAVELER("lantern_of_the_traveler", "Lantern Of The Traveler",
-        TRAIT_GAIN_DESCRIPTION,
-        EffectType.PERMANENT, "Chest Trait - Lantern Of The Traveler") {
-        @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-        }
-    },
-    LANTERN_OF_THE_OCELOT("lantern_of_the_ocelot", "Lantern Of The Ocelot",
-        TRAIT_GAIN_DESCRIPTION,
-        EffectType.PERMANENT, "Chest Trait - Lantern Of The Ocelot") {
-        @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-        }
-    },
-    LANTERN_OF_ASCENDANCY("lantern_of_ascendancy", "Lantern Of Ascendancy",
-        TRAIT_GAIN_DESCRIPTION,
-        EffectType.PERMANENT, "Chest Trait - Lantern Of Ascendancy") {
-        @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-        }
-    },
-    LANTERN_OF_WILDERNESS("lantern_of_wilderness", "Lantern Of Wilderness",
-        TRAIT_GAIN_DESCRIPTION,
-        EffectType.PERMANENT, "Chest Trait - Lantern Of Wilderness") {
+        EffectType.PERMANENT, "Chest Trait - Shield Of Faith") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
@@ -178,7 +200,7 @@ public enum ChestEffect implements RogueEffect {
 
         @Override
         public void onBeforeRewards(MatchRewardContext ctx, RogueRun run) {
-            ctx.goldRewardAdjustment += 4;
+            ctx.goldRewardAdjustment += 3;
         }
     },
     RELIC_OF_WISDOM("relic_of_wisdom", "Relic Of Wisdom",

@@ -1,4 +1,4 @@
-Name:Chest Trait - Lantern Of The Traveler
+Name:Chest Trait - Charm Of The Traveler
 ManaCost:no cost
 Types:Trait
 T:Mode$ Phase | Phase$ End of Turn | ValidPlayer$ You | TriggerZones$ Command | Execute$ TrigBlink | TriggerDescription$ At the beginning of your end step, exile up to one target creature you control, then return it to the battlefield under its owner's control.

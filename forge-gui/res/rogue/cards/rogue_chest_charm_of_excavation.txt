@@ -1,4 +1,4 @@
-Name:Chest Trait - Lantern Of Excavation
+Name:Chest Trait - Charm Of Excavation
 ManaCost:no cost
 Types:Trait
 T:Mode$ Phase | Phase$ End of Turn | ValidPlayer$ You | TriggerZones$ Command | Execute$ TrigMill | TriggerDescription$ At the beginning of your end step, mill a card. If a land card was milled this way, you gain 1 life. Otherwise, CARDNAME deals 1 damage to each opponent. (To mill a card, put the top card of your library into your graveyard.)
@@ -8,4 +8,4 @@ SVar:DBCleanup:DB$ Cleanup | ClearRemembered$ True
 SVar:X:Remembered$Valid Land
 SVar:GainLife:DB$ GainLife | Defined$ You | LifeAmount$ 1
 SVar:DealDamage:DB$ DamageAll | ValidPlayers$ Player.Opponent | NumDmg$ 1
-Oracle:At the beginning of your end step, mill a card. If a land card was milled this way, you gain 1 life. Otherwise, Lantern Of Excavation deals 1 damage to each opponent. (To mill a card, put the top card of your library into your graveyard.)
+Oracle:At the beginning of your end step, mill a card. If a land card was milled this way, you gain 1 life. Otherwise, Charm Of Excavation deals 1 damage to each opponent. (To mill a card, put the top card of your library into your graveyard.)
