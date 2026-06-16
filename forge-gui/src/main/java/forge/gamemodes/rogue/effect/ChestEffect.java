@@ -150,30 +150,6 @@ public enum ChestEffect implements RogueEffect {
             addEffectCardToCommandZone(human);
         }
     },
-    SHIELD_OF_CONVALESCENCE("shield_of_convalescence", "Shield Of Convalescence",
-        TRAIT_GAIN_DESCRIPTION,
-        EffectType.PERMANENT, "Chest Trait - Shield Of Convalescence") {
-        @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-        }
-    },
-    SHIELD_OF_CONVALESCENT_CARE("shield_of_convalescent_care", "Shield Of Convalescent Care",
-        TRAIT_GAIN_DESCRIPTION,
-        EffectType.PERMANENT, "Chest Trait - Shield Of Convalescent Care") {
-        @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-        }
-    },
-    SHIELD_OF_FAITH("shield_of_faith", "Shield Of Faith",
-        TRAIT_GAIN_DESCRIPTION,
-        EffectType.PERMANENT, "Chest Trait - Shield Of Faith") {
-        @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-        }
-    },
     RELIC_OF_AGILITY("relic_of_agility", "Relic Of Agility",
         TRAIT_GAIN_DESCRIPTION,
         EffectType.PERMANENT, "Chest Trait - Relic Of Agility") {
@@ -209,6 +185,30 @@ public enum ChestEffect implements RogueEffect {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             human.setStartingHand(human.getStartingHand() + 1);
+            addEffectCardToCommandZone(human);
+        }
+    },
+    SHIELD_OF_CONVALESCENCE("shield_of_convalescence", "Shield Of Convalescence",
+        TRAIT_GAIN_DESCRIPTION,
+        EffectType.PERMANENT, "Chest Trait - Shield Of Convalescence") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+        }
+    },
+    SHIELD_OF_CONVALESCENT_CARE("shield_of_convalescent_care", "Shield Of Convalescent Care",
+        TRAIT_GAIN_DESCRIPTION,
+        EffectType.PERMANENT, "Chest Trait - Shield Of Convalescent Care") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+        }
+    },
+    SHIELD_OF_FAITH("shield_of_faith", "Shield Of Faith",
+        TRAIT_GAIN_DESCRIPTION,
+        EffectType.PERMANENT, "Chest Trait - Shield Of Faith") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
         }
     };
