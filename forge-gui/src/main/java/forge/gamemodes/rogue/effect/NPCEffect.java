@@ -11,7 +11,7 @@ import forge.gamemodes.rogue.RogueRun.CarryCardType;
 public enum NPCEffect implements RogueEffect {
 
     TYVAR_MIGHT("npc_tyvar_might", "Tyvar's Might",
-        "Gain the {{Trait}} %s.",
+        TRAIT_GAIN_DESCRIPTION,
         EffectType.PERMANENT, "Tyvar Trait - Might") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
@@ -19,7 +19,7 @@ public enum NPCEffect implements RogueEffect {
         }
     },
     TYVAR_DISCOUNT("npc_tyvar_discount", "Tyvar's Efficiency",
-        "Gain the {{Trait}} %s.",
+        TRAIT_GAIN_DESCRIPTION,
         EffectType.PERMANENT, "Tyvar Trait - Efficiency") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
@@ -27,7 +27,7 @@ public enum NPCEffect implements RogueEffect {
         }
     },
     TYVAR_HASTE("npc_tyvar_haste", "Tyvar's Fury",
-        "Gain the {{Trait}} %s.",
+        TRAIT_GAIN_DESCRIPTION,
         EffectType.PERMANENT, "Tyvar Trait - Fury") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
@@ -45,7 +45,7 @@ public enum NPCEffect implements RogueEffect {
         }
     },
     NARSET_ALCHEMIST("npc_narset_alchemist", "Alchemist",
-        "Start the Run with an [[Ichor Elixir]] {{Item}} in the command zone.",
+        "Start the Run with an %s {{Item}} in the command zone.",
         EffectType.ONESHOT, "Ichor Elixir") {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
@@ -61,7 +61,7 @@ public enum NPCEffect implements RogueEffect {
         }
     },
     NARSET_GOD_OF_CHAOS("npc_narset_god_of_chaos", "God of Chaos",
-        "Gain the {{Trait}} %s.",
+        TRAIT_GAIN_DESCRIPTION,
         EffectType.PERMANENT, "Narset Trait - God of Chaos") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {

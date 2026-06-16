@@ -87,7 +87,7 @@ public enum EventEffect implements RogueEffect {
 
         @Override
         public String getUnavailableReason(RogueRun run) {
-            return run.hasEnoughGold(getGoldCost()) ? null : getInsufficientGoldReason();
+            return run.hasEnoughGold(getGoldCost()) ? null : INSUFFICIENT_GOLD;
         }
     },
     AMONG_MURDERERS_INVESTIGATE("among_murderers_investigate", "Investigate",
@@ -105,7 +105,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     AMONG_MURDERERS_CONFESS("among_murderers_confess", "Confess",
-        "Gain the {{Trait}} %s.",
+        TRAIT_GAIN_DESCRIPTION,
         EffectType.ONESHOT, "Event Trait - Confession") {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
@@ -141,7 +141,7 @@ public enum EventEffect implements RogueEffect {
         @Override
         public String getUnavailableReason(RogueRun run) {
             if (!run.hasEnoughGold(getGoldCost())) {
-                return getInsufficientGoldReason();
+                return INSUFFICIENT_GOLD;
             }
             return "No detectives are available for your commander.";
         }
@@ -209,7 +209,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     BREAKING_OLD_LAWS_PARTNER_UP("breaking_the_old_laws_partner_up", "Partner Up",
-        "Lose 4 {{Max. Life}}. Gain the {{Trait}} %s. Choose 1 out of 20 Partners "
+        "Lose 4 {{Max. Life}}. " + TRAIT_GAIN_DESCRIPTION + " Choose 1 out of 20 Partners "
             + "for your commander.",
         EffectType.ONESHOT, "Event Trait - Partnership") {
         @Override
@@ -240,7 +240,7 @@ public enum EventEffect implements RogueEffect {
 
         @Override
         public String getUnavailableReason(RogueRun run) {
-            return isChoiceAvailable(run) ? null : "You don't have enough Max. Life.";
+            return isChoiceAvailable(run) ? null : INSUFFICIENT_MAX_LIFE;
         }
     },
     BURROWED_BROWSE("burrowed_browse", "Browse",
@@ -436,7 +436,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     DISTORTION_ENDURE("distortion_endure", "Distorted Reality",
-        "Gain the {{Trait}} %s. !{{Gold}} !{{Card Reward}}",
+        TRAIT_GAIN_DESCRIPTION + "!{{Gold}} !{{Card Reward}}",
         EffectType.CONSUME, "Event Trait - Distorted Reality") {
         @Override
         public int getChargesForRank(int rank) { return 2; }
@@ -694,7 +694,7 @@ public enum EventEffect implements RogueEffect {
         @Override
         public String getUnavailableReason(RogueRun run) {
             if (!run.hasEnoughGold(getGoldCost())) {
-                return getInsufficientGoldReason();
+                return INSUFFICIENT_GOLD;
             }
             if (run.getCurrentLife() >= run.getMaxLife()) {
                 return "You are already at maximum Life.";
@@ -718,7 +718,7 @@ public enum EventEffect implements RogueEffect {
         @Override
         public String getUnavailableReason(RogueRun run) {
             if (!run.hasEnoughGold(getGoldCost())) {
-                return getInsufficientGoldReason();
+                return INSUFFICIENT_GOLD;
             }
             if (run.getActiveWoundEffects().isEmpty()) {
                 return "You have no active wounds.";
@@ -741,7 +741,7 @@ public enum EventEffect implements RogueEffect {
 
         @Override
         public String getUnavailableReason(RogueRun run) {
-            return run.hasEnoughGold(getGoldCost()) ? null : getInsufficientGoldReason();
+            return run.hasEnoughGold(getGoldCost()) ? null : INSUFFICIENT_GOLD;
         }
     },
     HORROR_SURRENDER("horror_surrender", "Lose All Gold", "You lose all your {{Gold}}.",
@@ -861,7 +861,7 @@ public enum EventEffect implements RogueEffect {
 
         @Override
         public String getUnavailableReason(RogueRun run) {
-            return run.hasEnoughGold(getGoldCost()) ? null : getInsufficientGoldReason();
+            return run.hasEnoughGold(getGoldCost()) ? null : INSUFFICIENT_GOLD;
         }
     },
     LOST_NOT_FORGOTTEN_VENTURE_DEEPER("lost_not_forgotten_venture_deeper", "Venture deeper",
@@ -903,7 +903,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     LOST_PERSIST("lost_weakened", "Lost Connection - Commander Weakened",
-        "Gain the {{Trait}} %s.",
+        TRAIT_GAIN_DESCRIPTION,
         EffectType.PERMANENT, "Event Trait - Commander Weakened") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
@@ -957,7 +957,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     NEON_LID_NINJA("neon_lid_ninja", "Path of the Ninja",
-        "Lose 6 {{Max. Life}}. Gain the {{Trait}} %s.",
+        "Lose 6 {{Max. Life}}. " + TRAIT_GAIN_DESCRIPTION,
         EffectType.ONESHOT, "Event Trait - Ninjutsu Mastery") {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
@@ -977,7 +977,7 @@ public enum EventEffect implements RogueEffect {
 
         @Override
         public String getUnavailableReason(RogueRun run) {
-            return isChoiceAvailable(run) ? null : "You don't have enough Max. Life.";
+            return isChoiceAvailable(run) ? null : INSUFFICIENT_MAX_LIFE;
         }
     },
     NEON_LID_SHRINE("neon_lid_shrine", "Path of Inner Peace",
@@ -1067,7 +1067,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     PLANAR_RIFT_BOOST("planar_rift_boost", "Planar Rift - Commander Boost",
-        "Gain the {{Trait}} %s.",
+        TRAIT_GAIN_DESCRIPTION,
         EffectType.ONESHOT, "Event Trait - Commander Boost") {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
@@ -1112,8 +1112,8 @@ public enum EventEffect implements RogueEffect {
             triggerChest(ctx);
         }
     },
-    STREET_OF_CONCEALMENT_ACCEPT("street_of_concealment_accept", "Accept",
-        "Gain the {{Trait}} %s.",
+    STREET_OF_CONCEALMENT_ACCEPT("street_of_concealment_accept", ACCEPT,
+        TRAIT_GAIN_DESCRIPTION,
         EffectType.ONESHOT, "Event Trait - Concealment") {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
@@ -1125,8 +1125,8 @@ public enum EventEffect implements RogueEffect {
             addEffectCardToCommandZone(human);
         }
     },
-    STREET_OF_GREED_ACCEPT("street_of_greed_accept", "Accept",
-        "Gain 666 {{Gold}}. Gain the {{Trait}} %s.",
+    STREET_OF_GREED_ACCEPT("street_of_greed_accept", ACCEPT,
+        "Gain 666 {{Gold}}. " + TRAIT_GAIN_DESCRIPTION,
         EffectType.ONESHOT, "Event Trait - Arrogance") {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
@@ -1139,8 +1139,8 @@ public enum EventEffect implements RogueEffect {
             addEffectCardToCommandZone(human);
         }
     },
-    STREET_OF_FORCEFULNESS_ACCEPT("street_of_forcefulness_accept", "Accept",
-        "Gain the {{Trait}} %s. You cannot gain Life during the Run in any way.",
+    STREET_OF_FORCEFULNESS_ACCEPT("street_of_forcefulness_accept", ACCEPT,
+        TRAIT_GAIN_DESCRIPTION + " You cannot gain Life during the Run in any way.",
         EffectType.ONESHOT, "Event Trait - Forcefulness") {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
@@ -1182,7 +1182,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     TRAPPED_IN_THE_LAIR_EXAMINE("trapped_in_the_lair_examine", "Examine",
-        "Lose 4 {{Max. Life}}. Gain the {{Trait}} %s.",
+        "Lose 4 {{Max. Life}}. "  + TRAIT_GAIN_DESCRIPTION,
         EffectType.ONESHOT, "Event Trait - Mutagen") {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
@@ -1283,10 +1283,6 @@ public enum EventEffect implements RogueEffect {
 
     public String getUnavailableReason(RogueRun run) {
         return null;
-    }
-
-    protected String getInsufficientGoldReason() {
-        return goldCost > 0 ? "You don't have enough Gold." : null;
     }
 
     public static EventEffect fromId(String id) {
