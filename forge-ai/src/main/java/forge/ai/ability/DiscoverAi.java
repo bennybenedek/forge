@@ -14,7 +14,7 @@ public class DiscoverAi extends SpellAbilityAi {
 
     @Override
     protected AiAbilityDecision checkApiLogic(final Player ai, final SpellAbility sa) {
-        return new AiAbilityDecision(0, AiPlayDecision.CantPlayAi);
+        return new AiAbilityDecision(100, AiPlayDecision.WillPlay);
     }
 
     /**
