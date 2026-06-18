@@ -356,7 +356,7 @@ public class ComputerUtil {
                         return false;
                     }
 
-                    if (card.hasKeyword(Keyword.DISTURB) || card.hasKeyword(Keyword.ESCAPE) || card.hasKeyword(Keyword.DISTURB)) {
+                    if (card.hasKeyword(Keyword.DISTURB) || card.hasKeyword(Keyword.ESCAPE)) {
                         return true;
                     }
 
@@ -1363,6 +1363,7 @@ public class ComputerUtil {
             }
         }
 
+        // ideally we'd check with cost reducers included
         if (card.getManaCost().isZero()) {
             return true;
         }
@@ -1372,8 +1373,8 @@ public class ComputerUtil {
         }
 
         final boolean preferHasteForRiot = SpecialAiLogic.preferHasteForRiot(sa, ai);
+        // Planning to choose Haste for Riot
         if (preferHasteForRiot) {
-            // Planning to choose Haste for Riot, so do this in Main 1
             return true;
         }
 
@@ -1409,7 +1410,7 @@ public class ComputerUtil {
             return hasteHasImmediateValue(ai, enteringCopy);
         }
 
-        //cast equipment in Main1 when there are creatures to equip and no other unequipped equipment
+        // cast equipment in Main1 when there are creatures to equip and no other unequipped equipment
         if (card.isEquipment()) {
             boolean playNow = false;
             for (Card c : card.getController().getCardsIn(ZoneType.Battlefield)) {
