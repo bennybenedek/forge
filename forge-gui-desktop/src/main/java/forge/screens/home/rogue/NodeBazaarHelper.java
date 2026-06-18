@@ -134,8 +134,8 @@ class NodeBazaarHelper {
             CardRewardHelper.combineFilters(PaperCardPredicates.IS_MYTHIC_RARE, notAlreadyOwned));
 
         List<PaperCard> inventory = new ArrayList<>();
-        inventory.addAll(mythicCards);
         inventory.addAll(nonMythicCards);
+        inventory.addAll(mythicCards);
         return inventory;
     }
 
