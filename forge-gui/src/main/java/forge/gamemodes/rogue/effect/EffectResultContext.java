@@ -28,6 +28,9 @@ public class EffectResultContext {
     /** Set by BAZAAR trigger: custom Bazaar-style shopping configuration. Null = ordinary Bazaar setup. */
     public BazaarContext bazaarContext;
 
+    /** Set by CARD_REWARD / MYTHIC_CARD_REWARD trigger: custom card reward configuration. Null = ordinary reward setup. */
+    public CardRewardContext cardRewardContext;
+
     /** Set by card-selection triggers: */
     public List<PaperCard> candidateCards;
     public int cardSelectionMinCount;

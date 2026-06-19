@@ -1,6 +1,5 @@
 package forge.screens.home.rogue;
 
-import com.google.common.collect.ImmutableList;
 import forge.deckchooser.FDeckViewer;
 import forge.gamemodes.rogue.RogueTutorial;
 import forge.item.PaperCard;
@@ -173,11 +172,16 @@ public class CardRewardDialog {
   public List<PaperCard> show() {
     final Localizer localizer = Localizer.getInstance();
 
-    // Build button list: [OK, Reroll, View Deck]
-    final int REROLL_OPTION = 1;
-    final int VIEW_DECK_OPTION = 2;
-    final ImmutableList<String> buttons = ImmutableList.of(
-        localizer.getMessage("lblOK"), rerollLabel, "View Deck");
+    // Build button list: [OK, (optional Reroll), View Deck]
+    final boolean showReroll = rerollLabel != null;
+    final int REROLL_OPTION = showReroll ? 1 : -1;
+    final int VIEW_DECK_OPTION = showReroll ? 2 : 1;
+    final List<String> buttons = new ArrayList<>();
+    buttons.add(localizer.getMessage("lblOK"));
+    if (showReroll) {
+      buttons.add(rerollLabel);
+    }
+    buttons.add("View Deck");
 
     // Cache coin icon for reroll button
     final javax.swing.Icon coinIcon = createCoinIcon();
@@ -194,9 +198,11 @@ public class CardRewardDialog {
       );
 
       // Set coin icon on reroll button and enable/disable
-      optionPane.getButton(REROLL_OPTION).setIcon(coinIcon);
-      optionPane.getButton(REROLL_OPTION).setHorizontalTextPosition(SwingConstants.LEFT);
-      optionPane.getButton(REROLL_OPTION).setEnabled(rerollEnabled);
+      if (showReroll) {
+        optionPane.getButton(REROLL_OPTION).setIcon(coinIcon);
+        optionPane.getButton(REROLL_OPTION).setHorizontalTextPosition(SwingConstants.LEFT);
+        optionPane.getButton(REROLL_OPTION).setEnabled(rerollEnabled);
+      }
 
       // Setup zoom utility
       zoomUtil = new CardUtil(optionPane);
@@ -229,7 +235,7 @@ public class CardRewardDialog {
     if (result == 0) {
       return new ArrayList<>(selectedCards);
     }
-    if (result == REROLL_OPTION) {
+    if (showReroll && result == REROLL_OPTION) {
       return null; // Reroll signal
     }
     return new ArrayList<>(); // Cancel

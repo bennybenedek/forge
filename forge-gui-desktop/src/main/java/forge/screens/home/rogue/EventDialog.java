@@ -55,6 +55,7 @@ public class EventDialog {
     txtDescription.setFont(txtDescription.getFont().deriveFont(14f));
     txtDescription.setSize(FULL_WIDTH, Short.MAX_VALUE);
     previewTargets.add(new PreviewTarget(txtDescription, event.getPreviewReferences()));
+    int choiceButtonWidth = FULL_WIDTH * 4 / 5;
 
     int desiredHeight = PANEL_INSETS;
 
@@ -66,6 +67,7 @@ public class EventDialog {
     for (EventChoice choice : event.getChoices()) {
       FButton btn = RogueButtonHelper.createChoiceButton(choice.label(), choice.effect().getDescription(),
           choice.effect().getPreviewReferences());
+      RogueButtonHelper.setChoiceButtonSizeHint(btn, choiceButtonWidth);
       btn.addActionListener(e -> {
         hidePreview();
         selectedChoice = choice;

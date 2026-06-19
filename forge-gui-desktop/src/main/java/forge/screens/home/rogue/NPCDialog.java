@@ -52,6 +52,7 @@ public class NPCDialog {
         FTextArea txtFlavor = new FTextArea(ctx.flavorText());
         txtFlavor.setFont(txtFlavor.getFont().deriveFont(14f));
         txtFlavor.setSize(FULL_WIDTH, Short.MAX_VALUE);
+        int choiceButtonWidth = FULL_WIDTH * 4 / 5;
 
         int desiredHeight = PANEL_INSETS;
 
@@ -66,6 +67,7 @@ public class NPCDialog {
 
         if (ctx.choices().isEmpty()) {
             FButton btn = RogueButtonHelper.createChoiceButton("Continue", "");
+            RogueButtonHelper.setChoiceButtonSizeHint(btn, choiceButtonWidth);
             btn.addActionListener(e -> {
                 hidePreview();
                 optionPane.setResult(0);
@@ -78,6 +80,7 @@ public class NPCDialog {
                 String desc = choice.npcEffect() != null ? choice.npcEffect().getDescription() : "";
                 FButton btn = RogueButtonHelper.createChoiceButton(choice.label(), desc,
                         choice.npcEffect() == null ? List.of() : choice.npcEffect().getPreviewReferences());
+                RogueButtonHelper.setChoiceButtonSizeHint(btn, choiceButtonWidth);
                 btn.addActionListener(e -> {
                     hidePreview();
                     selectedBoon = choice.npcEffect();

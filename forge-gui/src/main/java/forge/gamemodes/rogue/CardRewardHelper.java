@@ -55,75 +55,46 @@ public class CardRewardHelper {
     }
 
     /**
-     * Run a generic Rogue card reward selection with effect adjustments, reroll loop, pool removal,
-     * and deck addition. This shared overload is used for non-match reward sources such as chests.
-     *
-     * @param run        current run
-     * @param dialog     platform-specific dialog callback
-     * @param mythicOnly true for mythic-only reward (3 mythics, pick 1), false for standard (6+1 mix, pick 3)
-     * @return chosen cards (empty if player chose nothing), or null if reward pool was empty
-     */
-    public static List<PaperCard> runReward(RogueRun run, RewardDialog dialog, boolean mythicOnly) {
-        return runReward(run, dialog, mythicOnly, null);
-    }
-
-    /**
      * Run a card reward selection as part of post-match rewards.
      * MatchRewardContext applies match-scoped reward adjustments before generic card-reward effects.
      */
     public static List<PaperCard> runReward(RogueRun run, RewardDialog dialog, boolean mythicOnly,
-                                            MatchRewardContext matchRewardCtx) {
+                                            MatchRewardContext matchRewardCtx,
+                                            CardRewardContext cardRewardCtx) {
         RogueDeck rogueDeck = run.getSelectedRogueDeck();
         if (rogueDeck == null) return null;
 
-        CardRewardContext rewardCtx = new CardRewardContext(mythicOnly ? 1 : 3);
-        if (matchRewardCtx != null) {
-            rewardCtx.nonMythicCardCountAdjustment = matchRewardCtx.nonMythicCardCountAdjustment;
-        }
+        boolean customReward = cardRewardCtx != null;
+        CardRewardContext rewardCtx = cardRewardCtx != null
+            ? cardRewardCtx
+            : createDefaultRewardContext(mythicOnly, matchRewardCtx);
         RogueEffectComposite.INSTANCE.onCardReward(rewardCtx, run);
         CardSelectionContext selCtx = new CardSelectionContext();
         RogueEffectComposite.INSTANCE.onCardSelection(selCtx, run);
         int maxPicks = rewardCtx.maxPicks;
-        int freeRerolls = selCtx.freeRerolls;
-
-        int baseNonMythics;
-        int baseMythics;
-        String title;
-        if (mythicOnly) {
-            baseNonMythics = 0;
-            baseMythics = 3;
-            title = "Choose Your Mythic Reward";
-        } else {
-            baseNonMythics = Math.max(0, 6 - selCtx.extraMythics + rewardCtx.nonMythicCardCountAdjustment);
-            baseMythics = 1 + selCtx.extraMythics;
-            title = "Choose Your Rewards";
-        }
+        int freeRerolls = customReward ? 0 : selCtx.freeRerolls;
+        String title = getRewardTitle(rewardCtx, mythicOnly);
 
         List<PaperCard> rewardOptions;
         List<PaperCard> chosenCards;
         int rerollCount = 0;
-        Predicate<PaperCard> notAlreadyOwned = run.getNotAlreadyInDeckPredicate();
         do {
-            List<PaperCard> nonMythicCards = baseNonMythics > 0
-                    ? rogueDeck.drawRewardOptions(baseNonMythics,
-                        combineFilters(PaperCardPredicates.IS_MYTHIC_RARE.negate(), notAlreadyOwned))
-                    : new ArrayList<>();
-            List<PaperCard> mythicCards = rogueDeck.drawRewardOptions(baseMythics,
-                    combineFilters(PaperCardPredicates.IS_MYTHIC_RARE, notAlreadyOwned));
-
-            rewardOptions = new ArrayList<>();
-            rewardOptions.addAll(nonMythicCards);
-            rewardOptions.addAll(mythicCards);
+            rewardOptions = customReward
+                ? buildCustomRewardOptions(run, rewardCtx)
+                : buildNormalRewardOptions(run, rogueDeck, mythicOnly, rewardCtx, selCtx);
 
             if (rewardOptions.isEmpty()) return null;
 
-            String rerollLabel = buildRerollLabel(freeRerolls, rerollCount);
-            boolean rerollEnabled = canAffordReroll(freeRerolls, rerollCount, run.getCurrentGold());
+            String rerollLabel = customReward ? null : buildRerollLabel(freeRerolls, rerollCount);
+            boolean rerollEnabled = !customReward
+                && canAffordReroll(freeRerolls, rerollCount, run.getCurrentGold());
             chosenCards = dialog.show(title, rewardOptions, maxPicks, rerollLabel, rerollEnabled, run.getCurrentGold());
-            rogueDeck.discardRewardOptions(rewardOptions);
+            if (!customReward) {
+                rogueDeck.discardRewardOptions(rewardOptions);
+            }
 
             // chosenCards null -> reroll was selected
-            if (chosenCards == null) {
+            if (!customReward && chosenCards == null) {
                 // Deduct gold for paid rerolls
                 if (rerollCount >= freeRerolls) {
                     int cost = getRerollCost(rerollCount - freeRerolls);
@@ -131,16 +102,71 @@ public class CardRewardHelper {
                 }
                 rerollCount++;
             }
-        } while (chosenCards == null);
+        } while (!customReward && chosenCards == null);
 
         if (chosenCards == null) chosenCards = new ArrayList<>();
 
         if (!chosenCards.isEmpty()) {
-            rogueDeck.removeFromCardPools(chosenCards);
+            if (!customReward) {
+                rogueDeck.removeFromCardPools(chosenCards);
+            }
             run.addCardsToDeck(chosenCards, true);
         }
 
         return chosenCards;
+    }
+
+    private static CardRewardContext createDefaultRewardContext(boolean mythicOnly,
+                                                                MatchRewardContext matchRewardCtx) {
+        CardRewardContext rewardCtx = new CardRewardContext(mythicOnly ? 1 : 3);
+        if (matchRewardCtx != null) {
+            rewardCtx.nonMythicCardCountAdjustment = matchRewardCtx.nonMythicCardCountAdjustment;
+        }
+        return rewardCtx;
+    }
+
+    private static String getRewardTitle(CardRewardContext rewardCtx, boolean mythicOnly) {
+        if (rewardCtx.title != null && !rewardCtx.title.isBlank()) {
+            return rewardCtx.title;
+        }
+        return mythicOnly ? "Choose Your Mythic Reward" : "Choose Your Rewards";
+    }
+
+    private static List<PaperCard> buildNormalRewardOptions(RogueRun run, RogueDeck rogueDeck,
+                                                            boolean mythicOnly, CardRewardContext rewardCtx,
+                                                            CardSelectionContext selCtx) {
+        int baseNonMythics;
+        int baseMythics;
+        if (mythicOnly) {
+            baseNonMythics = 0;
+            baseMythics = 3;
+        } else {
+            baseNonMythics = Math.max(0, 6 - selCtx.extraMythics + rewardCtx.nonMythicCardCountAdjustment);
+            baseMythics = 1 + selCtx.extraMythics;
+        }
+
+        Predicate<PaperCard> notAlreadyOwned = run.getNotAlreadyInDeckPredicate();
+        List<PaperCard> nonMythicCards = baseNonMythics > 0
+            ? rogueDeck.drawRewardOptions(baseNonMythics,
+                combineFilters(PaperCardPredicates.IS_MYTHIC_RARE.negate(), notAlreadyOwned))
+            : new ArrayList<>();
+        List<PaperCard> mythicCards = rogueDeck.drawRewardOptions(baseMythics,
+            combineFilters(PaperCardPredicates.IS_MYTHIC_RARE, notAlreadyOwned));
+
+        List<PaperCard> rewardOptions = new ArrayList<>();
+        rewardOptions.addAll(nonMythicCards);
+        rewardOptions.addAll(mythicCards);
+        return rewardOptions;
+    }
+
+    private static List<PaperCard> buildCustomRewardOptions(RogueRun run, CardRewardContext rewardCtx) {
+        if (rewardCtx.rewardCards == null || rewardCtx.rewardCards.isEmpty()) {
+            return List.of();
+        }
+        Predicate<PaperCard> notAlreadyOwned = run.getNotAlreadyInDeckPredicate();
+        return rewardCtx.rewardCards.stream()
+            .filter(notAlreadyOwned)
+            .toList();
     }
 
     public static <T> Predicate<T> combineFilters(Predicate<T> baseFilter,

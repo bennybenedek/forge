@@ -347,6 +347,15 @@ public interface RogueEffect {
         ctx.trigger = EffectResultContext.ActionTriggerType.BAZAAR;
     }
 
+    default void triggerCustomCardReward(EffectResultContext ctx, String title, List<PaperCard> rewardCards,
+                                         int rewardCount, int maxPicks) {
+        CardRewardContext cardRewardContext = new CardRewardContext(maxPicks);
+        cardRewardContext.title = title;
+        cardRewardContext.rewardCards.addAll(getSubsetFromCollection(new ArrayList<>(rewardCards), rewardCount));
+        ctx.cardRewardContext = cardRewardContext;
+        ctx.trigger = EffectResultContext.ActionTriggerType.CARD_REWARD;
+    }
+
     default void triggerChest(EffectResultContext ctx) {
         ctx.trigger = EffectResultContext.ActionTriggerType.CHEST;
     }

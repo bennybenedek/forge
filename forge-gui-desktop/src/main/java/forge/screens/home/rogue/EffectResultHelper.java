@@ -115,7 +115,7 @@ final class EffectResultHelper {
         CardRewardHelper.runReward(currentRun,
             (title, cards, max, label, enabled, gold) ->
                 new CardRewardDialog(title, cards, max, label, enabled, gold).show(),
-            mythicOnly);
+            mythicOnly, null, ctx.cardRewardContext);
     }
 
     private static int getCandidateCardCount(EffectResultContext ctx) {

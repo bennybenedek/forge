@@ -29,7 +29,7 @@ public class CardRewardHelperTest extends CardDbCardMockTestCase {
                 rerollLabel, rerollEnabled, gold) -> {
             offers.add(new ArrayList<>(cards));
             return calls.getAndIncrement() == 0 ? null : List.of(cards.get(0));
-        }, false);
+        }, false, null, null);
 
         PaperCard chosenCard = chosenCards.get(0);
         assertEquals(run.getCurrentGold(), 0);
@@ -40,7 +40,7 @@ public class CardRewardHelperTest extends CardDbCardMockTestCase {
                 rerollLabel, rerollEnabled, gold) -> {
             laterOffers.add(new ArrayList<>(cards));
             return new ArrayList<>();
-        }, false);
+        }, false, null, null);
 
         assertTrue(skippedCards.isEmpty());
         assertEquals(offers.size(), 2);
@@ -57,14 +57,14 @@ public class CardRewardHelperTest extends CardDbCardMockTestCase {
                 rerollLabel, rerollEnabled, gold) -> {
             firstOffers.add(new ArrayList<>(cards));
             return new ArrayList<>();
-        }, false);
+        }, false, null, null);
 
         List<List<PaperCard>> secondOffers = new ArrayList<>();
         List<PaperCard> skippedAgain = CardRewardHelper.runReward(run, (title, cards, maxSelections,
                 rerollLabel, rerollEnabled, gold) -> {
             secondOffers.add(new ArrayList<>(cards));
             return new ArrayList<>();
-        }, false);
+        }, false, null, null);
 
         assertTrue(skippedCards.isEmpty());
         assertTrue(skippedAgain.isEmpty());

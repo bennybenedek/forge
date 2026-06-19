@@ -3,6 +3,9 @@ package forge.gamemodes.rogue.effect;
 import forge.game.player.RegisteredPlayer;
 import forge.gamemodes.rogue.RogueMetaProgress;
 import forge.gamemodes.rogue.RogueRun;
+import forge.item.PaperCard;
+
+import java.util.List;
 
 public enum ChestEffect implements RogueEffect {
 
@@ -19,6 +22,17 @@ public enum ChestEffect implements RogueEffect {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             ctx.trigger = EffectResultContext.ActionTriggerType.MYTHIC_CARD_REWARD;
+        }
+    },
+    CARD_CACHE_GAMECHANGER("card_cache_gamechanger", "Gamechanging Card Cache",
+        "Gain a {{Card Reward}} from the Gamechanger list.", EffectType.ONESHOT, null) {
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            List<PaperCard> gamechangerCards = run.getGamechangerCardsForActiveCommander();
+            if (gamechangerCards.isEmpty()) {
+                return;
+            }
+            triggerCustomCardReward(ctx, "Choose Your Rewards", gamechangerCards, 7, 3);
         }
     },
     POTION_OF_VITALITY("potion_of_vitality", "Potion Of Vitality", "Gain 10 {{Max. Life}}.",

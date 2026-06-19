@@ -45,6 +45,12 @@ public final class RogueButtonHelper {
     return new RogueChoiceButton(label, highlightedDescription);
   }
 
+  static void setChoiceButtonSizeHint(FButton button, int buttonWidth) {
+    if (button instanceof RogueChoiceButton choiceButton) {
+      choiceButton.setPreferredButtonWidth(buttonWidth);
+    }
+  }
+
   private static String applyAutomaticCardHighlights(String description, List<PreviewReference> references) {
     return applyAutomaticHighlights(description, references, PreviewReferenceType.CARD, "**", "**", false);
   }
@@ -210,11 +216,16 @@ public final class RogueButtonHelper {
   private static final class RogueChoiceButton extends FButton {
     private final String choiceLabel;
     private final List<TextRun> descriptionRuns;
+    private int preferredButtonWidth;
 
     private RogueChoiceButton(String label, String description) {
       super("");
       choiceLabel = label == null ? "" : label;
       descriptionRuns = parseDescriptionRuns(description);
+    }
+
+    private void setPreferredButtonWidth(int buttonWidth) {
+      preferredButtonWidth = buttonWidth;
     }
 
     @Override
@@ -223,12 +234,19 @@ public final class RogueButtonHelper {
       Font descriptionFont = getDescriptionFont();
       FontMetrics titleMetrics = getFontMetrics(titleFont);
       FontMetrics descriptionMetrics = getFontMetrics(descriptionFont);
-      List<LayoutLine> lines = layoutDescriptionLines(descriptionMetrics, DEFAULT_WRAP_WIDTH);
+      int availableWidth = preferredButtonWidth > 0
+          ? Math.max(1, preferredButtonWidth - 2 * HORIZONTAL_TEXT_PADDING)
+          : DEFAULT_WRAP_WIDTH;
+      List<LayoutLine> lines = layoutDescriptionLines(descriptionMetrics, availableWidth);
 
       int height = getContentHeight(titleMetrics, descriptionMetrics, lines) + 2 * VERTICAL_TEXT_PADDING;
 
       Dimension baseSize = super.getPreferredSize();
-      return new Dimension(Math.max(baseSize.width, MIN_BUTTON_WIDTH), Math.max(baseSize.height, height));
+      int width = Math.max(baseSize.width, MIN_BUTTON_WIDTH);
+      if (preferredButtonWidth > 0) {
+        width = Math.max(width, preferredButtonWidth);
+      }
+      return new Dimension(width, Math.max(baseSize.height, height));
     }
 
     @Override

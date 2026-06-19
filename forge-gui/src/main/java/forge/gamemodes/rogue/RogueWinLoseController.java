@@ -203,7 +203,7 @@ public class RogueWinLoseController {
 
     private void awardCardRewards(boolean isElite, int goldReward, int echoReward, MatchRewardContext rewardCtx) {
         List<PaperCard> chosenCards = CardRewardHelper.runReward(currentRun,
-                view::showCardRewardDialog, false, rewardCtx);
+                view::showCardRewardDialog, false, rewardCtx, null);
 
         if (chosenCards == null) {
             view.showMessage("No more cards available in reward pool.", "No Rewards", FSkinProp.ADV_CLR_ACTIVE);
@@ -213,7 +213,7 @@ public class RogueWinLoseController {
         // If Elite opponent, show second reward screen with mythic cards
         if (isElite) {
             List<PaperCard> chosenMythics = CardRewardHelper.runReward(currentRun,
-                    view::showCardRewardDialog, true, rewardCtx);
+                    view::showCardRewardDialog, true, rewardCtx, null);
             if (chosenMythics != null) {
                 chosenCards.addAll(chosenMythics);
             }

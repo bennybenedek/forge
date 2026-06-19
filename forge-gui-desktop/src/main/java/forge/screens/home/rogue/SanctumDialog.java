@@ -58,11 +58,13 @@ public class SanctumDialog {
         .fontSize(14)
         .fontAlign(SwingConstants.CENTER)
         .build();
+    int choiceButtonWidth = (DIALOG_WIDTH - 40) * 4 / 5;
 
     String restDescription = "Gain " + effectiveHealAmount + " Life & Cure all {{Wound}}s.";
     FButton btnRest = RogueButtonHelper.createChoiceButton(
         "Rest", TextHelper.stripPreviewMarkers(restDescription),
         TextHelper.extractPreviewReferences(restDescription));
+    RogueButtonHelper.setChoiceButtonSizeHint(btnRest, choiceButtonWidth);
     btnRest.addActionListener(e -> {
       hidePreview();
       choice = SanctumChoice.HEAL;
@@ -79,6 +81,7 @@ public class SanctumDialog {
     FButton btnCook = RogueButtonHelper.createChoiceButton(
         "Cook", TextHelper.stripPreviewMarkers(cookDescription),
         TextHelper.extractPreviewReferences(cookDescription));
+    RogueButtonHelper.setChoiceButtonSizeHint(btnCook, choiceButtonWidth);
     btnCook.addActionListener(e -> {
       hidePreview();
       choice = SanctumChoice.COOK;
@@ -91,6 +94,7 @@ public class SanctumDialog {
     FButton btnReflect = RogueButtonHelper.createChoiceButton(
         "Reflect", TextHelper.stripPreviewMarkers(reflectDescription),
         TextHelper.extractPreviewReferences(reflectDescription));
+    RogueButtonHelper.setChoiceButtonSizeHint(btnReflect, choiceButtonWidth);
     btnReflect.addActionListener(e -> {
       hidePreview();
       choice = SanctumChoice.REFLECT;

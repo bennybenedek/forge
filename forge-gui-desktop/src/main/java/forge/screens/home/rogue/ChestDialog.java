@@ -41,8 +41,10 @@ public class ChestDialog {
         .fontSize(20).fontStyle(Font.BOLD).fontAlign(SwingConstants.CENTER).build();
 
     previewReferences = loot.getPreviewReferences();
+    int choiceButtonWidth = (DIALOG_WIDTH - 2 * PANEL_INSETS) * 4 / 5;
     btnReward = RogueButtonHelper.createChoiceButton(
         "Take Loot", loot.getDescription(), previewReferences);
+    RogueButtonHelper.setChoiceButtonSizeHint(btnReward, choiceButtonWidth);
     btnReward.addActionListener(e -> {
       rewardAccepted = true;
       hidePreview();
@@ -58,6 +60,7 @@ public class ChestDialog {
     desiredHeight += btnReward.getPreferredSize().height + 10 + 20;
 
     FButton btnSkip = RogueButtonHelper.createChoiceButton("Skip Loot", "");
+    RogueButtonHelper.setChoiceButtonSizeHint(btnSkip, choiceButtonWidth);
     btnSkip.addActionListener(e -> {
       rewardAccepted = false;
       hidePreview();
