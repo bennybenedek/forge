@@ -29,7 +29,7 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
   // Card display constants
   private static final int BASE_CARD_WIDTH = 250;  // Cards scale down dynamically if too big
   private static final int CARD_SPACING = 15;
-  private static final int MAX_CARDS_PER_ROW = 6;
+  private static final int MAX_CARDS_PER_ROW = 7;
   private static final int MAX_ROWS = 2;
 
   // Fields used with interface IVDoc
