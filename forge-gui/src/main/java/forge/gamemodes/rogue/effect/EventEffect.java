@@ -577,7 +577,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     GAMECHANGER_TRUST("gamechanger_trust", "Trade for Gamechangers",
-        "Remove 3 random cards from your deck. Choose 3 cards from the Gamechanger list to add to your deck. Opens a {{Bazaar}}.",
+        "Remove 3 random cards from your deck. Choose 3 cards from the Gamechanger list to add to your deck.",
         EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
@@ -592,7 +592,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     GAMECHANGER_CHOOSE("gamechanger_choose", "Browse Gamechangers",
-        "Shop from a selection of Gamechanger cards at doubled prices.",
+        "Shop from a selection of Gamechanger cards at doubled prices. Opens a {{Bazaar}}.",
         EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
