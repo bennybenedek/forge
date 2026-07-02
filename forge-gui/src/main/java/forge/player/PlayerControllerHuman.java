@@ -4,7 +4,7 @@ import com.google.common.collect.*;
 import forge.LobbyPlayer;
 import forge.StaticData;
 import forge.ai.AvailableActions;
-import forge.ai.GameState;
+import forge.game.GameState;
 import forge.ai.PlayerControllerAi;
 import forge.gamemodes.net.server.RemoteClientGuiGame;
 import forge.card.*;
@@ -1736,7 +1736,7 @@ public class PlayerControllerHuman extends PlayerController implements IGameCont
     }
 
     @Override
-    public CardCollection chooseCardsToDiscardToMaximumHandSize(final int nDiscard) {
+    public CardCollectionView chooseCardsToDiscardToMaximumHandSize(final int nDiscard) {
         final int max = player.getMaxHandSize();
 
         if (getGui().isLibgdxPort()) {
@@ -2915,12 +2915,7 @@ public class PlayerControllerHuman extends PlayerController implements IGameCont
         }
 
         private GameState createGameStateObject() {
-            return new GameState() {
-                @Override
-                public IPaperCard getPaperCard(final String cardName, final String setCode, final int artID) {
-                    return FModel.getMagicDb().getCommonCards().getCard(cardName, setCode, artID);
-                }
-            };
+            return new GameState();
         }
 
         /*
@@ -3047,7 +3042,7 @@ public class PlayerControllerHuman extends PlayerController implements IGameCont
             }
             final Card card = gameCacheCounters.get(cv);
 
-            final List<CounterType> counters = subtract ? ImmutableList.copyOf(card.getCounters().keySet())
+            final List<CounterType> counters = subtract ? ImmutableList.copyOf(card.getCounters().elementSet())
                     : CounterType.getValues();
 
             final CounterType counter = getGui().oneOrNone(localizer.getMessage("lblWhichTypeofCounter"), counters);

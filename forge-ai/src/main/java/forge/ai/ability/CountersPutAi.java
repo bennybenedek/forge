@@ -187,7 +187,7 @@ public class CountersPutAi extends CountersAi {
                     aiCreat = CardLists.filter(aiCreat, CardPredicates.hasCounters());
 
                     aiCreat = CardLists.filter(aiCreat, input -> {
-                        for (CounterType counterType : input.getCounters().keySet()) {
+                        for (CounterType counterType : input.getCounters().elementSet()) {
                             if (!ComputerUtil.isNegativeCounter(counterType, input)
                                     && input.canReceiveCounters(counterType)) {
                                 return true;
@@ -632,7 +632,12 @@ public class CountersPutAi extends CountersAi {
             }
             // Instant +1/+1
             if (type.equals("P1P1") && !isSorcerySpeed(sa, ai)) {
-                if (!hasSacCost && !(ph.getNextTurn() == ai && ph.is(PhaseType.END_OF_TURN) && abCost.isReusuableResource())) {
+                final Combat combat = game.getCombat();
+                // e.g. Power-Up abilities: use it to survive or win combat even without a sac cost
+                final boolean savesOrWinsCombat = combat != null
+                        && doCombatAdaptLogic(cards.get(0), amount, combat).willingToPlay();
+                if (!hasSacCost && !savesOrWinsCombat
+                        && !(ph.getNextTurn() == ai && ph.is(PhaseType.END_OF_TURN) && abCost.isReusuableResource())) {
                     return new AiAbilityDecision(0, AiPlayDecision.CantPlayAi);
                 }
             }
