@@ -4,7 +4,6 @@ Name=Nick Rewards
 1 Advancing the Spirit|MSC|1
 1 Aerial Surveyor|NEC|1
 1 Aeronaut Admiral|NEC|1
-1 Agent Phil Coulson|MSH|1
 1 Aggravated Assault|SLD|2
 1 Akiri, Fearless Voyager|CMM|1
 1 Arcane Signet|SLD|7
@@ -51,7 +50,7 @@ Name=Nick Rewards
 1 Conjurer's Closet|INR|1
 1 Conqueror's Flail|2X2|1
 1 Conqueror's Galleon|XLN|1
-1 Counterspell|MAR|1
+1 Counterspell|CMM|2
 1 Cyberdrive Awakener|NEC|1
 1 Cybership|WHO|1
 1 Damocles Base, Sword of Kang|MSC|1
@@ -68,6 +67,7 @@ Name=Nick Rewards
 1 Dispatch|MSC|1
 1 Displacer Kitten|CLB|1
 1 Doc Samson, Super Psychiatrist|MSH|1
+1 Doctor Spectrum|MSC|1
 1 Doom Variant|MAR|1
 1 Dowsing Dagger|XLN|1
 1 Echo, Perceptive Prodigy|PW26|1
@@ -81,7 +81,6 @@ Name=Nick Rewards
 1 Flawless Maneuver|SLD|1
 1 Flooded Strand|MH3|1
 1 Foundry Inspector|CMM|1
-1 Franklin's Finality|MSC|1
 1 Genji Glove|FIN|1
 1 Golden Argosy|DMU|1
 1 Guidelight Pathmaker|DFT|2
@@ -110,12 +109,13 @@ Name=Nick Rewards
 1 Iron Man, Tony Stark|MSC|1
 1 Iron Spider, Stark Upgrade|SPM|1
 1 Jackdaw|ACR|1
-1 Jarvis, Earth's Mightiest Butler|MSC|1
+1 Justice, Vance Astrovik|MSH|1
 1 Katsumasa, the Animator|NEC|1
 1 Kid Loki|MSH|1
 1 Kindred Discovery|MSC|1
 1 Knight Paladin|40K|1
 1 Kolodin, Triumph Caster|DFT|1
+1 Kona, Rescue Beastie|DSK|1
 1 Kutzil, Malamet Exemplar|LCI|1
 1 Kykar, Zephyr Awakener|FDN|1
 1 Lagorin, Soul of Alacria|DFT|1
@@ -161,7 +161,6 @@ Name=Nick Rewards
 1 Quake, Agent of S.H.I.E.L.D.|MSH|1
 1 Raise Repulsor Shields|MSC|1
 1 Reaver Titan|40K|1
-1 Reckless Velocitaur|DFT|1
 1 Reckoner Bankbuster|NEO|1
 1 Reconnaissance Mission|MSC|1
 1 Research Thief|NEC|1
@@ -183,12 +182,14 @@ Name=Nick Rewards
 1 Shadowspear|THB|1
 1 Shang-Chi, Martial Mentor|MSC|1
 1 She-Hulk, Attorney-at-Law|MSC|1
+1 She-Hulk, Wallbreaker|MSC|1
 1 Shuri, Wakandan Inventor|MSH|1
 1 Silver Surfer, Cosmic Voyager|MSC|1
 1 Skullclamp|MSC|1
 1 Sky Cycle|MSC|1
 1 Sol Ring|MSC|1
 1 Spaceshift|MSC|1
+1 Sram, Senior Edificer|SLD|1
 1 Starting Town|FIN|1
 1 Steam Vents|ECL|1
 1 Steelshaper's Gift|CMM|1
@@ -213,10 +214,8 @@ Name=Nick Rewards
 1 The Prydwen, Steel Flagship|PIP|1
 1 The Reality Chip|NEO|1
 1 The Reaver Cleaver|M3C|1
-1 The Thing, Ben Grimm|MSH|1
 1 The Vision|MSH|1
 1 The Wasp, Winsome Avenger|MSC|1
-1 The Wondrous Wasp|MSH|1
 1 The World Tree|KHM|1
 1 Thing Swing|MSC|1
 1 Thopter Spy Network|DRC|1
@@ -279,6 +278,7 @@ Name=Nick Rewards
 1 Lita, Mechanical Engineer|J22|1
 1 Miles "Tails" Prower|SLD|1
 1 Miles Morales|SPM|3
+1 Mister Fantastic|MSC|1
 1 Mjölnir, Hammer of Thor|MSH|3
 1 Monica Rambeau|MSH|2
 1 Monica, the Marvel|MAR|1
