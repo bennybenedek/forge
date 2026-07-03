@@ -104,7 +104,7 @@ public interface RogueEffect {
     }
 
     /** Resolved display name for active-effect UI such as the RogueMap header. */
-    default String getMapDisplayName() {
+    default String getUIDisplayName() {
         PaperCard effectCard = getEffectCard();
         if (effectCard != null) {
             return effectCard.getName();
@@ -112,6 +112,12 @@ public interface RogueEffect {
 
         String effectCardDisplayName = getEffectCardDisplayName();
         return !effectCardDisplayName.isEmpty() ? effectCardDisplayName : getDisplayName();
+    }
+
+    /** Full display text for active-effect UI such as the RogueMap header. */
+    default String getUIDisplayText() {
+        String prefix = getEffectCardReference() == null ? getUIDisplayPrefix(this) : "";
+        return prefix + getUIDisplayName();
     }
 
     /** Tooltip text for long-lived effect displays such as the RogueMap header. */
@@ -142,6 +148,18 @@ public interface RogueEffect {
             return getDescription();
         }
         return card.getRules().getOracleText();
+    }
+
+    private static String getUIDisplayPrefix(RogueEffect effect) {
+        if (effect instanceof WoundEffect) return "Wound - ";
+        if (effect instanceof EchoEffect) return "Echo Boon - ";
+        if (effect instanceof NPCEffect) return "NPC Trait - ";
+        if (effect instanceof EventEffect) return "Event Trait - ";
+        if (effect instanceof ChestEffect) return "Chest Trait - ";
+        if (effect instanceof DescensionLevel) return "Descension - ";
+        if (effect instanceof WrathfulEffect) return "Wrathful - ";
+        if (effect instanceof CursedEffect) return "Cursed - ";
+        return "";
     }
 
     /** Preview references parsed from raw description plus the optional effect-card preview. */

@@ -177,19 +177,19 @@ public class BazaarDialog {
   public Set<PaperCard> show() {
     final Localizer localizer = Localizer.getInstance();
 
-    // Build button list: [Buy, (optional Reroll), Skip, View Deck]
+    // Build button list: [Buy, (optional Reroll), View Deck, Skip]
     final int BUY_OPTION = 0;
     final boolean showReroll = rerollButtonLabel != null;
     final int REROLL_OPTION = showReroll ? 1 : -1;
-    final int SKIP_OPTION = showReroll ? 2 : 1;
-    final int VIEW_DECK_OPTION = showReroll ? 3 : 2;
+    final int VIEW_DECK_OPTION = showReroll ? 2 : 1;
+    final int SKIP_OPTION = showReroll ? 3 : 2;
     final List<String> buttons = new ArrayList<>();
     buttons.add("Buy Selected Cards");
     if (showReroll) {
       buttons.add(rerollButtonLabel);
     }
-    buttons.add(localizer.getMessage("lblSkip"));
     buttons.add("View Deck");
+    buttons.add(localizer.getMessage("lblSkip"));
 
     // Cache coin icon for reroll button
     final javax.swing.Icon coinIcon = createCoinIcon();
@@ -204,6 +204,9 @@ public class BazaarDialog {
           buttons,
           SKIP_OPTION  // Default to Skip
       );
+
+      optionPane.getButton(VIEW_DECK_OPTION).setIcon(FSkin.getIcon(FSkinProp.ICO_CARD_IMAGE));
+      optionPane.getButton(VIEW_DECK_OPTION).setHorizontalTextPosition(SwingConstants.RIGHT);
 
       // Set coin icon on reroll button and enable/disable
       if (showReroll) {

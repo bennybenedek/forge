@@ -197,6 +197,9 @@ public class CardRewardDialog {
           0
       );
 
+      optionPane.getButton(VIEW_DECK_OPTION).setIcon(FSkin.getIcon(FSkinProp.ICO_CARD_IMAGE));
+      optionPane.getButton(VIEW_DECK_OPTION).setHorizontalTextPosition(SwingConstants.RIGHT);
+
       // Set coin icon on reroll button and enable/disable
       if (showReroll) {
         optionPane.getButton(REROLL_OPTION).setIcon(coinIcon);

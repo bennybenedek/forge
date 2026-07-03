@@ -4,6 +4,8 @@ import forge.gamemodes.rogue.PreviewReference;
 import forge.gamemodes.rogue.PreviewReferenceType;
 import forge.gamemodes.rogue.TextHelper;
 import forge.toolbox.FButton;
+import forge.toolbox.FSkin;
+import forge.localinstance.skin.FSkinProp;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -16,6 +18,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.SwingConstants;
 
 /**
  * Shared helper for Rogue buttons.
@@ -32,6 +35,7 @@ public final class RogueButtonHelper {
   private static final int CONTENT_VERTICAL_NUDGE = 2;
   private static final int TITLE_DESCRIPTION_GAP = 3;
   private static final float DESCRIPTION_FONT_SIZE = 12f;
+  private static final int COMPACT_BUTTON_EXTRA_WIDTH = 8;
   private RogueButtonHelper() {
   }
 
@@ -49,6 +53,22 @@ public final class RogueButtonHelper {
     if (button instanceof RogueChoiceButton choiceButton) {
       choiceButton.setPreferredButtonWidth(buttonWidth);
     }
+  }
+
+  public static FButton createViewDeckButtonForHistory(Runnable onClick) {
+    FButton button = new FButton("View Deck");
+    button.setIcon(FSkin.getIcon(FSkinProp.ICO_CARD_IMAGE));
+    button.setIconTextGap(6);
+    button.setHorizontalTextPosition(SwingConstants.RIGHT);
+    button.addActionListener(e -> onClick.run());
+    return button;
+  }
+
+  public static Dimension getCompactButtonSize(FButton button, int minWidth, int minHeight) {
+    Dimension preferredSize = button.getPreferredSize();
+    int width = Math.max(minWidth, preferredSize.width + COMPACT_BUTTON_EXTRA_WIDTH);
+    int height = Math.max(minHeight, preferredSize.height);
+    return new Dimension(width, height);
   }
 
   private static String applyAutomaticCardHighlights(String description, List<PreviewReference> references) {

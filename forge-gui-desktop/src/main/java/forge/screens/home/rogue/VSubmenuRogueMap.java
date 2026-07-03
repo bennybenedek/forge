@@ -2,7 +2,8 @@ package forge.screens.home.rogue;
 
 import forge.gamemodes.rogue.RogueMetaProgress;
 import forge.gamemodes.rogue.RogueRun;
-import forge.gamemodes.rogue.effect.*;
+import forge.gamemodes.rogue.effect.RogueEffect;
+import forge.gamemodes.rogue.effect.RogueEffectComposite;
 import forge.gui.framework.DragCell;
 import forge.gui.framework.DragTab;
 import forge.gui.framework.EDocID;
@@ -133,20 +134,8 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
       if (descLevel > 0) lblDescension.setText("Descension: " + descLevel);
 
       // Populate active effects (echo boons, descension, event traits, chest traits, wounds...)
-      pnlEffects.removeAll();
       List<RogueEffect> allEffects = RogueEffectComposite.getAllEffects(run);
-      for (int i = 0; i < allEffects.size(); i++) {
-        RogueEffect effect = allEffects.get(i);
-        int col = i / 3;
-        int row = i % 3;
-        String prefix = effect.getEffectCardReference() == null ? getEffectPrefix(effect) : "";
-        FLabel effectLbl = new FLabel.Builder()
-            .text(prefix + effect.getMapDisplayName()).fontSize(11).build();
-        effectLbl.setToolTipText(effect.getActiveDescription(run));
-        pnlEffects.add(effectLbl, "cell " + col + " " + row);
-      }
-      pnlEffects.revalidate();
-      pnlEffects.repaint();
+      RogueUIHelper.populateEffectPanel(pnlEffects, allEffects, run);
 
       pathVisualizer.updatePath(run);
     } else {
@@ -195,8 +184,7 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
     infoRow.add(lblDescension);
 
     // Active effects panel (echo boons, descension, event traits, chest traits, wounds)
-    pnlEffects = new JPanel(new MigLayout("insets 0, gap 8 1"));
-    pnlEffects.setOpaque(false);
+    pnlEffects = RogueUIHelper.createEffectPanel();
     infoRow.add(pnlEffects);
 
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(infoRow, "w 98%!, h pref!, gap 1% 0 10px 10px");
@@ -233,18 +221,6 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
 
   public PathVisualizerPanel getPathVisualizer() {
     return pathVisualizer;
-  }
-
-  private String getEffectPrefix(RogueEffect effect) {
-    if (effect instanceof WoundEffect) return "Wound - ";
-    if (effect instanceof EchoEffect) return "Echo Boon - ";
-    if (effect instanceof NPCEffect) return "NPC Trait - ";
-    if (effect instanceof EventEffect) return "Event Trait - ";
-    if (effect instanceof ChestEffect) return "Chest Trait - ";
-    if (effect instanceof DescensionLevel) return "Descension - ";
-    if (effect instanceof WrathfulEffect) return "Wrathful - ";
-    if (effect instanceof CursedEffect) return "Cursed - ";
-    return "";
   }
 
   @Override

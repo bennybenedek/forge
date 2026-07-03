@@ -8,9 +8,17 @@ import forge.gamemodes.rogue.path.RoguePath;
 import forge.gamemodes.rogue.path.RoguePathNode;
 import forge.toolbox.FSkin;
 import forge.toolbox.FSkin.SkinnedPanel;
-import java.awt.*;
+import java.awt.BasicStroke;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import javax.swing.Timer;
 
 /**
@@ -28,6 +36,9 @@ public class PathVisualizerPanel extends SkinnedPanel {
   private RogueRun currentRun;  // Store run for reachability checks
   private NodePanel.NodeClickHandler clickHandler;
   private Integer selectedPanelIndex;
+
+  private record RowLayout(List<NodePanel> panels, List<Rectangle> bounds) {
+  }
 
   public PathVisualizerPanel() {
     setLayout(null);
@@ -188,98 +199,32 @@ public class PathVisualizerPanel extends SkinnedPanel {
    * Calculate the preferred size based on number of nodes.
    */
   private void calculatePreferredSize() {
-    if (nodePanels.isEmpty() || currentRun == null || currentRun.getPath() == null) {
+    List<RowLayout> rowLayouts = calculateRowLayouts(0);
+    if (rowLayouts.isEmpty()) {
       setPreferredSize(new Dimension(0, 0));
       return;
     }
 
-    RoguePath path = currentRun.getPath();
-    java.util.Map<Integer, List<NodePanel>> rowMap = groupNodesByRow();
-    int maxRow = path.getMaxRow();
-
-    int maxRowWidth = 0;
-    int totalHeight = 20; // Top padding
-
-    for (int row = 0; row <= maxRow; row++) {
-      List<NodePanel> rowPanels = rowMap.get(row);
-      if (rowPanels == null || rowPanels.isEmpty()) {
-        continue;
+    int maxX = 0;
+    int maxY = 0;
+    for (RowLayout rowLayout : rowLayouts) {
+      for (Rectangle bound : rowLayout.bounds()) {
+        maxX = Math.max(maxX, bound.x + bound.width);
+        maxY = Math.max(maxY, bound.y + bound.height);
       }
-
-      // Calculate row width (all panels + spacing)
-      int rowWidth = 0;
-      int rowHeight = 0;
-      for (NodePanel panel : rowPanels) {
-        rowWidth += panel.getPreferredSize().width;
-        rowHeight = Math.max(rowHeight, panel.getPreferredSize().height);
-      }
-      rowWidth += (rowPanels.size() - 1) * HORIZONTAL_SPACING;
-
-      maxRowWidth = Math.max(maxRowWidth, rowWidth);
-      totalHeight += rowHeight + NODE_SPACING;
     }
-
-    // Add padding
-    totalHeight += 20;
-
-    setPreferredSize(new Dimension(maxRowWidth + 40, totalHeight));
+    setPreferredSize(new Dimension(maxX + 20, maxY + 20));
   }
 
   @Override
   public void doLayout() {
-    if (nodePanels.isEmpty() || currentRun == null) {
-      return;
-    }
-
-    RoguePath path = currentRun.getPath();
-    if (path == null) {
-      return;
-    }
-
-    // Group nodes by row
-    java.util.Map<Integer, List<NodePanel>> rowMap = groupNodesByRow();
-    int maxRow = path.getMaxRow();
-
-    int y = 20;
-
-    for (int row = 0; row <= maxRow; row++) {
-      List<NodePanel> rowPanels = rowMap.get(row);
-      if (rowPanels == null || rowPanels.isEmpty()) {
-        continue;
+    List<RowLayout> rowLayouts = calculateRowLayouts(getWidth());
+    for (RowLayout rowLayout : rowLayouts) {
+      List<NodePanel> rowPanels = rowLayout.panels();
+      List<Rectangle> bounds = rowLayout.bounds();
+      for (int i = 0; i < rowPanels.size() && i < bounds.size(); i++) {
+        rowPanels.get(i).setBounds(bounds.get(i));
       }
-
-      // Sort all nodes by column index
-      rowPanels.sort((p1, p2) -> {
-        int idx1 = nodePanels.indexOf(p1);
-        int idx2 = nodePanels.indexOf(p2);
-        RoguePathNode n1 = path.getNodes().get(idx1);
-        RoguePathNode n2 = path.getNodes().get(idx2);
-        return Integer.compare(n1.getColumnIndex(), n2.getColumnIndex());
-      });
-
-      // Calculate row height (max height of all panels in row)
-      int rowHeight = 0;
-      for (NodePanel panel : rowPanels) {
-        rowHeight = Math.max(rowHeight, panel.getPreferredSize().height);
-      }
-
-      // Layout all nodes horizontally centered
-      int totalWidth = 0;
-      for (NodePanel panel : rowPanels) {
-        totalWidth += panel.getPreferredSize().width;
-      }
-      totalWidth += (rowPanels.size() - 1) * HORIZONTAL_SPACING;
-
-      int startX = (getWidth() - totalWidth) / 2;
-
-      for (NodePanel panel : rowPanels) {
-        int panelWidth = panel.getPreferredSize().width;
-        int panelHeight = panel.getPreferredSize().height;
-        panel.setBounds(startX, y, panelWidth, panelHeight);
-        startX += panelWidth + HORIZONTAL_SPACING;
-      }
-
-      y += rowHeight + NODE_SPACING;
     }
   }
 
@@ -385,27 +330,6 @@ public class PathVisualizerPanel extends SkinnedPanel {
   }
 
   /**
-   * Group node panels by their row index.
-   */
-  private java.util.Map<Integer, List<NodePanel>> groupNodesByRow() {
-    java.util.Map<Integer, List<NodePanel>> rowMap = new java.util.HashMap<>();
-
-    if (currentRun == null || currentRun.getPath() == null) {
-      return rowMap;
-    }
-
-    List<RoguePathNode> nodes = currentRun.getPath().getNodes();
-    for (int i = 0; i < nodePanels.size() && i < nodes.size(); i++) {
-      RoguePathNode node = nodes.get(i);
-      int row = node.getRowIndex();
-
-      rowMap.computeIfAbsent(row, k -> new ArrayList<>()).add(nodePanels.get(i));
-    }
-
-    return rowMap;
-  }
-
-  /**
    * Get all node panels.
    */
   public List<NodePanel> getNodePanels() {
@@ -417,5 +341,230 @@ public class PathVisualizerPanel extends SkinnedPanel {
    */
   public int getCurrentNodeIndex() {
     return currentNodeIndex;
+  }
+
+  private List<RowLayout> calculateRowLayouts(int availableWidth) {
+    if (nodePanels.isEmpty() || currentRun == null || currentRun.getPath() == null) {
+      return new ArrayList<>();
+    }
+
+    RoguePath path = currentRun.getPath();
+    List<RoguePathNode> nodes = path.getNodes();
+    Map<Integer, List<Integer>> rowIndices = new HashMap<>();
+    for (int i = 0; i < nodePanels.size() && i < nodes.size(); i++) {
+      rowIndices.computeIfAbsent(nodes.get(i).getRowIndex(), k -> new ArrayList<>()).add(i);
+    }
+
+    int maxRow = path.getMaxRow();
+    int maxPackedRowWidth = 0;
+    int y = 20;
+
+    List<Integer> rows = new ArrayList<>();
+    Map<Integer, Integer> rowY = new HashMap<>();
+    Map<Integer, Boolean> sideRows = new HashMap<>();
+    Map<Integer, List<NodePanel>> rowPanels = new HashMap<>();
+
+    for (int row = 0; row <= maxRow; row++) {
+      List<Integer> indices = rowIndices.get(row);
+      if (indices == null || indices.isEmpty()) {
+        continue;
+      }
+
+      indices.sort(Comparator.comparingInt(i -> nodes.get(i).getColumnIndex()));
+
+      int rowHeight = 0;
+      int rowWidth = 0;
+      boolean sideRow = true;
+      List<NodePanel> panels = new ArrayList<>();
+
+      for (Integer index : indices) {
+        NodePanel panel = nodePanels.get(index);
+        panels.add(panel);
+        rowHeight = Math.max(rowHeight, panel.getPreferredSize().height);
+        rowWidth += panel.getPreferredSize().width;
+        sideRow &= nodes.get(index).isSideNode();
+      }
+      rowWidth += (panels.size() - 1) * HORIZONTAL_SPACING;
+
+      rows.add(row);
+      rowY.put(row, y);
+      sideRows.put(row, sideRow);
+      rowPanels.put(row, panels);
+      maxPackedRowWidth = Math.max(maxPackedRowWidth, rowWidth);
+      y += rowHeight + NODE_SPACING;
+    }
+
+    int layoutWidth = availableWidth > 0 ? Math.max(availableWidth, maxPackedRowWidth + 40)
+        : maxPackedRowWidth + 40;
+
+    Map<Integer, List<Rectangle>> packedBounds = new HashMap<>();
+    for (Integer row : rows) {
+      packedBounds.put(row, createPackedBounds(rowPanels.get(row), rowY.get(row), layoutWidth));
+    }
+
+    Map<Integer, Rectangle> planeBoundsByIndex = new HashMap<>();
+    for (Integer row : rows) {
+      if (Boolean.TRUE.equals(sideRows.get(row))) {
+        continue;
+      }
+      List<Integer> indices = rowIndices.get(row);
+      List<Rectangle> bounds = packedBounds.get(row);
+      for (int i = 0; i < indices.size() && i < bounds.size(); i++) {
+        planeBoundsByIndex.put(indices.get(i), bounds.get(i));
+      }
+    }
+
+    List<RowLayout> rowLayouts = new ArrayList<>();
+    for (Integer row : rows) {
+      List<NodePanel> panels = rowPanels.get(row);
+      List<Rectangle> rowPackedBounds = packedBounds.get(row);
+      List<Rectangle> bounds;
+
+      if (!Boolean.TRUE.equals(sideRows.get(row))) {
+        bounds = rowPackedBounds;
+      } else {
+        bounds = createSideRowBounds(
+            row,
+            panels,
+            rowIndices,
+            planeBoundsByIndex,
+            rowPackedBounds
+        );
+      }
+
+      rowLayouts.add(new RowLayout(panels, bounds));
+    }
+
+    return rowLayouts;
+  }
+
+  private List<Rectangle> createPackedBounds(List<NodePanel> rowPanels, int y, int layoutWidth) {
+    List<Rectangle> bounds = new ArrayList<>();
+    int totalWidth = 0;
+    for (NodePanel panel : rowPanels) {
+      totalWidth += panel.getPreferredSize().width;
+    }
+    totalWidth += (rowPanels.size() - 1) * HORIZONTAL_SPACING;
+
+    int startX = (layoutWidth - totalWidth) / 2;
+    for (NodePanel panel : rowPanels) {
+      int panelWidth = panel.getPreferredSize().width;
+      int panelHeight = panel.getPreferredSize().height;
+      bounds.add(new Rectangle(startX, y, panelWidth, panelHeight));
+      startX += panelWidth + HORIZONTAL_SPACING;
+    }
+    return bounds;
+  }
+
+  private List<Rectangle> createSideRowBounds(int row, List<NodePanel> rowPanels,
+                                              Map<Integer, List<Integer>> rowIndices,
+                                              Map<Integer, Rectangle> planeBoundsByIndex,
+                                              List<Rectangle> packedBounds) {
+    if (rowPanels.isEmpty()) {
+      return new ArrayList<>();
+    }
+
+    int sideCount = rowPanels.size();
+    List<Double> sideCenters = getSideCenters(sideCount,
+        getRowPlaneCenters(row - 1, rowIndices, planeBoundsByIndex));
+    if (sideCenters.isEmpty()) {
+      sideCenters = getSideCenters(sideCount,
+          getRowPlaneCenters(row + 1, rowIndices, planeBoundsByIndex));
+    }
+    if (sideCenters.isEmpty()) {
+      return packedBounds;
+    }
+
+    List<Rectangle> bounds = new ArrayList<>();
+    int y = packedBounds.isEmpty() ? 0 : packedBounds.get(0).y;
+
+    for (int i = 0; i < rowPanels.size(); i++) {
+      NodePanel panel = rowPanels.get(i);
+      double centerX = sideCenters.get(i);
+      int x = (int) Math.round(centerX - (panel.getPreferredSize().width / 2.0));
+      bounds.add(new Rectangle(x, y, panel.getPreferredSize().width, panel.getPreferredSize().height));
+    }
+    return bounds;
+  }
+
+  private List<Double> getRowPlaneCenters(int row, Map<Integer, List<Integer>> rowIndices,
+                                          Map<Integer, Rectangle> planeBoundsByIndex) {
+    List<Double> centers = new ArrayList<>();
+    List<Integer> indices = rowIndices.get(row);
+    if (indices == null || indices.isEmpty()) {
+      return centers;
+    }
+
+    for (Integer index : indices) {
+      Rectangle bound = planeBoundsByIndex.get(index);
+      if (bound != null) {
+        centers.add(bound.getX() + (bound.getWidth() / 2.0));
+      }
+    }
+    return centers;
+  }
+
+  private List<Double> getSideCenters(int sideCount, List<Double> planeCenters) {
+    if (planeCenters.isEmpty()) {
+      return new ArrayList<>();
+    }
+
+    List<Double> anchors = getSideAnchors(sideCount, planeCenters);
+    if (anchors.isEmpty()) {
+      return new ArrayList<>();
+    }
+    if (sideCount == anchors.size()) {
+      return anchors;
+    }
+    if (sideCount < anchors.size()) {
+      int start = (anchors.size() - sideCount) / 2;
+      return new ArrayList<>(anchors.subList(start, start + sideCount));
+    }
+
+    double spacing = getAverageCenterSpacing(anchors);
+    if (spacing <= 0) {
+      spacing = getAverageCenterSpacing(planeCenters);
+    }
+    int extraCount = sideCount - anchors.size();
+    if (spacing <= 0 || extraCount % 2 != 0) {
+      return new ArrayList<>();
+    }
+
+    int extraPerSide = extraCount / 2;
+    List<Double> centers = new ArrayList<>(sideCount);
+    double left = anchors.get(0);
+    for (int i = extraPerSide; i >= 1; i--) {
+      centers.add(left - (i * spacing));
+    }
+    centers.addAll(anchors);
+    double right = anchors.get(anchors.size() - 1);
+    for (int i = 1; i <= extraPerSide; i++) {
+      centers.add(right + (i * spacing));
+    }
+    return centers;
+  }
+
+  private List<Double> getSideAnchors(int sideCount, List<Double> planeCenters) {
+    if (planeCenters.size() == 1 || sideCount % 2 == planeCenters.size() % 2) {
+      return new ArrayList<>(planeCenters);
+    }
+
+    List<Double> anchors = new ArrayList<>();
+    for (int i = 1; i < planeCenters.size(); i++) {
+      anchors.add((planeCenters.get(i - 1) + planeCenters.get(i)) / 2.0);
+    }
+    return anchors;
+  }
+
+  private double getAverageCenterSpacing(List<Double> centers) {
+    if (centers.size() < 2) {
+      return 0;
+    }
+
+    double totalSpacing = 0;
+    for (int i = 1; i < centers.size(); i++) {
+      totalSpacing += centers.get(i) - centers.get(i - 1);
+    }
+    return totalSpacing / (centers.size() - 1);
   }
 }

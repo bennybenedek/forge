@@ -1,8 +1,9 @@
 package forge.gamemodes.rogue;
 
 import forge.deck.Deck;
-import forge.gamemodes.rogue.effect.EchoEffect;
+import forge.gamemodes.rogue.effect.DescensionLevel;
 import forge.gamemodes.rogue.effect.RogueEffect;
+import forge.gamemodes.rogue.effect.RogueEffectComposite;
 import forge.gamemodes.rogue.path.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -23,8 +24,9 @@ public class RogueRunHistoryEntry {
     private int finalGold;
     private String timestamp;
     private Deck deckSnapshot;
-    private int descensionLevel;          // 0 = not used; XStream defaults to 0 for old saves
-    private List<String> activeBoonNames; // null for old saves
+    private int descensionLevel;                   // 0 = not used; XStream defaults to 0 for old saves
+    private List<EffectSnapshot> activeEffects;    // null for old saves
+    private List<String> activeBoonNames;          // legacy field for older saves
 
     public RogueRunHistoryEntry() {
     }
@@ -42,12 +44,13 @@ public class RogueRunHistoryEntry {
 
         entry.descensionLevel = run.getDescensionLevel();
 
-        // Capture active boons from run snapshot
-        entry.activeBoonNames = new ArrayList<>();
-        for (RogueEffect effect : run.getActiveEchoEffects()) {
-            if (effect instanceof EchoEffect boon) {
-                entry.activeBoonNames.add(boon.getDisplayName());
+        // Capture active permanent effects from run snapshot using the same display style as the map header
+        entry.activeEffects = new ArrayList<>();
+        for (RogueEffect effect : RogueEffectComposite.getAllEffects(run)) {
+            if (effect instanceof DescensionLevel) {
+                continue;
             }
+            entry.activeEffects.add(new EffectSnapshot(effect.getUIDisplayText(), effect.getActiveDescription(run)));
         }
 
         entry.path = new ArrayList<>();
@@ -90,5 +93,36 @@ public class RogueRunHistoryEntry {
     public String getTimestamp() { return timestamp; }
     public Deck getDeckSnapshot() { return deckSnapshot; }
     public int getDescensionLevel() { return descensionLevel; }
-    public List<String> getActiveBoonNames() { return activeBoonNames != null ? activeBoonNames : new ArrayList<>(); }
+    public List<EffectSnapshot> getActiveEffects() {
+        if (activeEffects != null) {
+            return activeEffects;
+        }
+        if (activeBoonNames == null || activeBoonNames.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        List<EffectSnapshot> migratedEffects = new ArrayList<>();
+        for (String effectName : activeBoonNames) {
+            if (effectName != null && !effectName.isBlank()) {
+                migratedEffects.add(new EffectSnapshot(effectName, null));
+            }
+        }
+        return migratedEffects;
+    }
+
+    public static class EffectSnapshot {
+        private String displayText;
+        private String tooltipText;
+
+        public EffectSnapshot() {
+        }
+
+        public EffectSnapshot(String displayText, String tooltipText) {
+            this.displayText = displayText;
+            this.tooltipText = tooltipText;
+        }
+
+        public String getDisplayText() { return displayText; }
+        public String getTooltipText() { return tooltipText; }
+    }
 }
