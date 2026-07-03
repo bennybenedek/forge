@@ -17,6 +17,7 @@ Name=Nick Rewards
 1 Balthier and Fran|FIN|3
 1 Basilisk Collar|FDN|1
 1 Baxter Building|MSH|1
+1 Behemoth Sledge|AFC|1
 1 Biorganic Carapace|SPM|1
 1 Black Panther, Most Dangerous|MSC|1
 1 Black Panther, Vanguard|MSH|1
@@ -31,7 +32,6 @@ Name=Nick Rewards
 1 Bruenor Battlehammer|AFR|1
 1 Bucky Barnes, Eager Ally|MSC|1
 1 Captain America, Liberator|MSC|1
-1 Captain America, Living Legend|MSH|1
 1 Captain America, Skybound|MSC|1
 1 Captain America, Unbowed|MSC|1
 1 Captain America, Wings of Freedom|MSH|1
@@ -56,7 +56,7 @@ Name=Nick Rewards
 1 Damocles Base, Sword of Kang|MSC|1
 1 Danitha Capashen, Paragon|CMM|1
 1 Daredevil, Man Without Fear|MSH|1
-1 Dark Ritual|SLD|3
+1 Dark Ritual|SLD|2
 1 Deadeye Quartermaster|XLN|1
 1 Deflecting Swat|CMM|3
 1 Deluxe Dragster|MOC|1
@@ -68,7 +68,6 @@ Name=Nick Rewards
 1 Displacer Kitten|CLB|1
 1 Doc Samson, Super Psychiatrist|MSH|1
 1 Doctor Spectrum|MSC|1
-1 Doom Variant|MAR|1
 1 Dowsing Dagger|XLN|1
 1 Echo, Perceptive Prodigy|PW26|1
 1 Esika's Chariot|SLD|1
@@ -150,7 +149,6 @@ Name=Nick Rewards
 1 Panther Habit|MSC|1
 1 Parhelion II|NEC|1
 1 Peacewalker Colossus|NEC|1
-1 Peter Parker's Camera|SPM|1
 1 Phelia, Exuberant Shepherd|MH3|1
 1 Photon, Lady of Light|MSC|1
 1 Planar Incision|NEO|1
@@ -176,10 +174,10 @@ Name=Nick Rewards
 1 Sai, Master Thopterist|CMM|1
 1 Sanwell, Avenger Ace|BRC|2
 1 Scalding Tarn|MH2|1
+1 Scarlet Witch, Chaotic Avenger|MSC|1
 1 Secluded Courtyard|MSC|1
 1 Secret Invasion|MSH|1
 1 Sevinne's Reclamation|MH3|1
-1 Shadowspear|THB|1
 1 Shang-Chi, Martial Mentor|MSC|1
 1 She-Hulk, Attorney-at-Law|MSC|1
 1 She-Hulk, Wallbreaker|MSC|1
