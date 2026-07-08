@@ -6,7 +6,7 @@ Name=Nick Rewards
 1 Aeronaut Admiral|NEC|1
 1 Aggravated Assault|SLD|2
 1 Akiri, Fearless Voyager|CMM|1
-1 Arcane Signet|SLD|7
+1 Arcane Signet|SLD|5
 1 Ardenn, Intrepid Archaeologist|CMR|1
 1 Arid Mesa|MH2|1
 1 Astor, Bearer of Blades|DMU|1
@@ -24,6 +24,7 @@ Name=Nick Rewards
 1 Black Widow, Agile Avenger|MSC|1
 1 Black Widow, Double Agent|MSH|1
 1 Blackblade Reforged|NEC|1
+1 Blasphemous Act|MSC|1
 1 Born to Drive|NEO|1
 1 Boseiju, Who Endures|NEO|2
 1 Breeding Pool|EOE|1
@@ -70,6 +71,7 @@ Name=Nick Rewards
 1 Doctor Spectrum|MSC|1
 1 Dowsing Dagger|XLN|1
 1 Echo, Perceptive Prodigy|PW26|1
+1 Ephemerate|SLD|1
 1 Esika's Chariot|SLD|1
 1 Esper Sentinel|MH2|1
 1 Etherium Sculptor|EOC|1
@@ -80,7 +82,6 @@ Name=Nick Rewards
 1 Flawless Maneuver|SLD|1
 1 Flooded Strand|MH3|1
 1 Foundry Inspector|CMM|1
-1 Genji Glove|FIN|1
 1 Golden Argosy|DMU|1
 1 Guidelight Pathmaker|DFT|2
 1 Hawkeye, Master Marksman|MSH|1
@@ -89,11 +90,8 @@ Name=Nick Rewards
 1 Hero's Blade|MSC|1
 1 Hero's Heirloom|DMU|1
 1 Heroic Intervention|SLD|1
-1 Heroic Return|MSC|1
 1 Heroic Sacrifice|MSC|1
-1 Hide on the Ceiling|SPM|1
 1 Hotshot Mechanic|NEO|1
-1 HULK SMASH!|MSH|1
 1 Hulk, Always Angry|MSC|1
 1 Hulk, Gamma Goliath|MSH|1
 1 Hulkbuster Armor|MSC|1
@@ -135,7 +133,6 @@ Name=Nick Rewards
 1 Mithril Coat|LTR|1
 1 Mobilizer Mech|NEO|1
 1 Multiversal Passage|SPM|2
-1 Murdock's Crusade|MSH|1
 1 N'Yami-Class Mother Ship|MSC|1
 1 Nakia, Wakandan Operative|MSC|1
 1 Neoform|WAR|1
@@ -178,6 +175,7 @@ Name=Nick Rewards
 1 Secluded Courtyard|MSC|1
 1 Secret Invasion|MSH|1
 1 Sevinne's Reclamation|MH3|1
+1 Shadowspear|THB|1
 1 Shang-Chi, Martial Mentor|MSC|1
 1 She-Hulk, Attorney-at-Law|MSC|1
 1 She-Hulk, Wallbreaker|MSC|1
@@ -223,13 +221,13 @@ Name=Nick Rewards
 1 Thundersteel Colossus|NEO|1
 1 Trailblazer's Boots|OTC|1
 1 Training Regimen|MSH|1
-1 Truck Toss|MSH|1
 1 Unclaimed Territory|MSC|1
 1 Unstable Molecule Suit|MSC|1
 1 Vibranium Mining Mech|MSC|1
 1 Vibranium Strike Gauntlets|MSC|1
 1 War Machine, Avenging Arsenal|MSC|1
 1 We Say Thee Nay!|MSH|1
+1 West Coast Expansion|MSC|1
 1 Whispersilk Cloak|MSC|1
 1 White Widow, Free Agent|MSH|1
 1 Wiccan, Rising Magician|MSH|1
