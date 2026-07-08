@@ -1,7 +1,8 @@
 package forge.download;
 
+import static forge.localinstance.properties.ForgeConstants.GITHUB_FORGE_URL;
+import static forge.localinstance.properties.ForgeConstants.GITHUB_RELEASES_ATOM;
 import static forge.localinstance.properties.ForgeConstants.GITHUB_SNAPSHOT_URL;
-import static forge.localinstance.properties.ForgeConstants.RELEASE_URL;
 
 import forge.gui.FThreads;
 import forge.gui.GuiBase;
@@ -19,8 +20,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import javax.swing.SwingUtilities;
 import org.apache.commons.lang3.StringUtils;
 
@@ -129,7 +128,7 @@ public class AutoUpdater {
                 SOptionPane.showMessageDialog("Your build is a RELEASE version, but update channel is set to '" + updateChannel + "'.\n\nPlease set update channel to 'Release' in Settings > Preferences > Updates.", "Update Channel Mismatch", SOptionPane.ERROR_ICON);
                 return false;
             }
-            versionUrlString = RELEASE_URL + "forge/forge-gui-desktop/version.txt";
+            versionUrlString = GITHUB_RELEASES_ATOM;
             System.out.println("DEBUG: Using release version URL: " + versionUrlString);
         }
 
@@ -245,27 +244,24 @@ public class AutoUpdater {
 
     private void retrieveVersion() throws MalformedURLException {
         if (VERSION_FROM_METADATA && updateChannel.equalsIgnoreCase(localizer.getMessageorUseDefault("lblRelease", "Release"))) {
-            extractVersionFromMavenRelease();
+            extractVersionFromGithubRelease();
         } else {
             URL versionUrl = new URL(versionUrlString);
             version = FileUtil.readFileToString(versionUrl);
         }
         if (updateChannel.equalsIgnoreCase(localizer.getMessageorUseDefault("lblRelease", "Release"))) {
-            packageUrl = RELEASE_URL + "forge/forge-gui-desktop/" + version + "/forge-gui-desktop-" + version + ".tar.bz2";
+            packageUrl = GITHUB_FORGE_URL + "releases/download/forge-" + version + "/forge-installer-" + version + ".jar";
         } else {
             packageUrl = GITHUB_SNAPSHOT_URL + "forge-installer-" + version + ".jar";
         }
     }
 
-    private void extractVersionFromMavenRelease() throws MalformedURLException {
-        String RELEASE_MAVEN_METADATA = RELEASE_URL + "forge/forge-gui-desktop/maven-metadata.xml";
-        URL metadataUrl = new URL(RELEASE_MAVEN_METADATA);
-        String xml = FileUtil.readFileToString(metadataUrl);
-
-        Pattern p = Pattern.compile("<release>(.*)</release>");
-        Matcher m = p.matcher(xml);
-        while (m.find()) {
-            version = m.group(1);
+    private void extractVersionFromGithubRelease() {
+        String releaseTag = RSSReader.getLatestReleaseTag(GITHUB_RELEASES_ATOM);
+        if (releaseTag.startsWith("forge-")) {
+            version = releaseTag.substring("forge-".length());
+        } else {
+            version = releaseTag;
         }
     }
 
