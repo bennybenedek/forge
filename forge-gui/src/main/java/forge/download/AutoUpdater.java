@@ -150,6 +150,13 @@ public class AutoUpdater {
     }
 
     private boolean testNetConnection(String host) {
+        // test against the host updates are actually fetched from;
+        // releases.cardforge.org is no longer reachable and blocked all updates
+        try {
+            host = new URL(versionUrlString).getHost();
+        } catch (MalformedURLException e) {
+            host = "github.com";
+        }
         try (Socket socket = new Socket()) {
             System.out.println("DEBUG: Testing connection to " + host + ":443");
             InetSocketAddress address = new InetSocketAddress(host, 443);
