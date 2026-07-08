@@ -35,6 +35,17 @@ public enum ChestEffect implements RogueEffect {
             triggerCustomCardReward(ctx, "Choose Your Rewards", gamechangerCards, 7, 3);
         }
     },
+    CARD_CACHE_BAN("card_cache_ban", "Forbidden Card Cache",
+        "Gain a {{Card Reward}} from the Commander Banlist.", EffectType.ONESHOT, null) {
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            List<PaperCard> banlistCards = run.getBanlistCardsForActiveCommander();
+            if (banlistCards.isEmpty()) {
+                return;
+            }
+            triggerCustomCardReward(ctx, "Choose Your Rewards", banlistCards, 7, 3);
+        }
+    },
     POTION_OF_VITALITY("potion_of_vitality", "Potion Of Vitality", "Gain 10 {{Max. Life}}.",
         EffectType.ONESHOT, null) {
         @Override
@@ -200,6 +211,27 @@ public enum ChestEffect implements RogueEffect {
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             human.setStartingHand(human.getStartingHand() + 1);
             addEffectCardToCommandZone(human);
+        }
+    },
+    RELIC_OF_PATHFINDING("relic_of_pathfinding", "Relic Of Pathfinding",
+        TRAIT_GAIN_DESCRIPTION,
+        EffectType.PERMANENT, "Chest Trait - Relic Of Pathfinding") {
+        @Override
+        public void onPathUpdate(PathUpdateContext ctx, RogueRun run) {
+            ctx.allowAllNodesInCurrentRow = true;
+        }
+    },
+    RELIC_OF_REGENERATION("relic_of_regeneration", "Relic Of Regeneration",
+        TRAIT_GAIN_DESCRIPTION + " !{{Max. Life}}",
+        EffectType.PERMANENT, "Chest Trait - Relic Of Regeneration") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+        }
+
+        @Override
+        public void onMatchWin(RogueRun run) {
+            run.gainLifeUpToMax(5);
         }
     },
     SHIELD_OF_CONVALESCENCE("shield_of_convalescence", "Shield Of Convalescence",

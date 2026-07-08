@@ -196,9 +196,12 @@ public enum CSubmenuRogueMap implements ICDoc {
       return;
     }
 
+    PathUpdateContext pathCtx = new PathUpdateContext();
+    RogueEffectComposite.INSTANCE.onPathUpdate(pathCtx, currentRun);
+
     // Only allow selecting reachable nodes in the current row
     List<Integer> visibleInCurrentRow = currentRun.getPath()
-        .getVisibleNodesInCurrentRow(currentNode.getRowIndex());
+        .getVisibleNodesInCurrentRow(currentNode.getRowIndex(), pathCtx);
     if (!visibleInCurrentRow.contains(nodeIndex)) {
       return; // Not reachable, ignore click
     }

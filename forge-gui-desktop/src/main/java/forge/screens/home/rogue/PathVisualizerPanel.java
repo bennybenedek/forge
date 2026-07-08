@@ -77,12 +77,12 @@ public class PathVisualizerPanel extends SkinnedPanel {
     currentNodeIndex = path.getNodes().indexOf(currentNode);
     int currentRow = currentNode != null ? currentNode.getRowIndex() : 0;
 
-    // Get visible nodes in current row (reachable from last completed in previous row)
-    List<Integer> visibleInCurrentRow = path.getVisibleNodesInCurrentRow(currentRow);
-
     // Check wound effects (e.g. Wounded Eye hides planes)
     PathUpdateContext pathCtx = new PathUpdateContext();
     RogueEffectComposite.INSTANCE.onPathUpdate(pathCtx, run);
+
+    // Get visible nodes in current row (reachable from last completed in previous row)
+    List<Integer> visibleInCurrentRow = path.getVisibleNodesInCurrentRow(currentRow, pathCtx);
 
     // Create panels for each node
     List<RoguePathNode> nodes = path.getNodes();
@@ -94,7 +94,8 @@ public class PathVisualizerPanel extends SkinnedPanel {
       boolean isFaceDown;
       if (node.getRowIndex() < currentRow) {
         // Past row - only show nodes that were visible when that row was current
-        List<Integer> visibleInThatRow = path.getVisibleNodesInCurrentRow(node.getRowIndex());
+        List<Integer> visibleInThatRow = path.getVisibleNodesInCurrentRow(node.getRowIndex(),
+            new PathUpdateContext());
         isFaceDown = !visibleInThatRow.contains(i);
       } else if (node.getRowIndex() == currentRow) {
         // Current row - show visible nodes

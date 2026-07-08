@@ -1,5 +1,6 @@
 package forge.gamemodes.rogue.path;
 
+import forge.gamemodes.rogue.effect.PathUpdateContext;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -315,8 +316,17 @@ public class RoguePath {
      * @param currentRow The current row index
      * @return List of indices of visible nodes in current row
      */
-    public List<Integer> getVisibleNodesInCurrentRow(int currentRow) {
+    public List<Integer> getVisibleNodesInCurrentRow(int currentRow, PathUpdateContext pathCtx) {
         List<Integer> visibleIndices = new ArrayList<>();
+
+        if (pathCtx != null && pathCtx.allowAllNodesInCurrentRow) {
+            for (int i = 0; i < nodes.size(); i++) {
+                if (nodes.get(i).getRowIndex() == currentRow) {
+                    visibleIndices.add(i);
+                }
+            }
+            return visibleIndices;
+        }
 
         // Find last completed node in previous row
         int previousRow = currentRow - 1;

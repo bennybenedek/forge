@@ -58,8 +58,8 @@ public class RogueCommanderAchievements extends AchievementCollection {
     public void evaluateRunAchievements(RogueRun run) {
         if (run == null) return;
 
-        // Life Abundant: have 50+ life
-        if (run.getCurrentLife() >= 50) {
+        // Life Abundant: have 50+ life at the end of a match, before persistent life is clamped
+        if (run.getLastMatchRawLife() >= 50) {
             updateAchievement("LifeAbundance");
         }
 

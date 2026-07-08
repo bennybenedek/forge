@@ -6,4 +6,5 @@ package forge.gamemodes.rogue.effect;
  */
 public class PathUpdateContext {
     public boolean hidePlanes;
+    public boolean allowAllNodesInCurrentRow;
 }
