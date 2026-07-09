@@ -179,8 +179,7 @@ public interface RogueEffect {
             .anyMatch(reference -> reference.type() == PreviewReferenceType.CARD
                 && effectCardDisplayName.equals(TextHelper.extractCardNameFromReference(reference.token())));
         if (!alreadyReferenced) {
-            references.add(new PreviewReference(PreviewReferenceType.CARD, effectCardReference,
-                references.size()));
+            references.add(0, new PreviewReference(PreviewReferenceType.CARD, effectCardReference, 0));
         }
         return references;
     }
@@ -414,13 +413,30 @@ public interface RogueEffect {
         ctx.gainedWoundEffect = woundEffect;
     }
 
-    static void addCardToCommandZone(String cardName, RegisteredPlayer human) {
-        PaperCard card = RogueConfig.getCard(cardName, null, null);
+    static void addCardToCommandZone(String cardReference, RegisteredPlayer human) {
+        CardReference cardReferenceParts = TextHelper.parseCardReference(cardReference);
+        if (cardReferenceParts.cardName().isEmpty()) {
+            return;
+        }
+
+        PaperCard card = RogueConfig.getCard(cardReferenceParts.cardName(),
+            cardReferenceParts.setCode(), cardReferenceParts.artIndex());
         addCardToCommandZone(card, human);
     }
 
     static void addCardToCommandZone(PaperCard card, RegisteredPlayer human) {
         if (card != null) human.addExtraCardsInCommandZone(Collections.singletonList(card));
+    }
+
+    static void addCardToBattlefield(String cardReference, RegisteredPlayer human) {
+        CardReference cardReferenceParts = TextHelper.parseCardReference(cardReference);
+        if (cardReferenceParts.cardName().isEmpty()) {
+            return;
+        }
+
+        PaperCard card = RogueConfig.getCard(cardReferenceParts.cardName(),
+            cardReferenceParts.setCode(), cardReferenceParts.artIndex());
+        addCardToBattlefield(card, human);
     }
 
     static void addCardToBattlefield(PaperCard card, RegisteredPlayer human) {

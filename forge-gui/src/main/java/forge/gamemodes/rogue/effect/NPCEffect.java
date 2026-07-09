@@ -37,15 +37,16 @@ public enum NPCEffect implements RogueEffect {
 
     // Narset traits
     NARSET_TRAVELER("npc_narset_traveler", "Traveler",
-        "Start each match with a [[Fractured Powerstone]] on the battlefield.",
-        EffectType.PERMANENT, "Fractured Powerstone") {
+        TRAIT_GAIN_DESCRIPTION + " ![[Fractured Powerstone]]",
+        EffectType.PERMANENT, "Narset Trait - Traveler") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            RogueEffect.addCardToBattlefield(getEffectCard(), human);
+            addEffectCardToCommandZone(human);
+            RogueEffect.addCardToBattlefield("Fractured Powerstone", human);
         }
     },
     NARSET_ALCHEMIST("npc_narset_alchemist", "Alchemist",
-        "Start the Run with an %s {{Item}} in the command zone.",
+        "Gain the {{Item}} %s.",
         EffectType.ONESHOT, "Ichor Elixir") {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
@@ -53,11 +54,12 @@ public enum NPCEffect implements RogueEffect {
         }
     },
     NARSET_CHAOSBOUND("npc_narset_chaosbound", "Chaosbound",
-        "Start each match with a %s on the battlefield.",
-        EffectType.PERMANENT, "Narset - Chaos Capsule") {
+        TRAIT_GAIN_DESCRIPTION + " ![[Narset - Chaos Capsule]]",
+        EffectType.PERMANENT, "Narset Trait - Chaosbound") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToBattlefield(human);
+            addEffectCardToCommandZone(human);
+            RogueEffect.addCardToBattlefield("Narset - Chaos Capsule", human);
         }
     },
     NARSET_GOD_OF_CHAOS("npc_narset_god_of_chaos", "God of Chaos",

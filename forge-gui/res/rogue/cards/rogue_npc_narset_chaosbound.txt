@@ -1,0 +1,4 @@
+Name:Narset Trait - Chaosbound
+ManaCost:no cost
+Types:Trait
+Oracle:Start each match with a Chaos Capsule on the battlefield.
