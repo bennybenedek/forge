@@ -22,6 +22,8 @@ import java.util.function.Predicate;
 public interface RogueEffect {
 
     String TRAIT_GAIN_DESCRIPTION = "Gain the {{Trait}} %s.";
+    String FELLOW_GAIN_DESCRIPTION = "Gain the {{Fellow}} %s.";
+    String ITEM_GAIN_DESCRIPTION = "Gain the {{Item}} %s.";
     String ACCEPT = "Accept";
     String INSUFFICIENT_GOLD = "You don't have enough Gold.";
     String INSUFFICIENT_MAX_LIFE = "You don't have enough Max. Life.";

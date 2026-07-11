@@ -31,7 +31,7 @@ public interface NPCEncounter {
     default NPCContext onAfterMatch(RogueRun run) { return null; }
 
     /** Fired once when a new run is created. Return non-null to show NPC dialog. */
-    default NPCContext onRunStart() { return null; }
+    default NPCContext onRunStart(RogueRun run) { return null; }
 
     /** Fired before an event starts. May replace the event through the context. */
     default void onBeforeEvent(EventContext ctx) {}

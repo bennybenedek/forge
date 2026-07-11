@@ -2,7 +2,9 @@ package forge.gamemodes.rogue.npc;
 
 import forge.gamemodes.rogue.RogueMetaProgress;
 import forge.gamemodes.rogue.RogueEvent;
+import forge.gamemodes.rogue.RogueRun;
 import forge.gamemodes.rogue.effect.NPCEffect;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -39,15 +41,15 @@ public enum TyvarEncounter implements NPCEncounter {
     /** After being met, Tyvar offers Commander training boons at the start of runs. */
     OFFERING_BOONS(3) {
         @Override
-        public NPCContext onRunStart() {
+        public NPCContext onRunStart(RogueRun run) {
+            List<NPCEffect> pool = NPCEffect.getEffectsForNpc(getNpc(), run);
+            Collections.shuffle(pool);
             return buildContext(
                 "Tyvar Kell steps from the shadows, his elven features lit by the glow of his Planeswalker spark. " +
                 "\"I've watched you fight, and I see potential. Let me train your Commander.\"",
-                List.of(
-                    new NPCContext.NPCChoice("Might", NPCEffect.TYVAR_MIGHT),
-                    new NPCContext.NPCChoice("Efficiency", NPCEffect.TYVAR_DISCOUNT),
-                    new NPCContext.NPCChoice("Fury", NPCEffect.TYVAR_HASTE)
-                )
+                pool.subList(0, 3).stream()
+                    .map(effect -> new NPCContext.NPCChoice(effect.getDisplayName(), effect))
+                    .toList()
             );
         }
     };

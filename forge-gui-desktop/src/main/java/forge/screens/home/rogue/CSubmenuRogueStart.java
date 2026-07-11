@@ -395,8 +395,8 @@ public enum CSubmenuRogueStart implements ICDoc {
     RogueEffectComposite.INSTANCE.onRunStart(newRun);
 
     // Show NPC encounter dialogs (e.g. Tyvar offering npcEffect choices)
-    for (NPCContext ctx : NPCEncounterComposite.INSTANCE.onRunStart(progress)) {
-      NPCEffect chosen = new NPCDialog(ctx).show();
+    for (NPCContext ctx : NPCEncounterComposite.INSTANCE.onRunStart(progress, newRun)) {
+        NPCEffect chosen = new NPCDialog(ctx).show();
       if (chosen == null) {
         continue;
       }

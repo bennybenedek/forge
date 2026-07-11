@@ -10,6 +10,8 @@ import forge.card.CardRulesPredicates;
 import forge.item.PaperCard;
 import forge.item.PaperCardPredicates;
 import forge.util.MyRandom;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.Predicate;
@@ -224,8 +226,14 @@ public enum EventEffect implements RogueEffect {
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             run.loseMaxLife(4);
             run.addEventEffect(this);
+
+            List<PaperCard> candidateCards = RogueConfig.getAllCards(getDBCardsFilter());
+            candidateCards = run.filterDuplicateCards(candidateCards);
+            Collections.shuffle(candidateCards, MyRandom.getRandom());
+            candidateCards = new ArrayList<>(candidateCards.subList(0, Math.min(20, candidateCards.size())));
+
             ctx.addSection = DeckSection.Commander;
-            selectCardsForDeck(run, ctx, getDBCardsFilter(), 20, 1, 1, null);
+            selectCardsForDeck(ctx, candidateCards, 1, 1);
         }
 
         @Override
