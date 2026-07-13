@@ -285,6 +285,38 @@ public interface RogueEffect {
         ctx.addedCards.addAll(added);
     }
 
+    default void addCardsToDeck(RogueRun run, EffectResultContext ctx, List<String> cardReferences) {
+        if (cardReferences == null || cardReferences.isEmpty()) {
+            return;
+        }
+
+        List<PaperCard> added = new ArrayList<>();
+        for (String cardReferenceText : cardReferences) {
+            CardReference cardReference = TextHelper.parseCardReference(cardReferenceText);
+            if (cardReference.cardName().isEmpty()) {
+                continue;
+            }
+
+            PaperCard card = RogueConfig.getCard(cardReference.cardName(),
+                cardReference.setCode(), cardReference.artIndex());
+            if (card != null) {
+                added.add(card);
+            }
+        }
+
+        if (added.isEmpty()) {
+            return;
+        }
+
+        added = run.filterAddableCardsToDeck(added);
+        if (added.isEmpty()) {
+            return;
+        }
+
+        run.addCardsToDeck(added, false);
+        ctx.addedCards.addAll(added);
+    }
+
     default void removeCardsFromDeck(RogueRun run, EffectResultContext ctx, Predicate<PaperCard> filter,
         Integer count) {
         List<PaperCard> removedCards;

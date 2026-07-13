@@ -395,6 +395,15 @@ public class RogueRun {
         }
     }
 
+    public List<PaperCard> filterAddableCardsToDeck(Collection<PaperCard> cards) {
+        if (cards == null || cards.isEmpty()) {
+            return List.of();
+        }
+
+        List<PaperCard> filtered = filterCardsByCommanderColorIdentity(new ArrayList<>(cards));
+        return filterDuplicateCards(filtered);
+    }
+
     public boolean canAddCardAsCarryCard(PaperCard card) {
         if (card == null) {
             return false;

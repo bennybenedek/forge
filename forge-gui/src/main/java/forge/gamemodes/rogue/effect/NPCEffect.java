@@ -1,9 +1,11 @@
 package forge.gamemodes.rogue.effect;
 
 import forge.game.player.RegisteredPlayer;
+import forge.gamemodes.rogue.RogueConfig;
 import forge.gamemodes.rogue.RogueRun;
 import forge.gamemodes.rogue.RogueRun.CarryCardType;
 import forge.gamemodes.rogue.npc.NPC;
+import forge.item.PaperCard;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -115,6 +117,21 @@ public enum NPCEffect implements RogueEffect {
         @Override
         public boolean isChoiceAvailable(RogueRun run) {
             return run.canAddCardAsCarryCard(getEffectCard());
+        }
+    },
+    TYVAR_STAPLER("npc_tyvar_stapler", "Stapler",
+        "Add a [[Sol Ring|CMM|2]] and [[Arcane Signet|CMM|2]] to your deck.", NPC.TYVAR,
+        EffectType.ONESHOT, null) {
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            addCardsToDeck(run, ctx, List.of("Sol Ring|CMM|2", "Arcane Signet|CMM|2"));
+        }
+
+        @Override
+        public boolean isChoiceAvailable(RogueRun run) {
+            PaperCard solRing = RogueConfig.getCard("Sol Ring", null, null);
+            PaperCard arcaneSignet = RogueConfig.getCard("Arcane Signet", null, null);
+            return run.canAddCardToDeck(solRing) || run.canAddCardToDeck(arcaneSignet);
         }
     },
     TYVAR_AUGMENTED("npc_tyvar_augmented", "Augmented",
