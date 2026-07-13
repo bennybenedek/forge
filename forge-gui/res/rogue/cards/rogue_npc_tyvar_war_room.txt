@@ -1,0 +1,4 @@
+Name:Tyvar Trait - War Room
+ManaCost:no cost
+Types:Trait
+Oracle:Start each match with War Room on the battlefield.

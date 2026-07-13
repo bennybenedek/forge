@@ -1,4 +1,0 @@
-Name:Narset Trait - Traveler
-ManaCost:no cost
-Types:Trait
-Oracle:Start each match with a Fractured Powerstone on the battlefield.
