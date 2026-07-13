@@ -1,0 +1,4 @@
+Name:Narset Trait - Vault
+ManaCost:no cost
+Types:Trait
+Oracle:Start each match with Vault of the Archangel on the battlefield.

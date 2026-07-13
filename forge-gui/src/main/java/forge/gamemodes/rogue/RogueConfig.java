@@ -29,7 +29,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
  * Paths are generated for each run.
  */
 public class RogueConfig {
-    private static final Set<String> EXCLUDED_RANDOM_DRAW_SET_CODES = Set.of("UNK");
+    private static final Set<String> EXCLUDED_RANDOM_DRAW_SET_CODES = Set.of("UNK", "UNH");
 
     private static final StaticData db = StaticData.instance();
 

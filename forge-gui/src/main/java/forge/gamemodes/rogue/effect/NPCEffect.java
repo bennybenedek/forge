@@ -1,5 +1,6 @@
 package forge.gamemodes.rogue.effect;
 
+import forge.card.CardSplitType;
 import forge.game.player.RegisteredPlayer;
 import forge.gamemodes.rogue.RogueConfig;
 import forge.gamemodes.rogue.RogueRun;
@@ -7,7 +8,9 @@ import forge.gamemodes.rogue.RogueRun.CarryCardType;
 import forge.gamemodes.rogue.npc.NPC;
 import forge.item.PaperCard;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import forge.util.MyRandom;
 
 /**
  * NPC effects granted during run start encounters.
@@ -267,6 +270,82 @@ public enum NPCEffect implements RogueEffect {
             addEffectCardAsCarryCard(run, ctx, CarryCardType.ITEM);
         }
     },
+    NARSET_LANDS_OF_LEGENDS("npc_narset_lands_of_legends", "Lands Of Legends",
+        "Choose up to 3 out of 20 legendary lands to add to your deck.", NPC.NARSET,
+        EffectType.ONESHOT, null) {
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            List<PaperCard> candidateCards = getLegendaryLandCandidates(run);
+            if (candidateCards.isEmpty()) {
+                return;
+            }
+
+            Collections.shuffle(candidateCards, MyRandom.getRandom());
+            candidateCards = new ArrayList<>(candidateCards.subList(0, Math.min(20, candidateCards.size())));
+            selectCardsForDeck(ctx, candidateCards, 0, 3);
+        }
+
+        @Override
+        public boolean isChoiceAvailable(RogueRun run) {
+            return !getLegendaryLandCandidates(run).isEmpty();
+        }
+    },
+    NARSET_TOWER("npc_narset_tower", "Narset's Tower",
+        TRAIT_GAIN_DESCRIPTION + " ![[Reliquary Tower]]", NPC.NARSET,
+        EffectType.PERMANENT, "Narset Trait - Tower") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+            RogueEffect.addCardToBattlefield("Reliquary Tower", human);
+        }
+
+        @Override
+        public boolean isChoiceAvailable(RogueRun run) {
+            return run.canAddCardToDeck(RogueConfig.getCard("Reliquary Tower", null, null));
+        }
+    },
+    NARSET_PASSAGE("npc_narset_passage", "Narset's Passage",
+        TRAIT_GAIN_DESCRIPTION + " ![[Rogue's Passage]]", NPC.NARSET,
+        EffectType.PERMANENT, "Narset Trait - Passage") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+            RogueEffect.addCardToBattlefield("Rogue's Passage", human);
+        }
+
+        @Override
+        public boolean isChoiceAvailable(RogueRun run) {
+            return run.canAddCardToDeck(RogueConfig.getCard("Rogue's Passage", null, null));
+        }
+    },
+    NARSET_WOLF_RUN("npc_narset_wolf_run", "Narset's Wolf Run",
+        TRAIT_GAIN_DESCRIPTION + " ![[Kessig Wolf Run]]", NPC.NARSET,
+        EffectType.PERMANENT, "Narset Trait - Wolf Run") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+            RogueEffect.addCardToBattlefield("Kessig Wolf Run", human);
+        }
+
+        @Override
+        public boolean isChoiceAvailable(RogueRun run) {
+            return run.canAddCardToDeck(RogueConfig.getCard("Kessig Wolf Run", null, null));
+        }
+    },
+    NARSET_VAULT("npc_narset_vault", "Narset's Vault",
+        TRAIT_GAIN_DESCRIPTION + " ![[Vault of the Archangel]]", NPC.NARSET,
+        EffectType.PERMANENT, "Narset Trait - Vault") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+            RogueEffect.addCardToBattlefield("Vault of the Archangel", human);
+        }
+
+        @Override
+        public boolean isChoiceAvailable(RogueRun run) {
+            return run.canAddCardToDeck(RogueConfig.getCard("Vault of the Archangel", null, null));
+        }
+    },
     NARSET_CHAOSWALKER("npc_chaoswalker", "Chaoswalker",
         TRAIT_GAIN_DESCRIPTION, NPC.NARSET,
         EffectType.PERMANENT, "Narset Trait - Chaoswalker") {
@@ -309,6 +388,12 @@ public enum NPCEffect implements RogueEffect {
     public String getEffectCardReference() { return effectCardReference; }
 
     public NPC getOwnerNpc() { return ownerNpc; }
+
+    private static List<PaperCard> getLegendaryLandCandidates(RogueRun run) {
+        return run.getAllCardsForActiveCommander(card -> card.getRules().getType().isLand()
+            && card.getRules().getType().isLegendary()
+            && card.getRules().getSplitType() == CardSplitType.None);
+    }
 
     public boolean isChoiceAvailable(RogueRun run) { return true; }
 

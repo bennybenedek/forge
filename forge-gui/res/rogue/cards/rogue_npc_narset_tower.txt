@@ -1,0 +1,4 @@
+Name:Narset Trait - Tower
+ManaCost:no cost
+Types:Trait
+Oracle:Start each match with Reliquary Tower on the battlefield.
