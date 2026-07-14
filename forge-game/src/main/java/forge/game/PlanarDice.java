@@ -7,6 +7,7 @@ import forge.game.ability.effects.ChaosEnsuesEffect;
 import forge.game.player.Player;
 import forge.game.replacement.ReplacementType;
 import forge.game.trigger.TriggerType;
+import forge.util.Localizer;
 
 import java.util.Arrays;
 import java.util.List;
@@ -70,6 +71,9 @@ public enum PlanarDice {
                 break;
             }
         }
+
+        String message = Localizer.getInstance().getMessage("lblPlanarDiceResult", res.toString());
+        game.getAction().notifyOfValue(null, roller, message, null);
 
         Map<AbilityKey, Object> runParams = AbilityKey.mapFromPlayer(roller);
         runParams.put(AbilityKey.Result, res);
