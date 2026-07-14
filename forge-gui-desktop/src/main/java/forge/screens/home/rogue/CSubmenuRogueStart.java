@@ -396,7 +396,8 @@ public enum CSubmenuRogueStart implements ICDoc {
 
     // Show NPC encounter dialogs (e.g. Tyvar offering npcEffect choices)
     for (NPCContext ctx : NPCEncounterComposite.INSTANCE.onRunStart(progress, newRun)) {
-        NPCEffect chosen = new NPCDialog(ctx).show();
+        NPCContext effectiveCtx = maybeOverrideNpcChoices(ctx);
+        NPCEffect chosen = new NPCDialog(effectiveCtx).show();
       if (chosen == null) {
         continue;
       }
@@ -428,5 +429,15 @@ public enum CSubmenuRogueStart implements ICDoc {
 
     // Navigate to the Rogue Map
     CHomeUI.SINGLETON_INSTANCE.itemClick(EDocID.HOME_ROGUEMAP);
+  }
+
+  private NPCContext maybeOverrideNpcChoices(NPCContext ctx) {
+    if (!ForgePreferences.DEV_MODE || ctx == null || ctx.choices().size() != 3) {
+      return ctx;
+    }
+    if (ctx.choices().stream().anyMatch(choice -> choice == null || choice.npcEffect() == null)) {
+      return ctx;
+    }
+    return new NPCChoiceOverrideDialog(ctx).show();
   }
 }
