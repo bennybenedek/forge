@@ -394,9 +394,25 @@ public enum NPCEffect implements RogueEffect {
             addEffectCardToCommandZone(human);
         }
     },
+    NARSET_TITHE_OF_CHAOS("npc_narset_tithe_of_chaos", "Tithe of Chaos",
+        TRAIT_GAIN_DESCRIPTION, NPC.NARSET,
+        EffectType.PERMANENT, "Narset Trait - Tithe of Chaos") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+        }
+    },
     NARSET_GOD_OF_CHAOS("npc_narset_god_of_chaos", "God of Chaos",
         TRAIT_GAIN_DESCRIPTION, NPC.NARSET,
         EffectType.PERMANENT, "Narset Trait - God of Chaos") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+        }
+    },
+    NARSET_CHAOSS_PROTECTION("npc_narset_chaoss_protection", "Chaos's Protection",
+        TRAIT_GAIN_DESCRIPTION, NPC.NARSET,
+        EffectType.PERMANENT, "Narset Trait - Chaos's Protection") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
