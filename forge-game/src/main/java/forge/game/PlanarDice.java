@@ -90,6 +90,9 @@ public enum PlanarDice {
 
         if (res == Chaos) {
             ChaosEnsuesEffect.dispatchChaosEnsues(roller, "PlanarDie", null);
+            if (!game.getStack().isResolving()) {
+                game.getStack().addAllTriggeredAbilitiesToStack();
+            }
             roller.incrementPlanarDieChaosThisGame();
         }
         if (res == Planeswalk) {
