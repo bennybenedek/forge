@@ -1,0 +1,7 @@
+Name:Narset Trait - Lightwalker
+ManaCost:no cost
+Types:Trait
+R:Event$ Planeswalk | ActiveZones$ Command | ValidPlayer$ You | ValidCause$ PlanarDie | ReplaceWith$ REGainLife | Description$ If you would planeswalk as a result of rolling the planar die, instead you gain 3 life. Then planeswalk.
+SVar:REGainLife:DB$ GainLife | Defined$ You | LifeAmount$ 3 | SubAbility$ DBPlaneswalk
+SVar:DBPlaneswalk:DB$ Planeswalk
+Oracle:If you would planeswalk as a result of rolling the planar die, instead you gain 3 life. Then planeswalk.

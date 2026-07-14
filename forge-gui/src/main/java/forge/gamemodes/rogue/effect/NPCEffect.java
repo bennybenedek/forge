@@ -18,7 +18,7 @@ import forge.util.MyRandom;
  */
 public enum NPCEffect implements RogueEffect {
 
-    TYVAR_LIEUTENANT_OF_APPRENTICES("npc_tyvar_lieutenant_of_apprentices", "Lieutenant Of Apprentices",
+    TYVAR_APPRENTICE("npc_tyvar_apprentice", "Tyvar's Apprentice",
         FELLOW_GAIN_DESCRIPTION, NPC.TYVAR,
         EffectType.ONESHOT, "Loyal Apprentice") {
         @Override
@@ -31,7 +31,7 @@ public enum NPCEffect implements RogueEffect {
             return run.canAddCardAsCarryCard(getEffectCard());
         }
     },
-    TYVAR_LIEUTENANT_OF_DRAKES("npc_tyvar_lieutenant_of_drakes", "Lieutenant Of Drakes",
+    TYVAR_DRAKES("npc_tyvar_drake", "Tyvar's Drake",
         FELLOW_GAIN_DESCRIPTION, NPC.TYVAR,
         EffectType.ONESHOT, "Loyal Drake") {
         @Override
@@ -44,7 +44,7 @@ public enum NPCEffect implements RogueEffect {
             return run.canAddCardAsCarryCard(getEffectCard());
         }
     },
-    TYVAR_LIEUTENANT_OF_GUARDIANS("npc_tyvar_lieutenant_of_guardians", "Lieutenant Of Guardians",
+    TYVAR_GUARDIAN("npc_tyvar_guardian", "Tyvar's  Guardian",
         FELLOW_GAIN_DESCRIPTION, NPC.TYVAR,
         EffectType.ONESHOT, "Loyal Guardian") {
         @Override
@@ -57,7 +57,7 @@ public enum NPCEffect implements RogueEffect {
             return run.canAddCardAsCarryCard(getEffectCard());
         }
     },
-    TYVAR_LIEUTENANT_OF_SUBORDINATES("npc_tyvar_lieutenant_of_subordinates", "Lieutenant Of Subordinates",
+    TYVAR_SUBORDINATE("npc_tyvar_subordinate", "Tyvar's Subordinate",
         FELLOW_GAIN_DESCRIPTION, NPC.TYVAR,
         EffectType.ONESHOT, "Loyal Subordinate") {
         @Override
@@ -70,7 +70,7 @@ public enum NPCEffect implements RogueEffect {
             return run.canAddCardAsCarryCard(getEffectCard());
         }
     },
-    TYVAR_LIEUTENANT_OF_UNICORNS("npc_tyvar_lieutenant_of_unicorns", "Lieutenant Of Unicorns",
+    TYVAR_UNICORN("npc_tyvar_lieutenant_of_unicorns", "Tyvar's Unicorn",
         "Gain the {{Fellow}} %s.", NPC.TYVAR,
         EffectType.ONESHOT, "Loyal Unicorn") {
         @Override
@@ -137,7 +137,7 @@ public enum NPCEffect implements RogueEffect {
             return run.canAddCardToDeck(solRing) || run.canAddCardToDeck(arcaneSignet);
         }
     },
-    TYVAR_AUGMENTED("npc_tyvar_augmented", "Augmented",
+    TYVAR_AUGMENTED("npc_tyvar_augmented", "Augmented Commander",
         TRAIT_GAIN_DESCRIPTION, NPC.TYVAR,
         EffectType.PERMANENT, "Tyvar Trait - Augmented") {
         @Override
@@ -145,7 +145,7 @@ public enum NPCEffect implements RogueEffect {
             addEffectCardToCommandZone(human);
         }
     },
-    TYVAR_BASTION("npc_tyvar_bastion", "Bastion",
+    TYVAR_BASTION("npc_tyvar_bastion", "Bastion Commander",
         TRAIT_GAIN_DESCRIPTION, NPC.TYVAR,
         EffectType.PERMANENT, "Tyvar Trait - Bastion") {
         @Override
@@ -153,7 +153,7 @@ public enum NPCEffect implements RogueEffect {
             addEffectCardToCommandZone(human);
         }
     },
-    TYVAR_BLOODSWORN("npc_tyvar_bloodsworn", "Bloodsworn",
+    TYVAR_BLOODSWORN("npc_tyvar_bloodsworn", "Bloodsworn Commander",
         TRAIT_GAIN_DESCRIPTION, NPC.TYVAR,
         EffectType.PERMANENT, "Tyvar Trait - Bloodsworn") {
         @Override
@@ -161,7 +161,7 @@ public enum NPCEffect implements RogueEffect {
             addEffectCardToCommandZone(human);
         }
     },
-    TYVAR_BRAWLER("npc_tyvar_brawler", "Brawler",
+    TYVAR_BRAWLER("npc_tyvar_brawler", "Brawler Commander",
         TRAIT_GAIN_DESCRIPTION, NPC.TYVAR,
         EffectType.PERMANENT, "Tyvar Trait - Brawler") {
         @Override
@@ -169,7 +169,7 @@ public enum NPCEffect implements RogueEffect {
             addEffectCardToCommandZone(human);
         }
     },
-    TYVAR_CHARLATAN("npc_tyvar_charlatan", "Charlatan",
+    TYVAR_CHARLATAN("npc_tyvar_charlatan", "Charlatan Commander",
         TRAIT_GAIN_DESCRIPTION, NPC.TYVAR,
         EffectType.PERMANENT, "Tyvar Trait - Charlatan") {
         @Override
@@ -177,7 +177,7 @@ public enum NPCEffect implements RogueEffect {
             addEffectCardToCommandZone(human);
         }
     },
-    TYVAR_CHEF("npc_tyvar_chef", "Chef",
+    TYVAR_CHEF("npc_tyvar_chef", "Chef Commander",
         TRAIT_GAIN_DESCRIPTION, NPC.TYVAR,
         EffectType.PERMANENT, "Tyvar Trait - Chef") {
         @Override
@@ -185,7 +185,7 @@ public enum NPCEffect implements RogueEffect {
             addEffectCardToCommandZone(human);
         }
     },
-    TYVAR_CRIMINAL("npc_tyvar_criminal", "Criminal",
+    TYVAR_CRIMINAL("npc_tyvar_criminal", "Criminal Commander",
         TRAIT_GAIN_DESCRIPTION, NPC.TYVAR,
         EffectType.PERMANENT, "Tyvar Trait - Criminal") {
         @Override
@@ -193,7 +193,7 @@ public enum NPCEffect implements RogueEffect {
             addEffectCardToCommandZone(human);
         }
     },
-    TYVAR_CULTIST("npc_tyvar_cultist", "Cultist",
+    TYVAR_CULTIST("npc_tyvar_cultist", "Cultist Commander",
         TRAIT_GAIN_DESCRIPTION, NPC.TYVAR,
         EffectType.PERMANENT, "Tyvar Trait - Cultist") {
         @Override
@@ -201,7 +201,7 @@ public enum NPCEffect implements RogueEffect {
             addEffectCardToCommandZone(human);
         }
     },
-    TYVAR_FLAME("npc_tyvar_flame", "Flame",
+    TYVAR_FLAME("npc_tyvar_flame", "Flame Commander",
         TRAIT_GAIN_DESCRIPTION, NPC.TYVAR,
         EffectType.PERMANENT, "Tyvar Trait - Flame") {
         @Override
@@ -209,7 +209,7 @@ public enum NPCEffect implements RogueEffect {
             addEffectCardToCommandZone(human);
         }
     },
-    TYVAR_SAGE("npc_tyvar_sage", "Sage",
+    TYVAR_SAGE("npc_tyvar_sage", "Sage Commander",
         TRAIT_GAIN_DESCRIPTION, NPC.TYVAR,
         EffectType.PERMANENT, "Tyvar Trait - Sage") {
         @Override
@@ -344,6 +344,38 @@ public enum NPCEffect implements RogueEffect {
         @Override
         public boolean isChoiceAvailable(RogueRun run) {
             return run.canAddCardToDeck(RogueConfig.getCard("Vault of the Archangel", null, null));
+        }
+    },
+    NARSET_LIGHTWALKER("npc_narset_lightwalker", "Lightwalker",
+        TRAIT_GAIN_DESCRIPTION, NPC.NARSET,
+        EffectType.PERMANENT, "Narset Trait - Lightwalker") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+        }
+    },
+    NARSET_DARKWALKER("npc_narset_darkwalker", "Darkwalker",
+        TRAIT_GAIN_DESCRIPTION, NPC.NARSET,
+        EffectType.PERMANENT, "Narset Trait - Darkwalker") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+        }
+    },
+    NARSET_MINDWALKER("npc_narset_mindwalker", "Mindwalker",
+        TRAIT_GAIN_DESCRIPTION, NPC.NARSET,
+        EffectType.PERMANENT, "Narset Trait - Mindwalker") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+        }
+    },
+    NARSET_MATTERWALKER("npc_narset_matterwalker", "Matterwalker",
+        TRAIT_GAIN_DESCRIPTION, NPC.NARSET,
+        EffectType.PERMANENT, "Narset Trait - Matterwalker") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
         }
     },
     NARSET_CHAOSWALKER("npc_chaoswalker", "Chaoswalker",
