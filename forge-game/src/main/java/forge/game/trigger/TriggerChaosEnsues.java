@@ -33,6 +33,9 @@ public class TriggerChaosEnsues extends Trigger {
         if (!matchesValidParam("ValidPlayer", runParams.get(AbilityKey.Player))) {
             return false;
         }
+        if (!matchesValidParam("ValidCause", runParams.get(AbilityKey.Cause))) {
+            return false;
+        }
         if (runParams.containsKey(AbilityKey.Affected)) {
             final Object o = runParams.get(AbilityKey.Affected);
             if (o instanceof GameObject) {
@@ -53,7 +56,7 @@ public class TriggerChaosEnsues extends Trigger {
 
     @Override
     public void setTriggeringObjects(SpellAbility sa, Map<AbilityKey, Object> runParams) {
-        sa.setTriggeringObjectsFrom(runParams, AbilityKey.Player);
+        sa.setTriggeringObjectsFrom(runParams, AbilityKey.Player, AbilityKey.Cause);
     }
 
     @Override

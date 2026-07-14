@@ -3,6 +3,7 @@ package forge.game;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import forge.game.ability.AbilityKey;
+import forge.game.ability.effects.ChaosEnsuesEffect;
 import forge.game.player.Player;
 import forge.game.replacement.ReplacementType;
 import forge.game.trigger.TriggerType;
@@ -88,8 +89,7 @@ public enum PlanarDice {
         roller.getGame().getTriggerHandler().runTrigger(TriggerType.RolledDieOnce, runParams, false);
 
         if (res == Chaos) {
-            runParams = AbilityKey.mapFromPlayer(roller);
-            roller.getGame().getTriggerHandler().runTrigger(TriggerType.ChaosEnsues, runParams, false);
+            ChaosEnsuesEffect.dispatchChaosEnsues(roller, "PlanarDie", null);
             roller.incrementPlanarDieChaosThisGame();
         }
         if (res == Planeswalk) {
