@@ -246,30 +246,6 @@ public enum NPCEffect implements RogueEffect {
     },
 
     // Narset traits
-    NARSET_POWERSTONE("npc_narset_powerstone", "Narset's Powerstone",
-        ITEM_GAIN_DESCRIPTION, NPC.NARSET,
-        EffectType.ONESHOT, "Fractured Powerstone") {
-        @Override
-        public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            addEffectCardAsCarryCard(run, ctx, CarryCardType.ITEM);
-        }
-    },
-    NARSET_ELIXIR("npc_narset_alchemist", "Narset's Elixir",
-        ITEM_GAIN_DESCRIPTION, NPC.NARSET,
-        EffectType.ONESHOT, "Ichor Elixir") {
-        @Override
-        public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            addEffectCardAsCarryCard(run, ctx, CarryCardType.ITEM);
-        }
-    },
-    NARSET_CHAOS_CAPSULE("npc_narset_chaos_capsule", "Narset's Chaos Capsule",
-        ITEM_GAIN_DESCRIPTION, NPC.NARSET,
-        EffectType.ONESHOT, "Narset Item - Chaos Capsule") {
-        @Override
-        public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            addEffectCardAsCarryCard(run, ctx, CarryCardType.ITEM);
-        }
-    },
     NARSET_LANDS_OF_LEGENDS("npc_narset_lands_of_legends", "Lands Of Legends",
         "Choose up to 3 out of 20 legendary lands to add to your deck.", NPC.NARSET,
         EffectType.ONESHOT, null) {
@@ -290,18 +266,28 @@ public enum NPCEffect implements RogueEffect {
             return !getLegendaryLandCandidates(run).isEmpty();
         }
     },
-    NARSET_TOWER("npc_narset_tower", "Narset's Tower",
-        TRAIT_GAIN_DESCRIPTION + " ![[Reliquary Tower]]", NPC.NARSET,
-        EffectType.PERMANENT, "Narset Trait - Tower") {
+    NARSET_CHAOS_CAPSULE("npc_narset_chaos_capsule", "Narset's Chaos Capsule",
+        ITEM_GAIN_DESCRIPTION, NPC.NARSET,
+        EffectType.ONESHOT, "Narset Item - Chaos Capsule") {
         @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-            RogueEffect.addCardToBattlefield("Reliquary Tower", human);
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            addEffectCardAsCarryCard(run, ctx, CarryCardType.ITEM);
         }
-
+    },
+    NARSET_ELIXIR("npc_narset_alchemist", "Narset's Elixir",
+        ITEM_GAIN_DESCRIPTION, NPC.NARSET,
+        EffectType.ONESHOT, "Ichor Elixir") {
         @Override
-        public boolean isChoiceAvailable(RogueRun run) {
-            return run.canAddCardToDeck(RogueConfig.getCard("Reliquary Tower", null, null));
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            addEffectCardAsCarryCard(run, ctx, CarryCardType.ITEM);
+        }
+    },
+    NARSET_POWERSTONE("npc_narset_powerstone", "Narset's Powerstone",
+        ITEM_GAIN_DESCRIPTION, NPC.NARSET,
+        EffectType.ONESHOT, "Fractured Powerstone") {
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            addEffectCardAsCarryCard(run, ctx, CarryCardType.ITEM);
         }
     },
     NARSET_PASSAGE("npc_narset_passage", "Narset's Passage",
@@ -318,18 +304,18 @@ public enum NPCEffect implements RogueEffect {
             return run.canAddCardToDeck(RogueConfig.getCard("Rogue's Passage", null, null));
         }
     },
-    NARSET_WOLF_RUN("npc_narset_wolf_run", "Narset's Wolf Run",
-        TRAIT_GAIN_DESCRIPTION + " ![[Kessig Wolf Run]]", NPC.NARSET,
-        EffectType.PERMANENT, "Narset Trait - Wolf Run") {
+    NARSET_TOWER("npc_narset_tower", "Narset's Tower",
+        TRAIT_GAIN_DESCRIPTION + " ![[Reliquary Tower]]", NPC.NARSET,
+        EffectType.PERMANENT, "Narset Trait - Tower") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
-            RogueEffect.addCardToBattlefield("Kessig Wolf Run", human);
+            RogueEffect.addCardToBattlefield("Reliquary Tower", human);
         }
 
         @Override
         public boolean isChoiceAvailable(RogueRun run) {
-            return run.canAddCardToDeck(RogueConfig.getCard("Kessig Wolf Run", null, null));
+            return run.canAddCardToDeck(RogueConfig.getCard("Reliquary Tower", null, null));
         }
     },
     NARSET_VAULT("npc_narset_vault", "Narset's Vault",
@@ -346,9 +332,23 @@ public enum NPCEffect implements RogueEffect {
             return run.canAddCardToDeck(RogueConfig.getCard("Vault of the Archangel", null, null));
         }
     },
-    NARSET_LIGHTWALKER("npc_narset_lightwalker", "Lightwalker",
+    NARSET_WOLF_RUN("npc_narset_wolf_run", "Narset's Wolf Run",
+        TRAIT_GAIN_DESCRIPTION + " ![[Kessig Wolf Run]]", NPC.NARSET,
+        EffectType.PERMANENT, "Narset Trait - Wolf Run") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+            RogueEffect.addCardToBattlefield("Kessig Wolf Run", human);
+        }
+
+        @Override
+        public boolean isChoiceAvailable(RogueRun run) {
+            return run.canAddCardToDeck(RogueConfig.getCard("Kessig Wolf Run", null, null));
+        }
+    },
+    NARSET_CHAOSWALKER("npc_chaoswalker", "Chaoswalker",
         TRAIT_GAIN_DESCRIPTION, NPC.NARSET,
-        EffectType.PERMANENT, "Narset Trait - Lightwalker") {
+        EffectType.PERMANENT, "Narset Trait - Chaoswalker") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
@@ -357,6 +357,14 @@ public enum NPCEffect implements RogueEffect {
     NARSET_DARKWALKER("npc_narset_darkwalker", "Darkwalker",
         TRAIT_GAIN_DESCRIPTION, NPC.NARSET,
         EffectType.PERMANENT, "Narset Trait - Darkwalker") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+        }
+    },
+    NARSET_LIGHTWALKER("npc_narset_lightwalker", "Lightwalker",
+        TRAIT_GAIN_DESCRIPTION, NPC.NARSET,
+        EffectType.PERMANENT, "Narset Trait - Lightwalker") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
@@ -378,6 +386,14 @@ public enum NPCEffect implements RogueEffect {
             addEffectCardToCommandZone(human);
         }
     },
+    NARSET_CHAOTIC_TUTOR("npc_narset_chaotic_tutor", "Chaotic Tutor",
+        TRAIT_GAIN_DESCRIPTION, NPC.NARSET,
+        EffectType.PERMANENT, "Narset Trait - Chaotic Tutor") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+        }
+    },
     NARSET_GOD_OF_CHAOS("npc_narset_god_of_chaos", "God of Chaos",
         TRAIT_GAIN_DESCRIPTION, NPC.NARSET,
         EffectType.PERMANENT, "Narset Trait - God of Chaos") {
@@ -389,22 +405,6 @@ public enum NPCEffect implements RogueEffect {
     NARSET_NEGATION_OF_CHAOS("npc_narset_negation_of_chaos", "Negation of Chaos",
         TRAIT_GAIN_DESCRIPTION, NPC.NARSET,
         EffectType.PERMANENT, "Narset Trait - Negation of Chaos") {
-        @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-        }
-    },
-    NARSET_CHAOTIC_TUTOR("npc_narset_chaotic_tutor", "Chaotic Tutor",
-        TRAIT_GAIN_DESCRIPTION, NPC.NARSET,
-        EffectType.PERMANENT, "Narset Trait - Chaotic Tutor") {
-        @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-        }
-    },
-    NARSET_CHAOSWALKER("npc_chaoswalker", "Chaoswalker",
-        TRAIT_GAIN_DESCRIPTION, NPC.NARSET,
-        EffectType.PERMANENT, "Narset Trait - Chaoswalker") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
