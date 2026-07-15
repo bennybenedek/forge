@@ -266,7 +266,7 @@ public enum NPCEffect implements RogueEffect {
             return !getLegendaryLandCandidates(run).isEmpty();
         }
     },
-    NARSET_CHAOS_CAPSULE("npc_narset_chaos_capsule", "Narset's Chaos Capsule",
+    NARSET_CAPSULE("npc_narset_capsule", "Narset's Capsule",
         ITEM_GAIN_DESCRIPTION, NPC.NARSET,
         EffectType.ONESHOT, "Narset Item - Chaos Capsule") {
         @Override
@@ -274,7 +274,7 @@ public enum NPCEffect implements RogueEffect {
             addEffectCardAsCarryCard(run, ctx, CarryCardType.ITEM);
         }
     },
-    NARSET_ELIXIR("npc_narset_alchemist", "Narset's Elixir",
+    NARSET_ELIXIR("npc_narset_elixir", "Narset's Elixir",
         ITEM_GAIN_DESCRIPTION, NPC.NARSET,
         EffectType.ONESHOT, "Ichor Elixir") {
         @Override

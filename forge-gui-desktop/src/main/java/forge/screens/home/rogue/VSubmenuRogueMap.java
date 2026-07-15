@@ -2,6 +2,8 @@ package forge.screens.home.rogue;
 
 import forge.gamemodes.rogue.RogueMetaProgress;
 import forge.gamemodes.rogue.RogueRun;
+import forge.gamemodes.rogue.RogueRun.CarryCard;
+import forge.gui.CardPicturePanel;
 import forge.gamemodes.rogue.effect.RogueEffect;
 import forge.gamemodes.rogue.effect.RogueEffectComposite;
 import forge.gui.framework.DragCell;
@@ -16,14 +18,17 @@ import forge.toolbox.FButton;
 import forge.toolbox.FLabel;
 import forge.toolbox.FScrollPane;
 import forge.toolbox.FSkin;
+import forge.item.PaperCard;
 import forge.util.Localizer;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.Window;
 import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import net.miginfocom.swing.MigLayout;
 
 /**
@@ -88,10 +93,12 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
   private final FScrollPane scrollPathDisplay;
 
   private JPanel pnlEffects;
+  private JPanel pnlCarryCards;
   private final FButton btnEnterNode;
   private final FButton btnEditDeck;
   private final FButton btnDevWinRun = new FButton("[DEV] Win Run");
   private final FButton btnDevNextNode = new FButton("[DEV] Next Node");
+  private CardUtil zoomUtil;
 
   VSubmenuRogueMap() {
     lblTitle.setBackground(FSkin.getColor(FSkin.Colors.CLR_THEME2));
@@ -136,6 +143,7 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
       // Populate active effects (echo boons, descension, event traits, chest traits, wounds...)
       List<RogueEffect> allEffects = RogueEffectComposite.getAllEffects(run);
       RogueUIHelper.populateEffectPanel(pnlEffects, allEffects, run);
+      populateCarryCardPanel(run.getCarryCards());
 
       pathVisualizer.updatePath(run);
     } else {
@@ -145,6 +153,7 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
       lblGold.setText("Gold: 0");
       lblRemovalCredits.setText("Removal Credits: 0");
       lblDescension.setVisible(false);
+      populateCarryCardPanel(List.of());
       pathVisualizer.clearPath();
     }
   }
@@ -186,6 +195,9 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
     // Active effects panel (echo boons, descension, event traits, chest traits, wounds)
     pnlEffects = RogueUIHelper.createEffectPanel();
     infoRow.add(pnlEffects);
+    pnlCarryCards = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+    pnlCarryCards.setOpaque(false);
+    infoRow.add(pnlCarryCards);
 
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(infoRow, "w 98%!, h pref!, gap 1% 0 10px 10px");
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay()
@@ -246,6 +258,72 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
   @Override
   public DragCell getParentCell() {
     return parentCell;
+  }
+
+  private void populateCarryCardPanel(List<CarryCard> carryCards) {
+    pnlCarryCards.removeAll();
+
+    for (CarryCard carryCard : carryCards) {
+      PaperCard paperCard = carryCard.toPaperCard();
+      if (paperCard == null) {
+        continue;
+      }
+      pnlCarryCards.add(createCarryCardThumbnail(carryCard, paperCard));
+    }
+
+    pnlCarryCards.revalidate();
+    pnlCarryCards.repaint();
+  }
+
+  private JPanel createCarryCardThumbnail(CarryCard carryCard, PaperCard paperCard) {
+    int thumbnailWidth = 32;
+    int thumbnailHeight = 45;
+
+    CardPicturePanel picturePanel = new CardPicturePanel();
+    picturePanel.setOpaque(false);
+    picturePanel.setItem(paperCard);
+    picturePanel.setPreferredSize(new Dimension(thumbnailWidth, thumbnailHeight));
+    picturePanel.setMinimumSize(new Dimension(thumbnailWidth, thumbnailHeight));
+    picturePanel.setMaximumSize(new Dimension(thumbnailWidth, thumbnailHeight));
+    picturePanel.setToolTipText(buildCarryCardTooltip(carryCard, paperCard));
+    picturePanel.addMouseWheelListener(e -> {
+      if (e.getWheelRotation() < 0 && getZoomUtil() != null) {
+        getZoomUtil().showZoom(paperCard);
+      }
+    });
+
+    JPanel thumbnailPanel = new JPanel(new MigLayout("insets 0, gap 0"));
+    thumbnailPanel.setOpaque(false);
+    thumbnailPanel.setPreferredSize(new Dimension(thumbnailWidth, thumbnailHeight));
+    thumbnailPanel.setMinimumSize(new Dimension(thumbnailWidth, thumbnailHeight));
+    thumbnailPanel.setMaximumSize(new Dimension(thumbnailWidth, thumbnailHeight));
+    thumbnailPanel.setToolTipText(buildCarryCardTooltip(carryCard, paperCard));
+    thumbnailPanel.add(picturePanel, "w " + thumbnailWidth + "!, h " + thumbnailHeight + "!");
+    thumbnailPanel.addMouseWheelListener(e -> {
+      if (e.getWheelRotation() < 0 && getZoomUtil() != null) {
+        getZoomUtil().showZoom(paperCard);
+      }
+    });
+    return thumbnailPanel;
+  }
+
+  private String buildCarryCardTooltip(CarryCard carryCard, PaperCard paperCard) {
+    return paperCard.getName() + " (" + switch (carryCard.type()) {
+      case ITEM -> "Item";
+      case FELLOW -> "Fellow";
+      case SCROLL -> "Scroll";
+    } + ")";
+  }
+
+  private CardUtil getZoomUtil() {
+    if (zoomUtil == null && pnlCarryCards != null) {
+      Window window = SwingUtilities.getWindowAncestor(pnlCarryCards);
+      if (window != null) {
+        zoomUtil = new CardUtil(window);
+        zoomUtil.setupZoomOverlay();
+      }
+    }
+    return zoomUtil;
   }
 
 }

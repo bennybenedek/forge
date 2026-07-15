@@ -26,7 +26,7 @@ public enum GontiEncounter implements NPCEncounter {
     /** Level 2 – always inject the Gonti Curio - Tarnished Relic. Promotion occurs only if the relic is bought. */
     OFFERING_TARNISHED_RELIC(2) {
         private static final String CURIO_CARD_NAME = "Gonti Curio - Tarnished Relic";
-        private static final int CURIO_PRICE = 10;
+        private static final int CURIO_PRICE = 6;
 
         @Override
         public void onBeforeBazaar(BazaarContext ctx) {
