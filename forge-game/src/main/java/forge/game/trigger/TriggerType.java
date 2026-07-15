@@ -118,6 +118,7 @@ public enum TriggerType {
     PhaseOut(TriggerPhaseOut.class),
     PhaseOutAll(TriggerPhaseOutAll.class),
     PlanarDice(TriggerPlanarDice.class),
+    Planeswalk(TriggerPlaneswalk.class),
     PlaneswalkedFrom(TriggerPlaneswalkedFrom.class),
     PlaneswalkedTo(TriggerPlaneswalkedTo.class),
     Proliferate(TriggerProliferate.class),

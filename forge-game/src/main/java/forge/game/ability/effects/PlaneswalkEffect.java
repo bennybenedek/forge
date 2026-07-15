@@ -41,6 +41,10 @@ public class PlaneswalkEffect extends SpellAbilityEffect {
             return;
         }
 
+        final Map<AbilityKey, Object> runParams = AbilityKey.mapFromPlayer(activator);
+        runParams.put(AbilityKey.Cause, cause);
+        game.getTriggerHandler().runTrigger(TriggerType.Planeswalk, runParams, false);
+
         // In Rogue Commander, trigger planeswalk events but stay on the same plane
         if (game.getRules().getGameType() == GameType.RogueCommander) {
             List<Card> currentPlanes = game.getActivePlanes();
