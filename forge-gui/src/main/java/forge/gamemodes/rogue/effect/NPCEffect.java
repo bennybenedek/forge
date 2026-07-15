@@ -386,17 +386,17 @@ public enum NPCEffect implements RogueEffect {
             addEffectCardToCommandZone(human);
         }
     },
-    NARSET_CHAOTIC_TUTOR("npc_narset_chaotic_tutor", "Chaotic Tutor",
+    NARSET_CHAOSS_PROTECTION("npc_narset_chaoss_protection", "Chaos's Protection",
         TRAIT_GAIN_DESCRIPTION, NPC.NARSET,
-        EffectType.PERMANENT, "Narset Trait - Chaotic Tutor") {
+        EffectType.PERMANENT, "Narset Trait - Chaos's Protection") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
         }
     },
-    NARSET_TITHE_OF_CHAOS("npc_narset_tithe_of_chaos", "Tithe of Chaos",
+    NARSET_CHAOTIC_TUTOR("npc_narset_chaotic_tutor", "Chaotic Tutor",
         TRAIT_GAIN_DESCRIPTION, NPC.NARSET,
-        EffectType.PERMANENT, "Narset Trait - Tithe of Chaos") {
+        EffectType.PERMANENT, "Narset Trait - Chaotic Tutor") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
@@ -410,17 +410,17 @@ public enum NPCEffect implements RogueEffect {
             addEffectCardToCommandZone(human);
         }
     },
-    NARSET_CHAOSS_PROTECTION("npc_narset_chaoss_protection", "Chaos's Protection",
+    NARSET_NEGATION_OF_CHAOS("npc_narset_negation_of_chaos", "Negation of Chaos",
         TRAIT_GAIN_DESCRIPTION, NPC.NARSET,
-        EffectType.PERMANENT, "Narset Trait - Chaos's Protection") {
+        EffectType.PERMANENT, "Narset Trait - Negation of Chaos") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
         }
     },
-    NARSET_NEGATION_OF_CHAOS("npc_narset_negation_of_chaos", "Negation of Chaos",
+    NARSET_TITHE_OF_CHAOS("npc_narset_tithe_of_chaos", "Tithe of Chaos",
         TRAIT_GAIN_DESCRIPTION, NPC.NARSET,
-        EffectType.PERMANENT, "Narset Trait - Negation of Chaos") {
+        EffectType.PERMANENT, "Narset Trait - Tithe of Chaos") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
