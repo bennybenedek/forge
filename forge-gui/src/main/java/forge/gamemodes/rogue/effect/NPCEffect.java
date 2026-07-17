@@ -18,6 +18,7 @@ import forge.util.MyRandom;
  */
 public enum NPCEffect implements RogueEffect {
 
+    // Tyvar effects
     TYVAR_APPRENTICE("npc_tyvar_apprentice", "Tyvar's Apprentice",
         FELLOW_GAIN_DESCRIPTION, NPC.TYVAR,
         EffectType.ONESHOT, "Loyal Apprentice") {
@@ -245,7 +246,7 @@ public enum NPCEffect implements RogueEffect {
         }
     },
 
-    // Narset traits
+    // Narset effects
     NARSET_LANDS_OF_LEGENDS("npc_narset_lands_of_legends", "Lands Of Legends",
         "Choose up to 3 out of 20 legendary lands to add to your deck.", NPC.NARSET,
         EffectType.ONESHOT, null) {
