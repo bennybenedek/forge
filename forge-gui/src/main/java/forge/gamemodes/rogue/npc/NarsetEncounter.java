@@ -1,6 +1,5 @@
 package forge.gamemodes.rogue.npc;
 
-import forge.gamemodes.rogue.RogueMetaProgress;
 import forge.gamemodes.rogue.RogueRun;
 import forge.gamemodes.rogue.effect.NPCEffect;
 import java.util.Collections;
@@ -18,8 +17,6 @@ public enum NarsetEncounter implements NPCEncounter {
         @Override
         public NPCContext onAfterMatch(RogueRun run) {
             if (run.getLastMatchData().chaosCount() <= 0) return null;
-            int currentLevel = RogueMetaProgress.getInstance().getNPCLevel(getNpc().id);
-            if (currentLevel >= 2) return null;
             incrementNpcLevel();
             return null;
         }
@@ -30,11 +27,13 @@ public enum NarsetEncounter implements NPCEncounter {
         @Override
         public NPCContext onAfterMatch(RogueRun run) {
             if (run.getLastMatchData().chaosCount() <= 0) return null;
-            int currentLevel = RogueMetaProgress.getInstance().getNPCLevel(getNpc().id);
-            if (currentLevel > 2) return null; // already revealed
             incrementNpcLevel();
             return buildContext(
-                "Narset steps forward. \"You've proven yourself. Let me share my knowledge of the planes.\"",
+                "A woman in travel-worn Jeskai robes steps out of the planar turbulence, calm and composed despite " +
+                    "the chaos still breaking around her. One hand rests near a scroll case at her hip while her " +
+                    "steady gaze studies you for a long moment. \"Listen. The worlds ahead are not scattering at " +
+                    "random. To stop the Phyrexian Invasion, you must understand what moves between them and why. " +
+                    "You seem to improve in using Planeswalking and Chaos to your advantage. But you are far from mastering it. Call Me Narset. And let me help you with your task from now on.\"",
                 List.of());
         }
     },

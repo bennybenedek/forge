@@ -489,6 +489,20 @@ public interface RogueEffect {
         human.addExtraCardsOnBattlefield(cards);
     }
 
+    default void swapDeckCards(RogueRun run, EffectResultContext ctx, List<PaperCard> collection) {
+        Collections.shuffle(collection, MyRandom.getRandom());
+        if (collection.size() > 20) {
+            collection = collection.subList(0, 20);
+        }
+        int swapCount = Math.min(3, collection.size());
+        if (swapCount == 0) {
+            return;
+        }
+
+        removeCardsFromDeck(run, ctx, null, swapCount);
+        selectCardsForDeck(ctx, collection, swapCount, swapCount);
+    }
+
     // Load all cards needed for effect
     private static List<PaperCard> getAllCards(RogueRun run, Predicate<PaperCard> filter,
         Integer count, List<CardReference> cardPrintOverrides) {

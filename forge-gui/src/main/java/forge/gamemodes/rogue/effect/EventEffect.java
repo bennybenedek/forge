@@ -585,18 +585,12 @@ public enum EventEffect implements RogueEffect {
         }
     },
     GAMECHANGER_TRUST("gamechanger_trust", "Trade for Gamechangers",
-        "Remove 3 random cards from your deck. Choose 3 cards from the Gamechanger list to add to your deck.",
+        "Remove 3 random cards from your deck. Choose 3 out of 20 cards from the Gamechanger list to add to your deck.",
         EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             List<PaperCard> gamechangerCards = run.getGamechangerCardsForActiveCommander();
-            int swapCount = Math.min(3, gamechangerCards.size());
-            if (swapCount == 0) {
-                return;
-            }
-
-            removeCardsFromDeck(run, ctx, null, swapCount);
-            selectCardsForDeck(ctx, gamechangerCards, swapCount, swapCount);
+            swapDeckCards(run, ctx, gamechangerCards);
         }
     },
     GAMECHANGER_CHOOSE("gamechanger_choose", "Browse Gamechangers",

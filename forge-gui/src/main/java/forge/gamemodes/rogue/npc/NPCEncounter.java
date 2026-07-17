@@ -1,7 +1,9 @@
 package forge.gamemodes.rogue.npc;
 
+import forge.gamemodes.rogue.RogueEvent;
 import forge.gamemodes.rogue.RogueMetaProgress;
 import forge.gamemodes.rogue.RogueRun;
+import forge.gamemodes.rogue.effect.EventEffect;
 import java.util.List;
 
 /**
@@ -35,6 +37,10 @@ public interface NPCEncounter {
 
     /** Fired before an event starts. May replace the event through the context. */
     default void onBeforeEvent(EventContext ctx) {}
+
+    /** Fired after an event choice resolves. Return non-null to show NPC dialog. */
+    default NPCContext onAfterEventChoice(RogueEvent event, RogueEvent.EventChoice choice,
+                                          EventEffect effect, RogueRun run) { return null; }
 
     /** Fired before bazaar opens. Modify ctx to inject cards or override prices. */
     default void onBeforeBazaar(BazaarContext ctx) {}

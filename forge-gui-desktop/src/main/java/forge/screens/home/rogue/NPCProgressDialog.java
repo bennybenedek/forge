@@ -4,6 +4,7 @@ import forge.gamemodes.rogue.RogueMetaProgress;
 import forge.gamemodes.rogue.npc.NPC;
 import forge.gamemodes.rogue.npc.NPCEncounter;
 import forge.gamemodes.rogue.npc.GontiEncounter;
+import forge.gamemodes.rogue.npc.HenzieEncounter;
 import forge.gamemodes.rogue.npc.NarsetEncounter;
 import forge.gamemodes.rogue.npc.TyvarEncounter;
 import forge.toolbox.FComboBox;
@@ -100,6 +101,7 @@ public class NPCProgressDialog {
       case TYVAR -> TyvarEncounter.values();
       case GONTI -> GontiEncounter.values();
       case NARSET -> NarsetEncounter.values();
+      case HENZIE -> HenzieEncounter.values();
     };
 
     List<LevelOption> options = new ArrayList<>();

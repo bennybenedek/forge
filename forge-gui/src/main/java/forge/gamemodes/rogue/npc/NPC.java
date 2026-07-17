@@ -6,9 +6,10 @@ package forge.gamemodes.rogue.npc;
  */
 public enum NPC {
 
-    TYVAR("tyvar", "Tyvar Kell", 14),
     GONTI("gonti", "Gonti, Lord of Luxury", 121),
-    NARSET("narset", "Narset, Planeshard Collector", 11);
+    HENZIE("henzie", "Henzie \"Toolbox\" Torre", 59),
+    NARSET("narset", "Narset, Planeshard Collector", 11),
+    TYVAR("tyvar", "Tyvar Kell", 14);
 
     public final String id;
     public final String name;

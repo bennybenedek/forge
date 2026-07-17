@@ -1,7 +1,9 @@
 package forge.gamemodes.rogue.npc;
 
+import forge.gamemodes.rogue.RogueEvent;
 import forge.gamemodes.rogue.RogueMetaProgress;
 import forge.gamemodes.rogue.RogueRun;
+import forge.gamemodes.rogue.effect.EventEffect;
 import forge.util.MyRandom;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -21,7 +23,8 @@ public enum NPCEncounterComposite {
     private static final NPCEncounter[] ALL_ENCOUNTERS = concat(
         TyvarEncounter.values(),
         GontiEncounter.values(),
-        NarsetEncounter.values()
+        NarsetEncounter.values(),
+        HenzieEncounter.values()
     );
 
     private static NPCEncounter[] concat(NPCEncounter[]... arrays) {
@@ -80,6 +83,16 @@ public enum NPCEncounterComposite {
         for (NPCEncounter enc : getEncountersForCurrentLevel(progress)) {
             enc.onBeforeEvent(ctx);
         }
+    }
+
+    public List<NPCContext> onAfterEventChoice(RogueEvent event, RogueEvent.EventChoice choice,
+                                               EventEffect effect, RogueRun run, RogueMetaProgress progress) {
+        List<NPCContext> results = new ArrayList<>();
+        for (NPCEncounter enc : getEncountersForCurrentLevel(progress)) {
+            NPCContext npcCtx = enc.onAfterEventChoice(event, choice, effect, run);
+            if (npcCtx != null) results.add(npcCtx);
+        }
+        return results;
     }
 
     public void onBeforeBazaar(BazaarContext ctx, RogueMetaProgress progress) {

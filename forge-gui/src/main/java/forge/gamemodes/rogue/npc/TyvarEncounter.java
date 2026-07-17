@@ -1,6 +1,5 @@
 package forge.gamemodes.rogue.npc;
 
-import forge.gamemodes.rogue.RogueMetaProgress;
 import forge.gamemodes.rogue.RogueEvent;
 import forge.gamemodes.rogue.RogueRun;
 import forge.gamemodes.rogue.effect.NPCEffect;
@@ -17,10 +16,6 @@ public enum TyvarEncounter implements NPCEncounter {
     BEFORE_REVEAL(0) {
         @Override
         public void onBeforeEvent(EventContext ctx) {
-            int currentLevel = getProgress().getNPCLevel(getNpc().id);
-            if (currentLevel >= REVEAL.getRequiredLevel()) {
-                return;
-            }
             incrementNpcLevel();
         }
     },
@@ -29,10 +24,6 @@ public enum TyvarEncounter implements NPCEncounter {
     REVEAL(2) {
         @Override
         public void onBeforeEvent(EventContext ctx) {
-            int currentLevel = getProgress().getNPCLevel(getNpc().id);
-            if (currentLevel > getRequiredLevel()) {
-                return;
-            }
             incrementNpcLevel();
             ctx.eventOverride = RogueEvent.MEET_TYVAR;
         }
@@ -65,8 +56,4 @@ public enum TyvarEncounter implements NPCEncounter {
 
     @Override
     public int getRequiredLevel() { return requiredLevel; }
-
-    private static RogueMetaProgress getProgress() {
-        return RogueMetaProgress.getInstance();
-    }
 }

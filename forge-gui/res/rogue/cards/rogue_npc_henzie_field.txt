@@ -1,0 +1,4 @@
+Name:Henzie Trait - Field
+ManaCost:no cost
+Types:Trait
+Oracle:Start each match with Field of the Dead on the battlefield.

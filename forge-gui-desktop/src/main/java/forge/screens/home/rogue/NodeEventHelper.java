@@ -8,6 +8,7 @@ import forge.gamemodes.rogue.effect.EventEffect;
 import forge.gamemodes.rogue.effect.EffectResultContext;
 import forge.gamemodes.rogue.effect.RogueEffect;
 import forge.gamemodes.rogue.npc.EventContext;
+import forge.gamemodes.rogue.npc.NPCContext;
 import forge.gamemodes.rogue.npc.NPCEncounterComposite;
 import forge.gamemodes.rogue.path.NodeEvent;
 import forge.localinstance.properties.ForgePreferences;
@@ -98,12 +99,20 @@ class NodeEventHelper {
         }
 
         showEventResult(choice, ctx);
+        showNpcDialogs(NPCEncounterComposite.INSTANCE.onAfterEventChoice(
+            event, choice, effect, currentRun, RogueMetaProgress.getInstance()));
         return NodeFlowOutcome.COMPLETE_NODE;
     }
 
     private void showEventResult(RogueEvent.EventChoice choice, EffectResultContext ctx) {
         map.showNodeResultDialog("Event Completed",
             getEventResultText(choice, ctx), buildNodeResultSections(ctx));
+    }
+
+    private void showNpcDialogs(List<NPCContext> contexts) {
+        for (NPCContext context : contexts) {
+            new NPCDialog(context).show();
+        }
     }
 
     private List<NodeResultPanel.CardSection> buildNodeResultSections(EffectResultContext ctx) {

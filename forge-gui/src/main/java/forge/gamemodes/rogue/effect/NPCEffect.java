@@ -1,12 +1,15 @@
 package forge.gamemodes.rogue.effect;
 
+import forge.card.CardRulesPredicates;
 import forge.card.CardSplitType;
 import forge.game.player.RegisteredPlayer;
 import forge.gamemodes.rogue.RogueConfig;
+import forge.gamemodes.rogue.RogueDeck;
 import forge.gamemodes.rogue.RogueRun;
 import forge.gamemodes.rogue.RogueRun.CarryCardType;
 import forge.gamemodes.rogue.npc.NPC;
 import forge.item.PaperCard;
+import forge.item.PaperCardPredicates;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -110,20 +113,7 @@ public enum NPCEffect implements RogueEffect {
             return run.canAddCardAsCarryCard(getEffectCard());
         }
     },
-    TYVAR_TOME("npc_tyvar_tome", "Tyvar's Tome",
-        ITEM_GAIN_DESCRIPTION, NPC.TYVAR,
-        EffectType.ONESHOT, "Tome of Legends|MKC|1") {
-        @Override
-        public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            addEffectCardAsCarryCard(run, ctx, CarryCardType.ITEM);
-        }
-
-        @Override
-        public boolean isChoiceAvailable(RogueRun run) {
-            return run.canAddCardAsCarryCard(getEffectCard());
-        }
-    },
-    TYVAR_STAPLER("npc_tyvar_stapler", "Stapler",
+    TYVAR_STAPLES("npc_tyvar_staples", "Tyvar's Staples",
         "Add a [[Sol Ring|CMM|2]] and [[Arcane Signet|CMM|2]] to your deck.", NPC.TYVAR,
         EffectType.ONESHOT, null) {
         @Override
@@ -136,6 +126,19 @@ public enum NPCEffect implements RogueEffect {
             PaperCard solRing = RogueConfig.getCard("Sol Ring", null, null);
             PaperCard arcaneSignet = RogueConfig.getCard("Arcane Signet", null, null);
             return run.canAddCardToDeck(solRing) || run.canAddCardToDeck(arcaneSignet);
+        }
+    },
+    TYVAR_TOME("npc_tyvar_tome", "Tyvar's Tome",
+        ITEM_GAIN_DESCRIPTION, NPC.TYVAR,
+        EffectType.ONESHOT, "Tome of Legends|MKC|1") {
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            addEffectCardAsCarryCard(run, ctx, CarryCardType.ITEM);
+        }
+
+        @Override
+        public boolean isChoiceAvailable(RogueRun run) {
+            return run.canAddCardAsCarryCard(getEffectCard());
         }
     },
     TYVAR_AUGMENTED("npc_tyvar_augmented", "Augmented Commander",
@@ -425,6 +428,112 @@ public enum NPCEffect implements RogueEffect {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
+        }
+    },
+
+    // Henzie effects
+    HENZIE_CRYPT("npc_henzie_crypt", "Henzie's Crypt",
+        ITEM_GAIN_DESCRIPTION, NPC.HENZIE,
+        EffectType.ONESHOT, "Mana Crypt|2XM|1") {
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            addEffectCardAsCarryCard(run, ctx, CarryCardType.ITEM);
+        }
+
+        @Override
+        public boolean isChoiceAvailable(RogueRun run) {
+            return run.canAddCardAsCarryCard(getEffectCard());
+        }
+    },
+    HENZIE_DIAMOND("npc_henzie_diamond", "Henzie's Diamond",
+        ITEM_GAIN_DESCRIPTION, NPC.HENZIE,
+        EffectType.ONESHOT, "Lion's Eye Diamond|VMA|1") {
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            addEffectCardAsCarryCard(run, ctx, CarryCardType.ITEM);
+        }
+
+        @Override
+        public boolean isChoiceAvailable(RogueRun run) {
+            return run.canAddCardAsCarryCard(getEffectCard());
+        }
+    },
+    HENZIE_VAULT("npc_henzie_vault", "Henzie's Vault",
+        ITEM_GAIN_DESCRIPTION, NPC.HENZIE,
+        EffectType.ONESHOT, "Mana Vault|2X2|1") {
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            addEffectCardAsCarryCard(run, ctx, CarryCardType.ITEM);
+        }
+
+        @Override
+        public boolean isChoiceAvailable(RogueRun run) {
+            return run.canAddCardAsCarryCard(getEffectCard());
+        }
+    },
+    HENZIE_GAMECHANGERS("npc_henzie_gamechangers", "Henzie's Gamechangers",
+        "Remove 3 random cards from your deck. Choose 3 out of 20 cards from the Gamechanger list to add to your deck.", NPC.HENZIE,
+        EffectType.ONESHOT, null) {
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            List<PaperCard> gamechangerCards = run.getGamechangerCardsForActiveCommander();
+            swapDeckCards(run, ctx, gamechangerCards);
+        }
+    },
+    HENZIE_CONTRABAND("npc_henzie_contraband", "Henzie's Contraband",
+        "Lose 3 {{Max. Life}}. Remove 3 random cards from your deck. Choose 3 out of 20 cards from the Commander Banlist to add to your deck.", NPC.HENZIE,
+        EffectType.ONESHOT, null) {
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            run.loseMaxLife(3);
+            List<PaperCard> banlistCards = run.getBanlistCardsForActiveCommander();
+            swapDeckCards(run, ctx, banlistCards);
+        }
+
+        @Override
+        public boolean isChoiceAvailable(RogueRun run) {
+            return run.getMaxLife() > 3;
+        }
+    },
+    HENZIE_MYTHICS("npc_henzie_mythics", "Henzie's Mythics",
+        "Choose 3 cards to remove (excluding basic lands), then receive 3 random mythic rare cards from your {{Reward Pool}}.", NPC.HENZIE,
+        EffectType.ONESHOT, null) {
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            int exchangeCount = 3;
+            RogueDeck rogueDeck = run.getSelectedRogueDeck();
+            List<PaperCard> replacementCards = rogueDeck == null
+                ? List.of()
+                : rogueDeck.drawRewardOptions(exchangeCount, PaperCardPredicates.IS_MYTHIC_RARE);
+            selectCardsFromDeck(run, ctx, PaperCardPredicates.fromRules(CardRulesPredicates.NOT_BASIC_LAND),
+                exchangeCount, exchangeCount, replacementCards, null);
+        }
+    },
+    HENZIE_CITY("npc_henzie_city", "Henzie's City",
+        TRAIT_GAIN_DESCRIPTION + " ![[City of Brass|2X2|1]]", NPC.HENZIE,
+        EffectType.PERMANENT, "Henzie Trait - City") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+            RogueEffect.addCardToBattlefield("City of Brass|2X2|1", human);
+        }
+    },
+    HENZIE_FIELD("npc_henzie_field", "Henzie's Field",
+        TRAIT_GAIN_DESCRIPTION + " ![[Field of the Dead|M20|1]]", NPC.HENZIE,
+        EffectType.PERMANENT, "Henzie Trait - Field") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+            RogueEffect.addCardToBattlefield("Field of the Dead|M20|1", human);
+        }
+    },
+    HENZIE_TOMB("npc_henzie_tomb", "Henzie's Tomb",
+        TRAIT_GAIN_DESCRIPTION + " ![[Ancient Tomb|UMA|1]]", NPC.HENZIE,
+        EffectType.PERMANENT, "Henzie Trait - Tomb") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+            RogueEffect.addCardToBattlefield("Ancient Tomb|UMA|1", human);
         }
     };
 
