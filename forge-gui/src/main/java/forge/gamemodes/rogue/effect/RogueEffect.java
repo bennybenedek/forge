@@ -447,6 +447,46 @@ public interface RogueEffect {
         ctx.gainedWoundEffect = woundEffect;
     }
 
+    default void swapDeckCards(RogueRun run, EffectResultContext ctx, List<PaperCard> collection) {
+        Collections.shuffle(collection, MyRandom.getRandom());
+        if (collection.size() > 20) {
+            collection = collection.subList(0, 20);
+        }
+        int swapCount = Math.min(3, collection.size());
+        if (swapCount == 0) {
+            return;
+        }
+
+        removeCardsFromDeck(run, ctx, null, swapCount);
+        selectCardsForDeck(ctx, collection, swapCount, swapCount);
+    }
+
+    // Override found cards with specific set / art if requested
+    default List<PaperCard> applyCardPrintOverrides(List<PaperCard> cards, List<CardReference> cardPrintOverrides) {
+        if (cards == null || cards.isEmpty() || cardPrintOverrides == null || cardPrintOverrides.isEmpty()) {
+            return cards;
+        }
+
+        List<PaperCard> exactPrints = new ArrayList<>(cards.size());
+        for (PaperCard card : cards) {
+            PaperCard exactCard = card;
+            for (CardReference cardReference : cardPrintOverrides) {
+                if (!cardReference.matches(card)) {
+                    continue;
+                }
+
+                PaperCard resolved = RogueConfig.getCard(cardReference.cardName(),
+                    cardReference.setCode(), cardReference.artIndex());
+                if (resolved != null) {
+                    exactCard = resolved;
+                }
+                break;
+            }
+            exactPrints.add(exactCard);
+        }
+        return exactPrints;
+    }
+
     static void addCardToCommandZone(String cardReference, RegisteredPlayer human) {
         CardReference cardReferenceParts = TextHelper.parseCardReference(cardReference);
         if (cardReferenceParts.cardName().isEmpty()) {
@@ -489,22 +529,8 @@ public interface RogueEffect {
         human.addExtraCardsOnBattlefield(cards);
     }
 
-    default void swapDeckCards(RogueRun run, EffectResultContext ctx, List<PaperCard> collection) {
-        Collections.shuffle(collection, MyRandom.getRandom());
-        if (collection.size() > 20) {
-            collection = collection.subList(0, 20);
-        }
-        int swapCount = Math.min(3, collection.size());
-        if (swapCount == 0) {
-            return;
-        }
-
-        removeCardsFromDeck(run, ctx, null, swapCount);
-        selectCardsForDeck(ctx, collection, swapCount, swapCount);
-    }
-
     // Load all cards needed for effect
-    private static List<PaperCard> getAllCards(RogueRun run, Predicate<PaperCard> filter,
+    private List<PaperCard> getAllCards(RogueRun run, Predicate<PaperCard> filter,
         Integer count, List<CardReference> cardPrintOverrides) {
 
         List<PaperCard> result = run.getAllCardsForActiveCommander(filter);
@@ -517,7 +543,7 @@ public interface RogueEffect {
             return List.of();
         }
 
-        selectedCards = setExactPrints(selectedCards, cardPrintOverrides);
+        selectedCards = applyCardPrintOverrides(selectedCards, cardPrintOverrides);
         return selectedCards;
     }
 
@@ -562,31 +588,5 @@ public interface RogueEffect {
         if (ctx.cardSelectionMaxCount > 0) {
             ctx.trigger = EffectResultContext.ActionTriggerType.CARD_ADDITION;
         }
-    }
-
-    // Override found cards with specific set / art if requested
-    private static List<PaperCard> setExactPrints(List<PaperCard> cards, List<CardReference> cardPrintOverrides) {
-        if (cards == null || cards.isEmpty() || cardPrintOverrides == null || cardPrintOverrides.isEmpty()) {
-            return cards;
-        }
-
-        List<PaperCard> exactPrints = new ArrayList<>(cards.size());
-        for (PaperCard card : cards) {
-            PaperCard exactCard = card;
-            for (CardReference cardReference : cardPrintOverrides) {
-                if (!cardReference.matches(card)) {
-                    continue;
-                }
-
-                PaperCard resolved = RogueConfig.getCard(cardReference.cardName(),
-                    cardReference.setCode(), cardReference.artIndex());
-                if (resolved != null) {
-                    exactCard = resolved;
-                }
-                break;
-            }
-            exactPrints.add(exactCard);
-        }
-        return exactPrints;
     }
 }

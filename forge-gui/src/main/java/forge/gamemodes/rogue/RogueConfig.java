@@ -331,6 +331,10 @@ public class RogueConfig {
                 .toList();
     }
 
+    public static PaperCard getRulesNamePrint(PaperCard card) {
+        return card != null && card.hasFlavorName() ? getCard(card.getName(), null, null) : card;
+    }
+
     private static @NonNull Predicate<PaperCard> getAllFilters(Predicate<PaperCard> filter) {
         Predicate<PaperCard> rogueBaseFilter =
             card -> !card.getRules().isCustom()

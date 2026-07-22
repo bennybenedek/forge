@@ -509,6 +509,23 @@ public enum NPCEffect implements RogueEffect {
                 exchangeCount, exchangeCount, replacementCards, null);
         }
     },
+    HENZIE_EXQUISITE_TRAITS("npc_henzie_exquisite_traits", "Exquisite Traits",
+        "Gain 2 random Chest {{Traits}}.", NPC.HENZIE,
+        EffectType.ONESHOT, null) {
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            List<ChestEffect> chestTraits = getAvailableChestTraits(run);
+            Collections.shuffle(chestTraits, MyRandom.getRandom());
+            for (int i = 0; i < Math.min(2, chestTraits.size()); i++) {
+                run.addChestEffect(chestTraits.get(i));
+            }
+        }
+
+        @Override
+        public boolean isChoiceAvailable(RogueRun run) {
+            return !getAvailableChestTraits(run).isEmpty();
+        }
+    },
     HENZIE_CITY("npc_henzie_city", "Henzie's City",
         TRAIT_GAIN_DESCRIPTION + " ![[City of Brass|2X2|1]]", NPC.HENZIE,
         EffectType.PERMANENT, "Henzie Trait - City") {
@@ -578,6 +595,21 @@ public enum NPCEffect implements RogueEffect {
     }
 
     public boolean isChoiceAvailable(RogueRun run) { return true; }
+
+    private static List<ChestEffect> getAvailableChestTraits(RogueRun run) {
+        List<String> activeChestEffectIds = run.getActiveChestEffects().stream()
+            .map(RogueEffect::getId)
+            .toList();
+
+        List<ChestEffect> chestTraits = new ArrayList<>();
+        for (ChestEffect chestEffect : ChestEffect.values()) {
+            if (chestEffect.getEffectType() == EffectType.PERMANENT
+                && !activeChestEffectIds.contains(chestEffect.getId())) {
+                chestTraits.add(chestEffect);
+            }
+        }
+        return chestTraits;
+    }
 
     public static List<NPCEffect> getEffectsForNpc(NPC npc, RogueRun run) {
         List<NPCEffect> effects = new ArrayList<>();

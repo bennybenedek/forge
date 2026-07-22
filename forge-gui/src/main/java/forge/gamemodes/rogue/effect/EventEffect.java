@@ -227,8 +227,28 @@ public enum EventEffect implements RogueEffect {
             run.loseMaxLife(4);
             run.addEventEffect(this);
 
-            List<PaperCard> candidateCards = RogueConfig.getAllCards(getDBCardsFilter());
+            List<PaperCard> candidateCards = new ArrayList<>(RogueConfig.getAllCards(getDBCardsFilter()).stream()
+                .map(RogueConfig::getRulesNamePrint)
+                .toList());
             candidateCards = run.filterDuplicateCards(candidateCards);
+            List<CardReference> partnerPrintOverrides = List.of(
+                new CardReference("Akiri, Line-Slinger", "PZ2", 1),
+                new CardReference("Armix, Filigree Thrasher", "CMR", 1),
+                new CardReference("Bruse Tarl, Boorish Herder", "PZ2", 1),
+                new CardReference("Eligeth, Crossroads Augur", "CMR", 1),
+                new CardReference("Esior, Wardwing Familiar", "CMR", 1),
+                new CardReference("Glacian, Powerstone Engineer", "CMR", 1),
+                new CardReference("Kraum, Ludevic's Opus", "PZ2", 1),
+                new CardReference("Kydele, Chosen of Kruphix", "PZ2", 1),
+                new CardReference("Ludevic, Necro-Alchemist", "PZ2", 1),
+                new CardReference("Ravos, Soultender", "PZ2", 1),
+                new CardReference("Reyhan, Last of the Abzan", "CM2", 1),
+                new CardReference("Siani, Eye of the Storm", "CMR", 1),
+                new CardReference("Silas Renn, Seeker Adept", "PZ2", 1),
+                new CardReference("Tana, the Bloodsower", "PZ2", 1),
+                new CardReference("Tymna the Weaver", "PZ2", 1)
+            );
+            candidateCards = applyCardPrintOverrides(candidateCards, partnerPrintOverrides);
             Collections.shuffle(candidateCards, MyRandom.getRandom());
             candidateCards = new ArrayList<>(candidateCards.subList(0, Math.min(20, candidateCards.size())));
 
