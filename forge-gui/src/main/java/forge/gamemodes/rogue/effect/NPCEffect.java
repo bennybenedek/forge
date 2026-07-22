@@ -8,6 +8,7 @@ import forge.gamemodes.rogue.RogueDeck;
 import forge.gamemodes.rogue.RogueRun;
 import forge.gamemodes.rogue.RogueRun.CarryCardType;
 import forge.gamemodes.rogue.npc.NPC;
+import forge.item.IPaperCard;
 import forge.item.PaperCard;
 import forge.item.PaperCardPredicates;
 import java.util.ArrayList;
@@ -471,6 +472,19 @@ public enum NPCEffect implements RogueEffect {
             return run.canAddCardAsCarryCard(getEffectCard());
         }
     },
+    HENZIE_HAUL("npc_henzie_haul", "Henzie's Haul",
+        ITEM_GAIN_DESCRIPTION, NPC.HENZIE,
+        EffectType.ONESHOT, "Bandit's Haul") {
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            addEffectCardAsCarryCard(run, ctx, CarryCardType.ITEM);
+        }
+
+        @Override
+        public boolean isChoiceAvailable(RogueRun run) {
+            return run.canAddCardAsCarryCard(getEffectCard());
+        }
+    },
     HENZIE_GAMECHANGERS("npc_henzie_gamechangers", "Henzie's Gamechangers",
         "Remove 3 random cards from your deck. Choose 3 out of 20 cards from the Gamechanger list to add to your deck.", NPC.HENZIE,
         EffectType.ONESHOT, null) {
@@ -551,6 +565,78 @@ public enum NPCEffect implements RogueEffect {
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
             RogueEffect.addCardToBattlefield("Ancient Tomb|UMA|1", human);
+        }
+    },
+    HENZIE_ZONE("npc_henzie_zone", "Henzie's Zone",
+        TRAIT_GAIN_DESCRIPTION + " ![[Blast Zone]]", NPC.HENZIE,
+        EffectType.PERMANENT, "Henzie Trait - Zone") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+            RogueEffect.addCardToBattlefield("Blast Zone", human);
+        }
+    },
+    HENZIE_TORMENTOR("npc_henzie_tormentor", "Tormentor",
+        TRAIT_GAIN_DESCRIPTION, NPC.HENZIE,
+        EffectType.PERMANENT, "Henzie Trait - Tormentor") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+        }
+    },
+    HENZIE_DISSIPATION("npc_henzie_dissipation", "Dissipation",
+        TRAIT_GAIN_DESCRIPTION, NPC.HENZIE,
+        EffectType.PERMANENT, "Henzie Trait - Dissipation") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+        }
+    },
+    HENZIE_WELL_CONNECTED("npc_henzie_well_connected", "Well Connected",
+        TRAIT_GAIN_DESCRIPTION, NPC.HENZIE,
+        EffectType.PERMANENT, "Henzie Trait - Well Connected") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+        }
+    },
+    HENZIE_LOREMASTER("npc_henzie_loremaster", "Loremaster",
+        TRAIT_GAIN_DESCRIPTION, NPC.HENZIE,
+        EffectType.PERMANENT, "Henzie Trait - Loremaster") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+        }
+    },
+    HENZIE_DRAMATIC_ENTRANCE("npc_henzie_dramatic_entrance", "Dramatic Entrance",
+        TRAIT_GAIN_DESCRIPTION, NPC.HENZIE,
+        EffectType.PERMANENT, "Henzie Trait - Dramatic Entrance") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+            List<PaperCard> permanents = new ArrayList<>();
+            for (PaperCard card : human.getDeck().getMain().toFlatList()) {
+                if (card.getRules().getType().isPermanent()) {
+                    permanents.add(card);
+                }
+            }
+            if (permanents.isEmpty()) {
+                return;
+            }
+            Collections.shuffle(permanents, MyRandom.getRandom());
+            List<IPaperCard> toMove = new ArrayList<>();
+            for (int i = 0; i < Math.min(2, permanents.size()); i++) {
+                toMove.add(permanents.get(i));
+            }
+            RogueEffect.moveCardsFromDeckToBattlefield(toMove, human);
+        }
+    },
+    HENZIE_MODERATE("npc_henzie_moderate", "Moderate",
+        TRAIT_GAIN_DESCRIPTION, NPC.HENZIE,
+        EffectType.PERMANENT, "Henzie Trait - Moderate") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
         }
     };
 

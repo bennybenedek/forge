@@ -1,0 +1,4 @@
+Name:Henzie Trait - Zone
+ManaCost:no cost
+Types:Trait
+Oracle:Start each match with Blast Zone on the battlefield.
