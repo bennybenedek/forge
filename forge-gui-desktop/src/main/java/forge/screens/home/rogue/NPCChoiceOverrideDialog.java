@@ -92,7 +92,8 @@ class NPCChoiceOverrideDialog {
                 choices.add(new NPCChoice(checkBox.effect.getDisplayName(), checkBox.effect));
             }
         }
-        return new NPCContext(originalContext.npc(), originalContext.flavorText(), choices);
+        return new NPCContext(originalContext.npc(), originalContext.flavorText(), choices,
+            originalContext.displayNameOverride(), originalContext.avatarIndexOverride());
     }
 
     private void updateSelectionState() {

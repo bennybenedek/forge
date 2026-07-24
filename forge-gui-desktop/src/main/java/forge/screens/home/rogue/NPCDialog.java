@@ -43,11 +43,11 @@ public class NPCDialog {
         panel = new MainPanel();
 
         FLabel lblTitle = new FLabel.Builder()
-                .text(ctx.npc().name)
+                .text(ctx.displayName())
                 .fontSize(20).fontStyle(Font.BOLD).fontAlign(SwingConstants.CENTER).build();
 
         FLabel lblAvatar = new FLabel.Builder().build();
-        lblAvatar.setIcon(FSkin.getAvatars().get(ctx.npc().avatarIndex));
+        lblAvatar.setIcon(FSkin.getAvatars().get(ctx.avatarIndex()));
 
         FTextArea txtFlavor = new FTextArea(ctx.flavorText());
         txtFlavor.setFont(txtFlavor.getFont().deriveFont(14f));

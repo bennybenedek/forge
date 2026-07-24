@@ -20,13 +20,13 @@ public enum TyvarEncounter implements NPCEncounter {
                 return;
             }
             ctx.preSanctumDialogs.add(buildContext(
+                "Stranger", STRANGER_AVATAR_INDEX,
                 "Near the Sanctum's cold stone floor, a man in ripped clothes drags himself forward, " +
                     "leaving a thin trail of blood behind him. His face is pale, his breathing ragged, " +
                     "and one trembling hand reaches toward you. \"Help me... please.\"",
                 List.of()
             ));
-            ctx.extraChoices.add(new SanctumContext.SanctumChoice(
-                HELP_STRANGER_CHOICE_ID, "Help Stranger", "Help the wounded stranger."));
+            addHelpStrangerChoice(ctx);
         }
     },
 
@@ -34,8 +34,7 @@ public enum TyvarEncounter implements NPCEncounter {
     WAITING_FOR_HELP(2) {
         @Override
         public void onBeforeSanctum(SanctumContext ctx, RogueRun run) {
-            ctx.extraChoices.add(new SanctumContext.SanctumChoice(
-                HELP_STRANGER_CHOICE_ID, "Help Stranger", "Help the wounded stranger."));
+            addHelpStrangerChoice(ctx);
         }
 
         @Override
@@ -63,6 +62,7 @@ public enum TyvarEncounter implements NPCEncounter {
     };
 
     private static final String HELP_STRANGER_CHOICE_ID = "tyvar_help_stranger";
+    private static final int STRANGER_AVATAR_INDEX = 125;
 
     private final int requiredLevel;
 
@@ -75,6 +75,11 @@ public enum TyvarEncounter implements NPCEncounter {
 
     @Override
     public int getRequiredLevel() { return requiredLevel; }
+
+    private static void addHelpStrangerChoice(SanctumContext ctx) {
+        ctx.extraChoices.add(new SanctumContext.SanctumChoice(
+            HELP_STRANGER_CHOICE_ID, "Help Stranger", "???"));
+    }
 
     @Override
     public List<String> getOfferingBoonMonologues() {

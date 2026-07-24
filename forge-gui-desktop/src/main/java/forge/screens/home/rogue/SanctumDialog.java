@@ -9,6 +9,11 @@ import forge.toolbox.FOptionPane;
 import forge.toolbox.FSkin.SkinnedPanel;
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsEnvironment;
+import java.awt.Insets;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComponent;
@@ -21,7 +26,8 @@ import net.miginfocom.swing.MigLayout;
 public class SanctumDialog {
 
   private static final int DIALOG_WIDTH = 600;
-  private static final int DIALOG_HEIGHT = 390;
+  private static final int MIN_DIALOG_HEIGHT = 390;
+  private static final int PANEL_INSETS = 20;
   private static final int CHOICE_RESULT = 1;
 
   public enum SanctumChoice {
@@ -62,7 +68,7 @@ public class SanctumDialog {
         .fontSize(14)
         .fontAlign(SwingConstants.CENTER)
         .build();
-    int choiceButtonWidth = (DIALOG_WIDTH - 40) * 4 / 5;
+    int choiceButtonWidth = (DIALOG_WIDTH - 2 * PANEL_INSETS) * 4 / 5;
 
     String restDescription = "Gain " + effectiveHealAmount + " Life & Cure all {{Wound}}s.";
     FButton btnRest = RogueButtonHelper.createChoiceButton(
@@ -107,11 +113,18 @@ public class SanctumDialog {
     });
     previewTargets.add(new PreviewTarget(btnReflect, TextHelper.extractPreviewReferences(reflectDescription)));
 
+    int desiredHeight = PANEL_INSETS;
+
     panel.add(lblTitle, "w 100%!, h 60px!, ax center, gap 0 0 20px 10px, wrap");
+    desiredHeight += 60 + 20 + 10;
     panel.add(lblDescription, "w 100%!, h 30px!, ax center, gap 0 0 10px 20px, wrap");
+    desiredHeight += 30 + 10 + 20;
     panel.add(btnRest, "w 80%!, ax center, gap 0 0 10px 10px, wrap");
+    desiredHeight += btnRest.getPreferredSize().height + 10 + 10;
     panel.add(btnCook, "w 80%!, ax center, gap 0 0 10px 10px, wrap");
+    desiredHeight += btnCook.getPreferredSize().height + 10 + 10;
     panel.add(btnReflect, "w 80%!, ax center, gap 0 0 10px 10px, wrap");
+    desiredHeight += btnReflect.getPreferredSize().height + 10 + 10;
     for (SanctumContext.SanctumChoice extraChoice : sanctumCtx.extraChoices) {
       FButton btnExtraChoice = RogueButtonHelper.createChoiceButton(
           extraChoice.label(), TextHelper.stripPreviewMarkers(extraChoice.description()),
@@ -127,9 +140,11 @@ public class SanctumDialog {
       previewTargets.add(new PreviewTarget(btnExtraChoice,
           TextHelper.extractPreviewReferences(extraChoice.description())));
       panel.add(btnExtraChoice, "w 80%!, ax center, gap 0 0 10px 10px, wrap");
+      desiredHeight += btnExtraChoice.getPreferredSize().height + 10 + 10;
     }
 
-    Dimension dialogSize = new Dimension(DIALOG_WIDTH, DIALOG_HEIGHT);
+    int dialogHeight = Math.min(Math.max(desiredHeight + PANEL_INSETS, MIN_DIALOG_HEIGHT), getMaxDialogHeight());
+    Dimension dialogSize = new Dimension(DIALOG_WIDTH, dialogHeight);
     panel.setPreferredSize(dialogSize);
     panel.setMinimumSize(dialogSize);
   }
@@ -173,6 +188,15 @@ public class SanctumDialog {
     if (previewPopup != null) {
       previewPopup.hide();
     }
+  }
+
+  private static int getMaxDialogHeight() {
+    GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment()
+        .getDefaultScreenDevice().getDefaultConfiguration();
+    Rectangle screenBounds = gc.getBounds();
+    Insets screenInsets = Toolkit.getDefaultToolkit().getScreenInsets(gc);
+    int usableHeight = screenBounds.height - screenInsets.top - screenInsets.bottom;
+    return (int) (usableHeight * 0.9) - 80;
   }
 
   private record PreviewTarget(JComponent component, List<PreviewReference> references) {}

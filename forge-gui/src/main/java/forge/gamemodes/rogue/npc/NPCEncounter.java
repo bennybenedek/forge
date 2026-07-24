@@ -28,6 +28,11 @@ public interface NPCEncounter {
         return new NPCContext(getNpc(), flavorText, choices);
     }
 
+    default NPCContext buildContext(String displayNameOverride, int avatarIndexOverride,
+                                    String flavorText, List<NPCContext.NPCChoice> choices) {
+        return new NPCContext(getNpc(), flavorText, choices, displayNameOverride, avatarIndexOverride);
+    }
+
     /** Run-start boon monologues for NPCs that offer choices. */
     default List<String> getOfferingBoonMonologues() {
         return List.of();
