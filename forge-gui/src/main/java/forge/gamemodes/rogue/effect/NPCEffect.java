@@ -24,18 +24,18 @@ import java.util.function.Predicate;
 public enum NPCEffect implements RogueEffect {
 
     // Henzie effects
-    HENZIE_BARGAIN("npc_henzie_bargain", "Henzie's Bargain",
-        "Gain the {{Item}} [[Lion's Eye Diamond|VMA|1]] and the {{Scroll}} [[Infernal Tutor|RVR|1]].", NPC.HENZIE,
+    HENZIE_CONTAINMENT("npc_henzie_containment", "Henzie's Containment",
+        "Gain the {{Item}}s [[Mana Vault|2X2|1]] and [[Emrakul, the Aeons Torn]].", NPC.HENZIE,
         EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            addCarryCards(run, ctx, List.of("Lion's Eye Diamond|VMA|1"), CarryCardType.ITEM);
-            addCarryCards(run, ctx, List.of("Infernal Tutor|RVR|1"), CarryCardType.SCROLL);
+            addCarryCards(run, ctx, List.of("Mana Vault|2X2|1", "Emrakul, the Aeons Torn"),
+                CarryCardType.ITEM);
         }
 
         @Override
         public boolean isChoiceAvailable(RogueRun run) {
-            return canAddAllCarryCards(run, List.of("Lion's Eye Diamond|VMA|1", "Infernal Tutor|RVR|1"));
+            return canAddAllCarryCards(run, List.of("Mana Vault|2X2|1", "Emrakul, the Aeons Torn"));
         }
     },
     HENZIE_CONTRABAND("npc_henzie_contraband", "Henzie's Contraband",
@@ -53,18 +53,18 @@ public enum NPCEffect implements RogueEffect {
             return run.getMaxLife() > 3;
         }
     },
-    HENZIE_HIDEOUT("npc_henzie_hideout", "Henzie's Hideout",
-        "Gain the {{Item}}s [[Mana Crypt|2XM|1]] and [[Mana Vault|2X2|1]].", NPC.HENZIE,
+    HENZIE_PRECIOUS("npc_henzie_precious", "Henzie's Precious",
+        "Gain the {{Item}}s [[Mana Crypt|2XM|1]] and [[The One Ring|LTR|2]].", NPC.HENZIE,
         EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            addCarryCards(run, ctx, List.of("Mana Crypt|2XM|1", "Mana Vault|2X2|1"),
+            addCarryCards(run, ctx, List.of("Mana Crypt|2XM|1", "The One Ring|LTR|2"),
                 CarryCardType.ITEM);
         }
 
         @Override
         public boolean isChoiceAvailable(RogueRun run) {
-            return canAddAllCarryCards(run, List.of("Mana Crypt|2XM|1", "Mana Vault|2X2|1"));
+            return canAddAllCarryCards(run, List.of("Mana Crypt|2XM|1", "The One Ring"));
         }
     },
     HENZIE_EXQUISITE_TRAITS("npc_henzie_exquisite_traits", "Exquisite Traits",
