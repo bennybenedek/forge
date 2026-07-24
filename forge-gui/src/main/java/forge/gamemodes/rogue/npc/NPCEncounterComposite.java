@@ -67,16 +67,15 @@ public enum NPCEncounterComposite {
     }
 
     public List<NPCContext> onRunStart(RogueMetaProgress progress, RogueRun run) {
-        List<NPCContext> results = new ArrayList<>();
-        for (NPCEncounter enc : getEncountersForCurrentLevel(progress)) {
+        List<NPCEncounter> encounters = getEncountersForCurrentLevel(progress);
+        Collections.shuffle(encounters, MyRandom.getRandom());
+        for (NPCEncounter enc : encounters) {
             NPCContext ctx = enc.onRunStart(run);
-            if (ctx != null) results.add(ctx);
+            if (ctx != null) {
+                return Collections.singletonList(ctx);
+            }
         }
-        // Only one NPC offers boons per run — pick one at random
-        if (results.size() > 1) {
-            return Collections.singletonList(results.get(MyRandom.getRandom().nextInt(results.size())));
-        }
-        return results;
+        return List.of();
     }
 
     public void onBeforeEvent(EventContext ctx, RogueMetaProgress progress) {

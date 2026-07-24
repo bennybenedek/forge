@@ -2,8 +2,6 @@ package forge.gamemodes.rogue.npc;
 
 import forge.gamemodes.rogue.RogueEvent;
 import forge.gamemodes.rogue.RogueRun;
-import forge.gamemodes.rogue.effect.NPCEffect;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -33,15 +31,7 @@ public enum TyvarEncounter implements NPCEncounter {
     OFFERING_BOONS(3) {
         @Override
         public NPCContext onRunStart(RogueRun run) {
-            List<NPCEffect> pool = NPCEffect.getEffectsForNpc(getNpc(), run);
-            Collections.shuffle(pool);
-            return buildContext(
-                "Tyvar Kell steps from the shadows, his elven features lit by the glow of his Planeswalker spark. " +
-                "\"I've watched you fight, and I see potential. Let me train your Commander.\"",
-                pool.subList(0, 3).stream()
-                    .map(effect -> new NPCContext.NPCChoice(effect.getDisplayName(), effect))
-                    .toList()
-            );
+            return buildOfferingBoonsContext(run);
         }
     };
 
@@ -56,4 +46,16 @@ public enum TyvarEncounter implements NPCEncounter {
 
     @Override
     public int getRequiredLevel() { return requiredLevel; }
+
+    @Override
+    public List<String> getOfferingBoonMonologues() {
+        return List.of(
+            "Tyvar Kell steps from the shadows, his elven features lit by the glow of his Planeswalker spark. " +
+                "\"I've watched you fight, and I see potential. Let me train your Commander.\"",
+            "Tyvar cracks his knuckles and grins. \"A commander should lead from the front. Pick a lesson, " +
+                "and I'll make sure yours hits harder than before.\"",
+            "\"Raw strength is useful,\" Tyvar says, pacing beside your camp, \"but knowing where to spend it wins wars. " +
+                "Choose your training.\""
+        );
+    }
 }

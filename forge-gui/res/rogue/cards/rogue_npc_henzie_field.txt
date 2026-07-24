@@ -1,4 +1,4 @@
-Name:Henzie Trait - Field
+Name:Henzie Trait - Henzie's Field
 ManaCost:no cost
 Types:Trait
 Oracle:Start each match with Field of the Dead on the battlefield.

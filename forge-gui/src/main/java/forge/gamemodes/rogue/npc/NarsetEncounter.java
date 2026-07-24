@@ -1,8 +1,6 @@
 package forge.gamemodes.rogue.npc;
 
 import forge.gamemodes.rogue.RogueRun;
-import forge.gamemodes.rogue.effect.NPCEffect;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -42,15 +40,7 @@ public enum NarsetEncounter implements NPCEncounter {
     OFFERING_BOONS(3) {
         @Override
         public NPCContext onRunStart(RogueRun run) {
-            List<NPCEffect> pool = NPCEffect.getEffectsForNpc(getNpc(), run);
-            Collections.shuffle(pool);
-            List<NPCContext.NPCChoice> choices = pool.subList(0, 3).stream()
-                .map(b -> new NPCContext.NPCChoice(b.getDisplayName(), b))
-                .toList();
-            return buildContext(
-                "Narset greets you with a knowing smile. \"Choose a gift from the planes.\"",
-                choices
-            );
+            return buildOfferingBoonsContext(run);
         }
     };
 
@@ -58,4 +48,15 @@ public enum NarsetEncounter implements NPCEncounter {
     NarsetEncounter(int requiredLevel) { this.requiredLevel = requiredLevel; }
     @Override public NPC getNpc() { return NPC.NARSET; }
     @Override public int getRequiredLevel() { return requiredLevel; }
+
+    @Override
+    public List<String> getOfferingBoonMonologues() {
+        return List.of(
+            "Narset greets you with a knowing smile. \"Choose a gift from the planes.\"",
+            "\"Every plane leaves a pattern behind,\" Narset says, unrolling a map of impossible angles. " +
+                "\"Take the one that will teach you most.\"",
+            "Narset studies the horizon as the planar wind pulls at her robes. \"The path ahead will shift again. " +
+                "Prepare before it does.\""
+        );
+    }
 }

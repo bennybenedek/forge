@@ -5,6 +5,7 @@ import forge.gamemodes.rogue.RogueMetaProgress;
 import forge.gamemodes.rogue.RogueRun;
 import forge.item.PaperCard;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public enum ChestEffect implements RogueEffect {
@@ -387,6 +388,21 @@ public enum ChestEffect implements RogueEffect {
 
     @Override
     public String getEffectCardReference() { return effectCardReference; }
+
+    public static List<ChestEffect> getAvailableEffects(RogueRun run, EffectType effectType) {
+        List<String> activeChestEffectIds = run.getActiveChestEffects().stream()
+            .map(RogueEffect::getId)
+            .toList();
+
+        List<ChestEffect> effects = new ArrayList<>();
+        for (ChestEffect chestEffect : ChestEffect.values()) {
+            if ((effectType == null || chestEffect.getEffectType() == effectType)
+                && !activeChestEffectIds.contains(chestEffect.getId())) {
+                effects.add(chestEffect);
+            }
+        }
+        return effects;
+    }
 
     public static ChestEffect fromId(String id) {
         for (ChestEffect cl : values())

@@ -3,17 +3,15 @@ package forge.gamemodes.rogue.npc;
 import forge.gamemodes.rogue.RogueEvent;
 import forge.gamemodes.rogue.RogueRun;
 import forge.gamemodes.rogue.effect.EventEffect;
-import forge.gamemodes.rogue.effect.NPCEffect;
-import java.util.Collections;
 import java.util.List;
 
 /**
  * Henzie "Toolbox" Torre - Capenna contract NPC.
- * Reveals himself after the second accepted Capenna contract, then offers placeholder boons.
+ * Reveals himself after the first accepted Capenna contract, then offers boons.
  */
 public enum HenzieEncounter implements NPCEncounter {
 
-    BEFORE_REVEAL(0) {
+    BEFORE_REVEAL(-1) {
         @Override
         public NPCContext onAfterEventChoice(RogueEvent event, RogueEvent.EventChoice choice,
                                              EventEffect effect, RogueRun run) {
@@ -25,7 +23,7 @@ public enum HenzieEncounter implements NPCEncounter {
         }
     },
 
-    REVEAL(1) {
+    REVEAL(0) {
         @Override
         public NPCContext onAfterEventChoice(RogueEvent event, RogueEvent.EventChoice choice,
                                              EventEffect effect, RogueRun run) {
@@ -35,29 +33,17 @@ public enum HenzieEncounter implements NPCEncounter {
             incrementNpcLevel();
             return buildContext(
                 "The next contract does not vanish with the others. A devil in a tailored coat plucks it from the air, " +
-                "grins, and gives a shallow bow. \"Two signatures already. Efficient. Name's Henzie. " +
+                "grins, and gives a shallow bow. \"Efficient. Name's Henzie. " +
                 "You seem like know when a good deal presents itself. I might have a few tools for your next run.\"",
                 List.of()
             );
         }
     },
 
-    OFFERING_BOONS(2) {
+    OFFERING_BOONS(1) {
         @Override
         public NPCContext onRunStart(RogueRun run) {
-            List<NPCEffect> pool = NPCEffect.getEffectsForNpc(getNpc(), run);
-            if (pool.isEmpty()) {
-                return null;
-            }
-            Collections.shuffle(pool);
-            int choiceCount = Math.min(3, pool.size());
-            return buildContext(
-                "Henzie leans back with a contract tucked into his sleeve and a case of stolen tools at his feet. " +
-                "\"You made me richer. I like people who do that. Take one and try not to waste it.\"",
-                pool.subList(0, choiceCount).stream()
-                    .map(effect -> new NPCContext.NPCChoice(effect.getDisplayName(), effect))
-                    .toList()
-            );
+            return buildOfferingBoonsContext(run);
         }
     };
 
@@ -75,6 +61,18 @@ public enum HenzieEncounter implements NPCEncounter {
     @Override
     public int getRequiredLevel() {
         return requiredLevel;
+    }
+
+    @Override
+    public List<String> getOfferingBoonMonologues() {
+        return List.of(
+            "Henzie leans back with a contract tucked into his sleeve and a case of stolen tools at his feet. " +
+                "\"You made me richer. I like people who do that. Take one and try not to waste it.\"",
+            "\"Good clients get good options,\" Henzie says, tapping a claw against a sealed case. " +
+                "\"Bad clients get invoices. Lucky for you, today you're the first kind.\"",
+            "Henzie fans out a few suspiciously clean contracts. \"No fine print this time. Well, less fine print. " +
+                "Pick something useful before I reconsider the price.\""
+        );
     }
 
     private static boolean isAcceptedContract(EventEffect effect) {

@@ -107,6 +107,9 @@ public class NPCProgressDialog {
     List<LevelOption> options = new ArrayList<>();
     boolean hasLevelZero = false;
     for (NPCEncounter encounter : encounters) {
+      if (encounter.getRequiredLevel() < 0) {
+        continue;
+      }
       if (encounter.getRequiredLevel() == 0) {
         hasLevelZero = true;
       }

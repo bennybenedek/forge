@@ -4,6 +4,9 @@ import forge.gamemodes.rogue.RogueEvent;
 import forge.gamemodes.rogue.RogueMetaProgress;
 import forge.gamemodes.rogue.RogueRun;
 import forge.gamemodes.rogue.effect.EventEffect;
+import forge.gamemodes.rogue.effect.NPCEffect;
+import forge.util.MyRandom;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -21,6 +24,37 @@ public interface NPCEncounter {
     /** Builds an NPCContext using shared NPC identity and the given per-level data. */
     default NPCContext buildContext(String flavorText, List<NPCContext.NPCChoice> choices) {
         return new NPCContext(getNpc(), flavorText, choices);
+    }
+
+    /** Run-start boon monologues for NPCs that offer choices. */
+    default List<String> getOfferingBoonMonologues() {
+        return List.of();
+    }
+
+    /** Picks one run-start boon monologue, or an empty string if none are configured. */
+    default String getRandomBoonMonologue() {
+        List<String> monologues = getOfferingBoonMonologues();
+        if (monologues.isEmpty()) {
+            return "";
+        }
+        return monologues.get(MyRandom.getRandom().nextInt(monologues.size()));
+    }
+
+    /** Builds the standard run-start boon choice context for NPCs that offer effects. */
+    default NPCContext buildOfferingBoonsContext(RogueRun run) {
+        List<NPCEffect> pool = NPCEffect.getEffectsForNpc(getNpc(), run);
+        if (pool.isEmpty()) {
+            return null;
+        }
+
+        Collections.shuffle(pool, MyRandom.getRandom());
+        int choiceCount = Math.min(3, pool.size());
+        return buildContext(
+            getRandomBoonMonologue(),
+            pool.subList(0, choiceCount).stream()
+                .map(effect -> new NPCContext.NPCChoice(effect.getDisplayName(), effect))
+                .toList()
+        );
     }
 
     /** Increments this NPC's level by 1. */

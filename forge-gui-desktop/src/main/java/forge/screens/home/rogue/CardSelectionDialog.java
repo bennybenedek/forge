@@ -2,6 +2,7 @@ package forge.screens.home.rogue;
 
 import forge.deckchooser.FDeckViewer;
 import forge.card.CardType;
+import forge.gamemodes.rogue.RogueRun;
 import forge.item.PaperCard;
 import forge.toolbox.FLabel;
 import forge.toolbox.FOptionPane;
@@ -33,6 +34,7 @@ public class CardSelectionDialog {
 
   private final String title;
   private final String subtitle;
+  private final RogueRun currentRun;
   private final int minSelections;
   private final int maxSelections;
   private final Set<PaperCard> selectedCards;
@@ -44,9 +46,10 @@ public class CardSelectionDialog {
   private CardUtil zoomUtil;
 
   public CardSelectionDialog(String title, String subtitle, List<PaperCard> cards,
-      int minSelections, int maxSelections) {
+      RogueRun currentRun, int minSelections, int maxSelections) {
     this.title = title;
     this.subtitle = subtitle;
+    this.currentRun = currentRun;
     this.minSelections = minSelections;
     this.maxSelections = maxSelections;
     this.selectedCards = new HashSet<>();
@@ -151,7 +154,6 @@ public class CardSelectionDialog {
   }
 
   private void showCurrentDeck() {
-    var currentRun = CSubmenuRogueMap.SINGLETON_INSTANCE.getCurrentRun();
     if (currentRun != null && currentRun.getCurrentDeck() != null) {
       FDeckViewer.show(currentRun.getCurrentDeck());
     }

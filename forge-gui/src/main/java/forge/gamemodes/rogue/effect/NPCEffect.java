@@ -1,20 +1,21 @@
 package forge.gamemodes.rogue.effect;
 
-import forge.card.CardRulesPredicates;
 import forge.card.CardSplitType;
 import forge.game.player.RegisteredPlayer;
+import forge.gamemodes.rogue.CardReference;
 import forge.gamemodes.rogue.RogueConfig;
-import forge.gamemodes.rogue.RogueDeck;
 import forge.gamemodes.rogue.RogueRun;
 import forge.gamemodes.rogue.RogueRun.CarryCardType;
 import forge.gamemodes.rogue.npc.NPC;
 import forge.item.IPaperCard;
 import forge.item.PaperCard;
 import forge.item.PaperCardPredicates;
+import forge.util.MyRandom;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import forge.util.MyRandom;
+import java.util.Objects;
+import java.util.function.Predicate;
 
 /**
  * NPC effects granted during run start encounters.
@@ -22,231 +23,181 @@ import forge.util.MyRandom;
  */
 public enum NPCEffect implements RogueEffect {
 
-    // Tyvar effects
-    TYVAR_APPRENTICE("npc_tyvar_apprentice", "Tyvar's Apprentice",
-        FELLOW_GAIN_DESCRIPTION, NPC.TYVAR,
-        EffectType.ONESHOT, "Loyal Apprentice") {
-        @Override
-        public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            addEffectCardAsCarryCard(run, ctx, CarryCardType.FELLOW);
-        }
-
-        @Override
-        public boolean isChoiceAvailable(RogueRun run) {
-            return run.canAddCardAsCarryCard(getEffectCard());
-        }
-    },
-    TYVAR_DRAKES("npc_tyvar_drake", "Tyvar's Drake",
-        FELLOW_GAIN_DESCRIPTION, NPC.TYVAR,
-        EffectType.ONESHOT, "Loyal Drake") {
-        @Override
-        public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            addEffectCardAsCarryCard(run, ctx, CarryCardType.FELLOW);
-        }
-
-        @Override
-        public boolean isChoiceAvailable(RogueRun run) {
-            return run.canAddCardAsCarryCard(getEffectCard());
-        }
-    },
-    TYVAR_GUARDIAN("npc_tyvar_guardian", "Tyvar's  Guardian",
-        FELLOW_GAIN_DESCRIPTION, NPC.TYVAR,
-        EffectType.ONESHOT, "Loyal Guardian") {
-        @Override
-        public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            addEffectCardAsCarryCard(run, ctx, CarryCardType.FELLOW);
-        }
-
-        @Override
-        public boolean isChoiceAvailable(RogueRun run) {
-            return run.canAddCardAsCarryCard(getEffectCard());
-        }
-    },
-    TYVAR_SUBORDINATE("npc_tyvar_subordinate", "Tyvar's Subordinate",
-        FELLOW_GAIN_DESCRIPTION, NPC.TYVAR,
-        EffectType.ONESHOT, "Loyal Subordinate") {
-        @Override
-        public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            addEffectCardAsCarryCard(run, ctx, CarryCardType.FELLOW);
-        }
-
-        @Override
-        public boolean isChoiceAvailable(RogueRun run) {
-            return run.canAddCardAsCarryCard(getEffectCard());
-        }
-    },
-    TYVAR_UNICORN("npc_tyvar_lieutenant_of_unicorns", "Tyvar's Unicorn",
-        "Gain the {{Fellow}} %s.", NPC.TYVAR,
-        EffectType.ONESHOT, "Loyal Unicorn") {
-        @Override
-        public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            addEffectCardAsCarryCard(run, ctx, CarryCardType.FELLOW);
-        }
-
-        @Override
-        public boolean isChoiceAvailable(RogueRun run) {
-            return run.canAddCardAsCarryCard(getEffectCard());
-        }
-    },
-    TYVAR_CAMP("npc_tyvar_camp", "Tyvar's Camp",
-        ITEM_GAIN_DESCRIPTION, NPC.TYVAR,
-        EffectType.ONESHOT, "Campfire") {
-        @Override
-        public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            addEffectCardAsCarryCard(run, ctx, CarryCardType.ITEM);
-        }
-
-        @Override
-        public boolean isChoiceAvailable(RogueRun run) {
-            return run.canAddCardAsCarryCard(getEffectCard());
-        }
-    },
-    TYVAR_SPHERE("npc_tyvar_sphere", "Tyvar's Sphere",
-        ITEM_GAIN_DESCRIPTION, NPC.TYVAR,
-        EffectType.ONESHOT, "Commander's Sphere") {
-        @Override
-        public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            addEffectCardAsCarryCard(run, ctx, CarryCardType.ITEM);
-        }
-
-        @Override
-        public boolean isChoiceAvailable(RogueRun run) {
-            return run.canAddCardAsCarryCard(getEffectCard());
-        }
-    },
-    TYVAR_STAPLES("npc_tyvar_staples", "Tyvar's Staples",
-        "Add a [[Sol Ring|CMM|2]] and [[Arcane Signet|CMM|2]] to your deck.", NPC.TYVAR,
+    // Henzie effects
+    HENZIE_BARGAIN("npc_henzie_bargain", "Henzie's Bargain",
+        "Gain the {{Item}} [[Lion's Eye Diamond|VMA|1]] and the {{Scroll}} [[Infernal Tutor|RVR|1]].", NPC.HENZIE,
         EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            addCardsToDeck(run, ctx, List.of("Sol Ring|CMM|2", "Arcane Signet|CMM|2"));
+            addCarryCards(run, ctx, List.of("Lion's Eye Diamond|VMA|1"), CarryCardType.ITEM);
+            addCarryCards(run, ctx, List.of("Infernal Tutor|RVR|1"), CarryCardType.SCROLL);
         }
 
         @Override
         public boolean isChoiceAvailable(RogueRun run) {
-            PaperCard solRing = RogueConfig.getCard("Sol Ring", null, null);
-            PaperCard arcaneSignet = RogueConfig.getCard("Arcane Signet", null, null);
-            return run.canAddCardToDeck(solRing) || run.canAddCardToDeck(arcaneSignet);
+            return canAddAllCarryCards(run, List.of("Lion's Eye Diamond|VMA|1", "Infernal Tutor|RVR|1"));
         }
     },
-    TYVAR_TOME("npc_tyvar_tome", "Tyvar's Tome",
-        ITEM_GAIN_DESCRIPTION, NPC.TYVAR,
-        EffectType.ONESHOT, "Tome of Legends|MKC|1") {
+    HENZIE_CONTRABAND("npc_henzie_contraband", "Henzie's Contraband",
+        "Lose 3 {{Max. Life}}. Remove 3 random cards from your deck. Choose 3 out of 20 cards from the Commander Banlist to add to your deck.", NPC.HENZIE,
+        EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            addEffectCardAsCarryCard(run, ctx, CarryCardType.ITEM);
+            run.loseMaxLife(3);
+            List<PaperCard> banlistCards = run.getBanlistCardsForActiveCommander();
+            swapDeckCards(run, ctx, banlistCards);
         }
 
         @Override
         public boolean isChoiceAvailable(RogueRun run) {
-            return run.canAddCardAsCarryCard(getEffectCard());
+            return run.getMaxLife() > 3;
         }
     },
-    TYVAR_AUGMENTED("npc_tyvar_augmented", "Augmented Commander",
-        TRAIT_GAIN_DESCRIPTION, NPC.TYVAR,
-        EffectType.PERMANENT, "Tyvar Trait - Augmented") {
+    HENZIE_HIDEOUT("npc_henzie_hideout", "Henzie's Hideout",
+        "Gain the {{Item}}s [[Mana Crypt|2XM|1]] and [[Mana Vault|2X2|1]].", NPC.HENZIE,
+        EffectType.ONESHOT, null) {
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            addCarryCards(run, ctx, List.of("Mana Crypt|2XM|1", "Mana Vault|2X2|1"),
+                CarryCardType.ITEM);
+        }
+
+        @Override
+        public boolean isChoiceAvailable(RogueRun run) {
+            return canAddAllCarryCards(run, List.of("Mana Crypt|2XM|1", "Mana Vault|2X2|1"));
+        }
+    },
+    HENZIE_EXQUISITE_TRAITS("npc_henzie_exquisite_traits", "Exquisite Traits",
+        "Gain 2 random Chest {{Traits}}.", NPC.HENZIE,
+        EffectType.ONESHOT, null) {
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            List<ChestEffect> chestTraits = ChestEffect.getAvailableEffects(run, EffectType.PERMANENT);
+            Collections.shuffle(chestTraits, MyRandom.getRandom());
+            for (int i = 0; i < Math.min(2, chestTraits.size()); i++) {
+                run.addChestEffect(chestTraits.get(i));
+            }
+        }
+
+        @Override
+        public boolean isChoiceAvailable(RogueRun run) {
+            return !ChestEffect.getAvailableEffects(run, EffectType.PERMANENT).isEmpty();
+        }
+    },
+    HENZIE_GAMECHANGERS("npc_henzie_gamechangers", "Henzie's Gamechangers",
+        "Remove 3 random cards from your deck. Choose 3 out of 20 cards from the Gamechanger list to add to your deck.", NPC.HENZIE,
+        EffectType.ONESHOT, null) {
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            List<PaperCard> gamechangerCards = run.getGamechangerCardsForActiveCommander();
+            swapDeckCards(run, ctx, gamechangerCards);
+        }
+    },
+    HENZIE_MYTHICS("npc_henzie_mythics", "Henzie's Mythics",
+        "Gain 3 random mythic rare cards from your {{Reward Pool}}.", NPC.HENZIE,
+        EffectType.ONESHOT, null) {
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            addCardsFromCardRewardPool(run, ctx, 3, PaperCardPredicates.IS_MYTHIC_RARE);
+        }
+    },
+    HENZIE_CITY("npc_henzie_city", "Henzie's City",
+        TRAIT_GAIN_DESCRIPTION + " ![[City of Brass|2X2|1]]", NPC.HENZIE,
+        EffectType.PERMANENT, "Henzie Trait - Henzie's City") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+            RogueEffect.addCardToBattlefield("City of Brass|2X2|1", human);
+        }
+    },
+    HENZIE_FIELD("npc_henzie_field", "Henzie's Field",
+        TRAIT_GAIN_DESCRIPTION + " ![[Field of the Dead|M20|1]]", NPC.HENZIE,
+        EffectType.PERMANENT, "Henzie Trait - Henzie's Field") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+            RogueEffect.addCardToBattlefield("Field of the Dead|M20|1", human);
+        }
+    },
+    HENZIE_ZONE("npc_henzie_zone", "Henzie's Zone",
+        TRAIT_GAIN_DESCRIPTION + " ![[Blast Zone|CMM|1]]", NPC.HENZIE,
+        EffectType.PERMANENT, "Henzie Trait - Henzie's Zone") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+            RogueEffect.addCardToBattlefield("Blast Zone|CMM|1", human);
+        }
+    },
+    HENZIE_DISSIPATION("npc_henzie_dissipation", "Dissipation",
+        TRAIT_GAIN_DESCRIPTION, NPC.HENZIE,
+        EffectType.PERMANENT, "Henzie Trait - Dissipation") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
         }
     },
-    TYVAR_BASTION("npc_tyvar_bastion", "Bastion Commander",
-        TRAIT_GAIN_DESCRIPTION, NPC.TYVAR,
-        EffectType.PERMANENT, "Tyvar Trait - Bastion") {
+    HENZIE_DRAMATIC_ENTRANCE("npc_henzie_dramatic_entrance", "Dramatic Entrance",
+        TRAIT_GAIN_DESCRIPTION, NPC.HENZIE,
+        EffectType.PERMANENT, "Henzie Trait - Dramatic Entrance") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+            List<PaperCard> permanents = new ArrayList<>();
+            for (PaperCard card : human.getDeck().getMain().toFlatList()) {
+                if (card.getRules().getType().isPermanent()) {
+                    permanents.add(card);
+                }
+            }
+            if (permanents.isEmpty()) {
+                return;
+            }
+            Collections.shuffle(permanents, MyRandom.getRandom());
+            List<IPaperCard> toMove = new ArrayList<>();
+            for (int i = 0; i < Math.min(2, permanents.size()); i++) {
+                toMove.add(permanents.get(i));
+            }
+            RogueEffect.moveCardsFromDeckToBattlefield(toMove, human);
+        }
+    },
+    HENZIE_LOREMASTER("npc_henzie_loremaster", "Loremaster",
+        TRAIT_GAIN_DESCRIPTION, NPC.HENZIE,
+        EffectType.PERMANENT, "Henzie Trait - Loremaster") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
         }
     },
-    TYVAR_BLOODSWORN("npc_tyvar_bloodsworn", "Bloodsworn Commander",
-        TRAIT_GAIN_DESCRIPTION, NPC.TYVAR,
-        EffectType.PERMANENT, "Tyvar Trait - Bloodsworn") {
+    HENZIE_MODERATE("npc_henzie_moderate", "Moderate",
+        TRAIT_GAIN_DESCRIPTION, NPC.HENZIE,
+        EffectType.PERMANENT, "Henzie Trait - Moderate") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
         }
     },
-    TYVAR_BRAWLER("npc_tyvar_brawler", "Brawler Commander",
-        TRAIT_GAIN_DESCRIPTION, NPC.TYVAR,
-        EffectType.PERMANENT, "Tyvar Trait - Brawler") {
+    HENZIE_TOMB("npc_henzie_tomb", "Henzie's Tomb",
+        TRAIT_GAIN_DESCRIPTION + " ![[Ancient Tomb|UMA|1]]", NPC.HENZIE,
+        EffectType.PERMANENT, "Henzie Trait - Henzie's Tomb") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+            RogueEffect.addCardToBattlefield("Ancient Tomb|UMA|1", human);
+        }
+    },
+    HENZIE_TORMENTOR("npc_henzie_tormentor", "Tormentor",
+        TRAIT_GAIN_DESCRIPTION, NPC.HENZIE,
+        EffectType.PERMANENT, "Henzie Trait - Tormentor") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
         }
     },
-    TYVAR_CHARLATAN("npc_tyvar_charlatan", "Charlatan Commander",
-        TRAIT_GAIN_DESCRIPTION, NPC.TYVAR,
-        EffectType.PERMANENT, "Tyvar Trait - Charlatan") {
+    HENZIE_WELL_CONNECTED("npc_henzie_well_connected", "Well Connected",
+        TRAIT_GAIN_DESCRIPTION, NPC.HENZIE,
+        EffectType.PERMANENT, "Henzie Trait - Well Connected") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
-        }
-    },
-    TYVAR_CHEF("npc_tyvar_chef", "Chef Commander",
-        TRAIT_GAIN_DESCRIPTION, NPC.TYVAR,
-        EffectType.PERMANENT, "Tyvar Trait - Chef") {
-        @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-        }
-    },
-    TYVAR_CRIMINAL("npc_tyvar_criminal", "Criminal Commander",
-        TRAIT_GAIN_DESCRIPTION, NPC.TYVAR,
-        EffectType.PERMANENT, "Tyvar Trait - Criminal") {
-        @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-        }
-    },
-    TYVAR_CULTIST("npc_tyvar_cultist", "Cultist Commander",
-        TRAIT_GAIN_DESCRIPTION, NPC.TYVAR,
-        EffectType.PERMANENT, "Tyvar Trait - Cultist") {
-        @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-        }
-    },
-    TYVAR_FLAME("npc_tyvar_flame", "Flame Commander",
-        TRAIT_GAIN_DESCRIPTION, NPC.TYVAR,
-        EffectType.PERMANENT, "Tyvar Trait - Flame") {
-        @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-        }
-    },
-    TYVAR_SAGE("npc_tyvar_sage", "Sage Commander",
-        TRAIT_GAIN_DESCRIPTION, NPC.TYVAR,
-        EffectType.PERMANENT, "Tyvar Trait - Sage") {
-        @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-        }
-    },
-    TYVAR_BEACON("npc_tyvar_beacon", "Tyvar's Beacon",
-        TRAIT_GAIN_DESCRIPTION + " ![[Command Beacon]]", NPC.TYVAR,
-        EffectType.PERMANENT, "Tyvar Trait - Beacon") {
-        @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-            RogueEffect.addCardToBattlefield("Command Beacon", human);
-        }
-    },
-    TYVAR_WAR_ROOM("npc_tyvar_war_room", "Tyvar's War Room",
-        TRAIT_GAIN_DESCRIPTION + " ![[War Room]]", NPC.TYVAR,
-        EffectType.PERMANENT, "Tyvar Trait - War Room") {
-        @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-            RogueEffect.addCardToBattlefield("War Room", human);
-        }
-    },
-    TYVAR_PALACE("npc_tyvar_palace", "Tyvar's Palace",
-        TRAIT_GAIN_DESCRIPTION + " ![[Opal Palace]]", NPC.TYVAR,
-        EffectType.PERMANENT, "Tyvar Trait - Palace") {
-        @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-            RogueEffect.addCardToBattlefield("Opal Palace", human);
         }
     },
 
@@ -255,53 +206,74 @@ public enum NPCEffect implements RogueEffect {
         "Choose up to 3 out of 20 legendary lands to add to your deck.", NPC.NARSET,
         EffectType.ONESHOT, null) {
         @Override
+        public Predicate<PaperCard> getDBCardsFilter() {
+            return PaperCardPredicates.fromRules(rules -> rules.getType().isLand()
+                && rules.getType().isLegendary()
+                && rules.getSplitType() == CardSplitType.None);
+        }
+
+        @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            List<PaperCard> candidateCards = getLegendaryLandCandidates(run);
+            List<PaperCard> candidateCards = run.getAllCardsForActiveCommander(getDBCardsFilter()).stream()
+                .map(RogueConfig::getRulesNamePrint)
+                .filter(Objects::nonNull)
+                .toList();
+            candidateCards = run.filterDuplicateCards(candidateCards);
             if (candidateCards.isEmpty()) {
                 return;
             }
 
+            List<CardReference> landsOfLegendsPrintOverrides = List.of(
+                new CardReference("Gemstone Caverns", "PLST", 1),
+                new CardReference("Inventors' Fair", "KLD", 1),
+                new CardReference("Urborg, Tomb of Yawgmoth", "UMA", 1),
+                new CardReference("Miren, the Moaning Well", "SOK", 1),
+                new CardReference("Eye of Ugin", "MM2", 1),
+                new CardReference("Boseiju, Who Shelters All", "CHK", 1),
+                new CardReference("Urborg, Tomb of Yawgmoth", "UMA", 1)
+            );
+            candidateCards = applyCardPrintOverrides(candidateCards, landsOfLegendsPrintOverrides);
             Collections.shuffle(candidateCards, MyRandom.getRandom());
             candidateCards = new ArrayList<>(candidateCards.subList(0, Math.min(20, candidateCards.size())));
             selectCardsForDeck(ctx, candidateCards, 0, 3);
         }
+    },
+    NARSET_SINS("npc_narset_sins", "Narset's Sins",
+        "Gain the {{Item}}s [[Corrupted Powerstone]] and [[Chaos Capsule]]. ![[Narset Item - Corrupted Powerstone]] ![[Narset Item - Chaos Capsule]]", NPC.NARSET,
+        EffectType.ONESHOT, null) {
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            addCarryCards(run, ctx, List.of("Narset Item - Corrupted Powerstone", "Narset Item - Chaos Capsule"),
+                CarryCardType.ITEM);
+        }
 
         @Override
         public boolean isChoiceAvailable(RogueRun run) {
-            return !getLegendaryLandCandidates(run).isEmpty();
+            return canAddAllCarryCards(run,
+                List.of("Narset Item - Corrupted Powerstone", "Narset Item - Chaos Capsule"));
         }
     },
-    NARSET_CAPSULE("npc_narset_capsule", "Narset's Capsule",
-        ITEM_GAIN_DESCRIPTION, NPC.NARSET,
-        EffectType.ONESHOT, "Narset Item - Chaos Capsule") {
+    NARSET_UTENSILS("npc_narset_utensils", "Narset's Utensils",
+        "Gain the {{Item}}s [[Fractured Powerstone|MOC|1]] and [[Ichor Elixir|MOC|1]].", NPC.NARSET,
+        EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            addEffectCardAsCarryCard(run, ctx, CarryCardType.ITEM);
+            addCarryCards(run, ctx, List.of("Fractured Powerstone|MOC|1", "Ichor Elixir|MOC|1"),
+                CarryCardType.ITEM);
         }
-    },
-    NARSET_ELIXIR("npc_narset_elixir", "Narset's Elixir",
-        ITEM_GAIN_DESCRIPTION, NPC.NARSET,
-        EffectType.ONESHOT, "Ichor Elixir") {
+
         @Override
-        public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            addEffectCardAsCarryCard(run, ctx, CarryCardType.ITEM);
-        }
-    },
-    NARSET_POWERSTONE("npc_narset_powerstone", "Narset's Powerstone",
-        ITEM_GAIN_DESCRIPTION, NPC.NARSET,
-        EffectType.ONESHOT, "Fractured Powerstone") {
-        @Override
-        public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            addEffectCardAsCarryCard(run, ctx, CarryCardType.ITEM);
+        public boolean isChoiceAvailable(RogueRun run) {
+            return canAddAllCarryCards(run, List.of("Fractured Powerstone|MOC|1", "Ichor Elixir|MOC|1"));
         }
     },
     NARSET_PASSAGE("npc_narset_passage", "Narset's Passage",
-        TRAIT_GAIN_DESCRIPTION + " ![[Rogue's Passage]]", NPC.NARSET,
-        EffectType.PERMANENT, "Narset Trait - Passage") {
+        TRAIT_GAIN_DESCRIPTION + " ![[Rogue's Passage|FDN|1]]", NPC.NARSET,
+        EffectType.PERMANENT, "Narset Trait - Narset's Passage") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
-            RogueEffect.addCardToBattlefield("Rogue's Passage", human);
+            RogueEffect.addCardToBattlefield("Rogue's Passage|CMM|1", human);
         }
 
         @Override
@@ -310,12 +282,12 @@ public enum NPCEffect implements RogueEffect {
         }
     },
     NARSET_TOWER("npc_narset_tower", "Narset's Tower",
-        TRAIT_GAIN_DESCRIPTION + " ![[Reliquary Tower]]", NPC.NARSET,
-        EffectType.PERMANENT, "Narset Trait - Tower") {
+        TRAIT_GAIN_DESCRIPTION + " ![[Reliquary Tower|TDC|1]]", NPC.NARSET,
+        EffectType.PERMANENT, "Narset Trait - Narset's Tower") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
-            RogueEffect.addCardToBattlefield("Reliquary Tower", human);
+            RogueEffect.addCardToBattlefield("Reliquary Tower|CMM|1", human);
         }
 
         @Override
@@ -324,12 +296,12 @@ public enum NPCEffect implements RogueEffect {
         }
     },
     NARSET_VAULT("npc_narset_vault", "Narset's Vault",
-        TRAIT_GAIN_DESCRIPTION + " ![[Vault of the Archangel]]", NPC.NARSET,
-        EffectType.PERMANENT, "Narset Trait - Vault") {
+        TRAIT_GAIN_DESCRIPTION + " ![[Vault of the Archangel|TDC|1]]", NPC.NARSET,
+        EffectType.PERMANENT, "Narset Trait - Narset's Vault") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
-            RogueEffect.addCardToBattlefield("Vault of the Archangel", human);
+            RogueEffect.addCardToBattlefield("Vault of the Archangel|TDC|1", human);
         }
 
         @Override
@@ -338,12 +310,12 @@ public enum NPCEffect implements RogueEffect {
         }
     },
     NARSET_WOLF_RUN("npc_narset_wolf_run", "Narset's Wolf Run",
-        TRAIT_GAIN_DESCRIPTION + " ![[Kessig Wolf Run]]", NPC.NARSET,
-        EffectType.PERMANENT, "Narset Trait - Wolf Run") {
+        TRAIT_GAIN_DESCRIPTION + " ![[Kessig Wolf Run|TDC|1]]", NPC.NARSET,
+        EffectType.PERMANENT, "Narset Trait - Narset's Wolf Run") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
-            RogueEffect.addCardToBattlefield("Kessig Wolf Run", human);
+            RogueEffect.addCardToBattlefield("Kessig Wolf Run|TDC|1", human);
         }
 
         @Override
@@ -407,9 +379,9 @@ public enum NPCEffect implements RogueEffect {
             addEffectCardToCommandZone(human);
         }
     },
-    NARSET_GOD_OF_CHAOS("npc_narset_god_of_chaos", "God of Chaos",
+    NARSET_WRATH_OF_CHAOS("npc_narset_wrath_of_chaos", "Wrath of Chaos",
         TRAIT_GAIN_DESCRIPTION, NPC.NARSET,
-        EffectType.PERMANENT, "Narset Trait - God of Chaos") {
+        EffectType.PERMANENT, "Narset Trait - Wrath of Chaos") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
@@ -432,211 +404,192 @@ public enum NPCEffect implements RogueEffect {
         }
     },
 
-    // Henzie effects
-    HENZIE_CRYPT("npc_henzie_crypt", "Henzie's Crypt",
-        ITEM_GAIN_DESCRIPTION, NPC.HENZIE,
-        EffectType.ONESHOT, "Mana Crypt|2XM|1") {
-        @Override
-        public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            addEffectCardAsCarryCard(run, ctx, CarryCardType.ITEM);
-        }
-
-        @Override
-        public boolean isChoiceAvailable(RogueRun run) {
-            return run.canAddCardAsCarryCard(getEffectCard());
-        }
-    },
-    HENZIE_DIAMOND("npc_henzie_diamond", "Henzie's Diamond",
-        ITEM_GAIN_DESCRIPTION, NPC.HENZIE,
-        EffectType.ONESHOT, "Lion's Eye Diamond|VMA|1") {
-        @Override
-        public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            addEffectCardAsCarryCard(run, ctx, CarryCardType.ITEM);
-        }
-
-        @Override
-        public boolean isChoiceAvailable(RogueRun run) {
-            return run.canAddCardAsCarryCard(getEffectCard());
-        }
-    },
-    HENZIE_VAULT("npc_henzie_vault", "Henzie's Vault",
-        ITEM_GAIN_DESCRIPTION, NPC.HENZIE,
-        EffectType.ONESHOT, "Mana Vault|2X2|1") {
-        @Override
-        public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            addEffectCardAsCarryCard(run, ctx, CarryCardType.ITEM);
-        }
-
-        @Override
-        public boolean isChoiceAvailable(RogueRun run) {
-            return run.canAddCardAsCarryCard(getEffectCard());
-        }
-    },
-    HENZIE_HAUL("npc_henzie_haul", "Henzie's Haul",
-        ITEM_GAIN_DESCRIPTION, NPC.HENZIE,
-        EffectType.ONESHOT, "Bandit's Haul") {
-        @Override
-        public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            addEffectCardAsCarryCard(run, ctx, CarryCardType.ITEM);
-        }
-
-        @Override
-        public boolean isChoiceAvailable(RogueRun run) {
-            return run.canAddCardAsCarryCard(getEffectCard());
-        }
-    },
-    HENZIE_GAMECHANGERS("npc_henzie_gamechangers", "Henzie's Gamechangers",
-        "Remove 3 random cards from your deck. Choose 3 out of 20 cards from the Gamechanger list to add to your deck.", NPC.HENZIE,
+    // Tyvar effects
+    TYVAR_COMPANIONS("npc_tyvar_companions", "Tyvar's Companions",
+        "Gain the {{Fellow}}s [[Loyal Apprentice|CMM|1]] and [[Loyal Unicorn|CMM|1]].", NPC.TYVAR,
         EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            List<PaperCard> gamechangerCards = run.getGamechangerCardsForActiveCommander();
-            swapDeckCards(run, ctx, gamechangerCards);
-        }
-    },
-    HENZIE_CONTRABAND("npc_henzie_contraband", "Henzie's Contraband",
-        "Lose 3 {{Max. Life}}. Remove 3 random cards from your deck. Choose 3 out of 20 cards from the Commander Banlist to add to your deck.", NPC.HENZIE,
-        EffectType.ONESHOT, null) {
-        @Override
-        public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            run.loseMaxLife(3);
-            List<PaperCard> banlistCards = run.getBanlistCardsForActiveCommander();
-            swapDeckCards(run, ctx, banlistCards);
+            addCarryCards(run, ctx, List.of("Loyal Apprentice|CMM|1", "Loyal Unicorn|CMM|1"), CarryCardType.FELLOW);
         }
 
         @Override
         public boolean isChoiceAvailable(RogueRun run) {
-            return run.getMaxLife() > 3;
+            return canAddAllCarryCards(run, List.of("Loyal Apprentice|CMM|1", "Loyal Unicorn|CMM|1"));
         }
     },
-    HENZIE_MYTHICS("npc_henzie_mythics", "Henzie's Mythics",
-        "Choose 3 cards to remove (excluding basic lands), then receive 3 random mythic rare cards from your {{Reward Pool}}.", NPC.HENZIE,
+    TYVAR_FOLLOWERS("npc_tyvar_followers", "Tyvar's Followers",
+        "Gain the {{Fellow}}s [[Loyal Guardian|CMM|1]] and [[Loyal Subordinate|CMM|1]].", NPC.TYVAR,
         EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            int exchangeCount = 3;
-            RogueDeck rogueDeck = run.getSelectedRogueDeck();
-            List<PaperCard> replacementCards = rogueDeck == null
-                ? List.of()
-                : rogueDeck.drawRewardOptions(exchangeCount, PaperCardPredicates.IS_MYTHIC_RARE);
-            selectCardsFromDeck(run, ctx, PaperCardPredicates.fromRules(CardRulesPredicates.NOT_BASIC_LAND),
-                exchangeCount, exchangeCount, replacementCards, null);
-        }
-    },
-    HENZIE_EXQUISITE_TRAITS("npc_henzie_exquisite_traits", "Exquisite Traits",
-        "Gain 2 random Chest {{Traits}}.", NPC.HENZIE,
-        EffectType.ONESHOT, null) {
-        @Override
-        public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            List<ChestEffect> chestTraits = getAvailableChestTraits(run);
-            Collections.shuffle(chestTraits, MyRandom.getRandom());
-            for (int i = 0; i < Math.min(2, chestTraits.size()); i++) {
-                run.addChestEffect(chestTraits.get(i));
-            }
+            addCarryCards(run, ctx, List.of("Loyal Guardian|CMM|1", "Loyal Subordinate|CMM|1"), CarryCardType.FELLOW);
         }
 
         @Override
         public boolean isChoiceAvailable(RogueRun run) {
-            return !getAvailableChestTraits(run).isEmpty();
+            return canAddAllCarryCards(run, List.of("Loyal Guardian|CMM|1", "Loyal Subordinate|CMM|1"));
         }
     },
-    HENZIE_CITY("npc_henzie_city", "Henzie's City",
-        TRAIT_GAIN_DESCRIPTION + " ![[City of Brass|2X2|1]]", NPC.HENZIE,
-        EffectType.PERMANENT, "Henzie Trait - City") {
+    TYVAR_PETS("npc_tyvar_pets", "Tyvar's Pets",
+        "Gain the {{Fellow}}s [[Loyal Drake|CMM|1]] and [[Loyal Unicorn|CMM|1]].", NPC.TYVAR,
+        EffectType.ONESHOT, null) {
         @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-            RogueEffect.addCardToBattlefield("City of Brass|2X2|1", human);
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            addCarryCards(run, ctx, List.of("Loyal Drake|CMM|1", "Loyal Unicorn|CMM|1"), CarryCardType.FELLOW);
         }
-    },
-    HENZIE_FIELD("npc_henzie_field", "Henzie's Field",
-        TRAIT_GAIN_DESCRIPTION + " ![[Field of the Dead|M20|1]]", NPC.HENZIE,
-        EffectType.PERMANENT, "Henzie Trait - Field") {
+
         @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-            RogueEffect.addCardToBattlefield("Field of the Dead|M20|1", human);
+        public boolean isChoiceAvailable(RogueRun run) {
+            return canAddAllCarryCards(run, List.of("Loyal Drake|CMM|1", "Loyal Unicorn|CMM|1"));
         }
     },
-    HENZIE_TOMB("npc_henzie_tomb", "Henzie's Tomb",
-        TRAIT_GAIN_DESCRIPTION + " ![[Ancient Tomb|UMA|1]]", NPC.HENZIE,
-        EffectType.PERMANENT, "Henzie Trait - Tomb") {
+    TYVAR_ARMORY("npc_tyvar_armory", "Tyvar's Armory",
+        "Gain the {{Item}}s [[Commander's Sphere|CMM|1]] and [[Commander's Plate|CMR|1]].", NPC.TYVAR,
+        EffectType.ONESHOT, null) {
         @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-            RogueEffect.addCardToBattlefield("Ancient Tomb|UMA|1", human);
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            addCarryCards(run, ctx, List.of("Commander's Sphere|CMM|1", "Commander's Plate|CMR|1"), CarryCardType.ITEM);
         }
-    },
-    HENZIE_ZONE("npc_henzie_zone", "Henzie's Zone",
-        TRAIT_GAIN_DESCRIPTION + " ![[Blast Zone]]", NPC.HENZIE,
-        EffectType.PERMANENT, "Henzie Trait - Zone") {
+
         @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-            RogueEffect.addCardToBattlefield("Blast Zone", human);
+        public boolean isChoiceAvailable(RogueRun run) {
+            return canAddAllCarryCards(run, List.of("Commander's Sphere|CMM|1", "Commander's Plate|CMR|1"));
         }
     },
-    HENZIE_TORMENTOR("npc_henzie_tormentor", "Tormentor",
-        TRAIT_GAIN_DESCRIPTION, NPC.HENZIE,
-        EffectType.PERMANENT, "Henzie Trait - Tormentor") {
+    TYVAR_RETREAT("npc_tyvar_retreat", "Tyvar's Retreat",
+        "Gain the {{Item}}s [[Campfire|CMM|1]] and [[Tome of Legends|MKC|1]].", NPC.TYVAR,
+        EffectType.ONESHOT, null) {
         @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            addCarryCards(run, ctx, List.of("Campfire|CMM|1", "Tome of Legends|MKC|1"), CarryCardType.ITEM);
         }
-    },
-    HENZIE_DISSIPATION("npc_henzie_dissipation", "Dissipation",
-        TRAIT_GAIN_DESCRIPTION, NPC.HENZIE,
-        EffectType.PERMANENT, "Henzie Trait - Dissipation") {
+
         @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
+        public boolean isChoiceAvailable(RogueRun run) {
+            return canAddAllCarryCards(run, List.of("Campfire|CMM|1", "Tome of Legends|MKC|1"));
         }
     },
-    HENZIE_WELL_CONNECTED("npc_henzie_well_connected", "Well Connected",
-        TRAIT_GAIN_DESCRIPTION, NPC.HENZIE,
-        EffectType.PERMANENT, "Henzie Trait - Well Connected") {
+    TYVAR_STAPLES("npc_tyvar_staples", "Tyvar's Staples",
+        "Add a [[Sol Ring|CMM|2]] and [[Arcane Signet|CMM|2]] to your deck.", NPC.TYVAR,
+        EffectType.ONESHOT, null) {
         @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            addCardsToDeck(run, ctx, List.of("Sol Ring|CMM|2", "Arcane Signet|CMM|2"));
+        }
+
+        @Override
+        public boolean isChoiceAvailable(RogueRun run) {
+            PaperCard solRing = RogueConfig.getCard("Sol Ring", null, null);
+            PaperCard arcaneSignet = RogueConfig.getCard("Arcane Signet", null, null);
+            return run.canAddCardToDeck(solRing) || run.canAddCardToDeck(arcaneSignet);
         }
     },
-    HENZIE_LOREMASTER("npc_henzie_loremaster", "Loremaster",
-        TRAIT_GAIN_DESCRIPTION, NPC.HENZIE,
-        EffectType.PERMANENT, "Henzie Trait - Loremaster") {
+    TYVAR_AUGMENTED("npc_tyvar_augmented", "Augmented Commander",
+        TRAIT_GAIN_DESCRIPTION, NPC.TYVAR,
+        EffectType.PERMANENT, "Tyvar Trait - Augmented") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
         }
     },
-    HENZIE_DRAMATIC_ENTRANCE("npc_henzie_dramatic_entrance", "Dramatic Entrance",
-        TRAIT_GAIN_DESCRIPTION, NPC.HENZIE,
-        EffectType.PERMANENT, "Henzie Trait - Dramatic Entrance") {
+    TYVAR_BASTION("npc_tyvar_bastion", "Bastion Commander",
+        TRAIT_GAIN_DESCRIPTION, NPC.TYVAR,
+        EffectType.PERMANENT, "Tyvar Trait - Bastion") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
-            List<PaperCard> permanents = new ArrayList<>();
-            for (PaperCard card : human.getDeck().getMain().toFlatList()) {
-                if (card.getRules().getType().isPermanent()) {
-                    permanents.add(card);
-                }
-            }
-            if (permanents.isEmpty()) {
-                return;
-            }
-            Collections.shuffle(permanents, MyRandom.getRandom());
-            List<IPaperCard> toMove = new ArrayList<>();
-            for (int i = 0; i < Math.min(2, permanents.size()); i++) {
-                toMove.add(permanents.get(i));
-            }
-            RogueEffect.moveCardsFromDeckToBattlefield(toMove, human);
         }
     },
-    HENZIE_MODERATE("npc_henzie_moderate", "Moderate",
-        TRAIT_GAIN_DESCRIPTION, NPC.HENZIE,
-        EffectType.PERMANENT, "Henzie Trait - Moderate") {
+    TYVAR_BLOODSWORN("npc_tyvar_bloodsworn", "Bloodsworn Commander",
+        TRAIT_GAIN_DESCRIPTION, NPC.TYVAR,
+        EffectType.PERMANENT, "Tyvar Trait - Bloodsworn") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
+        }
+    },
+    TYVAR_BRAWLER("npc_tyvar_brawler", "Brawler Commander",
+        TRAIT_GAIN_DESCRIPTION, NPC.TYVAR,
+        EffectType.PERMANENT, "Tyvar Trait - Brawler") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+        }
+    },
+    TYVAR_CHARLATAN("npc_tyvar_charlatan", "Charlatan Commander",
+        TRAIT_GAIN_DESCRIPTION, NPC.TYVAR,
+        EffectType.PERMANENT, "Tyvar Trait - Charlatan") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+        }
+    },
+    TYVAR_CHEF("npc_tyvar_chef", "Master Chef Commander",
+        TRAIT_GAIN_DESCRIPTION, NPC.TYVAR,
+        EffectType.PERMANENT, "Tyvar Trait - Master Chef") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+        }
+    },
+    TYVAR_CRIMINAL("npc_tyvar_criminal", "Criminal Commander",
+        TRAIT_GAIN_DESCRIPTION, NPC.TYVAR,
+        EffectType.PERMANENT, "Tyvar Trait - Criminal") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+        }
+    },
+    TYVAR_CULTIST("npc_tyvar_cultist", "Cultist Commander",
+        TRAIT_GAIN_DESCRIPTION, NPC.TYVAR,
+        EffectType.PERMANENT, "Tyvar Trait - Cultist") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+        }
+    },
+    TYVAR_FLAME("npc_tyvar_flame", "Flame Commander",
+        TRAIT_GAIN_DESCRIPTION, NPC.TYVAR,
+        EffectType.PERMANENT, "Tyvar Trait - Flame") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+        }
+    },
+    TYVAR_SAGE("npc_tyvar_sage", "Sage Commander",
+        TRAIT_GAIN_DESCRIPTION, NPC.TYVAR,
+        EffectType.PERMANENT, "Tyvar Trait - Sage") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+        }
+    },
+    TYVAR_BEACON("npc_tyvar_beacon", "Tyvar's Beacon",
+        TRAIT_GAIN_DESCRIPTION + " ![[Command Beacon]]", NPC.TYVAR,
+        EffectType.PERMANENT, "Tyvar Trait - Tyvar's Beacon") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+            RogueEffect.addCardToBattlefield("Command Beacon", human);
+        }
+    },
+    TYVAR_WAR_ROOM("npc_tyvar_war_room", "Tyvar's War Room",
+        TRAIT_GAIN_DESCRIPTION + " ![[War Room]]", NPC.TYVAR,
+        EffectType.PERMANENT, "Tyvar Trait - Tyvar's War Room") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+            RogueEffect.addCardToBattlefield("War Room", human);
+        }
+    },
+    TYVAR_PALACE("npc_tyvar_palace", "Tyvar's Palace",
+        TRAIT_GAIN_DESCRIPTION + " ![[Opal Palace]]", NPC.TYVAR,
+        EffectType.PERMANENT, "Tyvar Trait - Tyvar's Palace") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+            RogueEffect.addCardToBattlefield("Opal Palace", human);
         }
     };
 
@@ -674,28 +627,7 @@ public enum NPCEffect implements RogueEffect {
 
     public NPC getOwnerNpc() { return ownerNpc; }
 
-    private static List<PaperCard> getLegendaryLandCandidates(RogueRun run) {
-        return run.getAllCardsForActiveCommander(card -> card.getRules().getType().isLand()
-            && card.getRules().getType().isLegendary()
-            && card.getRules().getSplitType() == CardSplitType.None);
-    }
-
     public boolean isChoiceAvailable(RogueRun run) { return true; }
-
-    private static List<ChestEffect> getAvailableChestTraits(RogueRun run) {
-        List<String> activeChestEffectIds = run.getActiveChestEffects().stream()
-            .map(RogueEffect::getId)
-            .toList();
-
-        List<ChestEffect> chestTraits = new ArrayList<>();
-        for (ChestEffect chestEffect : ChestEffect.values()) {
-            if (chestEffect.getEffectType() == EffectType.PERMANENT
-                && !activeChestEffectIds.contains(chestEffect.getId())) {
-                chestTraits.add(chestEffect);
-            }
-        }
-        return chestTraits;
-    }
 
     public static List<NPCEffect> getEffectsForNpc(NPC npc, RogueRun run) {
         List<NPCEffect> effects = new ArrayList<>();

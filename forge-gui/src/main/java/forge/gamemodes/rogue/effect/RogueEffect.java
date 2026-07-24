@@ -22,8 +22,6 @@ import java.util.function.Predicate;
 public interface RogueEffect {
 
     String TRAIT_GAIN_DESCRIPTION = "Gain the {{Trait}} %s.";
-    String FELLOW_GAIN_DESCRIPTION = "Gain the {{Fellow}} %s.";
-    String ITEM_GAIN_DESCRIPTION = "Gain the {{Item}} %s.";
     String ACCEPT = "Accept";
     String INSUFFICIENT_GOLD = "You don't have enough Gold.";
     String INSUFFICIENT_MAX_LIFE = "You don't have enough Max. Life.";
@@ -257,6 +255,44 @@ public interface RogueEffect {
         }
     }
 
+    default void addCarryCards(RogueRun run, EffectResultContext ctx, List<String> cardReferences,
+                               RogueRun.CarryCardType type) {
+        if (cardReferences == null || cardReferences.isEmpty()) {
+            return;
+        }
+
+        for (String cardReferenceText : cardReferences) {
+            CardReference cardReference = TextHelper.parseCardReference(cardReferenceText);
+            if (cardReference.cardName().isEmpty()) {
+                continue;
+            }
+
+            PaperCard card = RogueConfig.getCard(cardReference.cardName(),
+                cardReference.setCode(), cardReference.artIndex());
+            addCarryCard(run, ctx, card, type);
+        }
+    }
+
+    default boolean canAddAllCarryCards(RogueRun run, List<String> cardReferences) {
+        if (cardReferences == null || cardReferences.isEmpty()) {
+            return false;
+        }
+
+        for (String cardReferenceText : cardReferences) {
+            CardReference cardReference = TextHelper.parseCardReference(cardReferenceText);
+            if (cardReference.cardName().isEmpty()) {
+                return false;
+            }
+
+            PaperCard card = RogueConfig.getCard(cardReference.cardName(),
+                cardReference.setCode(), cardReference.artIndex());
+            if (!run.canAddCardAsCarryCard(card)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     default void addCarryCard(RogueRun run, EffectResultContext ctx, PaperCard card, RogueRun.CarryCardType type) {
         if (card == null || !run.canAddCardAsCarryCard(card)) {
             return;
@@ -317,8 +353,25 @@ public interface RogueEffect {
         ctx.addedCards.addAll(added);
     }
 
+    default void addCardsFromCardRewardPool(RogueRun run, EffectResultContext ctx, int count,
+                                            Predicate<PaperCard> filter) {
+        RogueDeck rogueDeck = run.getSelectedRogueDeck();
+        if (rogueDeck == null) {
+            return;
+        }
+
+        List<PaperCard> added = rogueDeck.drawRewardOptions(count, filter);
+        if (added.isEmpty()) {
+            return;
+        }
+
+        run.addCardsToDeck(added, false);
+        rogueDeck.removeFromCardPools(added);
+        ctx.addedCards.addAll(added);
+    }
+
     default void removeCardsFromDeck(RogueRun run, EffectResultContext ctx, Predicate<PaperCard> filter,
-        Integer count) {
+                                     Integer count) {
         List<PaperCard> removedCards;
 
         if (count == null) {

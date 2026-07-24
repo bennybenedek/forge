@@ -15,12 +15,16 @@ import forge.gamemodes.rogue.path.RoguePathGenerator;
 import forge.gui.GuiBase;
 import forge.gui.framework.EDocID;
 import forge.gui.framework.ICDoc;
+import forge.item.PaperCard;
 import forge.localinstance.properties.ForgePreferences;
 import forge.screens.home.CHomeUI;
 import forge.toolbox.FOptionPane;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.SwingUtilities;
 
 /**
@@ -408,6 +412,7 @@ public enum CSubmenuRogueStart implements ICDoc {
         if (!EffectResultHelper.handleTrigger(effectCtx, newRun)) {
           continue;
         }
+        showNpcResultIfNeeded(chosen, effectCtx);
       } else {
         newRun.addNPCEffect(chosen);
       }
@@ -439,5 +444,73 @@ public enum CSubmenuRogueStart implements ICDoc {
       return ctx;
     }
     return new NPCChoiceOverrideDialog(ctx).show();
+  }
+
+  private void showNpcResultIfNeeded(NPCEffect effect, EffectResultContext ctx) {
+    List<NodeResultPanel.CardSection> sections = buildNpcResultSections(effect, ctx);
+    if (sections.isEmpty()) {
+      return;
+    }
+
+    CSubmenuRogueMap.SINGLETON_INSTANCE.showNodeResultDialog(
+        "NPC Reward Gained", "You gained a reward from " + effect.getDisplayName() + ".", sections);
+  }
+
+  private List<NodeResultPanel.CardSection> buildNpcResultSections(NPCEffect effect, EffectResultContext ctx) {
+    Set<String> excludedNames = new HashSet<>(getPreviewedCardNames(effect));
+    excludedNames.addAll(getCardNames(ctx.candidateCards));
+
+    List<NodeResultPanel.CardSection> sections = new ArrayList<>();
+    List<PaperCard> removedCards = filterResultCards(ctx.removedCards, excludedNames);
+    if (!removedCards.isEmpty()) {
+      sections.add(new NodeResultPanel.CardSection("Cards removed:", removedCards));
+    }
+
+    List<PaperCard> addedCards = filterResultCards(ctx.addedCards, excludedNames);
+    if (!addedCards.isEmpty()) {
+      sections.add(new NodeResultPanel.CardSection("Cards added:", addedCards));
+    }
+    return sections;
+  }
+
+  private Set<String> getPreviewedCardNames(NPCEffect effect) {
+    Set<String> cardNames = new HashSet<>();
+    for (PreviewReference reference : effect.getPreviewReferences()) {
+      if (reference.type() == PreviewReferenceType.CARD) {
+        String cardName = TextHelper.extractCardNameFromReference(reference.token());
+        if (!cardName.isBlank()) {
+          cardNames.add(cardName);
+        }
+      }
+    }
+    return cardNames;
+  }
+
+  private Set<String> getCardNames(List<PaperCard> cards) {
+    Set<String> cardNames = new HashSet<>();
+    if (cards == null) {
+      return cardNames;
+    }
+
+    for (PaperCard card : cards) {
+      if (card != null) {
+        cardNames.add(card.getName());
+      }
+    }
+    return cardNames;
+  }
+
+  private List<PaperCard> filterResultCards(List<PaperCard> cards, Set<String> excludedNames) {
+    if (cards == null || cards.isEmpty()) {
+      return List.of();
+    }
+
+    List<PaperCard> resultCards = new ArrayList<>();
+    for (PaperCard card : cards) {
+      if (card != null && !excludedNames.contains(card.getName())) {
+        resultCards.add(card);
+      }
+    }
+    return resultCards;
   }
 }

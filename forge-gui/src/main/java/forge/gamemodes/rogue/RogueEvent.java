@@ -146,15 +146,6 @@ public enum RogueEvent {
                 EventEffect.GROUND_ZERO_MUTATE)
         )),
 
-    HORROR("Horror",
-        "A glistening horror clings to your soul, invisible but insatiable. It drinks deep, of your vitality, your future, and your fortune.",
-        List.of(
-            new EventChoice("Surrender", "You lose all your gold.",
-                EventEffect.HORROR_SURRENDER),
-            new EventChoice("Resist", "You lose all your echoes.",
-                EventEffect.HORROR_RESIST)
-        )),
-
     INFAMOUS_JUNCTION("Once Upon a Time at an Infamous Junction",
         "A hard little town squats at the edge of the badlands, all splintered porches, swinging saloon doors, and watchful eyes behind dusty windows. " +
             "The posters are fresh, the sheriff is outnumbered, and every soul in town looks like they've already chosen a side.",
@@ -262,7 +253,7 @@ public enum RogueEvent {
         )),
 
     SATCHEL("Satchel",
-        "Hidden beneath a crumbled pillar, you find a satchel of cards bound in leather; remnants of a Planeswalker who walked here before you.",
+        "Hidden beneath a crumbled pillar, you find a satchel bound in leather; remnants of a Planeswalker who walked here before you.",
         List.of(
             new EventChoice("Open the Satchel", "You find a hidden chest.",
                 EventEffect.SATCHEL_OPEN)
@@ -300,15 +291,6 @@ public enum RogueEvent {
         List.of(
             new EventChoice("Kneel", "You discover a hidden Sanctum.",
                 EventEffect.SHRINE_KNEEL)
-        )),
-
-    THORNS("Thorns",
-        "The land itself rejects your presence. Thorns rise from the soil, leaving your footsteps stained with blood.",
-        List.of(
-            new EventChoice("Endure", "You suffer a wound.",
-                EventEffect.THORNS_ENDURE),
-            new EventChoice("Press On", "You lose 4 life.",
-                EventEffect.THORNS_PRESS)
         )),
 
     TRAPPED_IN_THE_LAIR("Trapped in the Lair",

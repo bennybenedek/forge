@@ -344,7 +344,8 @@ public class RogueConfig {
                 CardEdition edition = db.getCardEdition(card.getEdition());
                 return !card.isRebalanced()
                     && edition != null
-                    && edition.getType() != CardEdition.Type.ONLINE;
+                    && edition.getType() != CardEdition.Type.ONLINE
+                    && edition.getType() != CardEdition.Type.FUNNY;
             };
         return filter != null
                 ? rogueBaseFilter.and(nonDigitalFilter).and(filter)
