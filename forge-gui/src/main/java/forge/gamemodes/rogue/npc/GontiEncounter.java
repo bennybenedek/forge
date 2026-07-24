@@ -1,6 +1,7 @@
 package forge.gamemodes.rogue.npc;
 
 import forge.gamemodes.rogue.RogueConfig;
+import forge.gamemodes.rogue.effect.BazaarContext;
 import forge.item.PaperCard;
 import forge.model.FModel;
 import java.util.List;

@@ -180,19 +180,6 @@ public enum RogueEvent {
                 EventEffect.LOST_REPLACE)
         )),
 
-    MEET_TYVAR("Tyvar Kell",
-        "An elf Planeswalker emerges from a rift, his spark blazing with raw energy. " +
-        "\"I am Tyvar Kell, and I know talent when I see it. Let me become your Commander's trainer.\"",
-        List.of(
-            new EventChoice("Accept", "Tyvar Kell will appear at the start of future Runs to train your Commander.",
-                EventEffect.MEET_NPC_TYVAR)
-        )) {
-        @Override
-        public boolean isAvailable() {
-            return false;
-        }
-    },
-
     MERCHANT_CARAVAN("Merchant Caravan",
         "A caravan of planar merchants sets up shop.",
         List.of(

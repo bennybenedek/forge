@@ -3,7 +3,6 @@ package forge.gamemodes.rogue.effect;
 import forge.deck.CardPool;
 import forge.gamemodes.rogue.*;
 import forge.game.player.RegisteredPlayer;
-import forge.gamemodes.rogue.npc.BazaarContext;
 import forge.item.IPaperCard;
 import forge.item.PaperCard;
 import forge.util.Aggregates;
@@ -204,6 +203,12 @@ public interface RogueEffect {
 
     /** Fired when the path visualizer updates. Use to modify plane visibility. */
     default void onPathUpdate(PathUpdateContext ctx, RogueRun run) {}
+
+    /** Fired before a Sanctum dialog is shown. Modify ctx to inject choices or other setup. */
+    default void onBeforeSanctum(SanctumContext ctx, RogueRun run) {}
+
+    /** Fired after a custom Sanctum choice is selected. */
+    default void onSanctumChoice(SanctumContext.SanctumChoice choice, RogueRun run) {}
 
     /** Fired once per match start. Add command zone cards, adjust hand size, etc. */
     default void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {}

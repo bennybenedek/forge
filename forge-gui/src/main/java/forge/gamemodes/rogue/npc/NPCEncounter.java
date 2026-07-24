@@ -3,8 +3,10 @@ package forge.gamemodes.rogue.npc;
 import forge.gamemodes.rogue.RogueEvent;
 import forge.gamemodes.rogue.RogueMetaProgress;
 import forge.gamemodes.rogue.RogueRun;
+import forge.gamemodes.rogue.effect.BazaarContext;
 import forge.gamemodes.rogue.effect.EventEffect;
 import forge.gamemodes.rogue.effect.NPCEffect;
+import forge.gamemodes.rogue.effect.SanctumContext;
 import forge.util.MyRandom;
 import java.util.Collections;
 import java.util.List;
@@ -69,8 +71,11 @@ public interface NPCEncounter {
     /** Fired once when a new run is created. Return non-null to show NPC dialog. */
     default NPCContext onRunStart(RogueRun run) { return null; }
 
-    /** Fired before an event starts. May replace the event through the context. */
-    default void onBeforeEvent(EventContext ctx) {}
+    /** Fired before a Sanctum dialog is shown. Modify ctx to inject dialogs or choices. */
+    default void onBeforeSanctum(SanctumContext ctx, RogueRun run) {}
+
+    /** Fired after a custom Sanctum choice is selected. */
+    default NPCContext onSanctumChoice(SanctumContext.SanctumChoice choice, RogueRun run) { return null; }
 
     /** Fired after an event choice resolves. Return non-null to show NPC dialog. */
     default NPCContext onAfterEventChoice(RogueEvent event, RogueEvent.EventChoice choice,

@@ -3,7 +3,6 @@ package forge.gamemodes.rogue.effect;
 import forge.deck.DeckSection;
 import forge.gamemodes.rogue.RoguePlanebound;
 import forge.gamemodes.rogue.RogueRun;
-import forge.gamemodes.rogue.npc.BazaarContext;
 import forge.item.PaperCard;
 import java.util.ArrayList;
 import java.util.List;

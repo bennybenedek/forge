@@ -4,7 +4,6 @@ import forge.deck.DeckSection;
 import forge.game.player.RegisteredPlayer;
 import forge.gamemodes.rogue.*;
 import forge.gamemodes.rogue.RogueRun.CarryCardType;
-import forge.gamemodes.rogue.npc.NPC;
 import forge.gamemodes.rogue.path.NodeChest;
 import forge.card.CardRulesPredicates;
 import forge.item.PaperCard;
@@ -946,16 +945,6 @@ public enum EventEffect implements RogueEffect {
             ctx.addSection = DeckSection.Commander;
             ctx.replaceCurrentCardsInAddSection = true;
             selectCardsForDeck(run, ctx, commanderFilter, 20, 1, 1, null);
-        }
-    },
-    MEET_NPC_TYVAR("meet_npc_tyvar", "Meet Tyvar Kell", "Tyvar Kell offers to train your Commander.",
-        EffectType.ONESHOT, null) {
-        @Override
-        public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            RogueMetaProgress progress = RogueMetaProgress.getInstance();
-            if (progress.getNPCLevel(NPC.TYVAR.id) < 1) {
-                progress.setNPCLevelIfHigher(NPC.TYVAR.id, 1);
-            }
         }
     },
     NEON_LID_SAMURAI("neon_lid_samurai", "Path of the Samurai",

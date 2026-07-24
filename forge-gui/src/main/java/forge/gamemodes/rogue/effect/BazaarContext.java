@@ -1,4 +1,4 @@
-package forge.gamemodes.rogue.npc;
+package forge.gamemodes.rogue.effect;
 
 import forge.item.PaperCard;
 import java.util.ArrayList;
@@ -26,7 +26,7 @@ public class BazaarContext {
     /** Cards the player purchased (populated after shopping, before onAfterBazaarPurchase). */
     public final Set<PaperCard> purchasedCards = new HashSet<>();
 
-    /** Card name → fixed price override. Used for both item pricing and card discounts. */
+    /** Card name -> fixed price override. Used for both item pricing and card discounts. */
     public Map<String, Integer> priceOverrides = new HashMap<>();
 
     /** Number of random cards to discount (set by encounters, applied by bazaar code). */

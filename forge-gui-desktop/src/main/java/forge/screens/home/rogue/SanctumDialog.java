@@ -2,6 +2,7 @@ package forge.screens.home.rogue;
 
 import forge.gamemodes.rogue.PreviewReference;
 import forge.gamemodes.rogue.TextHelper;
+import forge.gamemodes.rogue.effect.SanctumContext;
 import forge.toolbox.FButton;
 import forge.toolbox.FLabel;
 import forge.toolbox.FOptionPane;
@@ -27,6 +28,7 @@ public class SanctumDialog {
     HEAL,
     COOK,
     REFLECT,
+    CUSTOM,
     SKIP
   }
 
@@ -35,6 +37,7 @@ public class SanctumDialog {
   private FOptionPane optionPane;
   private RoguePreviewPopup previewPopup;
   private SanctumChoice choice = SanctumChoice.SKIP;
+  private SanctumContext.SanctumChoice customChoice;
 
   /**
    * Create a Sanctum dialog.
@@ -43,7 +46,8 @@ public class SanctumDialog {
    * @param restEnabled Whether REST should be selectable
    * @param restDisabledReason Tooltip shown when REST is disabled
    */
-  public SanctumDialog(int effectiveHealAmount, boolean restEnabled, String restDisabledReason) {
+  public SanctumDialog(int effectiveHealAmount, boolean restEnabled, String restDisabledReason,
+                       SanctumContext sanctumCtx) {
     panel = new MainPanel();
 
     FLabel lblTitle = new FLabel.Builder()
@@ -108,6 +112,22 @@ public class SanctumDialog {
     panel.add(btnRest, "w 80%!, ax center, gap 0 0 10px 10px, wrap");
     panel.add(btnCook, "w 80%!, ax center, gap 0 0 10px 10px, wrap");
     panel.add(btnReflect, "w 80%!, ax center, gap 0 0 10px 10px, wrap");
+    for (SanctumContext.SanctumChoice extraChoice : sanctumCtx.extraChoices) {
+      FButton btnExtraChoice = RogueButtonHelper.createChoiceButton(
+          extraChoice.label(), TextHelper.stripPreviewMarkers(extraChoice.description()),
+          TextHelper.extractPreviewReferences(extraChoice.description()));
+      RogueButtonHelper.setChoiceButtonSizeHint(btnExtraChoice, choiceButtonWidth);
+      btnExtraChoice.addActionListener(e -> {
+        hidePreview();
+        choice = SanctumChoice.CUSTOM;
+        customChoice = extraChoice;
+        optionPane.setResult(CHOICE_RESULT);
+        optionPane.setVisible(false);
+      });
+      previewTargets.add(new PreviewTarget(btnExtraChoice,
+          TextHelper.extractPreviewReferences(extraChoice.description())));
+      panel.add(btnExtraChoice, "w 80%!, ax center, gap 0 0 10px 10px, wrap");
+    }
 
     Dimension dialogSize = new Dimension(DIALOG_WIDTH, DIALOG_HEIGHT);
     panel.setPreferredSize(dialogSize);
@@ -143,6 +163,10 @@ public class SanctumDialog {
       choice = SanctumChoice.SKIP;
     }
     return choice;
+  }
+
+  public SanctumContext.SanctumChoice getCustomChoice() {
+    return customChoice;
   }
 
   private void hidePreview() {

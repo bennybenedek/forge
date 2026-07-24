@@ -8,7 +8,7 @@ import forge.gamemodes.rogue.RogueRun;
 import forge.gamemodes.rogue.RogueTutorial;
 import forge.gamemodes.rogue.effect.CardSelectionContext;
 import forge.gamemodes.rogue.effect.RogueEffectComposite;
-import forge.gamemodes.rogue.npc.BazaarContext;
+import forge.gamemodes.rogue.effect.BazaarContext;
 import forge.gamemodes.rogue.npc.NPCContext;
 import forge.gamemodes.rogue.npc.NPCEncounterComposite;
 import forge.gamemodes.rogue.path.NodeBazaar;

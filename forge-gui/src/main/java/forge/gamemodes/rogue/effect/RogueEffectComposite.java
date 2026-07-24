@@ -88,4 +88,14 @@ public enum RogueEffectComposite implements RogueEffect {
     public void onPathUpdate(PathUpdateContext ctx, RogueRun run) {
         forEachEffect(run, e -> e.onPathUpdate(ctx, run));
     }
+
+    @Override
+    public void onBeforeSanctum(SanctumContext ctx, RogueRun run) {
+        forEachEffect(run, e -> e.onBeforeSanctum(ctx, run));
+    }
+
+    @Override
+    public void onSanctumChoice(SanctumContext.SanctumChoice choice, RogueRun run) {
+        forEachEffect(run, e -> e.onSanctumChoice(choice, run));
+    }
 }

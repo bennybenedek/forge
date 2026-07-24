@@ -3,7 +3,9 @@ package forge.gamemodes.rogue.npc;
 import forge.gamemodes.rogue.RogueEvent;
 import forge.gamemodes.rogue.RogueMetaProgress;
 import forge.gamemodes.rogue.RogueRun;
+import forge.gamemodes.rogue.effect.BazaarContext;
 import forge.gamemodes.rogue.effect.EventEffect;
+import forge.gamemodes.rogue.effect.SanctumContext;
 import forge.util.MyRandom;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -78,10 +80,20 @@ public enum NPCEncounterComposite {
         return List.of();
     }
 
-    public void onBeforeEvent(EventContext ctx, RogueMetaProgress progress) {
+    public void onBeforeSanctum(SanctumContext ctx, RogueRun run, RogueMetaProgress progress) {
         for (NPCEncounter enc : getEncountersForCurrentLevel(progress)) {
-            enc.onBeforeEvent(ctx);
+            enc.onBeforeSanctum(ctx, run);
         }
+    }
+
+    public List<NPCContext> onSanctumChoice(SanctumContext.SanctumChoice choice, RogueRun run,
+                                            RogueMetaProgress progress) {
+        List<NPCContext> results = new ArrayList<>();
+        for (NPCEncounter enc : getEncountersForCurrentLevel(progress)) {
+            NPCContext npcCtx = enc.onSanctumChoice(choice, run);
+            if (npcCtx != null) results.add(npcCtx);
+        }
+        return results;
     }
 
     public List<NPCContext> onAfterEventChoice(RogueEvent event, RogueEvent.EventChoice choice,

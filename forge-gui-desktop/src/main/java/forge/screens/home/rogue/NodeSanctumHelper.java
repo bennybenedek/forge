@@ -1,9 +1,14 @@
 package forge.screens.home.rogue;
 
 import forge.card.CardRulesPredicates;
+import forge.gamemodes.rogue.RogueMetaProgress;
 import forge.gamemodes.rogue.RogueRun;
 import forge.gamemodes.rogue.RogueRun.CarryCardType;
 import forge.gamemodes.rogue.RogueTutorial;
+import forge.gamemodes.rogue.effect.RogueEffectComposite;
+import forge.gamemodes.rogue.effect.SanctumContext;
+import forge.gamemodes.rogue.npc.NPCContext;
+import forge.gamemodes.rogue.npc.NPCEncounterComposite;
 import forge.gamemodes.rogue.path.NodeSanctum;
 import forge.item.PaperCard;
 import forge.item.PaperCardPredicates;
@@ -33,6 +38,11 @@ class NodeSanctumHelper {
 
     void resolveSanctum(RogueRun currentRun, NodeSanctum sanctumNode) {
         RogueTutorialHelper.showIfNotSeen(RogueTutorial.SANCTUM);
+        RogueMetaProgress progress = RogueMetaProgress.getInstance();
+        SanctumContext sanctumCtx = new SanctumContext();
+        RogueEffectComposite.INSTANCE.onBeforeSanctum(sanctumCtx, currentRun);
+        NPCEncounterComposite.INSTANCE.onBeforeSanctum(sanctumCtx, currentRun, progress);
+        showNpcDialogs(sanctumCtx.preSanctumDialogs);
 
         int baseHealAmount = sanctumNode.getHealAmount();
         int missingLife = Math.max(0, currentRun.getMaxLife() - currentRun.getCurrentLife());
@@ -44,7 +54,7 @@ class NodeSanctumHelper {
             : "You are already at maximum life and have no wounds to cure.";
 
         SanctumDialog dialog = new SanctumDialog(
-            effectiveHealAmount, restEnabled, restDisabledReason);
+            effectiveHealAmount, restEnabled, restDisabledReason, sanctumCtx);
         SanctumDialog.SanctumChoice choice = dialog.show();
 
         switch (choice) {
@@ -75,8 +85,23 @@ class NodeSanctumHelper {
                 currentRun.addRemovalCredits(3);
                 break;
 
+            case CUSTOM:
+                SanctumContext.SanctumChoice customChoice = dialog.getCustomChoice();
+                if (customChoice != null) {
+                    RogueEffectComposite.INSTANCE.onSanctumChoice(customChoice, currentRun);
+                    showNpcDialogs(NPCEncounterComposite.INSTANCE.onSanctumChoice(
+                        customChoice, currentRun, progress));
+                }
+                break;
+
             case SKIP:
                 break;
+        }
+    }
+
+    private void showNpcDialogs(List<NPCContext> contexts) {
+        for (NPCContext context : contexts) {
+            new NPCDialog(context).show();
         }
     }
 

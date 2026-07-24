@@ -7,7 +7,6 @@ import forge.gamemodes.rogue.RogueTutorial;
 import forge.gamemodes.rogue.effect.EventEffect;
 import forge.gamemodes.rogue.effect.EffectResultContext;
 import forge.gamemodes.rogue.effect.RogueEffect;
-import forge.gamemodes.rogue.npc.EventContext;
 import forge.gamemodes.rogue.npc.NPCContext;
 import forge.gamemodes.rogue.npc.NPCEncounterComposite;
 import forge.gamemodes.rogue.path.NodeEvent;
@@ -54,14 +53,7 @@ class NodeEventHelper {
     }
 
     private RogueEvent resolveEvent(NodeEvent eventNode) {
-        EventContext npcCtx = new EventContext(eventNode.getEvent());
-        NPCEncounterComposite.INSTANCE.onBeforeEvent(npcCtx, RogueMetaProgress.getInstance());
-
-        RogueEvent event = npcCtx.getResolvedEvent();
-        if (npcCtx.eventOverride != null) {
-            eventNode.setEvent(event);
-        }
-        return event;
+        return eventNode.getEvent();
     }
 
     private RogueEvent resolveDevEventOverride(RogueEvent event) {
