@@ -7,6 +7,7 @@ import forge.card.CardRarity;
 import forge.card.CardRules;
 import forge.deck.CardPool;
 import forge.deck.Deck;
+import forge.deck.DeckFormat;
 import forge.deck.DeckSection;
 import forge.deck.io.DeckSerializer;
 import forge.item.PaperCard;
@@ -331,8 +332,29 @@ public class RogueConfig {
                 .toList();
     }
 
+    /**
+     * Returns a rules-name print for flavor-name cards while leaving ordinary prints unchanged.
+     */
     public static PaperCard getRulesNamePrint(PaperCard card) {
         return card != null && card.hasFlavorName() ? getCard(card.getName(), null, null) : card;
+    }
+
+    /**
+     * Returns the preferred Rogue display print for a selected card without changing editions.
+     * Prefers non-flavor-name prints with earlier collector numbers in the same edition.
+     */
+    public static PaperCard getPreferredPrint(PaperCard card) {
+        PaperCard rulesNamePrint = getRulesNamePrint(card);
+        if (rulesNamePrint == null) {
+            return null;
+        }
+
+        return FModel.getMagicDb().getCommonCards()
+                .getAllCards(rulesNamePrint).stream()
+                .filter(candidate -> candidate.getEdition().equals(rulesNamePrint.getEdition()))
+                .filter(candidate -> !candidate.hasFlavorName())
+                .min(Comparator.comparing(PaperCard::getCollectorNumberSortingKey))
+                .orElse(rulesNamePrint);
     }
 
     private static @NonNull Predicate<PaperCard> getAllFilters(Predicate<PaperCard> filter) {
@@ -347,9 +369,10 @@ public class RogueConfig {
                     && edition.getType() != CardEdition.Type.ONLINE
                     && edition.getType() != CardEdition.Type.FUNNY;
             };
+        Predicate<PaperCard> commanderLegalFilter = DeckFormat.RogueCommander::isLegalCard;
         return filter != null
-                ? rogueBaseFilter.and(nonDigitalFilter).and(filter)
-                : rogueBaseFilter.and(nonDigitalFilter);
+                ? rogueBaseFilter.and(nonDigitalFilter).and(commanderLegalFilter).and(filter)
+                : rogueBaseFilter.and(nonDigitalFilter).and(commanderLegalFilter);
     }
 
     /**

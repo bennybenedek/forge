@@ -1,0 +1,4 @@
+Name:Gonti Curio - Dusty Bauble
+ManaCost:no cost
+Types:Weird Item
+Oracle:A cloudy little bauble with no shine, no weight, and no obvious purpose. The dust may be the most valuable part.

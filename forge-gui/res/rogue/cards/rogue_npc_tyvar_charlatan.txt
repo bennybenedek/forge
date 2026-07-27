@@ -1,4 +1,4 @@
-Name:Tyvar Trait - Charlatan
+Name:Tyvar Trait - Charlatan Commander
 ManaCost:no cost
 Types:Trait
 S:Mode$ Continuous | Affected$ Creature.IsCommander+YouOwn | AddAbility$ Copy | EffectZone$ Command | Description$ Commander creatures you own have "{3}: This creature becomes a copy of another target creature."

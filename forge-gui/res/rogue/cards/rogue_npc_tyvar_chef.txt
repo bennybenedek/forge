@@ -1,4 +1,4 @@
-Name:Tyvar Trait - Master Chef
+Name:Tyvar Trait - Master Chef Commander
 ManaCost:no cost
 Types:Trait
 S:Mode$ Continuous | Affected$ Creature.IsCommander+YouOwn | AddReplacementEffect$ This & Other | EffectZone$ Command | Description$ Commander creatures you own have "This creature enters with an additional +1/+1 counter on it" and "Other creatures you control enter with an additional +1/+1 counter on them."

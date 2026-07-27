@@ -106,9 +106,9 @@ public enum NPCEncounterComposite {
         return results;
     }
 
-    public void onBeforeBazaar(BazaarContext ctx, RogueMetaProgress progress) {
+    public void onBeforeBazaar(BazaarContext ctx, RogueRun run, RogueMetaProgress progress) {
         for (NPCEncounter enc : getEncountersForCurrentLevel(progress)) {
-            enc.onBeforeBazaar(ctx);
+            enc.onBeforeBazaar(ctx, run);
         }
     }
 

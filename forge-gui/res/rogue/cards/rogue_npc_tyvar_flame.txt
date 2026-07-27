@@ -1,4 +1,4 @@
-Name:Tyvar Trait - Flame
+Name:Tyvar Trait - Flame Commander
 ManaCost:no cost
 Types:Trait
 S:Mode$ Continuous | Affected$ Creature.IsCommander+YouOwn | AddTrigger$ Attacks | AddSVar$ AE | EffectZone$ Command | Description$ Commander creatures you own have "Whenever this creature attacks, it gains double strike until end of turn."

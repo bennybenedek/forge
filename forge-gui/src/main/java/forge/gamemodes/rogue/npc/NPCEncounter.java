@@ -86,8 +86,8 @@ public interface NPCEncounter {
     default NPCContext onAfterEventChoice(RogueEvent event, RogueEvent.EventChoice choice,
                                           EventEffect effect, RogueRun run) { return null; }
 
-    /** Fired before bazaar opens. Modify ctx to inject cards or override prices. */
-    default void onBeforeBazaar(BazaarContext ctx) {}
+    /** Fired before bazaar opens. Modify ctx to inject cards, special offers, or override prices. */
+    default void onBeforeBazaar(BazaarContext ctx, RogueRun run) {}
 
     /** Fired after bazaar purchase. Return non-null to show NPC dialog. */
     default NPCContext onAfterBazaarPurchase(BazaarContext ctx) { return null; }

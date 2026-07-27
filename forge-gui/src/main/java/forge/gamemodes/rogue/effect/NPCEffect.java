@@ -485,81 +485,81 @@ public enum NPCEffect implements RogueEffect {
             return run.canAddCardToDeck(solRing) || run.canAddCardToDeck(arcaneSignet);
         }
     },
-    TYVAR_AUGMENTED("npc_tyvar_augmented", "Augmented Commander",
+    TYVAR_AUGMENTED("npc_tyvar_augmented_commander", "Augmented Commander",
         TRAIT_GAIN_DESCRIPTION, NPC.TYVAR,
-        EffectType.PERMANENT, "Tyvar Trait - Augmented") {
+        EffectType.PERMANENT, "Tyvar Trait - Augmented Commander") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
         }
     },
-    TYVAR_BASTION("npc_tyvar_bastion", "Bastion Commander",
+    TYVAR_BASTION("npc_tyvar_bastion_commander", "Bastion Commander",
         TRAIT_GAIN_DESCRIPTION, NPC.TYVAR,
-        EffectType.PERMANENT, "Tyvar Trait - Bastion") {
+        EffectType.PERMANENT, "Tyvar Trait - Bastion Commander") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
         }
     },
-    TYVAR_BLOODSWORN("npc_tyvar_bloodsworn", "Bloodsworn Commander",
+    TYVAR_BLOODSWORN("npc_tyvar_bloodsworn_commander", "Bloodsworn Commander",
         TRAIT_GAIN_DESCRIPTION, NPC.TYVAR,
-        EffectType.PERMANENT, "Tyvar Trait - Bloodsworn") {
+        EffectType.PERMANENT, "Tyvar Trait - Bloodsworn Commander") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
         }
     },
-    TYVAR_BRAWLER("npc_tyvar_brawler", "Brawler Commander",
+    TYVAR_BRAWLER("npc_tyvar_brawler_commander", "Brawler Commander",
         TRAIT_GAIN_DESCRIPTION, NPC.TYVAR,
-        EffectType.PERMANENT, "Tyvar Trait - Brawler") {
+        EffectType.PERMANENT, "Tyvar Trait - Brawler Commander") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
         }
     },
-    TYVAR_CHARLATAN("npc_tyvar_charlatan", "Charlatan Commander",
+    TYVAR_CHARLATAN("npc_tyvar_charlatan_commander", "Charlatan Commander",
         TRAIT_GAIN_DESCRIPTION, NPC.TYVAR,
-        EffectType.PERMANENT, "Tyvar Trait - Charlatan") {
+        EffectType.PERMANENT, "Tyvar Trait - Charlatan Commander") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
         }
     },
-    TYVAR_CHEF("npc_tyvar_chef", "Master Chef Commander",
+    TYVAR_CHEF("npc_tyvar_chef_commander", "Master Chef Commander",
         TRAIT_GAIN_DESCRIPTION, NPC.TYVAR,
-        EffectType.PERMANENT, "Tyvar Trait - Master Chef") {
+        EffectType.PERMANENT, "Tyvar Trait - Master Chef Commander") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
         }
     },
-    TYVAR_CRIMINAL("npc_tyvar_criminal", "Criminal Commander",
+    TYVAR_CRIMINAL("npc_tyvar_criminal_commander", "Criminal Commander",
         TRAIT_GAIN_DESCRIPTION, NPC.TYVAR,
-        EffectType.PERMANENT, "Tyvar Trait - Criminal") {
+        EffectType.PERMANENT, "Tyvar Trait - Criminal Commander") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
         }
     },
-    TYVAR_CULTIST("npc_tyvar_cultist", "Cultist Commander",
+    TYVAR_CULTIST("npc_tyvar_cultist_commander", "Cultist Commander",
         TRAIT_GAIN_DESCRIPTION, NPC.TYVAR,
-        EffectType.PERMANENT, "Tyvar Trait - Cultist") {
+        EffectType.PERMANENT, "Tyvar Trait - Cultist Commander") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
         }
     },
-    TYVAR_FLAME("npc_tyvar_flame", "Flame Commander",
+    TYVAR_FLAME("npc_tyvar_flame_commander", "Flame Commander",
         TRAIT_GAIN_DESCRIPTION, NPC.TYVAR,
-        EffectType.PERMANENT, "Tyvar Trait - Flame") {
+        EffectType.PERMANENT, "Tyvar Trait - Flame Commander") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
         }
     },
-    TYVAR_SAGE("npc_tyvar_sage", "Sage Commander",
+    TYVAR_SAGE("npc_tyvar_sage_commander", "Sage Commander",
         TRAIT_GAIN_DESCRIPTION, NPC.TYVAR,
-        EffectType.PERMANENT, "Tyvar Trait - Sage") {
+        EffectType.PERMANENT, "Tyvar Trait - Sage Commander") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);

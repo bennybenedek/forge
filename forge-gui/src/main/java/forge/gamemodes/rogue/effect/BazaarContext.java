@@ -1,11 +1,8 @@
 package forge.gamemodes.rogue.effect;
 
-import forge.item.PaperCard;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -13,21 +10,20 @@ import java.util.Set;
  * Used by both ordinary Bazaar nodes and custom event inventories.
  */
 public class BazaarContext {
-
     /** Optional custom dialog title. Null = default Bazaar title. */
     public String title;
 
-    /** Custom inventory for Bazaar-style shopping. Ordinary Bazaar setup leaves this empty. */
-    public List<PaperCard> inventory = new ArrayList<>();
+    /** Custom or NPC-provided inventory. Ordinary Bazaar card generation adds its own card items. */
+    public final List<BazaarItem> inventory = new ArrayList<>();
 
-    /** Extra cards to inject into the bazaar inventory (e.g. Gonti's items). */
-    public final Set<PaperCard> injectedCards = new HashSet<>();
+    /** True when this Bazaar should generate trait offers in addition to ordinary cards. */
+    public boolean offersTraits;
 
-    /** Cards the player purchased (populated after shopping, before onAfterBazaarPurchase). */
-    public final Set<PaperCard> purchasedCards = new HashSet<>();
+    /** True when this Bazaar should generate carry-card offers in addition to ordinary cards. */
+    public boolean offersCarryCards;
 
-    /** Card name -> fixed price override. Used for both item pricing and card discounts. */
-    public Map<String, Integer> priceOverrides = new HashMap<>();
+    /** Bazaar entries the player purchased (populated after shopping, before onAfterBazaarPurchase). */
+    public final Set<BazaarItem> purchasedItems = new HashSet<>();
 
     /** Number of random cards to discount (set by encounters, applied by bazaar code). */
     public int discountCount;

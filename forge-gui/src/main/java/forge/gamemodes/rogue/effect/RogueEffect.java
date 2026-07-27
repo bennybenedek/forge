@@ -443,13 +443,13 @@ public interface RogueEffect {
         }
     }
 
-    default void triggerCustomBazaar(EffectResultContext ctx, String title, List<PaperCard> inventory, Map<String, Integer> priceOverrides) {
+    default void triggerCustomBazaar(EffectResultContext ctx, String title, List<PaperCard> inventory,
+                                     Map<String, Integer> priceOverrides) {
         BazaarContext bazaarContext = new BazaarContext();
         bazaarContext.title = title;
-        bazaarContext.inventory.addAll(inventory);
-
-        if (priceOverrides != null) {
-            bazaarContext.priceOverrides = priceOverrides;
+        for (PaperCard card : inventory) {
+            Integer priceOverride = priceOverrides != null ? priceOverrides.get(card.getName()) : null;
+            bazaarContext.inventory.add(BazaarItem.forCard(card, priceOverride));
         }
 
         ctx.bazaarContext = bazaarContext;

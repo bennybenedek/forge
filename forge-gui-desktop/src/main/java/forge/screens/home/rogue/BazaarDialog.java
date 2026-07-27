@@ -1,20 +1,33 @@
 package forge.screens.home.rogue;
 
 import forge.deckchooser.FDeckViewer;
-import forge.gamemodes.rogue.BazaarPricing;
-import forge.item.PaperCard;
+import forge.gamemodes.rogue.effect.BazaarItem;
 import forge.localinstance.skin.FSkinProp;
 import forge.toolbox.FLabel;
 import forge.toolbox.FOptionPane;
 import forge.toolbox.FSkin;
 import forge.toolbox.FSkin.SkinnedPanel;
+import forge.toolbox.FTabbedPane;
 import forge.util.Localizer;
 import forge.view.arcane.CardPanel;
-import java.awt.*;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.GraphicsConfiguration;
+import java.awt.GraphicsEnvironment;
+import java.awt.Image;
+import java.awt.Insets;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
+import java.awt.Stroke;
+import java.awt.Toolkit;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import javax.swing.SwingConstants;
 import javax.swing.Timer;
@@ -27,54 +40,46 @@ import net.miginfocom.swing.MigLayout;
 public class BazaarDialog {
   static final int MAX_DISPLAY_CARDS = 10;
 
-  private static final int BASE_CARD_WIDTH = 240;  // Desired card width
-  private static final int PRICE_LABEL_HEIGHT = 40;  // Space for price label below card
+  private static final int BASE_CARD_WIDTH = 240;
+  private static final int PRICE_LABEL_HEIGHT = 40;
   private static final int CARD_SPACING = 10;
   private static final int MAX_CARDS_PER_ROW = 5;
   private static final int MAX_ROWS = 2;
-  private static final int HEADER_HEIGHT = 95;  // Space for title, gold status, description (compact)
+  private static final int HEADER_HEIGHT = 95;
+  private static final int TABBED_HEADER_HEIGHT = 30;
 
   private final MainPanel panel;
   private CardUtil zoomUtil;
   private FOptionPane optionPane;
-  private final List<PaperCard> availableCards;
+  private final List<BazaarItem> availableItems;
+  private final List<BazaarItem> cardItems = new ArrayList<>();
+  private final List<BazaarItem> specialItems = new ArrayList<>();
   private final int availableGold;
   private final String dialogTitle;
   private final String rerollButtonLabel;
+  private int selectedTabIndex;
   private boolean rerollEnabled = true;
-  private final Map<String, Integer> priceOverrides; // card name → fixed price
-  private final Set<PaperCard> selectedCards = new HashSet<>();
+  private final Set<BazaarItem> selectedItems = new HashSet<>();
   private final FLabel lblGold;
   private final FLabel lblCost;
   private final FLabel lblRemaining;
 
-  // Computed card dimensions (may be scaled down)
   private int cardWidth;
   private int cardImageHeight;
   private int cardHeight;
   private int priceLabelHeight;
 
-  /**
-   * Create a Bazaar dialog with optional reroll button and price overrides.
-   *
-   * @param cards            List of cards available for purchase
-   * @param gold             Player's available gold
-   * @param title             Dialog title, or null for the default Bazaar title
-   * @param rerollButtonLabel Label for the reroll button, or null for no reroll
-   * @param priceOverrides    Card name → fixed price, or null for default pricing
-   */
-  public BazaarDialog(List<PaperCard> cards, int gold, String title,
-                      String rerollButtonLabel, Map<String, Integer> priceOverrides) {
-    this.availableCards = new ArrayList<>(cards);
+  public BazaarDialog(List<BazaarItem> items, int gold, String title, String rerollButtonLabel,
+                      int selectedTabIndex) {
+    this.availableItems = new ArrayList<>(items);
     this.availableGold = gold;
     this.dialogTitle = title != null ? title : "Bazaar";
     this.rerollButtonLabel = rerollButtonLabel;
-    this.priceOverrides = priceOverrides;
+    this.selectedTabIndex = selectedTabIndex;
+    splitItems();
 
-    // Create main panel
     panel = new MainPanel();
 
-    // Title label
     FLabel lblTitle = new FLabel.Builder()
         .text(dialogTitle)
         .fontSize(20)
@@ -82,7 +87,6 @@ public class BazaarDialog {
         .fontAlign(SwingConstants.CENTER)
         .build();
 
-    // Gold label (top-right, text before icon)
     lblGold = new FLabel.Builder()
         .text("Gold: " + availableGold)
         .icon(FSkin.getIcon(FSkinProp.ICO_QUEST_COIN))
@@ -91,7 +95,6 @@ public class BazaarDialog {
         .build();
     lblGold.setHorizontalTextPosition(SwingConstants.LEFT);
 
-    // Cost label (below gold, right-aligned)
     lblCost = new FLabel.Builder()
         .text("Cost: 0")
         .icon(FSkin.getIcon(FSkinProp.ICO_QUEST_COIN))
@@ -100,7 +103,6 @@ public class BazaarDialog {
         .build();
     lblCost.setHorizontalTextPosition(SwingConstants.LEFT);
 
-    // Separator + remaining label
     SeparatorLine separator = new SeparatorLine();
     lblRemaining = new FLabel.Builder()
         .text("Remaining: " + availableGold)
@@ -111,26 +113,25 @@ public class BazaarDialog {
         .build();
     lblRemaining.setHorizontalTextPosition(SwingConstants.LEFT);
 
-    // Description label
     FLabel lblDescription = new FLabel.Builder()
-        .text("Select cards to purchase (prices based on rarity)")
+        .text(specialItems.isEmpty()
+            ? "Select cards to purchase (prices based on rarity)"
+            : "Select offers to purchase")
         .fontSize(12)
         .fontAlign(SwingConstants.CENTER)
         .build();
 
-    // Add components to panel (compact layout to maximize card space)
     panel.add(lblTitle, "w 100%!, h 28px!, ax center, wrap");
     panel.add(lblGold, "pos (100%-160) 10, w 150!, h 20px!");
     panel.add(lblCost, "pos (100%-160) 30, w 150!, h 20px!");
     panel.add(separator, "pos (100%-155) 50, w 145!, h 1px!");
     panel.add(lblRemaining, "pos (100%-160) 53, w 150!, h 20px!");
     panel.add(lblDescription, "w 100%!, h 20px!, ax center, gap 0 0 5px 10px, wrap");
+    panel.setupShopPanels();
 
-    // Calculate layout: max 5 cards per row, max 2 rows
-    int cardsPerRow = Math.min(availableCards.size(), MAX_CARDS_PER_ROW);
-    int numRows = Math.min(MAX_ROWS, (int) Math.ceil(availableCards.size() / (double) cardsPerRow));
+    int cardsPerRow = getMaxCardsPerRow();
+    int numRows = getMaxRowCount();
 
-    // Get usable screen space (accounts for taskbar and DPI scaling)
     GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment()
         .getDefaultScreenDevice().getDefaultConfiguration();
     Rectangle screenBounds = gc.getBounds();
@@ -138,21 +139,20 @@ public class BazaarDialog {
     int usableWidth = screenBounds.width - screenInsets.left - screenInsets.right;
     int usableHeight = screenBounds.height - screenInsets.top - screenInsets.bottom;
 
-    // Reserve space for dialog title bar (~30px) and FOptionPane buttons (~50px)
     int maxDialogWidth = (int) (usableWidth * 0.9);
     int maxDialogHeight = (int) (usableHeight * 0.9) - 80;
 
-    // Calculate desired dimensions at full card size
     int baseCardImageHeight = Math.round(BASE_CARD_WIDTH * CardPanel.ASPECT_RATIO);
     int baseCardHeight = baseCardImageHeight + PRICE_LABEL_HEIGHT;
     int desiredWidth = cardsPerRow * (BASE_CARD_WIDTH + CARD_SPACING) - CARD_SPACING + 40;
     int desiredHeight = numRows * (baseCardHeight + 15) - 15 + HEADER_HEIGHT + 15;
+    if (!specialItems.isEmpty()) {
+      desiredHeight += TABBED_HEADER_HEIGHT;
+    }
 
-    // Dialog size is desired size capped to screen bounds
     int dialogWidth = Math.min(desiredWidth, maxDialogWidth);
     int dialogHeight = Math.min(desiredHeight, maxDialogHeight);
 
-    // Initialize card dimensions (doLayout will recalculate based on actual size)
     cardWidth = BASE_CARD_WIDTH;
     cardImageHeight = baseCardImageHeight;
     priceLabelHeight = PRICE_LABEL_HEIGHT;
@@ -168,30 +168,75 @@ public class BazaarDialog {
     this.rerollEnabled = enabled;
   }
 
-  /**
-   * Show the dialog and return the selected cards.
-   * Returns null if the reroll button was clicked.
-   *
-   * @return Set of purchased cards, null if reroll was clicked, or empty set if skipped
-   */
-  public Set<PaperCard> show() {
+  public int getSelectedTabIndex() {
+    return selectedTabIndex;
+  }
+
+  private void splitItems() {
+    for (BazaarItem item : availableItems) {
+      if (item.type() == BazaarItem.Type.TRAIT || item.type() == BazaarItem.Type.CARRY_CARD) {
+        specialItems.add(item);
+      } else {
+        cardItems.add(item);
+      }
+    }
+  }
+
+  private int getMaxCardsPerRow() {
+    int maxCardsPerRow = Math.min(cardItems.size(), MAX_CARDS_PER_ROW);
+    int traitCount = 0;
+    int carryCardCount = 0;
+    for (BazaarItem item : specialItems) {
+      if (item.type() == BazaarItem.Type.TRAIT) {
+        traitCount++;
+      } else if (item.type() == BazaarItem.Type.CARRY_CARD) {
+        carryCardCount++;
+      }
+    }
+
+    maxCardsPerRow = Math.max(maxCardsPerRow, Math.min(MAX_CARDS_PER_ROW, traitCount));
+    maxCardsPerRow = Math.max(maxCardsPerRow, Math.min(MAX_CARDS_PER_ROW, carryCardCount));
+    return Math.max(1, maxCardsPerRow);
+  }
+
+  private int getMaxRowCount() {
+    int cardRows = Math.min(MAX_ROWS,
+        (int) Math.ceil(cardItems.size() / (double) MAX_CARDS_PER_ROW));
+    boolean hasTraits = false;
+    boolean hasCarryCards = false;
+    for (BazaarItem item : specialItems) {
+      if (item.type() == BazaarItem.Type.TRAIT) {
+        hasTraits = true;
+      } else if (item.type() == BazaarItem.Type.CARRY_CARD) {
+        hasCarryCards = true;
+      }
+    }
+
+    int specialRows = 0;
+    if (hasCarryCards) {
+      specialRows = MAX_ROWS;
+    } else if (hasTraits) {
+      specialRows = 1;
+    }
+    return Math.max(1, Math.max(cardRows, specialRows));
+  }
+
+  public Set<BazaarItem> show() {
     final Localizer localizer = Localizer.getInstance();
 
-    // Build button list: [Buy, (optional Reroll), View Deck, Skip]
     final int BUY_OPTION = 0;
     final boolean showReroll = rerollButtonLabel != null;
     final int REROLL_OPTION = showReroll ? 1 : -1;
     final int VIEW_DECK_OPTION = showReroll ? 2 : 1;
     final int SKIP_OPTION = showReroll ? 3 : 2;
     final List<String> buttons = new ArrayList<>();
-    buttons.add("Buy Selected Cards");
+    buttons.add(specialItems.isEmpty() ? "Buy Selected Cards" : "Buy Selected");
     if (showReroll) {
       buttons.add(rerollButtonLabel);
     }
     buttons.add("View Deck");
     buttons.add(localizer.getMessage("lblSkip"));
 
-    // Cache coin icon for reroll button
     final javax.swing.Icon coinIcon = createCoinIcon();
 
     int result;
@@ -202,27 +247,23 @@ public class BazaarDialog {
           null,
           panel,
           buttons,
-          SKIP_OPTION  // Default to Skip
+          SKIP_OPTION
       );
 
       optionPane.getButton(VIEW_DECK_OPTION).setIcon(FSkin.getIcon(FSkinProp.ICO_CARD_IMAGE));
       optionPane.getButton(VIEW_DECK_OPTION).setHorizontalTextPosition(SwingConstants.RIGHT);
 
-      // Set coin icon on reroll button and enable/disable
       if (showReroll) {
         optionPane.getButton(REROLL_OPTION).setIcon(coinIcon);
         optionPane.getButton(REROLL_OPTION).setHorizontalTextPosition(SwingConstants.LEFT);
         optionPane.getButton(REROLL_OPTION).setEnabled(rerollEnabled);
       }
 
-      // Disable Buy until cards are selected
-      optionPane.getButton(BUY_OPTION).setEnabled(!selectedCards.isEmpty());
+      optionPane.getButton(BUY_OPTION).setEnabled(!selectedItems.isEmpty());
 
-      // Setup zoom utility
       zoomUtil = new CardUtil(optionPane);
       zoomUtil.setupZoomOverlay();
 
-      // Start the card reveal animation
       panel.startRevealAnimation();
 
       panel.revalidate();
@@ -230,23 +271,20 @@ public class BazaarDialog {
 
       optionPane.setVisible(true);
       result = optionPane.getResult();
+      selectedTabIndex = panel.getSelectedTabIndex();
       optionPane.dispose();
 
-      // If View Deck clicked, show deck and re-display dialog
       if (result == VIEW_DECK_OPTION) {
         showCurrentDeck();
       }
     } while (result == VIEW_DECK_OPTION);
 
-    // Buy clicked
-    if (result == 0) {
-      return selectedCards;
+    if (result == BUY_OPTION) {
+      return selectedItems;
     }
-    // Reroll clicked
     if (showReroll && result == REROLL_OPTION) {
       return null;
     }
-    // Skip clicked
     return new HashSet<>();
   }
 
@@ -278,23 +316,57 @@ public class BazaarDialog {
   private class MainPanel extends SkinnedPanel {
 
     private final List<SelectableCardPanel> cardPanels = new ArrayList<>();
+    private ShopGridPanel cardGridPanel;
+    private ShopGridPanel specialGridPanel;
+    private FTabbedPane tabbedPane;
     private Timer revealTimer;
     private int revealIndex = 0;
 
     private MainPanel() {
       super(new MigLayout("insets 10, gap 0, wrap", "[grow, center]", ""));
       setOpaque(false);
-
-      // Create card panels
-      for (PaperCard card : availableCards) {
-        SelectableCardPanel cardPanel = new SelectableCardPanel(card);
-        cardPanels.add(cardPanel);
-      }
     }
 
-    /**
-     * Start the card reveal animation with a timer.
-     */
+    private void setupShopPanels() {
+      cardGridPanel = new ShopGridPanel(buildRows(cardItems));
+      if (specialItems.isEmpty()) {
+        add(cardGridPanel);
+        return;
+      }
+
+      List<BazaarItem> traitItems = new ArrayList<>();
+      List<BazaarItem> carryItems = new ArrayList<>();
+      for (BazaarItem item : specialItems) {
+        if (item.type() == BazaarItem.Type.TRAIT) {
+          traitItems.add(item);
+        } else {
+          carryItems.add(item);
+        }
+      }
+
+      List<List<BazaarItem>> specialRows = new ArrayList<>();
+      specialRows.add(traitItems);
+      specialRows.add(carryItems);
+      specialGridPanel = new ShopGridPanel(specialRows);
+      tabbedPane = new FTabbedPane();
+      tabbedPane.addTab("Cards", cardGridPanel);
+      tabbedPane.addTab("Traits & Carry Cards", specialGridPanel);
+      tabbedPane.setSelectedIndex(Math.max(0, Math.min(selectedTabIndex, tabbedPane.getTabCount() - 1)));
+      add(tabbedPane);
+    }
+
+    private int getSelectedTabIndex() {
+      return tabbedPane != null ? tabbedPane.getSelectedIndex() : 0;
+    }
+
+    private List<List<BazaarItem>> buildRows(List<BazaarItem> items) {
+      List<List<BazaarItem>> rows = new ArrayList<>();
+      for (int i = 0; i < items.size() && rows.size() < MAX_ROWS; i += MAX_CARDS_PER_ROW) {
+        rows.add(items.subList(i, Math.min(items.size(), i + MAX_CARDS_PER_ROW)));
+      }
+      return rows;
+    }
+
     public void startRevealAnimation() {
       revealIndex = 0;
       revealTimer = new Timer(100, e -> {
@@ -312,86 +384,97 @@ public class BazaarDialog {
     public void doLayout() {
       super.doLayout();
 
-      if (cardPanels.isEmpty()) {
-        return;
+      int shopY = HEADER_HEIGHT;
+      int shopHeight = getHeight() - shopY - 10;
+      if (tabbedPane != null) {
+        tabbedPane.setBounds(10, shopY, Math.max(0, getWidth() - 20), Math.max(0, shopHeight));
+      } else if (cardGridPanel != null) {
+        cardGridPanel.setBounds(0, shopY, getWidth(), Math.max(0, shopHeight));
+      }
+    }
+
+    private SelectableCardPanel createCardPanel(BazaarItem item) {
+      SelectableCardPanel cardPanel = new SelectableCardPanel(item);
+      cardPanels.add(cardPanel);
+      return cardPanel;
+    }
+
+    private class ShopGridPanel extends SkinnedPanel {
+      private final List<List<SelectableCardPanel>> rows = new ArrayList<>();
+
+      private ShopGridPanel(List<List<BazaarItem>> itemRows) {
+        super(null);
+        setOpaque(false);
+        for (List<BazaarItem> itemRow : itemRows) {
+          List<SelectableCardPanel> panelRow = new ArrayList<>();
+          for (BazaarItem item : itemRow) {
+            SelectableCardPanel cardPanel = createCardPanel(item);
+            panelRow.add(cardPanel);
+            add(cardPanel);
+          }
+          rows.add(panelRow);
+        }
       }
 
-      int totalWidth = getWidth();
-      int totalHeight = getHeight();
-
-      // Calculate available space for cards
-      int availableWidth = totalWidth - 40; // 40 padding (20 each side)
-      int availableHeight = totalHeight - HEADER_HEIGHT - 15;
-
-      // Calculate cards per row and number of rows
-      int cardsPerRow = Math.min(MAX_CARDS_PER_ROW, cardPanels.size());
-      int numRows = Math.min(MAX_ROWS, (int) Math.ceil(cardPanels.size() / (double) cardsPerRow));
-
-      // Calculate scale to fit cards in available space
-      int baseCardImageHeight = Math.round(BASE_CARD_WIDTH * CardPanel.ASPECT_RATIO);
-      int baseCardHeight = baseCardImageHeight + PRICE_LABEL_HEIGHT;
-      int desiredWidth = cardsPerRow * (BASE_CARD_WIDTH + CARD_SPACING) - CARD_SPACING;
-      int desiredHeight = numRows * (baseCardHeight + 15) - 15;
-
-      float widthScale =
-          availableWidth > 0 ? Math.min(1.0f, (float) availableWidth / desiredWidth) : 1.0f;
-      float heightScale =
-          availableHeight > 0 ? Math.min(1.0f, (float) availableHeight / desiredHeight) : 1.0f;
-      float scale = Math.min(widthScale, heightScale);
-
-      // Apply scale to card dimensions (including price label)
-      cardWidth = Math.round(BASE_CARD_WIDTH * scale);
-      cardImageHeight = Math.round(cardWidth * CardPanel.ASPECT_RATIO);
-      priceLabelHeight = Math.round(PRICE_LABEL_HEIGHT * scale);
-      cardHeight = cardImageHeight + priceLabelHeight;
-
-      // Calculate starting position for grid (centered horizontally, top-aligned vertically)
-      int gridWidth = cardsPerRow * cardWidth + (cardsPerRow - 1) * CARD_SPACING;
-      int startX = (totalWidth - gridWidth) / 2;
-      int startY = HEADER_HEIGHT;
-
-      // Layout cards in grid
-      int x = startX;
-      int y = startY;
-      int cardCount = 0;
-
-      for (SelectableCardPanel cardPanel : cardPanels) {
-        if (cardCount >= MAX_CARDS_PER_ROW * MAX_ROWS) {
-          break;
+      @Override
+      public void doLayout() {
+        if (rows.isEmpty()) {
+          return;
         }
 
-        cardPanel.setBounds(x, y, cardWidth, cardHeight);
-
-        cardCount++;
-        if (cardCount % cardsPerRow == 0) {
-          x = startX;
+        calculateCardSize();
+        int y = 0;
+        for (List<SelectableCardPanel> row : rows) {
+          layoutRow(row, y);
           y += cardHeight + 15;
-        } else {
-          x += cardWidth + CARD_SPACING;
         }
       }
 
-      // Add card panels to display
-      for (SelectableCardPanel cardPanel : cardPanels) {
-        if (cardPanel.getParent() == null) {
-          add(cardPanel);
+      private void calculateCardSize() {
+        int availableWidth = getWidth() - 40;
+        int availableHeight = getHeight() - 10;
+        int cardsPerRow = rows.stream()
+            .mapToInt(List::size)
+            .max()
+            .orElse(1);
+        int numRows = Math.min(MAX_ROWS, rows.size());
+
+        int baseCardImageHeight = Math.round(BASE_CARD_WIDTH * CardPanel.ASPECT_RATIO);
+        int baseCardHeight = baseCardImageHeight + PRICE_LABEL_HEIGHT;
+        int desiredWidth = cardsPerRow * (BASE_CARD_WIDTH + CARD_SPACING) - CARD_SPACING;
+        int desiredHeight = numRows * (baseCardHeight + 15) - 15;
+
+        float widthScale =
+            availableWidth > 0 ? Math.min(1.0f, (float) availableWidth / desiredWidth) : 1.0f;
+        float heightScale =
+            availableHeight > 0 ? Math.min(1.0f, (float) availableHeight / desiredHeight) : 1.0f;
+        float scale = Math.min(widthScale, heightScale);
+
+        cardWidth = Math.round(BASE_CARD_WIDTH * scale);
+        cardImageHeight = Math.round(cardWidth * CardPanel.ASPECT_RATIO);
+        priceLabelHeight = Math.round(PRICE_LABEL_HEIGHT * scale);
+        cardHeight = cardImageHeight + priceLabelHeight;
+      }
+
+      private void layoutRow(List<SelectableCardPanel> rowPanels, int y) {
+        int rowWidth = rowPanels.size() * cardWidth + (rowPanels.size() - 1) * CARD_SPACING;
+        int x = (getWidth() - rowWidth) / 2;
+        for (SelectableCardPanel cardPanel : rowPanels) {
+          cardPanel.setBounds(x, y, cardWidth, cardHeight);
+          x += cardWidth + CARD_SPACING;
         }
       }
     }
   }
 
-  /**
-   * Panel for displaying a single selectable card with flip animation and price label.
-   */
   private class SelectableCardPanel extends SelectableCardPanelBase {
+    private final BazaarItem item;
 
-    public SelectableCardPanel(PaperCard card) {
-      super(card, () -> BazaarDialog.this.zoomUtil, true);
+    private SelectableCardPanel(BazaarItem item) {
+      super(item.card(), () -> BazaarDialog.this.zoomUtil, true);
+      this.item = item;
     }
 
-    /**
-     * Reveal this card with flip animation. Delegates to base class flip() method.
-     */
     public void reveal() {
       flip();
     }
@@ -399,27 +482,23 @@ public class BazaarDialog {
     @Override
     public void doLayout() {
       super.doLayout();
-      // Position card image at full size, leaving space below for price label
       cardPicture.setBounds(0, 0, getWidth(), cardImageHeight);
     }
 
     @Override
     protected void toggleSelection() {
-      // Check if we can afford to select this card
       if (!selected) {
-        int potentialCost = calculateTotalCost() + BazaarPricing.getCardPrice(card, priceOverrides);
+        int potentialCost = calculateTotalCost() + item.getPrice();
         if (potentialCost > availableGold) {
-          // Can't afford this card
           return;
         }
       }
 
       selected = !selected;
-
       if (selected) {
-        selectedCards.add(card);
+        selectedItems.add(item);
       } else {
-        selectedCards.remove(card);
+        selectedItems.remove(item);
       }
 
       updateGoldStatus();
@@ -428,33 +507,23 @@ public class BazaarDialog {
 
     @Override
     public void paint(Graphics g) {
-      // Call base class paint (handles animation and selection highlight)
       super.paint(g);
 
-      // Draw price label on top
       if (!faceDown) {
         Graphics2D g2d = (Graphics2D) g;
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        drawPriceLabel(g2d, getWidth(), getHeight());
+        drawPriceLabel(g2d, getWidth());
       }
     }
 
-    /**
-     * Draw price label with coin icon below the card (no background box).
-     */
-    private void drawPriceLabel(Graphics2D g2d, int width, int height) {
-      int price = BazaarPricing.getCardPrice(card, priceOverrides);
-      int basePrice = BazaarPricing.getCardPrice(card);
-      boolean isDiscounted = price < basePrice;
-
-      // Calculate position in the space below the card image
+    private void drawPriceLabel(Graphics2D g2d, int width) {
+      int price = item.getPrice();
+      int basePrice = item.getBasePrice();
+      boolean isDiscounted = item.isDiscounted();
       int labelY = cardImageHeight;
-
-      // Scale icon size proportionally
       int iconSize = Math.max(16, Math.round(28 * priceLabelHeight / (float) PRICE_LABEL_HEIGHT));
       int fontSize = Math.max(12, Math.round(20 * priceLabelHeight / (float) PRICE_LABEL_HEIGHT));
 
-      // Draw coin icon
       Image coinIcon = FSkin.getImage(FSkinProp.ICO_QUEST_COIN).getIcon().getImage();
       int iconX = (width - iconSize - 55) / 2;
       int iconY = labelY + (priceLabelHeight - iconSize) / 2;
@@ -467,26 +536,8 @@ public class BazaarDialog {
       int textY = labelY + (priceLabelHeight + fm.getAscent()) / 2 - 2;
 
       if (isDiscounted) {
-        // Draw original price with strikethrough
-        String origText = String.valueOf(basePrice);
-        g2d.setColor(Color.GRAY);
-        g2d.drawString(origText, textX, textY);
-        int origWidth = fm.stringWidth(origText);
-        int strikeY = textY - fm.getAscent() / 3;
-        Stroke oldStroke = g2d.getStroke();
-        g2d.setStroke(new BasicStroke(2f));
-        g2d.drawLine(textX, strikeY, textX + origWidth, strikeY);
-        g2d.setStroke(oldStroke);
-
-        // Draw discounted price next to it
-        int discountedX = textX + origWidth + 6;
-        String discText = String.valueOf(price);
-        g2d.setColor(Color.BLACK);
-        g2d.drawString(discText, discountedX + 1, textY + 1);
-        g2d.setColor(new Color(100, 255, 100));
-        g2d.drawString(discText, discountedX, textY);
+        drawDiscountedPrice(g2d, fm, textX, textY, price, basePrice);
       } else {
-        // Draw normal price
         g2d.setColor(Color.BLACK);
         g2d.drawString(String.valueOf(price), textX + 1, textY + 1);
         g2d.setColor(Color.YELLOW);
@@ -494,22 +545,40 @@ public class BazaarDialog {
       }
     }
 
-    /**
-     * Calculate total cost of selected cards using shared pricing.
-     */
-    private int calculateTotalCost() {
-      return BazaarPricing.calculateTotalCost(selectedCards, priceOverrides);
+    private void drawDiscountedPrice(Graphics2D g2d, FontMetrics fm, int textX, int textY,
+                                     int price, int basePrice) {
+      String origText = String.valueOf(basePrice);
+      g2d.setColor(Color.GRAY);
+      g2d.drawString(origText, textX, textY);
+      int origWidth = fm.stringWidth(origText);
+      int strikeY = textY - fm.getAscent() / 3;
+      Stroke oldStroke = g2d.getStroke();
+      g2d.setStroke(new BasicStroke(2f));
+      g2d.drawLine(textX, strikeY, textX + origWidth, strikeY);
+      g2d.setStroke(oldStroke);
+
+      int discountedX = textX + origWidth + 6;
+      String discText = String.valueOf(price);
+      g2d.setColor(Color.BLACK);
+      g2d.drawString(discText, discountedX + 1, textY + 1);
+      g2d.setColor(new Color(100, 255, 100));
+      g2d.drawString(discText, discountedX, textY);
     }
 
-    /**
-     * Update the gold and cost labels.
-     */
+    private int calculateTotalCost() {
+      int totalCost = 0;
+      for (BazaarItem item : selectedItems) {
+        totalCost += item.getPrice();
+      }
+      return totalCost;
+    }
+
     private void updateGoldStatus() {
       int totalCost = calculateTotalCost();
       lblCost.setText(totalCost > 0 ? "Cost: -" + totalCost : "Cost: 0");
       lblRemaining.setText("Remaining: " + (availableGold - totalCost));
       if (optionPane != null) {
-        optionPane.getButton(0).setEnabled(!selectedCards.isEmpty());
+        optionPane.getButton(0).setEnabled(!selectedItems.isEmpty());
       }
     }
   }
