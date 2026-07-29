@@ -22,6 +22,9 @@ public class BazaarContext {
     /** True when this Bazaar should generate carry-card offers in addition to ordinary cards. */
     public boolean offersCarryCards;
 
+    /** Number of random trait/carry-card offers to discount. */
+    public int specialDiscountCount;
+
     /** Bazaar entries the player purchased (populated after shopping, before onAfterBazaarPurchase). */
     public final Set<BazaarItem> purchasedItems = new HashSet<>();
 

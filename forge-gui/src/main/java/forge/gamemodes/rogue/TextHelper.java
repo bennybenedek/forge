@@ -138,6 +138,15 @@ public final class TextHelper {
         return new CardReference(cardName, setCode, artIndex);
     }
 
+    public static String formatHoursMinutesSeconds(long millis) {
+        long totalSeconds = Math.max(0, millis) / 1000;
+        long seconds = totalSeconds % 60;
+        long totalMinutes = totalSeconds / 60;
+        long minutes = totalMinutes % 60;
+        long hours = totalMinutes / 60;
+        return String.format("%02d:%02d:%02d", hours, minutes, seconds);
+    }
+
     private static String normalizeStrippedPreviewText(String text) {
         return text
             .replaceAll("[ \\t]{2,}", " ")

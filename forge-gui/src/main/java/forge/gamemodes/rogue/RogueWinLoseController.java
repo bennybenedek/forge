@@ -170,6 +170,7 @@ public class RogueWinLoseController {
         }
 
         currentRun.setRunWon(true);
+        currentRun.getRunTimer().stop();
 
         // Record run history - find boss name from last NodePlanebound (BOSS type)
         String bossName = "";
@@ -270,6 +271,7 @@ public class RogueWinLoseController {
             return;
         }
         run.setRunFailed(true);
+        run.getRunTimer().stop();
 
         var progress = RogueMetaProgress.getInstance();
         progress.addRunHistoryEntry(RogueRunHistoryEntry.fromRun(run, "DEFEAT",

@@ -574,15 +574,6 @@ public enum NPCEffect implements RogueEffect {
             RogueEffect.addCardToBattlefield("Command Beacon", human);
         }
     },
-    TYVAR_WAR_ROOM("npc_tyvar_war_room", "Tyvar's War Room",
-        TRAIT_GAIN_DESCRIPTION + " ![[War Room]]", NPC.TYVAR,
-        EffectType.PERMANENT, "Tyvar Trait - Tyvar's War Room") {
-        @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-            RogueEffect.addCardToBattlefield("War Room", human);
-        }
-    },
     TYVAR_PALACE("npc_tyvar_palace", "Tyvar's Palace",
         TRAIT_GAIN_DESCRIPTION + " ![[Opal Palace]]", NPC.TYVAR,
         EffectType.PERMANENT, "Tyvar Trait - Tyvar's Palace") {
@@ -590,6 +581,24 @@ public enum NPCEffect implements RogueEffect {
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
             RogueEffect.addCardToBattlefield("Opal Palace", human);
+        }
+    },
+    TYVAR_SANCTUM("npc_tyvar_sanctum", "Tyvar's Sanctum",
+        TRAIT_GAIN_DESCRIPTION + " ![[Sanctum of Eternity]]", NPC.TYVAR,
+        EffectType.PERMANENT, "Tyvar Trait - Tyvar's Sanctum") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+            RogueEffect.addCardToBattlefield("Sanctum of Eternity", human);
+        }
+    },
+    TYVAR_WAR_ROOM("npc_tyvar_war_room", "Tyvar's War Room",
+        TRAIT_GAIN_DESCRIPTION + " ![[War Room]]", NPC.TYVAR,
+        EffectType.PERMANENT, "Tyvar Trait - Tyvar's War Room") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+            RogueEffect.addCardToBattlefield("War Room", human);
         }
     };
 

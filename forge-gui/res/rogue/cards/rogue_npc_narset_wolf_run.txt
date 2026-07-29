@@ -1,4 +1,4 @@
 Name:Narset Trait - Narset's Wolf Run
 ManaCost:no cost
 Types:Trait
-Oracle:Start each match with Kessig Wolf Run on the battlefield.
+Oracle:Start each match with a Kessig Wolf Run on the battlefield.

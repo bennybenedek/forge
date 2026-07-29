@@ -15,7 +15,9 @@ import java.util.List;
  * LEVEL_2 (requiredLevel=2): Offer the Tarnished Relic; if bought, promote to level 3.
  * LEVEL_3 (requiredLevel=3): Apply discounts and count two Bazaar visits toward Gonti's next item.
  * LEVEL_5 (requiredLevel=5): Offer another Gonti curio; if bought, promote to level 6.
- * LEVEL_6 (requiredLevel=6): Add Gonti's special selection to future Bazaars.
+ * LEVEL_6 (requiredLevel=6): Offer traits/carry cards and count toward Gonti's final item.
+ * LEVEL_8 (requiredLevel=8): Offer Gonti's final curio; if bought, promote to level 9.
+ * LEVEL_9 (requiredLevel=9): Add discounts to Gonti's traits/carry cards.
  */
 public enum GontiEncounter implements NPCEncounter {
 
@@ -104,17 +106,64 @@ public enum GontiEncounter implements NPCEncounter {
         }
     },
 
-    /** Level 6 - apply discounts and add Gonti's special selection to the Bazaar. */
-    OFFERING_SPECIAL_SELECTION(6) {
+    /** Level 6 and 7 - offer traits/carry cards while counting toward Gonti's final item. */
+    OFFERING_TRAITS_AND_CARRY_CARDS(6) {
         @Override
         public void onBeforeBazaar(BazaarContext ctx, RogueRun run) {
             applyDiscount(ctx);
-            ctx.offersTraits = true;
-            ctx.offersCarryCards = true;
+            enableSpecialSelection(ctx);
+            incrementNpcLevel();
+        }
+    },
+
+    /** Level 8 - offer Gonti's final, most suspicious curio. */
+    OFFERING_INCOMPREHENSIBLE_CONTRAPTION(8) {
+        private static final String CURIO_CARD_NAME = "Gonti Curio - Incomprehensible Contraption";
+        private static final int CURIO_PRICE = 10;
+
+        @Override
+        public void onBeforeBazaar(BazaarContext ctx, RogueRun run) {
+            applyDiscount(ctx);
+            enableSpecialSelection(ctx);
+            PaperCard curio = getRogueCard(CURIO_CARD_NAME);
+            if (curio != null) {
+                ctx.inventory.add(BazaarItem.forCurio(curio, CURIO_PRICE));
+            }
+        }
+
+        @Override
+        public NPCContext onAfterBazaarPurchase(BazaarContext ctx) {
+            if (!boughtCurio(ctx, CURIO_CARD_NAME)) {
+                return null;
+            }
+
+            incrementNpcLevel();
+            return buildContext(
+                "Gonti stares at the contraption in your hands as if watching a prophecy come true " +
+                "in the least dignified way possible. \"No. No, that cannot be right. That device " +
+                "doesn't open, doesn't close, doesn't hum, doesn't glow, and I am almost certain one " +
+                "of the little wheels is decorative because it is painted on.\" He laughs, breathless " +
+                "and delighted. \"You have gone beyond customer, beyond patron, beyond accomplice. " +
+                "You are a collector of impossibilities. Very well. From now on, the strangest shelf " +
+                "gets the same generous treatment as the ordinary wares. Discounts, even there. " +
+                "Do try not to make me regret encouraging this.\"",
+
+                List.of(new NPCContext.NPCChoice("Accept", null))
+            );
+        }
+    },
+
+    /** Level 9 - apply discounts to both the ordinary Bazaar and Gonti's traits/carry cards. */
+    OFFERING_DISCOUNTED_TRAITS_AND_CARRY_CARDS(9) {
+        @Override
+        public void onBeforeBazaar(BazaarContext ctx, RogueRun run) {
+            applyDiscount(ctx);
+            enableSpecialSelection(ctx);
+            ctx.specialDiscountCount = 2;
         }
     };
 
-    private static final int DISCOUNT_AMOUNT = 4;
+    private static final int DISCOUNT_AMOUNT = 2;
 
     private final int requiredLevel;
 
@@ -136,6 +185,11 @@ public enum GontiEncounter implements NPCEncounter {
     private static void applyDiscount(BazaarContext ctx) {
         ctx.discountCount = 2;
         ctx.discountAmount = DISCOUNT_AMOUNT;
+    }
+
+    private static void enableSpecialSelection(BazaarContext ctx) {
+        ctx.offersTraits = true;
+        ctx.offersCarryCards = true;
     }
 
     private static boolean boughtCurio(BazaarContext ctx, String cardName) {

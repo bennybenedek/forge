@@ -173,6 +173,7 @@ public class RogueIO {
 
     public static void saveRun(final RogueRun rd) {
         try {
+            rd.getRunTimer().checkpoint();
             final XStream xStream = RogueIO.getSerializer(false);
             RogueIO.savePacked(xStream, rd);
         } catch (final Exception ex) {

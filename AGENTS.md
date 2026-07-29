@@ -17,7 +17,10 @@ This repository is a Java 17+ multi-module Maven project (Forge / Rogue Commande
 - Do not compile or run builds/tests unless the user explicitly asks.
 - Do not add unit tests by default. Only add tests when the user explicitly asks for them, or when test additions are part of the agreed implementation plan.
 - Do not implement beyond explicit user requirements; if ambiguous, ask one focused question.
+- If the user asks for a specific change that appears already done, say so and wait for confirmation before substituting a different change.
+- If completing a request appears to require an implementation step that was not in the plan or discussion, stop and discuss it before adding that step.
 - Keep changes lean and localized; prefer existing patterns over new abstractions.
+- Preserve existing naming conventions when extending code; rename or extend within the established local vocabulary instead of introducing a new conceptual naming pattern for the same behavior.
 - Avoid method overloads by default. Prefer one explicit method signature with nullable/empty parameters when appropriate, and only add overloads if the user explicitly wants them or there is a strong established pattern nearby.
 - Check nearby code before editing; match the established approach in that package/module.
 - Reuse existing mechanisms for UI, loading, events, persistence, and rendering before adding helpers.

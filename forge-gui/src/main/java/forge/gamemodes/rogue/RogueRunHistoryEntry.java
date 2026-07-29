@@ -27,6 +27,7 @@ public class RogueRunHistoryEntry {
     private int descensionLevel;                   // 0 = not used; XStream defaults to 0 for old saves
     private List<EffectSnapshot> activeEffects;    // null for old saves
     private List<String> activeBoonNames;          // legacy field for older saves
+    private long runTimeMillis;                    // XStream defaults to 0 for old saves
 
     public RogueRunHistoryEntry() {
     }
@@ -39,8 +40,9 @@ public class RogueRunHistoryEntry {
         entry.bossOrDefeatedBy = bossOrDefeatedBy != null ? bossOrDefeatedBy : "";
         entry.finalLife = run.getCurrentLife();
         entry.finalGold = run.getCurrentGold();
-        entry.timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date());
+        entry.timestamp = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
         entry.deckSnapshot = run.getCurrentDeck() != null ? new Deck(run.getCurrentDeck()) : null;
+        entry.runTimeMillis = run.getRunTimeMillis();
 
         entry.descensionLevel = run.getDescensionLevel();
 
@@ -93,6 +95,8 @@ public class RogueRunHistoryEntry {
     public String getTimestamp() { return timestamp; }
     public Deck getDeckSnapshot() { return deckSnapshot; }
     public int getDescensionLevel() { return descensionLevel; }
+    public long getRunTimeMillis() { return runTimeMillis; }
+    public String getFormattedRunTime() { return TextHelper.formatHoursMinutesSeconds(runTimeMillis); }
     public List<EffectSnapshot> getActiveEffects() {
         if (activeEffects != null) {
             return activeEffects;

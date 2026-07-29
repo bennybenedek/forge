@@ -216,7 +216,8 @@ public enum VSubmenuRogueHistory implements IVSubmenu<CSubmenuRogueHistory> {
       add(lblDetail);
 
       lblTimestamp = new FLabel.Builder()
-          .text(entry.getTimestamp())
+          .text("<html><div align='right'>Date: " + entry.getTimestamp()
+              + "<br>Run Duration: " + entry.getFormattedRunTime() + "</div></html>")
           .fontSize(11)
           .fontAlign(SwingConstants.RIGHT)
           .build();
@@ -279,8 +280,8 @@ public enum VSubmenuRogueHistory implements IVSubmenu<CSubmenuRogueHistory> {
       y += metrics.rowH() + ROW_GAP;
 
       lblDetail.setBounds(metrics.contentX(), y, metrics.leftW(), metrics.rowH());
-      lblTimestamp.setBounds(metrics.rightSideX(), y, metrics.rightSideW(), metrics.rowH());
-      y += metrics.rowH() + ROW_GAP;
+      lblTimestamp.setBounds(metrics.rightSideX(), y, metrics.rightSideW(), metrics.metadataH());
+      y += metrics.metadataH() + ROW_GAP;
 
       int pathH = 0;
       if (txtPath != null) {
@@ -324,7 +325,7 @@ public enum VSubmenuRogueHistory implements IVSubmenu<CSubmenuRogueHistory> {
       LayoutMetrics metrics = getLayoutMetrics(w);
       int y = INSET;
       y += 20 + ROW_GAP;
-      y += 20 + ROW_GAP;
+      y += metrics.metadataH() + ROW_GAP;
       int pathH = 0;
       if (txtPath != null) {
         txtPath.setSize(Math.max(metrics.leftW(), 100), Short.MAX_VALUE);
@@ -337,6 +338,7 @@ public enum VSubmenuRogueHistory implements IVSubmenu<CSubmenuRogueHistory> {
       int totalHeight = y + INSET;
       if (metrics.hasInfoCol()) {
         int infoY = INSET + 20 + ROW_GAP;
+        infoY += metrics.metadataH() + ROW_GAP;
         if (lblDescension != null) {
           infoY += 20 + ROW_GAP;
         }
@@ -356,7 +358,9 @@ public enum VSubmenuRogueHistory implements IVSubmenu<CSubmenuRogueHistory> {
       Dimension viewDeckSize = btnViewDeck != null
           ? RogueButtonHelper.getCompactButtonSize(btnViewDeck, 120, MIN_BTN_HEIGHT)
           : null;
-      int rightSideW = viewDeckSize != null ? viewDeckSize.width + 5 : 0;
+      int buttonW = viewDeckSize != null ? viewDeckSize.width + 5 : 0;
+      int metadataW = lblTimestamp.getPreferredSize().width;
+      int rightSideW = Math.min(contentW, Math.max(buttonW, metadataW));
       int rightSideX = contentX + contentW - rightSideW;
 
       boolean hasInfoCol = (lblDescension != null || pnlEffects != null);
@@ -410,6 +414,9 @@ public enum VSubmenuRogueHistory implements IVSubmenu<CSubmenuRogueHistory> {
         int leftW,
         int infoColX,
         int infoColW) {
+      int metadataH() {
+        return rowH * 2;
+      }
     }
 
     @Override

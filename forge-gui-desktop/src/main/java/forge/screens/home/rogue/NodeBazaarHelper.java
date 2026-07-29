@@ -222,12 +222,13 @@ class NodeBazaarHelper {
             BazaarItem item = inventory.get(indices.get(i));
             PaperCard card = item.card();
             int basePrice = BazaarPricing.getCardPrice(card);
-            int discounted = Math.max(0, basePrice - bazaarCtx.discountAmount);
-            if (discounted == 0 && basePrice > 2) {
-                discounted = 1;
-            }
+            int discounted = calculateDiscountedPrice(basePrice, bazaarCtx.discountAmount);
             inventory.set(indices.get(i), item.withPriceOverride(discounted));
         }
+    }
+
+    private int calculateDiscountedPrice(int basePrice, int discountAmount) {
+        return Math.max(0, basePrice - discountAmount);
     }
 
     private void addContextItemsToOrdinaryInventory(BazaarContext bazaarCtx, List<BazaarItem> inventory) {
@@ -260,6 +261,59 @@ class NodeBazaarHelper {
         if (bazaarCtx.offersCarryCards) {
             addCarryCardOffers(currentRun, inventory, carryCardOffers);
         }
+        applySpecialBazaarDiscounts(bazaarCtx, inventory);
+    }
+
+    private void applySpecialBazaarDiscounts(BazaarContext bazaarCtx, List<BazaarItem> inventory) {
+        if (bazaarCtx.specialDiscountCount <= 0 || inventory.isEmpty()) {
+            return;
+        }
+
+        List<Integer> traitIndices = new ArrayList<>();
+        List<Integer> carryCardIndices = new ArrayList<>();
+        for (int i = 0; i < inventory.size(); i++) {
+            BazaarItem item = inventory.get(i);
+            if (item.type() == BazaarItem.Type.TRAIT) {
+                traitIndices.add(i);
+            } else if (item.type() == BazaarItem.Type.CARRY_CARD) {
+                carryCardIndices.add(i);
+            }
+        }
+        Collections.shuffle(traitIndices, MyRandom.getRandom());
+        Collections.shuffle(carryCardIndices, MyRandom.getRandom());
+
+        for (int i = 0; i < bazaarCtx.specialDiscountCount; i++) {
+            boolean preferTraits = MyRandom.getRandom().nextBoolean();
+            int selectedIndex = preferTraits
+                ? drawSpecialDiscountIndex(traitIndices, carryCardIndices)
+                : drawSpecialDiscountIndex(carryCardIndices, traitIndices);
+            if (selectedIndex < 0) {
+                return;
+            }
+            inventory.set(selectedIndex, getDiscountedSpecialItem(bazaarCtx, inventory.get(selectedIndex)));
+        }
+    }
+
+    private int drawSpecialDiscountIndex(List<Integer> preferredIndices, List<Integer> fallbackIndices) {
+        if (!preferredIndices.isEmpty()) {
+            return preferredIndices.remove(preferredIndices.size() - 1);
+        }
+        if (!fallbackIndices.isEmpty()) {
+            return fallbackIndices.remove(fallbackIndices.size() - 1);
+        }
+        return -1;
+    }
+
+    private BazaarItem getDiscountedSpecialItem(BazaarContext bazaarCtx, BazaarItem item) {
+        if (item.type() == BazaarItem.Type.TRAIT) {
+            int traitDiscountPrice = 3;
+            return item.withPriceOverride(traitDiscountPrice);
+        }
+        if (item.type() == BazaarItem.Type.CARRY_CARD) {
+            int discounted = calculateDiscountedPrice(item.getBasePrice(), bazaarCtx.discountAmount);
+            return item.withPriceOverride(discounted);
+        }
+        return item;
     }
 
     private void addTraitOffers(RogueRun currentRun, List<BazaarItem> inventory, int offerCount, int price) {

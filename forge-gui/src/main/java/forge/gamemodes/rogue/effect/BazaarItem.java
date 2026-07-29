@@ -6,7 +6,7 @@ import forge.item.PaperCard;
 
 /** A purchasable Bazaar entry with explicit display and purchase semantics. */
 public record BazaarItem(PaperCard card, Type type, RogueEffect traitEffect,
-                         RogueRun.CarryCardType carryCardType, Integer priceOverride) {
+                         RogueRun.CarryCardType carryCardType, Integer priceOverride, Integer basePriceOverride) {
     public enum Type {
         CARD,
         CURIO,
@@ -19,23 +19,23 @@ public record BazaarItem(PaperCard card, Type type, RogueEffect traitEffect,
     }
 
     public static BazaarItem forCard(PaperCard card, Integer priceOverride) {
-        return new BazaarItem(card, Type.CARD, null, null, priceOverride);
+        return new BazaarItem(card, Type.CARD, null, null, priceOverride, null);
     }
 
     public static BazaarItem forCurio(PaperCard card, int price) {
-        return new BazaarItem(card, Type.CURIO, null, null, price);
+        return new BazaarItem(card, Type.CURIO, null, null, price, price);
     }
 
     public static BazaarItem forTrait(PaperCard card, RogueEffect traitEffect, int price) {
-        return new BazaarItem(card, Type.TRAIT, traitEffect, null, price);
+        return new BazaarItem(card, Type.TRAIT, traitEffect, null, price, price);
     }
 
     public static BazaarItem forCarryCard(PaperCard card, RogueRun.CarryCardType carryCardType) {
-        return new BazaarItem(card, Type.CARRY_CARD, null, carryCardType, null);
+        return new BazaarItem(card, Type.CARRY_CARD, null, carryCardType, null, null);
     }
 
     public BazaarItem withPriceOverride(Integer price) {
-        return new BazaarItem(card, type, traitEffect, carryCardType, price);
+        return new BazaarItem(card, type, traitEffect, carryCardType, price, getBasePrice());
     }
 
     public int getPrice() {
@@ -43,7 +43,7 @@ public record BazaarItem(PaperCard card, Type type, RogueEffect traitEffect,
     }
 
     public int getBasePrice() {
-        return BazaarPricing.getCardPrice(card);
+        return basePriceOverride != null ? basePriceOverride : BazaarPricing.getCardPrice(card);
     }
 
     public boolean isDiscounted() {

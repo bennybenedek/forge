@@ -67,6 +67,7 @@ public class RogueRun {
     private int matchesWon;                     // Win counter
     private int matchesLost;                    // Loss counter
     private int removalCredits;                 // Credits for removing cards from deck (from rewards and Sanctum)
+    private RogueRunTimer runTimer;             // Active play time for this run
 
     /** Transient snapshot of data from the most recent match. */
     public record LastMatchData(int chaosCount, int planeswalkCount) {
@@ -128,6 +129,7 @@ public class RogueRun {
         this.setCurrentNodeIndex(0);
         this.setRemovalCredits(0);
         this.setRunState(RogueRunState.STARTED);
+        this.runTimer = new RogueRunTimer();
         this.matchesWon = 0;
         this.matchesLost = 0;
         stamp();
@@ -223,6 +225,7 @@ public class RogueRun {
                 runState = RogueRunState.STARTED;
             }
         }
+        getRunTimer().stop();
         clampCurrentLifeToMax();
         return this;
     }
@@ -665,6 +668,17 @@ public class RogueRun {
 
     public void setRemovalCredits(int removalCredits) {
         this.removalCredits = removalCredits;
+    }
+
+    public RogueRunTimer getRunTimer() {
+        if (runTimer == null) {
+            runTimer = new RogueRunTimer();
+        }
+        return runTimer;
+    }
+
+    public long getRunTimeMillis() {
+        return getRunTimer().getElapsedMillis();
     }
 
     public int getDescensionLevel() {

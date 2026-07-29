@@ -1,0 +1,4 @@
+Name:Gonti Curio - Incomprehensible Contraption
+ManaCost:no cost
+Types:Weird Item
+Oracle:A maze of tiny gears, painted dials, and sealed compartments, all arranged with absolute confidence and no observable function.

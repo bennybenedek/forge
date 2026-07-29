@@ -380,6 +380,7 @@ public enum CSubmenuRogueStart implements ICDoc {
       );
       if (!confirmed) return;
 
+      existingRun.getRunTimer().stop();
       progress.addRunHistoryEntry(
           RogueRunHistoryEntry.fromRun(existingRun, "ABANDONED", ""));
     }
@@ -391,6 +392,7 @@ public enum CSubmenuRogueStart implements ICDoc {
 
     // Create new run and snapshot active echo boons
     RogueRun newRun = new RogueRun(selectedDeck);
+    newRun.getRunTimer().start();
     newRun.setDescensionLevel(selectedDescensionLevel);
     newRun.snapshotEchoBoons(progress);
 

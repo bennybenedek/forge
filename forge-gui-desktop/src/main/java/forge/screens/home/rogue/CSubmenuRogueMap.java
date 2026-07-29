@@ -64,6 +64,7 @@ public enum CSubmenuRogueMap implements ICDoc {
       return;
     }
 
+    currentRun.getRunTimer().start();
     updateView();
     SwingUtilities.invokeLater(() -> {
       view.getBtnEnterNode().requestFocusInWindow();
@@ -417,6 +418,7 @@ public enum CSubmenuRogueMap implements ICDoc {
     if (currentRun == null) return;
     String commanderName = currentRun.getCurrentCommanderName();
     currentRun.setRunWon(true);
+    currentRun.getRunTimer().stop();
     RogueMetaProgress progress = RogueMetaProgress.getInstance();
     progress.addEchoes(20);
     progress.addRunHistoryEntry(RogueRunHistoryEntry.fromRun(currentRun, "VICTORY", "[DEV]"));
