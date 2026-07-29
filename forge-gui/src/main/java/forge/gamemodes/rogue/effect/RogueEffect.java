@@ -47,6 +47,9 @@ public interface RogueEffect {
     /** Optional representative card reference used for UI and runtime behavior. */
     default String getEffectCardReference() { return null; }
 
+    /** Cards this effect provides outside the deck but should still block singleton deck rewards. */
+    default List<String> getDuplicateProtectedCardReferences() { return List.of(); }
+
     /** Optional ranked card reference for effects whose representative card varies by rank. */
     default String getEffectCardReferenceForRank(int rank) {
         String effectCardReference = getEffectCardReference();
@@ -365,7 +368,10 @@ public interface RogueEffect {
             return;
         }
 
-        List<PaperCard> added = rogueDeck.drawRewardOptions(count, filter);
+        Predicate<PaperCard> effectiveFilter = filter == null
+            ? run.getNotAlreadyInDeckPredicate()
+            : filter.and(run.getNotAlreadyInDeckPredicate());
+        List<PaperCard> added = rogueDeck.drawRewardOptions(count, effectiveFilter);
         if (added.isEmpty()) {
             return;
         }

@@ -1066,7 +1066,7 @@ public enum EventEffect implements RogueEffect {
             RogueDeck rogueDeck = run.getSelectedRogueDeck();
             List<PaperCard> replacementCards = rogueDeck == null
                 ? List.of()
-                : rogueDeck.drawRewardOptions(exchangeCount, null);
+                : rogueDeck.drawRewardOptions(exchangeCount, run.getNotAlreadyInDeckPredicate());
             selectCardsFromDeck(run, ctx, PaperCardPredicates.fromRules(CardRulesPredicates.NOT_BASIC_LAND),
                 exchangeCount, exchangeCount, replacementCards, null);
         }
@@ -1102,7 +1102,7 @@ public enum EventEffect implements RogueEffect {
             int swapCount = 3;
             removeCardsFromDeck(run, ctx, PaperCardPredicates.fromRules(CardRulesPredicates.NOT_BASIC_LAND), swapCount);
 
-            List<PaperCard> toAdd = rogueDeck.drawRewardOptions(swapCount, null);
+            List<PaperCard> toAdd = rogueDeck.drawRewardOptions(swapCount, run.getNotAlreadyInDeckPredicate());
             run.addCardsToDeck(toAdd, false);
             rogueDeck.removeFromCardPools(toAdd);
             ctx.addedCards = toAdd;

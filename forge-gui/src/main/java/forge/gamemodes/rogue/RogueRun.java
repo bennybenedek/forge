@@ -488,6 +488,7 @@ public class RogueRun {
         Map<String, Integer> existingCardCounts = new HashMap<>();
         addExistingCardCounts(existingCardCounts, currentDeck.get(DeckSection.Main));
         addExistingCardCounts(existingCardCounts, currentDeck.get(DeckSection.Commander));
+        addDuplicateProtectedCardCounts(existingCardCounts);
         return existingCardCounts;
     }
 
@@ -507,6 +508,22 @@ public class RogueRun {
         for (Map.Entry<PaperCard, Integer> entry : cardPool) {
             String normalizedName = entry.getKey().getRules().getNormalizedName();
             existingCardCounts.merge(normalizedName, entry.getValue(), Integer::sum);
+        }
+    }
+
+    private void addDuplicateProtectedCardCounts(Map<String, Integer> existingCardCounts) {
+        for (RogueEffect effect : RogueEffectComposite.getAllEffects(this)) {
+            for (String cardReferenceText : effect.getDuplicateProtectedCardReferences()) {
+                CardReference cardReference = TextHelper.parseCardReference(cardReferenceText);
+                if (cardReference.cardName().isEmpty()) {
+                    continue;
+                }
+
+                PaperCard card = RogueConfig.getCard(cardReference.cardName(),
+                    cardReference.setCode(), cardReference.artIndex());
+                String normalizedName = card.getRules().getNormalizedName();
+                existingCardCounts.merge(normalizedName, 1, Integer::sum);
+            }
         }
     }
 

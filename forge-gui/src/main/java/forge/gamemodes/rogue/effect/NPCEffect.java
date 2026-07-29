@@ -109,6 +109,11 @@ public enum NPCEffect implements RogueEffect {
             addEffectCardToCommandZone(human);
             RogueEffect.addCardToBattlefield("City of Brass|2X2|1", human);
         }
+
+        @Override
+        public List<String> getDuplicateProtectedCardReferences() {
+            return List.of("City of Brass|2X2|1");
+        }
     },
     HENZIE_FIELD("npc_henzie_field", "Henzie's Field",
         TRAIT_GAIN_DESCRIPTION + " ![[Field of the Dead|M20|1]]", NPC.HENZIE,
@@ -118,6 +123,11 @@ public enum NPCEffect implements RogueEffect {
             addEffectCardToCommandZone(human);
             RogueEffect.addCardToBattlefield("Field of the Dead|M20|1", human);
         }
+
+        @Override
+        public List<String> getDuplicateProtectedCardReferences() {
+            return List.of("Field of the Dead|M20|1");
+        }
     },
     HENZIE_ZONE("npc_henzie_zone", "Henzie's Zone",
         TRAIT_GAIN_DESCRIPTION + " ![[Blast Zone|CMM|1]]", NPC.HENZIE,
@@ -126,6 +136,11 @@ public enum NPCEffect implements RogueEffect {
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
             RogueEffect.addCardToBattlefield("Blast Zone|CMM|1", human);
+        }
+
+        @Override
+        public List<String> getDuplicateProtectedCardReferences() {
+            return List.of("Blast Zone|CMM|1");
         }
     },
     HENZIE_DISSIPATION("npc_henzie_dissipation", "Dissipation",
@@ -182,6 +197,11 @@ public enum NPCEffect implements RogueEffect {
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
             RogueEffect.addCardToBattlefield("Ancient Tomb|UMA|1", human);
+        }
+
+        @Override
+        public List<String> getDuplicateProtectedCardReferences() {
+            return List.of("Ancient Tomb|UMA|1");
         }
     },
     HENZIE_TORMENTOR("npc_henzie_tormentor", "Tormentor",
@@ -277,6 +297,11 @@ public enum NPCEffect implements RogueEffect {
         }
 
         @Override
+        public List<String> getDuplicateProtectedCardReferences() {
+            return List.of("Rogue's Passage|CMM|1");
+        }
+
+        @Override
         public boolean isChoiceAvailable(RogueRun run) {
             return run.canAddCardToDeck(RogueConfig.getCard("Rogue's Passage", null, null));
         }
@@ -288,6 +313,11 @@ public enum NPCEffect implements RogueEffect {
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
             RogueEffect.addCardToBattlefield("Reliquary Tower|CMM|1", human);
+        }
+
+        @Override
+        public List<String> getDuplicateProtectedCardReferences() {
+            return List.of("Reliquary Tower|CMM|1");
         }
 
         @Override
@@ -305,6 +335,11 @@ public enum NPCEffect implements RogueEffect {
         }
 
         @Override
+        public List<String> getDuplicateProtectedCardReferences() {
+            return List.of("Vault of the Archangel|TDC|1");
+        }
+
+        @Override
         public boolean isChoiceAvailable(RogueRun run) {
             return run.canAddCardToDeck(RogueConfig.getCard("Vault of the Archangel", null, null));
         }
@@ -316,6 +351,11 @@ public enum NPCEffect implements RogueEffect {
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
             RogueEffect.addCardToBattlefield("Kessig Wolf Run|TDC|1", human);
+        }
+
+        @Override
+        public List<String> getDuplicateProtectedCardReferences() {
+            return List.of("Kessig Wolf Run|TDC|1");
         }
 
         @Override
@@ -573,6 +613,11 @@ public enum NPCEffect implements RogueEffect {
             addEffectCardToCommandZone(human);
             RogueEffect.addCardToBattlefield("Command Beacon", human);
         }
+
+        @Override
+        public List<String> getDuplicateProtectedCardReferences() {
+            return List.of("Command Beacon");
+        }
     },
     TYVAR_PALACE("npc_tyvar_palace", "Tyvar's Palace",
         TRAIT_GAIN_DESCRIPTION + " ![[Opal Palace]]", NPC.TYVAR,
@@ -581,6 +626,11 @@ public enum NPCEffect implements RogueEffect {
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
             RogueEffect.addCardToBattlefield("Opal Palace", human);
+        }
+
+        @Override
+        public List<String> getDuplicateProtectedCardReferences() {
+            return List.of("Opal Palace");
         }
     },
     TYVAR_SANCTUM("npc_tyvar_sanctum", "Tyvar's Sanctum",
@@ -591,6 +641,11 @@ public enum NPCEffect implements RogueEffect {
             addEffectCardToCommandZone(human);
             RogueEffect.addCardToBattlefield("Sanctum of Eternity", human);
         }
+
+        @Override
+        public List<String> getDuplicateProtectedCardReferences() {
+            return List.of("Sanctum of Eternity");
+        }
     },
     TYVAR_WAR_ROOM("npc_tyvar_war_room", "Tyvar's War Room",
         TRAIT_GAIN_DESCRIPTION + " ![[War Room]]", NPC.TYVAR,
@@ -599,6 +654,11 @@ public enum NPCEffect implements RogueEffect {
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
             RogueEffect.addCardToBattlefield("War Room", human);
+        }
+
+        @Override
+        public List<String> getDuplicateProtectedCardReferences() {
+            return List.of("War Room");
         }
     };
 
