@@ -435,9 +435,9 @@ public enum NPCEffect implements RogueEffect {
             addEffectCardToCommandZone(human);
         }
     },
-    NARSET_TITHE_OF_CHAOS("npc_narset_tithe_of_chaos", "Tithe of Chaos",
+    NARSET_CHAOTIC_TITHE("npc_narset_chaotic_tithe", "Chaotic Tithe",
         TRAIT_GAIN_DESCRIPTION, NPC.NARSET,
-        EffectType.PERMANENT, "Narset Trait - Tithe of Chaos") {
+        EffectType.PERMANENT, "Narset Trait - Chaotic Tithe") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
@@ -497,7 +497,7 @@ public enum NPCEffect implements RogueEffect {
             return canAddAllCarryCards(run, List.of("Commander's Sphere|CMM|1", "Commander's Plate|CMR|1"));
         }
     },
-    TYVAR_RETREAT("npc_tyvar_retreat", "Tyvar's Retreat",
+    TYVAR_RESPITE("npc_tyvar_respite", "Tyvar's Respite",
         "Gain the {{Item}}s [[Campfire|CMM|1]] and [[Tome of Legends|MKC|1]].", NPC.TYVAR,
         EffectType.ONESHOT, null) {
         @Override

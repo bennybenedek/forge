@@ -15,7 +15,7 @@ public enum RogueStats {
 
     // --- Max-value stats: fire on match and/or side node as needed ---
 
-    MAX_LIFE("MaxLife", "Have %s+ life after any match.") {
+    MAX_LIFE("MaxLife", "Have %s+ life at the end of any match.") {
         @Override public int evaluate(RogueRun run, RogueMetaProgress p) { return run.getLastMatchRawLife(); }
         @Override public void onMatchCompleted(RogueRun run, RogueMetaProgress p, boolean won) {
             p.updateStat(this, evaluate(run, p));

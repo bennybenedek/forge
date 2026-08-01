@@ -831,7 +831,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     LOST_NOT_FORGOTTEN_PARTY("lost_not_forgotten_party", "Stumble Into Party",
-        "Add a random Wizard, Warrior, Cleric and Rogue to your deck.",
+        "Add a random legendary Wizard, Warrior, Cleric and Rogue to your deck.",
         EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
@@ -843,22 +843,30 @@ public enum EventEffect implements RogueEffect {
 
         private Predicate<PaperCard> getWizardFilter() {
             return PaperCardPredicates.fromRules(
-                CardRulesPredicates.IS_CREATURE.and(CardRulesPredicates.subType("Wizard")));
+                CardRulesPredicates.IS_CREATURE
+                    .and(CardRulesPredicates.IS_LEGENDARY)
+                    .and(CardRulesPredicates.subType("Wizard")));
         }
 
         private Predicate<PaperCard> getWarriorFilter() {
             return PaperCardPredicates.fromRules(
-                CardRulesPredicates.IS_CREATURE.and(CardRulesPredicates.subType("Warrior")));
+                CardRulesPredicates.IS_CREATURE
+                    .and(CardRulesPredicates.IS_LEGENDARY)
+                    .and(CardRulesPredicates.subType("Warrior")));
         }
 
         private Predicate<PaperCard> getClericFilter() {
             return PaperCardPredicates.fromRules(
-                CardRulesPredicates.IS_CREATURE.and(CardRulesPredicates.subType("Cleric")));
+                CardRulesPredicates.IS_CREATURE
+                    .and(CardRulesPredicates.IS_LEGENDARY)
+                    .and(CardRulesPredicates.subType("Cleric")));
         }
 
         private Predicate<PaperCard> getRogueFilter() {
             return PaperCardPredicates.fromRules(
-                CardRulesPredicates.IS_CREATURE.and(CardRulesPredicates.subType("Rogue")));
+                CardRulesPredicates.IS_CREATURE
+                    .and(CardRulesPredicates.IS_LEGENDARY)
+                    .and(CardRulesPredicates.subType("Rogue")));
         }
     },
     LOST_NOT_FORGOTTEN_LEVEL_UP("lost_not_forgotten_level_up", "Level Up",

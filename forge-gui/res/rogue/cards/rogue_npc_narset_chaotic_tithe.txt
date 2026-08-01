@@ -1,4 +1,4 @@
-Name:Narset Trait - Tithe of Chaos
+Name:Narset Trait - Chaotic Tithe
 ManaCost:no cost
 Types:Trait
 R:Event$ ChaosEnsues | ActiveZones$ Command | ValidPlayer$ You | ValidCause$ PlanarDie | Optional$ True | OptionalDecider$ You | ReplaceWith$ REToken | Description$ If chaos would ensue as a result of you rolling the planar die, instead you may create three Treasure tokens. If you do, chaos doesn't ensue.
