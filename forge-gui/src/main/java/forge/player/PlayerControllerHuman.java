@@ -1624,12 +1624,16 @@ public class PlayerControllerHuman extends PlayerController implements IGameCont
             getGui().clearWeaklySelectable();
             return;
         }
-        final Set<CardView> result = Sets.newHashSet();
+        final List<CardView> result = Lists.newArrayList();
         for (final Card c : attackingPlayer.getCreaturesInPlay()) {
             if (!CombatUtil.canAttack(c)) continue;
             // Drop already-declared attackers.
             if (combat != null && combat.isAttacking(c)) continue;
-            result.add(c.getView());
+            final CardView view = c.getView();
+            // Strength 3 paints attacker candidates red instead of the generic actionable color.
+            result.add(view);
+            result.add(view);
+            result.add(view);
         }
         getGui().setWeaklySelectable(result);
     }

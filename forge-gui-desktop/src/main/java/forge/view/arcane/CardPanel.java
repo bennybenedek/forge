@@ -322,10 +322,12 @@ public class CardPanel extends SkinnedPanel implements CardContainer, IDisposabl
         final int cornerSize = noBorderPref && !cardImgHasAlpha ? 0 : Math.max(4, Math.round(cardWidth * CardPanel.ROUNDED_CORNER_SIZE));
         final int offset = isTapped() && (!noBorderPref || cardImgHasAlpha) ? 1 : 0;
 
-        // Yellow glow for cards that Auto would tap to pay (weak-selectable strength >= 2)
-        if (isPreferenceEnabled(FPref.UI_SHOW_AUTOTAP_PREVIEW) && matchUI.getWeakSelectableStrength(getCard()) >= 2) {
+        final int weakSelectableStrength = matchUI.getWeakSelectableStrength(getCard());
+
+        // Orange glow for cards that Auto would tap to pay.
+        if (isPreferenceEnabled(FPref.UI_SHOW_AUTOTAP_PREVIEW) && weakSelectableStrength == 2) {
             for (int layer = 2; layer >= 1; layer--) {
-                g2d.setColor(new Color(1f, 1f, 0f, 0.14f * layer));
+                g2d.setColor(new Color(1f, 0.72f, 0f, 0.31f * layer));
                 final int n = Math.max(1, Math.round(layer * cardWidth * CardPanel.SELECTED_BORDER_SIZE));
                 g2d.fillRoundRect(cardXOffset - n, (cardYOffset - n) + offset, cardWidth + (n * 2), cardHeight + (n * 2), cornerSize + n, cornerSize + n);
             }
@@ -396,7 +398,7 @@ public class CardPanel extends SkinnedPanel implements CardContainer, IDisposabl
         if (matchUI.isSelectable(getCard())) {
             innerBorder = Color.WHITE;
         } else if (isPreferenceEnabled(FPref.UI_SHOW_ACTIONABLE_HIGHLIGHTS) && matchUI.isWeaklySelectable(getCard())) {
-            innerBorder = parseActionableHighlightColor();
+            innerBorder = weakSelectableStrength >= 3 ? Color.RED : parseActionableHighlightColor();
         }
         if (innerBorder != null) {
             g2d.setColor(innerBorder);

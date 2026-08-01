@@ -401,7 +401,7 @@ public abstract class AbstractGuiGame implements IGuiGame, IMayViewCards {
     }
 
     /** Weighted membership: duplicates in the pushed iterable accumulate counts, so a card's
-     *  count expresses how "strong" its selectability is (1 = actionable, 2 = Auto would tap it). */
+     *  count expresses how "strong" its selectability is (1 = actionable, 2 = Auto would tap it, 3 = attacker candidate). */
     private final Multiset<CardView> weaklySelectableCards = HashMultiset.create();
 
     public void setWeaklySelectable(final Iterable<CardView> cards) {

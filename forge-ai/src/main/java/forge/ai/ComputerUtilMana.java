@@ -53,7 +53,7 @@ public class ComputerUtilMana {
     public static boolean canPayManaCost(ManaCostBeingPaid cost, final SpellAbility sa, final Player ai, final boolean effect) {
         //check copy of cost so it doesn't modify the exist cost being paid
         cost = new ManaCostBeingPaid(cost);
-        return payManaCost(cost, sa, ai, true, true, effect) != null;
+        return payManaCost(cost, sa, ai, true, true, effect, null) != null;
     }
     public static boolean canPayManaCost(final SpellAbility sa, final Player ai, final int extraMana, final boolean effect) {
         return canPayManaCost(sa.getPayCosts(), sa, ai, extraMana, effect);
@@ -63,14 +63,14 @@ public class ComputerUtilMana {
     }
 
     public static boolean payManaCost(ManaCostBeingPaid cost, final SpellAbility sa, final Player ai, final boolean effect) {
-        return payManaCost(cost, sa, ai, false, true, effect) != null;
+        return payManaCost(cost, sa, ai, false, true, effect, null) != null;
     }
     public static boolean payManaCost(final Cost cost, final Player ai, final SpellAbility sa, final boolean effect) {
         return payManaCost(cost, sa, ai, false, 0, true, effect);
     }
     private static boolean payManaCost(final Cost cost, final SpellAbility sa, final Player ai, final boolean test, final int extraMana, boolean checkPlayable, final boolean effect) {
         ManaCostBeingPaid manaCost = calculateManaCost(cost, sa, ai, test, extraMana, effect);
-        return payManaCost(manaCost, sa, ai, test, checkPlayable, effect) != null;
+        return payManaCost(manaCost, sa, ai, test, checkPlayable, effect, null) != null;
     }
 
     /**
@@ -78,7 +78,7 @@ public class ComputerUtilMana {
      */
     public static int getConvergeCount(final SpellAbility sa, final Player ai) {
         ManaCostBeingPaid cost = calculateManaCost(sa.getPayCosts(), sa, ai, true, 0, false);
-        if (payManaCost(cost, sa, ai, true, true, false) != null) {
+        if (payManaCost(cost, sa, ai, true, true, false, null) != null) {
             return cost.getSunburst();
         }
         return 0;
@@ -93,11 +93,25 @@ public class ComputerUtilMana {
     }
 
     public static CardCollection getManaSourcesToPayCost(final ManaCostBeingPaid cost, final SpellAbility sa, final Player ai, final boolean effect) {
-        final List<Mana> payment = payManaCost(cost, sa, ai, true, true, effect);
+        final List<SpellAbility> paymentAbilities = Lists.newArrayList();
+        final List<Mana> payment = payManaCost(cost, sa, ai, true, true, effect, paymentAbilities);
         if (payment == null) {
             return null;
         }
-        return new CardCollection(payment.stream().map(Mana::getSourceCard).filter(Objects::nonNull));
+        final CardCollection sources = new CardCollection();
+        for (Mana mana : payment) {
+            final Card sourceCard = mana.getSourceCard();
+            if (sourceCard != null && !sources.contains(sourceCard)) {
+                sources.add(sourceCard);
+            }
+        }
+        for (SpellAbility paymentAbility : paymentAbilities) {
+            final Card sourceCard = paymentAbility.getHostCard();
+            if (sourceCard != null && !sources.contains(sourceCard)) {
+                sources.add(sourceCard);
+            }
+        }
+        return sources;
     }
 
     private static Integer scoreManaProducingCard(final Card card) {
@@ -593,7 +607,8 @@ public class ComputerUtilMana {
     }
 
     // returns null if unpayable
-    private static List<Mana> payManaCost(final ManaCostBeingPaid cost, final SpellAbility sa, final Player ai, final boolean test, boolean checkPlayable, boolean effect) {
+    private static List<Mana> payManaCost(final ManaCostBeingPaid cost, final SpellAbility sa, final Player ai, final boolean test,
+            boolean checkPlayable, boolean effect, final List<SpellAbility> paymentAbilities) {
         if ((sa.isOffering() && sa.getSacrificedAsOffering() == null) || (sa.isEmerge() && sa.getSacrificedAsEmerge() == null)) {
             // nothing was chosen
             return null;
@@ -809,6 +824,9 @@ public class ComputerUtilMana {
 
         if (test) {
             manapool.refundMana(manaSpentToPay);
+            if (paymentAbilities != null) {
+                paymentAbilities.addAll(paymentList);
+            }
             resetPayment(paymentList);
         }
 

@@ -90,9 +90,9 @@ public class CardRenderer {
     private static void drawAutoTapGlow(Graphics g, float cx, float cy, float cw, float ch) {
         final float outer = Utils.scale(3f);
         final float inner = Utils.scale(1.5f);
-        g.drawRect(BORDER_THICKNESS, FSkinColor.alphaColor(Color.YELLOW, 0.30f),
+        g.drawRect(BORDER_THICKNESS, FSkinColor.alphaColor(new Color(1f, 0.72f, 0f, 1f), 0.58f),
                 cx - outer, cy - outer, cw + outer * 2, ch + outer * 2);
-        g.drawRect(BORDER_THICKNESS, FSkinColor.alphaColor(Color.YELLOW, 0.55f),
+        g.drawRect(BORDER_THICKNESS, FSkinColor.alphaColor(new Color(1f, 0.72f, 0f, 1f), 0.96f),
                 cx - inner, cy - inner, cw + inner * 2, ch + inner * 2);
     }
 
@@ -844,12 +844,14 @@ public class CardRenderer {
         if (MatchController.instance.isHighlighted(card)) {
             g.drawRect(BORDER_THICKNESS, Color.MAGENTA, cx, cy, cw, ch);
         } else {
+            final int weakSelectableStrength = MatchController.instance.getWeakSelectableStrength(card);
             if (!unselectable && FModel.getPreferences().getPrefBoolean(FPref.UI_SHOW_ACTIONABLE_HIGHLIGHTS)
                     && MatchController.instance.isWeaklySelectable(card)) {
-                g.drawRect(BORDER_THICKNESS, parseActionableHighlightColor(), cx, cy, cw, ch);
+                g.drawRect(BORDER_THICKNESS, weakSelectableStrength >= 3 ? Color.RED
+                        : parseActionableHighlightColor(), cx, cy, cw, ch);
             }
             if (FModel.getPreferences().getPrefBoolean(FPref.UI_SHOW_AUTOTAP_PREVIEW)
-                    && MatchController.instance.getWeakSelectableStrength(card) >= 2) {
+                    && weakSelectableStrength == 2) {
                 drawAutoTapGlow(g, cx, cy, cw, ch);
             }
         }
