@@ -1,6 +1,5 @@
 Name:Narset Item - Corrupted Powerstone
 ManaCost:1
 Types:Artifact
-A:AB$ RollPlanarDice | Cost$ 1 T | SorcerySpeed$ True | SubAbility$ DBRollAgain | SpellDescription$ {1}, {T}: Roll the planar die twice. Activate only as a sorcery.
-SVar:DBRollAgain:DB$ RollPlanarDice
+A:AB$ RollPlanarDice | Cost$ 1 T | SorcerySpeed$ True | QueueAdditionalRolls$ 1 | SpellDescription$ {1}, {T}: Roll the planar die twice. Activate only as a sorcery.
 Oracle:{1}, {T}: Roll the planar die twice. Activate only as a sorcery.

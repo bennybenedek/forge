@@ -19,6 +19,7 @@ This repository is a Java 17+ multi-module Maven project (Forge / Rogue Commande
 - Do not implement beyond explicit user requirements; if ambiguous, ask one focused question.
 - If the user asks for a specific change that appears already done, say so and wait for confirmation before substituting a different change.
 - If completing a request appears to require an implementation step that was not in the plan or discussion, stop and discuss it before adding that step.
+- If a seemingly small request turns out to require a broad or cross-module implementation (for example touching many files, adding new shared state, changing public/shared method signatures, or plumbing data through UI layers) and there was no preceding plan or implementation discussion, do not implement it automatically. Pause and ask the user to initiate or approve a planning step first.
 - Keep changes lean and localized; prefer existing patterns over new abstractions.
 - Preserve existing naming conventions when extending code; rename or extend within the established local vocabulary instead of introducing a new conceptual naming pattern for the same behavior.
 - Avoid method overloads by default. Prefer one explicit method signature with nullable/empty parameters when appropriate, and only add overloads if the user explicitly wants them or there is a strong established pattern nearby.

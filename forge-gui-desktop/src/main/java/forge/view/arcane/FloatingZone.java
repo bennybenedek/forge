@@ -191,6 +191,12 @@ public class FloatingZone extends FloatingCardArea {
     }
 
     public static boolean show(final CMatchUI matchUI, final PlayerView player, final ZoneType zone) {
+        final VZone docked = dockedZones.get(getKey(player, zone));
+        if (docked != null && docked.getParentCell() != null) {
+            SDisplayUtil.showTab(docked);
+            return false;
+        }
+
         final FloatingZone cardArea = _init(matchUI, player, zone);
 
         if (cardArea.isVisible()) {
