@@ -809,9 +809,6 @@ public class ComputerUtilMana {
 
         if (test) {
             manapool.refundMana(manaSpentToPay);
-            if (paymentAbilities != null) {
-                paymentAbilities.addAll(paymentList);
-            }
             resetPayment(paymentList);
         }
 
