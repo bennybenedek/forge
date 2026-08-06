@@ -32,6 +32,18 @@ import java.util.List;
 public class SpecialAiLogic {
     private static final int RIOT_REDUNDANT_COUNTER_THRESHOLD = 4;
 
+    private static boolean isExpendableAristocratFodder(final Player ai, final SpellAbility sa, final Card source, final Card card) {
+        if (card.equals(source)) {
+            return false;
+        }
+
+        final int sacThreshold = AiProfileUtil.getIntProperty(ai, AiProps.SACRIFICE_DEFAULT_PREF_MAX_CREATURE_EVAL);
+        return ComputerUtilCard.isUselessCreature(ai, card)
+                || card.hasSVar("SacMe")
+                || ComputerUtil.shouldSacrificeThreatenedCard(ai, card, sa)
+                || ComputerUtilCard.evaluateCreature(card) <= sacThreshold;
+    }
+
     // A logic for cards like Pongify, Crib Swap, Angelic Ascension
     public static boolean doPongifyLogic(final Player ai, final SpellAbility sa) {
         Card source = sa.getHostCard();
@@ -145,7 +157,7 @@ public class SpecialAiLogic {
                     final CardCollection sacFodder = CardLists.filter(ai.getCreaturesInPlay(),
                             card -> ComputerUtilCard.isUselessCreature(ai, card)
                                     || card.hasSVar("SacMe")
-                                    || ComputerUtilCard.evaluateCreature(card) < selfEval // Maybe around 150 is OK?
+                                    || ComputerUtilCard.evaluateCreature(card) < selfEval
                     );
                     return sacFodder.size() >= numCreatsToSac;
                 }
@@ -206,9 +218,7 @@ public class SpecialAiLogic {
         } else {
             // We can't deal lethal, check if there's any sac fodder than can be used for other circumstances
             final CardCollection sacFodder = CardLists.filter(ai.getCreaturesInPlay(),
-                    card -> ComputerUtilCard.isUselessCreature(ai, card)
-                            || card.hasSVar("SacMe")
-                            || ComputerUtilCard.evaluateCreature(card) < selfEval // Maybe around 150 is OK?
+                    card -> isExpendableAristocratFodder(ai, sa, source, card)
             );
 
             return !sacFodder.isEmpty();
@@ -330,16 +340,21 @@ public class SpecialAiLogic {
             }
         } else {
             // We can't deal lethal, check if there's any sac fodder than can be used for other circumstances
-            final boolean isBlocking = combat != null && combat.isBlocking(source);
             final CardCollection sacFodder = CardLists.filter(relevantCreats,
-                    card -> ComputerUtilCard.isUselessCreature(ai, card)
-                            || card.hasSVar("SacMe")
-                            || (isBlocking && ComputerUtilCard.evaluateCreature(card) < selfEval)
-                            || ComputerUtil.predictThreatenedObjects(ai, null, true).contains(card)
+                    card -> isExpendableAristocratFodder(ai, sa, source, card)
             );
 
             if (sacFodder.isEmpty()) {
                 return new AiAbilityDecision(0, AiPlayDecision.MissingNeededCards);
+            }
+
+            final PhaseHandler ph = game.getPhaseHandler();
+            if (!ph.isPlayerTurn(ai) || !ph.getPhase().isBefore(PhaseType.COMBAT_DECLARE_ATTACKERS)) {
+                return new AiAbilityDecision(0, AiPlayDecision.AnotherTime);
+            }
+
+            if (source.getAbilityActivatedThisTurn().getActivators(sa).contains(ai)) {
+                return new AiAbilityDecision(0, AiPlayDecision.StopRunawayActivations);
             }
 
             return new AiAbilityDecision(100, AiPlayDecision.WillPlay);
