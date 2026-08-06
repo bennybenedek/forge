@@ -16,7 +16,7 @@ type=0
 1 Cultivate|BLC|1
 1 Deathcap Glade|INR|1
 1 Experimental Confectioner|WOE|1
-6 Forest|BLB|1
+6 Forest|BLB|6
 1 Gilded Goose|BLC|1
 1 Golgari Rot Farm|CMM|1
 1 Greta, Sweettooth Scourge|WOE|1
@@ -34,7 +34,7 @@ type=0
 1 Sakura-Tribe Elder|M3C|1
 1 Savvy Hunter|ELD|1
 1 Sol Ring|M3C|1
-4 Swamp|BLB|1
+4 Swamp|BLB|5
 1 Tainted Wood|M3C|1
 1 Thornvault Forager|BLB|1
 1 Toxic Deluge|CMM|1
