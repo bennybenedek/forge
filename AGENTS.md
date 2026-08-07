@@ -27,6 +27,8 @@ This repository is a Java 17+ multi-module Maven project (Forge / Rogue Commande
 - Reuse existing mechanisms for UI, loading, events, persistence, and rendering before adding helpers.
 - Avoid changes to shared/core Forge code (`forge-core`, `forge-game`, and generic shared desktop infrastructure) when a Rogue Commander-local fix can solve the issue. Only touch shared/core code when there is no reasonable Rogue-scoped solution, and call that out explicitly.
 - Use the least code that correctly solves the task; avoid speculative cleanup or side improvements.
+- For bug/AI behavior fixes, keep the reported issue separate from adjacent improvements: state whether a proposed change directly fixes the observed behavior, and do not present risk reduction or cleanup as the root-cause fix.
+- For bug/AI behavior fixes, investigate the actual failure mechanism before proposing an implementation plan; if root cause is not confirmed, propose diagnostics or clearly label the plan as exploratory rather than presenting it as the fix.
 - Do not add one-time migrations by default. Ask the user for permission before adding any migration, especially if it was not part of the original plan.
 - Do not add backward-compatibility, legacy-save compatibility, fallback migration behavior, or similar compatibility code unless the user explicitly asks for it.
 - Do not introduce non-ASCII, mojibake, or typographic symbol replacements into source code, comments, tooltips, or user-facing strings unless the user explicitly asks for them. Preserve existing plain ASCII text by default.

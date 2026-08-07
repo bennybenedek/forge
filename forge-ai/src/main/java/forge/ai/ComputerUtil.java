@@ -326,6 +326,16 @@ public class ComputerUtil {
             }
         }
         if (pref.contains("SacCost")) {
+            if (sa != null && sa.getParamOrDefault("AILogic", "").startsWith("AristocratCounters")) {
+                final CardCollection rawThreatenedList = CardLists.filter(typeList,
+                        c -> predictThreatenedObjects(c.getController(), null, true).contains(c)
+                );
+                if (!rawThreatenedList.isEmpty()) {
+                    CardLists.shuffle(rawThreatenedList);
+                    return rawThreatenedList.getFirst();
+                }
+            }
+
             // search for permanents with SacMe. priority 1 is the lowest, priority 5 the highest
             for (int ip = 0; ip < 6; ip++) {
                 final int priority = 6 - ip;
@@ -529,6 +539,9 @@ public class ComputerUtil {
 
     public static CardCollection chooseSacrificeType(final Player ai, String type, final SpellAbility ability, final Card target, final boolean effect, final int amount, final CardCollectionView exclude) {
         final Card source = ability.getHostCard();
+        final boolean preventUnsafeManaCreatureFallback = ability.isManaAbility() && ability.getPayCosts() != null
+                && ability.getPayCosts().hasSpecificCostType(CostSacrifice.class)
+                && Arrays.stream(type.split("[;,+.]")).anyMatch("Creature"::equals);
         boolean differentNames = false;
         if (type.contains("+WithDifferentNames")) {
             differentNames = true;
@@ -573,6 +586,9 @@ public class ComputerUtil {
         while (count < amount) {
             Card prefCard = getCardPreference(ai, source, "SacCost", typeList, ability);
             if (prefCard == null) {
+                if (preventUnsafeManaCreatureFallback) {
+                    return null;
+                }
                 prefCard = ComputerUtilCard.getWorstAI(typeList);
             }
             if (prefCard == null) {
