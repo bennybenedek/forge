@@ -4,12 +4,12 @@ Name=Nick Rewards
 1 Advancing the Spirit|MSC|1
 1 Aerial Surveyor|NEC|1
 1 Aeronaut Admiral|NEC|1
-1 Aggravated Assault|SLD|2
+1 Aggravated Assault|WOT|2
 1 Akiri, Fearless Voyager|CMM|1
 1 Ant-Man, Elusive Avenger|MSC|1
 1 Arcane Signet|SLD|5
 1 Ardenn, Intrepid Archaeologist|CMR|1
-1 Arid Mesa|MH2|3
+1 Arid Mesa|MH2|1
 1 Astor, Bearer of Blades|DMU|1
 1 Austere Command|MSC|1
 1 Avenge|MSC|1
@@ -28,7 +28,7 @@ Name=Nick Rewards
 1 Blackblade Reforged|NEC|1
 1 Blasphemous Act|MSC|1
 1 Born to Drive|NEO|1
-1 Boseiju, Who Endures|NEO|2
+1 Boseiju, Who Endures|NEO|1
 1 Breeding Pool|EOE|1
 1 Bronze Guardian|C21|1
 1 Brotherhood Vertibird|PIP|1
@@ -63,7 +63,7 @@ Name=Nick Rewards
 1 Deadeye Quartermaster|XLN|1
 1 Deflecting Swat|CMM|3
 1 Deluxe Dragster|MOC|1
-1 Demonic Junker|DFT|2
+1 Demonic Junker|DFT|1
 1 Depala, Pilot Exemplar|SLD|1
 1 Dependable Quinjet|MSH|1
 1 Diabolic Intent|BRO|1
@@ -74,7 +74,7 @@ Name=Nick Rewards
 1 Dowsing Dagger|XLN|1
 1 Echo, Perceptive Prodigy|PW26|1
 1 Ephemerate|SLD|1
-1 Esika's Chariot|SLD|1
+1 Esika's Chariot|BLC|1
 1 Esper Sentinel|MH2|1
 1 Etherium Sculptor|EOC|1
 1 Excalibur, Sword of Eden|ACR|1
@@ -86,7 +86,7 @@ Name=Nick Rewards
 1 Foundry Inspector|CMM|1
 1 From Father to Son|FIN|1
 1 Golden Argosy|DMU|1
-1 Guidelight Pathmaker|DFT|2
+1 Guidelight Pathmaker|DFT|1
 1 Hallowed Fountain|ECL|1
 1 Hawkeye, Master Marksman|MSH|1
 1 Hawkeye, Trick Shot|MSC|1
@@ -121,11 +121,11 @@ Name=Nick Rewards
 1 Kykar, Zephyr Awakener|FDN|1
 1 Lagorin, Soul of Alacria|DFT|1
 1 Leyline Axe|FDN|1
-1 Lifecraft Engine|DFT|2
+1 Lifecraft Engine|DFT|1
 1 Lightning Greaves|MSC|1
 1 Loxodon Warhammer|ONC|1
 1 Lucky the Pizza Dog|MSC|1
-1 Lumbering Worldwagon|DFT|2
+1 Lumbering Worldwagon|DFT|1
 1 Machinist's Arsenal|FIN|1
 1 Mana Confluence|SLD|1
 1 Marvel Boy, Noh-Varr|MSC|1
@@ -137,7 +137,7 @@ Name=Nick Rewards
 1 Mirage Mirror|MSC|1
 1 Miriam, Herd Whisperer|OTJ|1
 1 Mister Fantastic, Reed Richards|MSH|1
-1 Misty Rainforest|MH2|3
+1 Misty Rainforest|MH2|1
 1 Mithril Coat|LTR|1
 1 Mobilizer Mech|NEO|1
 1 Multiversal Passage|SPM|2
@@ -169,7 +169,7 @@ Name=Nick Rewards
 1 Research Thief|NEC|1
 1 Reyav, Master Smith|CMR|1
 1 Rhythm of the Wild|SLD|1
-1 Rip, Spawn Hunter|DSK|2
+1 Rip, Spawn Hunter|DSK|1
 1 RMS Titanic|WHO|1
 1 Rogue's Passage|CMM|1
 1 Rolling Hamsphere|BLC|1
@@ -178,7 +178,7 @@ Name=Nick Rewards
 1 S.H.I.E.L.D. Spy Kit|MSH|1
 1 Sai, Master Thopterist|CMM|1
 1 Sanwell, Avenger Ace|BRC|2
-1 Scalding Tarn|MH2|3
+1 Scalding Tarn|MH2|1
 1 Scarlet Witch, Chaotic Avenger|MSC|1
 1 Secluded Courtyard|MSC|1
 1 Secret Invasion|MSH|1

@@ -157,7 +157,8 @@ public class SacrificeAi extends SpellAbilityAi {
                     }
                     return new AiAbilityDecision(0, AiPlayDecision.CantPlayAi);
                 }
-                if (c.hasSVar("SacMe") || ComputerUtilCard.evaluateCreature(c) <= 135) {
+                if (c.hasSVar("SacMe") || (c.isCreature() && ComputerUtilCard.evaluateCreature(c) <= 135)
+                        || (mandatory && !c.equals(source))) {
                     return new AiAbilityDecision(100, AiPlayDecision.WillPlay);
                 }
             }
