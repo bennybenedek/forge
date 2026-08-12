@@ -421,16 +421,12 @@ public class Player extends GameEntity implements Comparable<Player> {
     }
 
     public final boolean setLife(final int newLife, final SpellAbility sa) {
+        // CR 119.5
         boolean change = false;
-        // rule 119.5
         if (life > newLife) {
-            change = loseLife(life - newLife, false, false) > 0;
-        }
-        else if (newLife > life) {
+            change = loseLife(life - newLife, false, false, sa) > 0;
+        } else if (newLife > life) {
             change = gainLife(newLife - life, sa == null ? null : sa.getHostCard(), sa);
-        }
-        else { // life == newLife
-            change = false;
         }
         return change;
     }
@@ -504,7 +500,7 @@ public class Player extends GameEntity implements Comparable<Player> {
         return isInGame() && !StaticAbilityCantGainLosePayLife.anyCantGainLife(this);
     }
 
-    public final int loseLife(int toLose, final boolean damage, final boolean manaBurn) {
+    public final int loseLife(int toLose, final boolean damage, final boolean manaBurn, final SpellAbility cause) {
         // Rule 118.4
         // this is for players being able to pay 0 life nothing to do
         // no trigger for lost no life
@@ -550,6 +546,7 @@ public class Player extends GameEntity implements Comparable<Player> {
         final Map<AbilityKey, Object> runParams = AbilityKey.mapFromPlayer(this);
         runParams.put(AbilityKey.LifeAmount, toLose);
         runParams.put(AbilityKey.FirstTime, firstLost);
+        runParams.put(AbilityKey.SpellAbility, cause);
         game.getTriggerHandler().runTrigger(TriggerType.LifeLost, runParams, false);
 
         return toLose;
@@ -596,7 +593,7 @@ public class Player extends GameEntity implements Comparable<Player> {
             break;
         }
 
-        final int lost = loseLife(lifePayment, false, false);
+        final int lost = loseLife(lifePayment, false, false, cause);
         cause.setPaidLife(lifePayment);
 
         final Map<AbilityKey, Object> runParams = AbilityKey.mapFromPlayer(this);
@@ -815,7 +812,7 @@ public class Player extends GameEntity implements Comparable<Player> {
     }
 
     public final int processDamage() {
-        int lost = loseLife(simultaneousDamage, true, false);
+        int lost = loseLife(simultaneousDamage, true, false, null);
         simultaneousDamage = 0;
         return lost;
     }
@@ -2553,7 +2550,6 @@ public class Player extends GameEntity implements Comparable<Player> {
         final IGameEntitiesFactory master = (IGameEntitiesFactory)pl.getLobbyPlayer();
         addController(timestamp, pl, master.createMindSlaveController(pl, this), true);
     }
-
     public void addController(long timestamp, Player pl, PlayerController pc, boolean event) {
         controlledBy.put(timestamp, Pair.of(pl, pc));
         getView().updateMindSlaveMaster(this);
@@ -2563,6 +2559,13 @@ public class Player extends GameEntity implements Comparable<Player> {
         }
     }
 
+    public void removeController(Player p) {
+        for (Entry<Long, Pair<Player, PlayerController>> controller : Sets.newHashSet(controlledBy.entrySet())) {
+            if (controller.getValue().getLeft().equals(p)) {
+                removeController(controller.getKey());
+            }
+        }
+    }
     public void removeController(long timestamp) {
         removeController(timestamp, true);
     }
