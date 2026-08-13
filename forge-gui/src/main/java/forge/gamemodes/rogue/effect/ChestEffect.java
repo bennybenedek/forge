@@ -208,6 +208,46 @@ public enum ChestEffect implements RogueEffect {
             addEffectCardToCommandZone(human);
         }
     },
+    OMEN_OF_BURGEONING("omen_of_burgeoning", "Omen Of Burgeoning",
+        TRAIT_GAIN_DESCRIPTION,
+        EffectType.PERMANENT, "Chest Trait - Omen Of Burgeoning") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+        }
+    },
+    OMEN_OF_COUNTERBALANCE("omen_of_counterbalance", "Omen Of Counterbalance",
+        TRAIT_GAIN_DESCRIPTION,
+        EffectType.PERMANENT, "Chest Trait - Omen Of Counterbalance") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+        }
+    },
+    OMEN_OF_NIGHTMARES("omen_of_nightmares", "Omen Of Nightmares",
+        TRAIT_GAIN_DESCRIPTION,
+        EffectType.PERMANENT, "Chest Trait - Omen Of Nightmares") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+        }
+    },
+    OMEN_OF_POWERBALANCE("omen_of_powerbalance", "Omen Of Powerbalance",
+        TRAIT_GAIN_DESCRIPTION,
+        EffectType.PERMANENT, "Chest Trait - Omen Of Powerbalance") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+        }
+    },
+    OMEN_OF_SPLENDOR("omen_of_splendor", "Omen Of Splendor",
+        TRAIT_GAIN_DESCRIPTION,
+        EffectType.PERMANENT, "Chest Trait - Omen Of Splendor") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+        }
+    },
     RELIC_OF_AGILITY("relic_of_agility", "Relic Of Agility",
         TRAIT_GAIN_DESCRIPTION,
         EffectType.PERMANENT, "Chest Trait - Relic Of Agility") {
@@ -347,22 +387,6 @@ public enum ChestEffect implements RogueEffect {
             addEffectCardToCommandZone(human);
         }
     },
-    OMEN_OF_BURGEONING("omen_of_burgeoning", "Omen Of Burgeoning",
-        TRAIT_GAIN_DESCRIPTION,
-        EffectType.PERMANENT, "Chest Trait - Omen Of Burgeoning") {
-        @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-        }
-    },
-    OMEN_OF_COUNTERBALANCE("omen_of_counterbalance", "Omen Of Counterbalance",
-        TRAIT_GAIN_DESCRIPTION,
-        EffectType.PERMANENT, "Chest Trait - Omen Of Counterbalance") {
-        @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-        }
-    },
     SIGIL_OF_JESKAI("sigil_of_jeskai", "Sigil Of Jeskai",
         TRAIT_GAIN_DESCRIPTION,
         EffectType.PERMANENT, "Chest Trait - Sigil Of Jeskai") {
@@ -374,30 +398,6 @@ public enum ChestEffect implements RogueEffect {
     SIGIL_OF_MULTICOLOR("sigil_of_multicolor", "Sigil Of Multicolor",
         TRAIT_GAIN_DESCRIPTION,
         EffectType.PERMANENT, "Chest Trait - Sigil Of Multicolor") {
-        @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-        }
-    },
-    OMEN_OF_NIGHTMARES("omen_of_nightmares", "Omen Of Nightmares",
-        TRAIT_GAIN_DESCRIPTION,
-        EffectType.PERMANENT, "Chest Trait - Omen Of Nightmares") {
-        @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-        }
-    },
-    OMEN_OF_POWERBALANCE("omen_of_powerbalance", "Omen Of Powerbalance",
-        TRAIT_GAIN_DESCRIPTION,
-        EffectType.PERMANENT, "Chest Trait - Omen Of Powerbalance") {
-        @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-        }
-    },
-    OMEN_OF_SPLENDOR("omen_of_splendor", "Omen Of Splendor",
-        TRAIT_GAIN_DESCRIPTION,
-        EffectType.PERMANENT, "Chest Trait - Omen Of Splendor") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
