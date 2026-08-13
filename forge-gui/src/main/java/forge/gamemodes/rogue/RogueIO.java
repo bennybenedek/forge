@@ -13,6 +13,7 @@ import com.thoughtworks.xstream.security.PrimitiveTypePermission;
 import forge.deck.CardPool;
 import forge.deck.Deck;
 import forge.deck.DeckSection;
+import forge.gamemodes.rogue.effect.ChestEffect;
 import forge.gamemodes.rogue.path.*;
 import forge.gui.error.BugReporter;
 import forge.item.PaperCard;
@@ -65,6 +66,7 @@ public class RogueIO {
         xStream.allowTypeHierarchy(NodeChest.class);
         xStream.allowTypeHierarchy(RoguePlaneboundType.class);
         xStream.allowTypeHierarchy(RoguePlanebound.class);
+        xStream.allowTypeHierarchy(ChestEffect.class);
         // Allow main rogue classes
         xStream.allowTypeHierarchy(RogueRun.class);
         xStream.allowTypeHierarchy(RogueDeck.class);

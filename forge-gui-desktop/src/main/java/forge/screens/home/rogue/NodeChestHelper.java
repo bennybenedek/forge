@@ -7,10 +7,13 @@ import forge.gamemodes.rogue.effect.EffectResultContext;
 import forge.gamemodes.rogue.effect.RogueEffect;
 import forge.gamemodes.rogue.path.NodeChest;
 import forge.localinstance.properties.ForgePreferences;
-import java.util.Random;
-import javax.swing.JOptionPane;
+import forge.util.MyRandom;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 class NodeChestHelper {
+    private static final int CHEST_LOOT_CHOICE_COUNT = 2;
 
     private final CSubmenuRogueMap map;
     private NodeEffectResultHelper effectResultHelper;
@@ -35,26 +38,20 @@ class NodeChestHelper {
     }
 
     NodeFlowOutcome resolveChest(RogueRun currentRun, NodeChest chestNode) {
-        ChestEffect chestEffect = chestNode.getChestEffect();
-        if (chestEffect == null) {
-            ChestEffect[] allChestEffects = ChestEffect.values();
-            chestEffect = allChestEffects[new Random().nextInt(allChestEffects.length)];
-            chestNode.setChestEffect(chestEffect);
+        List<ChestEffect> chestEffects = chestNode.getChestEffects();
+        if (chestEffects.size() < CHEST_LOOT_CHOICE_COUNT) {
+            chestEffects = generateChestLootChoices();
+            chestNode.setChestEffects(chestEffects);
         }
 
         if (ForgePreferences.DEV_MODE) {
-            ChestEffect picked = (ChestEffect) JOptionPane.showInputDialog(
-                null, "Override chest loot:", "[DEV] Pick Loot",
-                JOptionPane.PLAIN_MESSAGE, null,
-                ChestEffect.values(), chestEffect);
-            if (picked != null) {
-                chestEffect = picked;
-            }
+            chestEffects = new ChestChoiceOverrideDialog(chestEffects).show();
+            chestNode.setChestEffects(chestEffects);
         }
 
         RogueTutorialHelper.showIfNotSeen(RogueTutorial.CHEST);
-        boolean rewardAccepted = new ChestDialog(chestEffect).show();
-        if (!rewardAccepted) {
+        ChestEffect chestEffect = new ChestDialog(chestEffects).show();
+        if (chestEffect == null) {
             return NodeFlowOutcome.COMPLETE_NODE;
         }
 
@@ -69,5 +66,11 @@ class NodeChestHelper {
             currentRun.addChestEffect(chestEffect);
         }
         return NodeFlowOutcome.COMPLETE_NODE;
+    }
+
+    private List<ChestEffect> generateChestLootChoices() {
+        List<ChestEffect> chestEffects = new ArrayList<>(List.of(ChestEffect.values()));
+        Collections.shuffle(chestEffects, MyRandom.getRandom());
+        return chestEffects.subList(0, Math.min(CHEST_LOOT_CHOICE_COUNT, chestEffects.size()));
     }
 }

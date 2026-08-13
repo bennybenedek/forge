@@ -1,6 +1,0 @@
-Name:Chest Trait - Sigil Of The Iron Throne
-ManaCost:no cost
-Types:Trait
-T:Mode$ ChangesZone | Origin$ Battlefield | Destination$ Graveyard | ValidCard$ Artifact.YouCtrl,Creature.YouCtrl | TriggerZones$ Command | Execute$ TrigDrain | TriggerDescription$ Whenever an artifact or creature you control is put into a graveyard from the battlefield, each opponent loses 1 life.
-SVar:TrigDrain:DB$ LoseLife | Defined$ Opponent | LifeAmount$ 1
-Oracle:Whenever an artifact or creature you control is put into a graveyard from the battlefield, each opponent loses 1 life.

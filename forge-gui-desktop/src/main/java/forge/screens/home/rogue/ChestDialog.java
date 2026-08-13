@@ -13,12 +13,14 @@ import java.awt.GraphicsEnvironment;
 import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
+import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JComponent;
 import javax.swing.SwingConstants;
 import net.miginfocom.swing.MigLayout;
 
 /**
- * Dialog for Chest node interaction. Shows one reward action plus an optional skip action.
+ * Dialog for Chest node interaction. Shows reward choices plus an optional skip action.
  */
 public class ChestDialog {
 
@@ -27,42 +29,45 @@ public class ChestDialog {
   private static final int PANEL_INSETS = 20;
 
   private final MainPanel panel;
-  private final FButton btnReward;
-  private final List<PreviewReference> previewReferences;
+  private final List<PreviewTarget> previewTargets = new ArrayList<>();
   private FOptionPane optionPane;
   private RoguePreviewPopup previewPopup;
-  private boolean rewardAccepted;
+  private ChestEffect selectedLoot;
 
-  public ChestDialog(ChestEffect loot) {
+  public ChestDialog(List<ChestEffect> lootChoices) {
     panel = new MainPanel();
 
     FLabel lblTitle = new FLabel.Builder()
-        .text(loot.getDisplayName())
+        .text("Choose Your Loot")
         .fontSize(20).fontStyle(Font.BOLD).fontAlign(SwingConstants.CENTER).build();
 
-    previewReferences = loot.getPreviewReferences();
     int choiceButtonWidth = (DIALOG_WIDTH - 2 * PANEL_INSETS) * 4 / 5;
-    btnReward = RogueButtonHelper.createChoiceButton(
-        "Take Loot", loot.getDescription(), previewReferences);
-    RogueButtonHelper.setChoiceButtonSizeHint(btnReward, choiceButtonWidth);
-    btnReward.addActionListener(e -> {
-      rewardAccepted = true;
-      hidePreview();
-      optionPane.setResult(0);
-      optionPane.setVisible(false);
-    });
 
     int desiredHeight = PANEL_INSETS;
 
     panel.add(lblTitle, "w 100%!, h 60px!, ax center, gap 0 0 20px 10px, wrap");
     desiredHeight += 60 + 20 + 10;
-    panel.add(btnReward, "w 80%!, ax center, gap 0 0 10px 20px, wrap");
-    desiredHeight += btnReward.getPreferredSize().height + 10 + 20;
+
+    for (ChestEffect loot : lootChoices) {
+      List<PreviewReference> previewReferences = loot.getPreviewReferences();
+      FButton btnReward = RogueButtonHelper.createChoiceButton(
+          loot.getDisplayName(), loot.getDescription(), previewReferences);
+      RogueButtonHelper.setChoiceButtonSizeHint(btnReward, choiceButtonWidth);
+      btnReward.addActionListener(e -> {
+        selectedLoot = loot;
+        hidePreview();
+        optionPane.setResult(0);
+        optionPane.setVisible(false);
+      });
+      previewTargets.add(new PreviewTarget(btnReward, previewReferences));
+      panel.add(btnReward, "w 80%!, ax center, gap 0 0 10px 10px, wrap");
+      desiredHeight += btnReward.getPreferredSize().height + 10 + 10;
+    }
 
     FButton btnSkip = RogueButtonHelper.createChoiceButton("Skip Loot", "");
     RogueButtonHelper.setChoiceButtonSizeHint(btnSkip, choiceButtonWidth);
     btnSkip.addActionListener(e -> {
-      rewardAccepted = false;
+      selectedLoot = null;
       hidePreview();
       optionPane.setResult(0);
       optionPane.setVisible(false);
@@ -76,10 +81,11 @@ public class ChestDialog {
     panel.setMinimumSize(dialogSize);
   }
 
-  public boolean show() {
-    rewardAccepted = false;
+  public ChestEffect show() {
+    selectedLoot = null;
     previewPopup = new RoguePreviewPopup();
-    previewPopup.attachTo(btnReward, previewReferences);
+    previewTargets.forEach(target ->
+        previewPopup.attachTo(target.component(), target.references()));
     optionPane = new FOptionPane(null, "Chest", null, panel,
         List.of(), -1);
     optionPane.getTitleBar().setVisible(false);
@@ -88,7 +94,7 @@ public class ChestDialog {
     optionPane.setVisible(true);
     hidePreview();
     optionPane.dispose();
-    return rewardAccepted;
+    return selectedLoot;
   }
 
   private void hidePreview() {
@@ -105,6 +111,8 @@ public class ChestDialog {
     int usableHeight = screenBounds.height - screenInsets.top - screenInsets.bottom;
     return (int) (usableHeight * 0.9) - 80;
   }
+
+  private record PreviewTarget(JComponent component, List<PreviewReference> references) {}
 
   private static class MainPanel extends SkinnedPanel {
     private MainPanel() {

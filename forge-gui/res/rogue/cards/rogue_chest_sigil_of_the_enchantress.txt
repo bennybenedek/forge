@@ -1,6 +1,0 @@
-Name:Chest Trait - Sigil Of The Enchantress
-ManaCost:no cost
-Types:Trait
-T:Mode$ SpellCast | ValidCard$ Enchantment | ValidActivatingPlayer$ You | TriggerZones$ Command | Execute$ TrigDraw | TriggerDescription$ Whenever you cast an enchantment spell, draw a card.
-SVar:TrigDraw:DB$ Draw | Defined$ You | NumCards$ 1
-Oracle:Whenever you cast an enchantment spell, draw a card.

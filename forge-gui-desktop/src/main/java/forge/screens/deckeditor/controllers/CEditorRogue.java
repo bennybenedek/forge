@@ -18,6 +18,7 @@
 package forge.screens.deckeditor.controllers;
 
 import java.awt.event.ActionListener;
+import forge.card.MagicColor;
 import forge.Singletons;
 import forge.deck.CardPool;
 import forge.deck.Deck;
@@ -58,7 +59,8 @@ import org.eclipse.jetty.util.StringUtil;
  */
 public final class CEditorRogue extends CDeckEditor<Deck> {
 
-    private static final String FALLBACK_LAND_SET = "M3C";
+    private static final String FALLBACK_LAND_SET = "MH3";
+    private static final String WASTES_FALLBACK_LAND_SET = "M3C";
     private static final String WASTES = "Wastes";
     private static final String REMOVAL_CREDITS = "Removal Credits";
     private final DeckController<Deck> controller;
@@ -488,8 +490,7 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
                 continue;
             }
 
-            PaperCard fallbackCard = FModel.getMagicDb().getCommonCards().getCard(
-                requiredBasicLandType, FALLBACK_LAND_SET);
+            PaperCard fallbackCard = getFallbackBasicLand(requiredBasicLandType);
             if (fallbackCard != null) {
                 basicLandPool.add(fallbackCard);
                 presentBasicLandTypes.add(requiredBasicLandType);
@@ -507,18 +508,29 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
 
     private Set<String> getCommanderColoredBasicLandTypes() {
         Set<String> coloredBasicLandTypes = new LinkedHashSet<>();
-        List<PaperCard> canonicalBasics = getBasicLandsFromEdition(FALLBACK_LAND_SET);
-        List<PaperCard> coloredBasics = new ArrayList<>();
-        for (PaperCard card : canonicalBasics) {
-            if (!WASTES.equals(card.getName())) {
-                coloredBasics.add(card);
+        int colorIdentity = rogueRun.getCommanderColorIdentityMask();
+        if ((colorIdentity & MagicColor.WHITE) != 0) { coloredBasicLandTypes.add("Plains"); }
+        if ((colorIdentity & MagicColor.BLUE) != 0) { coloredBasicLandTypes.add("Island"); }
+        if ((colorIdentity & MagicColor.BLACK) != 0) { coloredBasicLandTypes.add("Swamp"); }
+        if ((colorIdentity & MagicColor.RED) != 0) { coloredBasicLandTypes.add("Mountain"); }
+        if ((colorIdentity & MagicColor.GREEN) != 0) { coloredBasicLandTypes.add("Forest"); }
+        return coloredBasicLandTypes;
+    }
+
+    private PaperCard getFallbackBasicLand(String basicLandType) {
+        String fallbackEdition = WASTES.equals(basicLandType)
+            ? WASTES_FALLBACK_LAND_SET
+            : FALLBACK_LAND_SET;
+        return getBasicLandFromEdition(basicLandType, fallbackEdition);
+    }
+
+    private PaperCard getBasicLandFromEdition(String basicLandType, String edition) {
+        for (PaperCard card : getBasicLandsFromEdition(edition)) {
+            if (basicLandType.equals(card.getName())) {
+                return card;
             }
         }
-
-        for (PaperCard card : rogueRun.filterCardsByCommanderColorIdentity(coloredBasics)) {
-            coloredBasicLandTypes.add(card.getName());
-        }
-        return coloredBasicLandTypes;
+        return null;
     }
 
     private boolean shouldRequireWastes() {

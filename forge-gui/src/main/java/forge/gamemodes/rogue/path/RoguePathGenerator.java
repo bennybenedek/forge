@@ -47,7 +47,7 @@ public class RoguePathGenerator {
         validateSize(2, elitePlanebounds.size());
         validateSize(1, bossPlanebounds.size());
         validateSize(4, events.size());
-        validateSize(4, chestEffect.size());
+        validateSize(8, chestEffect.size());
 
         // Shuffle lists for randomization
         shufflePlanebounds(normalPlanebounds);
@@ -68,7 +68,9 @@ public class RoguePathGenerator {
         specialNodes.add(new NodeBazaar());
         specialNodes.add(new NodeEvent(events.get(eventIndex++)));
         specialNodes.add(new NodeEvent(events.get(eventIndex++)));
-        specialNodes.add(new NodeChest(chestEffect.get(lootIndex++)));
+        specialNodes.add(new NodeChest(List.of(
+            chestEffect.get(lootIndex++),
+            chestEffect.get(lootIndex++))));
 
         addSpecialNodesRow(nodes, specialNodes, createRandomNodeCount(2, 4));
 
@@ -81,7 +83,9 @@ public class RoguePathGenerator {
         specialNodes.add(new NodeSanctum());
         specialNodes.add(new NodeBazaar());
         specialNodes.add(new NodeEvent(events.get(eventIndex++)));
-        specialNodes.add(new NodeChest(chestEffect.get(lootIndex++)));
+        specialNodes.add(new NodeChest(List.of(
+            chestEffect.get(lootIndex++),
+            chestEffect.get(lootIndex++))));
 
         addSpecialNodesRow(nodes, specialNodes, createRandomNodeCount(2, 4));
 
@@ -102,7 +106,9 @@ public class RoguePathGenerator {
         specialNodes.add(new NodeBazaar());
         specialNodes.add(new NodeBazaar());
         specialNodes.add(new NodeEvent(events.get(eventIndex++)));
-        specialNodes.add(new NodeChest(chestEffect.get(lootIndex++)));
+        specialNodes.add(new NodeChest(List.of(
+            chestEffect.get(lootIndex++),
+            chestEffect.get(lootIndex++))));
 
         addSpecialNodesRow(nodes, specialNodes, createRandomNodeCount(2, 4));
 
@@ -114,7 +120,9 @@ public class RoguePathGenerator {
         specialNodes.add(new NodeSanctum());
         specialNodes.add(new NodeBazaar());
         specialNodes.add(new NodeEvent(events.get(eventIndex)));
-        specialNodes.add(new NodeChest(chestEffect.get(lootIndex)));
+        specialNodes.add(new NodeChest(List.of(
+            chestEffect.get(lootIndex++),
+            chestEffect.get(lootIndex++))));
 
         addSpecialNodesRow(nodes, specialNodes, createRandomNodeCount(2, 3));
 

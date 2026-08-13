@@ -1,6 +1,8 @@
 package forge.gamemodes.rogue.path;
 
 import forge.gamemodes.rogue.effect.ChestEffect;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Represents a Chest node in a Rogue Commander path.
@@ -8,19 +10,24 @@ import forge.gamemodes.rogue.effect.ChestEffect;
  */
 public class NodeChest extends RoguePathNode {
 
-    private ChestEffect chestEffect;
+    private List<ChestEffect> chestEffects;
 
     public NodeChest() {
         super();
     }
 
-    public NodeChest(ChestEffect chestEffect) {
+    public NodeChest(List<ChestEffect> chestEffects) {
         super();
-        this.chestEffect = chestEffect;
+        setChestEffects(chestEffects);
     }
 
-    public ChestEffect getChestEffect() { return chestEffect; }
-    public void setChestEffect(ChestEffect chestEffect) { this.chestEffect = chestEffect; }
+    public List<ChestEffect> getChestEffects() {
+        return chestEffects != null ? chestEffects : new ArrayList<>();
+    }
+
+    public void setChestEffects(List<ChestEffect> chestEffects) {
+        this.chestEffects = chestEffects != null ? new ArrayList<>(chestEffects) : new ArrayList<>();
+    }
 
     @Override
     public boolean isSideNode() {
@@ -29,6 +36,9 @@ public class NodeChest extends RoguePathNode {
 
     @Override
     public String toString() {
-        return chestEffect != null ? "Loot (" + chestEffect.getDisplayName() + ")" : "Loot (Treasure)";
+        List<ChestEffect> effects = getChestEffects();
+        return !effects.isEmpty()
+            ? "Loot (" + String.join(" / ", effects.stream().map(ChestEffect::getDisplayName).toList()) + ")"
+            : "Loot (Treasure)";
     }
 }

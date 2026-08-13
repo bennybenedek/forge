@@ -1,6 +1,0 @@
-Name:Chest Trait - Idol Of The Colossus
-ManaCost:no cost
-Types:Trait
-T:Mode$ Phase | Phase$ Upkeep | ValidPlayer$ You | TriggerZones$ Command | IsPresent$ Creature.YouCtrl+powerGE4 | Execute$ TrigDraw | TriggerDescription$ At the beginning of your upkeep, if you control a creature with power 4 or greater, draw a card.
-SVar:TrigDraw:DB$ Draw | Defined$ You | NumCards$ 1
-Oracle:At the beginning of your upkeep, if you control a creature with power 4 or greater, draw a card.

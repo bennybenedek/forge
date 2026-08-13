@@ -72,14 +72,6 @@ public enum ChestEffect implements RogueEffect {
             addEffectCardToCommandZone(human);
         }
     },
-    CHARM_OF_EXCAVATION("charm_of_excavation", "Charm Of Excavation",
-        TRAIT_GAIN_DESCRIPTION,
-        EffectType.PERMANENT, "Chest Trait - Charm Of Excavation") {
-        @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-        }
-    },
     CHARM_OF_HIGH_SCORE("charm_of_high_score", "Charm Of High Score",
         TRAIT_GAIN_DESCRIPTION,
         EffectType.PERMANENT, "Chest Trait - Charm Of High Score") {
@@ -91,14 +83,6 @@ public enum ChestEffect implements RogueEffect {
     CHARM_OF_THE_DEAD("charm_of_the_dead", "Charm Of The Dead",
         TRAIT_GAIN_DESCRIPTION,
         EffectType.PERMANENT, "Chest Trait - Charm Of The Dead") {
-        @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-        }
-    },
-    CHARM_OF_THE_OCELOT("charm_of_the_ocelot", "Charm Of The Ocelot",
-        TRAIT_GAIN_DESCRIPTION,
-        EffectType.PERMANENT, "Chest Trait - Charm Of The Ocelot") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
@@ -155,14 +139,6 @@ public enum ChestEffect implements RogueEffect {
     IDOL_OF_MANY_EYES("idol_of_many_eyes", "Idol Of Many Eyes",
         TRAIT_GAIN_DESCRIPTION,
         EffectType.PERMANENT, "Chest Trait - Idol Of Many Eyes") {
-        @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-        }
-    },
-    IDOL_OF_THE_COLOSSUS("idol_of_the_colossus", "Idol Of The Colossus",
-        TRAIT_GAIN_DESCRIPTION,
-        EffectType.PERMANENT, "Chest Trait - Idol Of The Colossus") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
@@ -275,25 +251,9 @@ public enum ChestEffect implements RogueEffect {
             addEffectCardToCommandZone(human);
         }
     },
-    SIGIL_OF_THE_ABHORRENT("sigil_of_the_abhorrent", "Sigil Of The Abhorrent",
-        TRAIT_GAIN_DESCRIPTION,
-        EffectType.PERMANENT, "Chest Trait - Sigil Of The Abhorrent") {
-        @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-        }
-    },
     SIGIL_OF_THE_BEANSTALK("sigil_of_the_beanstalk", "Sigil Of The Beanstalk",
         TRAIT_GAIN_DESCRIPTION,
         EffectType.PERMANENT, "Chest Trait - Sigil Of The Beanstalk") {
-        @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-        }
-    },
-    SIGIL_OF_THE_ENCHANTRESS("sigil_of_the_enchantress", "Sigil Of The Enchantress",
-        TRAIT_GAIN_DESCRIPTION,
-        EffectType.PERMANENT, "Chest Trait - Sigil Of The Enchantress") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
@@ -310,14 +270,6 @@ public enum ChestEffect implements RogueEffect {
     SIGIL_OF_THE_GOBLIN("sigil_of_the_goblin", "Sigil Of The Goblin",
         TRAIT_GAIN_DESCRIPTION,
         EffectType.PERMANENT, "Chest Trait - Sigil Of The Goblin") {
-        @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-        }
-    },
-    SIGIL_OF_THE_IRON_THRONE("sigil_of_the_iron_throne", "Sigil Of The Iron Throne",
-        TRAIT_GAIN_DESCRIPTION,
-        EffectType.PERMANENT, "Chest Trait - Sigil Of The Iron Throne") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);

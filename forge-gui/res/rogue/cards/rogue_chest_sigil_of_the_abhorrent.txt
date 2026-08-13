@@ -1,6 +1,0 @@
-Name:Chest Trait - Sigil Of The Abhorrent
-ManaCost:no cost
-Types:Trait
-T:Mode$ ChangesZone | Origin$ Battlefield | Destination$ Graveyard | ValidCard$ Creature | TriggerZones$ Command | Execute$ TrigGainLife | TriggerDescription$ Whenever a creature dies, you gain 1 life.
-SVar:TrigGainLife:DB$ GainLife | Defined$ You | LifeAmount$ 1
-Oracle:Whenever a creature dies, you gain 1 life.
