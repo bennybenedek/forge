@@ -20,7 +20,6 @@ Name=Aragorn Rewards
 1 Chance-Met Elves|LTR|1
 1 Council's Deliberation|LTR|1
 1 Crown of Gondor|LTC|1
-1 Dol Amroth|LTC|1
 1 Doors of Durin|LTR|1
 1 Dovin's Veto|WAR|1
 1 Eligeth, Crossroads Augur|CMR|1
@@ -56,9 +55,9 @@ Name=Aragorn Rewards
 1 Great Hall of the Citadel|LTR|1
 1 Hajar, Loyal Bodyguard|BRO|1
 1 Haldir, Lórien Lieutenant|LTC|1
+1 Hallowed Fountain|ECL|1
 1 Harbin, Vanguard Aviator|BRO|1
 1 Havi, the All-Father|ACR|1
-1 Helm's Deep|LTC|1
 1 Hero of Precinct One|DMC|1
 1 Heroic Intervention|LTC|1
 1 Horn of Gondor|LTR|1
@@ -92,7 +91,7 @@ Name=Aragorn Rewards
 1 Oath of Eorl|LTC|1
 1 Overwhelming Stampede|LTC|1
 1 Path to Exile|LTC|1
-1 Plaza of Heroes|DMU|2
+1 Plaza of Heroes|DMU|1
 1 Prince Imrahil the Fair|LTR|1
 1 Relic of Legends|DMU|1
 1 Renata, Called to the Hunt|THB|1
@@ -109,6 +108,7 @@ Name=Aragorn Rewards
 1 Song of Eärendil|LTC|1
 1 Soul Warden|PLST|1
 1 Supreme Verdict|LTC|1
+1 Stomping Ground|EOE|1
 1 Swiftfoot Boots|LCC|1
 1 Tam, Mindful First-Year|ECL|1
 1 Temple Garden|ECL|1
@@ -122,33 +122,35 @@ Name=Aragorn Rewards
 1 War of the Last Alliance|LTR|1
 1 Warleader's Call|MKM|1
 1 You Cannot Pass!|LTR|1
-1 Andúril, Flame of the West|LTR|1
-1 Aragorn and Arwen, Wed|LTR|1
+1 Andúril, Flame of the West|LTR|2
+1 Aragorn and Arwen, Wed|LTR|2
 1 Aragorn, Hornburg Hero|LTC|1
-1 Aragorn, King of Gondor|LTC|1
-1 Arwen, Mortal Queen|LTR|1
-1 Avacyn's Memorial|MIC|1
-1 Bloom Tender|ECL|1
-1 Captain Sisay|SLD|1
+1 Aragorn, King of Gondor|LTC|2
+1 Arwen, Mortal Queen|LTR|2
+1 Avacyn's Memorial|MIC|2
+1 Bloom Tender|ECL|2
+1 Captain Sisay|SLD|2
 1 Chulane, Teller of Tales|MKC|1
 1 Combat Celebrant|LTC|1
-1 Dawn of a New Age|LTR|1
+1 Dawn of a New Age|LTR|2
+1 Dol Amroth|LTC|1
 1 Doubling Season|FDN|1
-1 Éowyn, Shieldmaiden|LTC|1
+1 Éowyn, Shieldmaiden|LTC|3
 1 Elspeth, Storm Slayer|TDM|2
 1 Galadriel, Light of Valinor|LTC|1
-1 Gandalf the White|LTR|1
+1 Gandalf the White|LTR|4
+1 Helm's Deep|LTC|1
 1 Inn of the Prancing Pony|LTC|1
 1 Jedit Ojanen, Mercenary|DMC|1
 1 Jetmir, Nexus of Revels|SNC|1
-1 Kyler, Sigardian Emissary|MIC|1
-1 Last March of the Ents|LTR|1
+1 Kyler, Sigardian Emissary|MIC|2
+1 Last March of the Ents|LTR|2
 1 Loyal Retainers|CMM|1
 1 Mox Amber|DOM|1
-1 Neyali, Suns' Vanguard|ONC|1
-1 Planetarium of Wan Shi Tong|TLA|1
+1 Neyali, Suns' Vanguard|ONC|3
+1 Planetarium of Wan Shi Tong|TLA|2
 1 Rienne, Angel of Rebirth|DMC|1
 1 Surrak Dragonclaw|DMC|1
-1 The One Ring|LTR|2
+1 The One Ring|LTR|4
 1 The Party Tree|LTC|1
-1 Yoshimaru, Ever Faithful|NEC|1
+1 Yoshimaru, Ever Faithful|NEC|2

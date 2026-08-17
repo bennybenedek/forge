@@ -1,4 +1,4 @@
-Name:Chest Trait - Charm Of Offerings
+Name:Chest Trait - Charm Of Fae
 ManaCost:no cost
 Types:Trait
 T:Mode$ Phase | Phase$ End of Turn | TriggerZones$ Command | CheckSVar$ Z | SVarCompare$ GE2 | Execute$ TrigToken | TriggerDescription$ At the beginning of each end step, if you've cast both a creature spell and a noncreature spell this turn, create a Clue token, a Food token, and a Treasure token.
