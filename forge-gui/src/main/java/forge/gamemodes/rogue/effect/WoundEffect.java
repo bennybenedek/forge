@@ -5,9 +5,24 @@ import forge.gamemodes.rogue.RogueRun;
 
 public enum WoundEffect implements RogueEffect {
 
-    LEG("leg", "Leg",
-            "Every spell you cast costs {1} more.",
-            EffectType.PERMANENT, "Wound - Leg") {
+    ARM("arm", "Arm", "You can't cast more than one spell each turn.",
+            EffectType.PERMANENT, "Wound - Arm") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+        }
+    },
+    LEFT_LEG("left_leg", "Left Leg",
+            "Spells you cast cost {1} more to cast.",
+            EffectType.PERMANENT, "Wound - Left Leg") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+        }
+    },
+    RIGHT_LEG("right_leg", "Right Leg",
+            "Artifacts and creatures you control enter tapped.",
+            EffectType.PERMANENT, "Wound - Right Leg") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);

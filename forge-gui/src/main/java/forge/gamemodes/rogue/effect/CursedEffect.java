@@ -11,7 +11,7 @@ import java.util.Set;
 
 public enum CursedEffect implements PlaneboundEffect {
 
-    SPELL_DISCOUNT("cursed_spell_discount", "Bargain",
+    BARGAIN("cursed_bargain", "Bargain",
             "All of Planebound's spells cost {1} less to cast.",
         "Cursed - Bargain") {
         @Override
@@ -20,16 +20,45 @@ public enum CursedEffect implements PlaneboundEffect {
             run.consumeEffect(getId());
         }
     },
-    SCRY("cursed_scry", "Foresight",
-            "At the beginning of each of Planebound's upkeeps, they scry 2.",
-        "Cursed - Foresight") {
+    BLOODTHIRSTY("cursed_bloodthirsty", "Bloodthirsty",
+        "Creatures your opponents control get +2/+2 and have haste.",
+        "Cursed - Bloodthirsty") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
             run.consumeEffect(getId());
         }
     },
-    FREE_CREATURE("cursed_free_creature", "Summon",
+    INSIGHT("cursed_insight", "Insight",
+            "Planebound draws 1 additional card at the start of each match.",
+        "Cursed - Insight") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            if (opponent == null) return;
+            opponent.setStartingHand(opponent.getStartingHand() + 1);
+            addEffectCardToCommandZone(human);
+            run.consumeEffect(getId());
+        }
+    },
+    RAMP("cursed_ramp", "Ramp",
+        "Planebound starts the match with 2 random lands from their deck on the battlefield.",
+        null) {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            if (opponent == null) return;
+            List<PaperCard> lands = new ArrayList<>();
+            for (PaperCard c : opponent.getDeck().getMain().toFlatList()) {
+                if (c.getRules().getType().isLand()) lands.add(c);
+            }
+            if (lands.isEmpty()) return;
+            Collections.shuffle(lands);
+            List<IPaperCard> toMove = new ArrayList<>();
+            for (int i = 0; i < Math.min(2, lands.size()); i++) toMove.add(lands.get(i));
+            RogueEffect.moveCardsFromDeckToBattlefield(toMove, opponent);
+            run.consumeEffect(getId());
+        }
+    },
+    SUMMON("cursed_summon", "Summon",
             "Planebound starts the match with a random creature from their deck on the battlefield.",
             null) {
         @Override
@@ -43,24 +72,6 @@ public enum CursedEffect implements PlaneboundEffect {
             Collections.shuffle(creatures);
             List<IPaperCard> toMove = new ArrayList<>();
             toMove.add(creatures.get(0));
-            RogueEffect.moveCardsFromDeckToBattlefield(toMove, opponent);
-            run.consumeEffect(getId());
-        }
-    },
-    FREE_LANDS("cursed_free_lands", "Fortify",
-            "Planebound starts the match with 2 random lands from their deck on the battlefield.",
-            null) {
-        @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            if (opponent == null) return;
-            List<PaperCard> lands = new ArrayList<>();
-            for (PaperCard c : opponent.getDeck().getMain().toFlatList()) {
-                if (c.getRules().getType().isLand()) lands.add(c);
-            }
-            if (lands.isEmpty()) return;
-            Collections.shuffle(lands);
-            List<IPaperCard> toMove = new ArrayList<>();
-            for (int i = 0; i < Math.min(2, lands.size()); i++) toMove.add(lands.get(i));
             RogueEffect.moveCardsFromDeckToBattlefield(toMove, opponent);
             run.consumeEffect(getId());
         }

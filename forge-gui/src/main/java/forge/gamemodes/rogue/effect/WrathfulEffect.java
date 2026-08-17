@@ -6,7 +6,34 @@ import java.util.Set;
 
 public enum WrathfulEffect implements PlaneboundEffect {
 
-    COMMANDER_BOOST("wrathful_commander_boost", "Might",
+    AGGRESSION("wrathful_aggression", "Aggression",
+        "Whenever one or more creatures Planebound controls deal combat damage to you, Planebound draws a card.",
+        "Wrathful - Aggression") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+            run.consumeEffect(getId());
+        }
+    },
+    EFFICIENCY("wrathful_efficiency", "Efficiency",
+        "Planebound Commander costs {1} less to cast.",
+        "Wrathful - Haste") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+            run.consumeEffect(getId());
+        }
+    },
+    FORESIGHT("wrathful_foresight", "Foresight",
+        "At the beginning of each of Planebound's upkeeps, they scry 1.",
+        "Wrathful - Foresight") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+            run.consumeEffect(getId());
+        }
+    },
+    MIGHT("wrathful_might", "Might",
             "Planebound Commander gets +2/+2.",
         "Wrathful - Might") {
         @Override
@@ -15,18 +42,9 @@ public enum WrathfulEffect implements PlaneboundEffect {
             run.consumeEffect(getId());
         }
     },
-    UPKEEP_HEAL("wrathful_upkeep_heal", "Resilience",
+    RESILIENCE("wrathful_resilience", "Resilience",
             "Planebound gains 1 life at the beginning of each of their upkeeps.",
         "Wrathful - Resilience") {
-        @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-            run.consumeEffect(getId());
-        }
-    },
-    COMMANDER_DISCOUNT("wrathful_commander_discount", "Haste",
-            "Planebound Commander costs {1} less to cast.",
-        "Wrathful - Haste") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);

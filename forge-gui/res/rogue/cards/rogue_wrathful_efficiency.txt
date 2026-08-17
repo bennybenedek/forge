@@ -1,4 +1,4 @@
-Name:Wrathful - Haste
+Name:Wrathful - Efficiency
 ManaCost:no cost
 Types:Wrathful
 S:Mode$ ReduceCost | ValidCard$ Card.IsCommander | Activator$ Player.Opponent | Type$ Spell | Amount$ 1 | EffectZone$ Command | Description$ Opponent's commander costs {1} less to cast.

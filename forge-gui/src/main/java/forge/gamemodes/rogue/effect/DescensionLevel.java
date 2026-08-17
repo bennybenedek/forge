@@ -72,12 +72,12 @@ public enum DescensionLevel implements RogueEffect {
         }
     },
 
-    LEVEL_3(3, "Bloodthirsty",
-        "Whenever a creature an opponent controls deals damage to you, it deals 1 additional damage.",
-        "Descension - Bloodthirsty") {
+    LEVEL_3(3, "Wounded",
+        "Start the run with a random Wound.",
+        null) {
         @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
+        public void onRunStart(RogueRun run) {
+            gainWound(run, new EffectResultContext());
         }
     },
 
@@ -122,8 +122,22 @@ public enum DescensionLevel implements RogueEffect {
         }
     },
 
-    LEVEL_5(5, "Taxing Mana",
-        "Every spell you cast costs {1} more to cast.",
+    LEVEL_5(5, "Hardened",
+        "All Planebounds have +5 starting life.",
+        null) {
+        @Override
+        public void afterPathGeneration(RogueRun run) {
+            for (RoguePathNode node : run.getPath().getNodes()) {
+                if (node instanceof NodePlanebound planebound) {
+                    planebound.setStartingLifeModification(
+                        planebound.getStartingLifeModification() + 5);
+                }
+            }
+        }
+    },
+
+    LEVEL_6(6, "Taxing Mana",
+        "Spells you cast cost {1} more to cast.",
         "Descension - Taxing Mana") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {

@@ -13,6 +13,7 @@ public class NodePlanebound extends RoguePathNode {
     private RoguePlanebound roguePlanebound;
     private int wrathfulCount;
     private int cursedCount;
+    private int startingLifeModification;
 
     public NodePlanebound() {
         super();
@@ -48,6 +49,14 @@ public class NodePlanebound extends RoguePathNode {
         this.cursedCount = cursedCount;
     }
 
+    public int getStartingLifeModification() {
+        return startingLifeModification;
+    }
+
+    public void setStartingLifeModification(int startingLifeModification) {
+        this.startingLifeModification = startingLifeModification;
+    }
+
     public RoguePlaneboundType getPlaneboundType() {
         return roguePlanebound != null ? roguePlanebound.type() : RoguePlaneboundType.NORMAL;
     }
@@ -58,7 +67,7 @@ public class NodePlanebound extends RoguePathNode {
         int planeboundTypeBaseLife;
 
         if (getPlaneboundType().equals(RoguePlaneboundType.BOSS)) {
-            return 30;
+            return 30 + startingLifeModification;
         }
         else if (getPlaneboundType().equals(RoguePlaneboundType.ELITE)) {
             planeboundTypeBaseLife = 5;
@@ -67,7 +76,7 @@ public class NodePlanebound extends RoguePathNode {
             planeboundTypeBaseLife = 0;
         }
 
-        return rowLife + planeboundTypeBaseLife;
+        return rowLife + planeboundTypeBaseLife + startingLifeModification;
     }
 
     // Convenience methods for rewards

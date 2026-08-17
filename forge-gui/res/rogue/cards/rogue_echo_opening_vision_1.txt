@@ -1,4 +1,4 @@
-Name:Echo Boon - Foresight 1
+Name:Echo Boon - Opening Vision 1
 ManaCost:no cost
 Types:Trait
 Oracle:Start each match with 1 additional opening hand card.

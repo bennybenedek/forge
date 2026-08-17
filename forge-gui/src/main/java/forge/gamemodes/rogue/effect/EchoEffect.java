@@ -124,13 +124,13 @@ public enum EchoEffect implements RogueEffect {
 
     //  Aether Upgrade 1
 
-    FORESIGHT("foresight", "Foresight",
+    OPENING_VISION("foresight", "Opening Vision",
         "Start each match with +%s opening hand card.",
         new EffectRankContext(
             new int[]{8, 12}, // Echo costs (rank 1-2)
             new int[]{1, 2},  // Effect values: +1/+2 cards
             1, 1),
-        EffectType.PERMANENT, "Echo Boon - Foresight") {
+        EffectType.PERMANENT, "Echo Boon - Opening Vision") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             int rank = run.getRunEffectRank(getId());

@@ -1,0 +1,4 @@
+Name:Cursed - Insight
+ManaCost:no cost
+Types:Cursed
+Oracle:Planebound draws 1 additional card at the start of each match.
