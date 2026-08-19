@@ -1759,7 +1759,7 @@ public class ComputerUtil {
                     if (stAb.checkMode(StaticAbilityMode.Continuous) && stAb.hasParam("AddKeyword")
                             && stAb.getParam("AddKeyword").contains("Haste")) {
                         final ArrayList<String> affected = Lists.newArrayList(stAb.getParam("Affected").split(","));
-                        if (affected.contains("Creature")) {
+                        if (affected.contains("Creature") || affected.contains("Creature.OppCtrl")) {
                             return true;
                         }
                     }

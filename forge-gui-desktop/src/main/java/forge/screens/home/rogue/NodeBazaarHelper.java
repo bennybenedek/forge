@@ -3,7 +3,6 @@ package forge.screens.home.rogue;
 import forge.card.CardRarity;
 import forge.card.CardSplitType;
 import forge.deck.DeckFormat;
-import forge.gamemodes.rogue.BazaarPricing;
 import forge.gamemodes.rogue.CardRewardHelper;
 import forge.gamemodes.rogue.RogueConfig;
 import forge.gamemodes.rogue.RogueDeck;
@@ -74,11 +73,13 @@ class NodeBazaarHelper {
 
     private List<PaperCard> runCustomBazaarShopping(RogueRun currentRun, RogueDeck rogueDeck,
                                                     BazaarContext bazaarCtx) {
+        RogueEffectComposite.INSTANCE.onBeforeBazaar(bazaarCtx, currentRun);
         List<BazaarItem> inventory = buildCustomBazaarInventory(bazaarCtx);
         if (inventory.isEmpty()) {
             Logger.error("No cards available in Bazaar inventory.");
             return List.of();
         }
+        applyActualItemPrices(bazaarCtx, inventory);
 
         BazaarDialogResult dialogResult = showBazaarDialog(inventory, currentRun, bazaarCtx, null, false, 0);
         return applyBazaarPurchases(currentRun, rogueDeck, bazaarCtx, dialogResult.selectedItems(), true);
@@ -87,6 +88,7 @@ class NodeBazaarHelper {
     private List<PaperCard> runOrdinaryBazaarShopping(RogueRun currentRun, RogueDeck rogueDeck) {
         BazaarContext bazaarCtx = createOrdinaryBazaarContext();
         RogueTutorialHelper.showIfNotSeen(RogueTutorial.BAZAAR);
+        RogueEffectComposite.INSTANCE.onBeforeBazaar(bazaarCtx, currentRun);
         NPCEncounterComposite.INSTANCE.onBeforeBazaar(bazaarCtx, currentRun, RogueMetaProgress.getInstance());
 
         CardSelectionContext selCtx = createBazaarSelectionContext(currentRun);
@@ -125,9 +127,9 @@ class NodeBazaarHelper {
                                                               BazaarContext bazaarCtx,
                                                               CardSelectionContext selCtx) {
         List<BazaarItem> inventory = buildOrdinaryBazaarInventory(currentRun, rogueDeck, selCtx);
-        applyBazaarDiscounts(bazaarCtx, inventory);
         addContextItemsToOrdinaryInventory(bazaarCtx, inventory);
         addGeneratedSpecialItems(currentRun, bazaarCtx, inventory);
+        applyActualItemPrices(bazaarCtx, inventory);
         return inventory;
     }
 
@@ -158,6 +160,26 @@ class NodeBazaarHelper {
         for (NPCContext npcContext : NPCEncounterComposite.INSTANCE.onAfterBazaarPurchase(
             bazaarCtx, RogueMetaProgress.getInstance())) {
             new NPCDialog(npcContext).show();
+        }
+    }
+
+    private void applyActualItemPrices(BazaarContext bazaarCtx, List<BazaarItem> inventory) {
+        if (inventory.isEmpty()) {
+            return;
+        }
+
+        Set<Integer> discountedCardIndices = getDiscountedCardIndices(bazaarCtx, inventory);
+        Set<Integer> discountedSpecialIndices = getDiscountedSpecialIndices(bazaarCtx, inventory);
+        for (int i = 0; i < inventory.size(); i++) {
+            BazaarItem item = inventory.get(i);
+            int basePrice = Math.max(0, item.getBasePrice() + bazaarCtx.priceAdjustment);
+            int price = basePrice;
+            if (discountedCardIndices.contains(i)) {
+                price = calculateDiscountedPrice(basePrice, bazaarCtx.discountAmount);
+            } else if (discountedSpecialIndices.contains(i)) {
+                price = calculateSpecialDiscountedPrice(item, bazaarCtx, basePrice);
+            }
+            inventory.set(i, item.withPrice(price, basePrice));
         }
     }
 
@@ -206,9 +228,9 @@ class NodeBazaarHelper {
         return new ArrayList<>(inventory.subList(0, BazaarDialog.MAX_DISPLAY_CARDS));
     }
 
-    private void applyBazaarDiscounts(BazaarContext bazaarCtx, List<BazaarItem> inventory) {
+    private Set<Integer> getDiscountedCardIndices(BazaarContext bazaarCtx, List<BazaarItem> inventory) {
         if (bazaarCtx.discountCount <= 0 || inventory.isEmpty()) {
-            return;
+            return Set.of();
         }
 
         List<Integer> indices = new ArrayList<>();
@@ -218,13 +240,7 @@ class NodeBazaarHelper {
             }
         }
         Collections.shuffle(indices);
-        for (int i = 0; i < Math.min(bazaarCtx.discountCount, indices.size()); i++) {
-            BazaarItem item = inventory.get(indices.get(i));
-            PaperCard card = item.card();
-            int basePrice = BazaarPricing.getCardPrice(card);
-            int discounted = calculateDiscountedPrice(basePrice, bazaarCtx.discountAmount);
-            inventory.set(indices.get(i), item.withPriceOverride(discounted));
-        }
+        return new HashSet<>(indices.subList(0, Math.min(bazaarCtx.discountCount, indices.size())));
     }
 
     private int calculateDiscountedPrice(int basePrice, int discountAmount) {
@@ -261,12 +277,11 @@ class NodeBazaarHelper {
         if (bazaarCtx.offersCarryCards) {
             addCarryCardOffers(currentRun, inventory, carryCardOffers);
         }
-        applySpecialBazaarDiscounts(bazaarCtx, inventory);
     }
 
-    private void applySpecialBazaarDiscounts(BazaarContext bazaarCtx, List<BazaarItem> inventory) {
+    private Set<Integer> getDiscountedSpecialIndices(BazaarContext bazaarCtx, List<BazaarItem> inventory) {
         if (bazaarCtx.specialDiscountCount <= 0 || inventory.isEmpty()) {
-            return;
+            return Set.of();
         }
 
         List<Integer> traitIndices = new ArrayList<>();
@@ -282,16 +297,18 @@ class NodeBazaarHelper {
         Collections.shuffle(traitIndices, MyRandom.getRandom());
         Collections.shuffle(carryCardIndices, MyRandom.getRandom());
 
+        Set<Integer> discountedIndices = new HashSet<>();
         for (int i = 0; i < bazaarCtx.specialDiscountCount; i++) {
             boolean preferTraits = MyRandom.getRandom().nextBoolean();
             int selectedIndex = preferTraits
                 ? drawSpecialDiscountIndex(traitIndices, carryCardIndices)
                 : drawSpecialDiscountIndex(carryCardIndices, traitIndices);
             if (selectedIndex < 0) {
-                return;
+                break;
             }
-            inventory.set(selectedIndex, getDiscountedSpecialItem(bazaarCtx, inventory.get(selectedIndex)));
+            discountedIndices.add(selectedIndex);
         }
+        return discountedIndices;
     }
 
     private int drawSpecialDiscountIndex(List<Integer> preferredIndices, List<Integer> fallbackIndices) {
@@ -304,16 +321,15 @@ class NodeBazaarHelper {
         return -1;
     }
 
-    private BazaarItem getDiscountedSpecialItem(BazaarContext bazaarCtx, BazaarItem item) {
+    private int calculateSpecialDiscountedPrice(BazaarItem item, BazaarContext bazaarCtx, int basePrice) {
         if (item.type() == BazaarItem.Type.TRAIT) {
             int traitDiscountPrice = 3;
-            return item.withPriceOverride(traitDiscountPrice);
+            return Math.max(0, traitDiscountPrice + bazaarCtx.priceAdjustment);
         }
         if (item.type() == BazaarItem.Type.CARRY_CARD) {
-            int discounted = calculateDiscountedPrice(item.getBasePrice(), bazaarCtx.discountAmount);
-            return item.withPriceOverride(discounted);
+            return calculateDiscountedPrice(basePrice, bazaarCtx.discountAmount);
         }
-        return item;
+        return basePrice;
     }
 
     private void addTraitOffers(RogueRun currentRun, List<BazaarItem> inventory, int offerCount, int price) {

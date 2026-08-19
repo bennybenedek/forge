@@ -3,9 +3,10 @@ package forge.screens.home.rogue;
 import forge.gamemodes.rogue.RogueMetaProgress;
 import forge.gamemodes.rogue.RogueRun;
 import forge.gamemodes.rogue.RogueRun.CarryCard;
-import forge.gui.CardPicturePanel;
+import forge.gamemodes.rogue.effect.DescensionLevel;
 import forge.gamemodes.rogue.effect.RogueEffect;
 import forge.gamemodes.rogue.effect.RogueEffectComposite;
+import forge.gui.CardPicturePanel;
 import forge.gui.framework.DragCell;
 import forge.gui.framework.DragTab;
 import forge.gui.framework.EDocID;
@@ -138,10 +139,28 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
       lblRemovalCredits.setText("Removal Credits: " + run.getRemovalCredits());
       int descLevel = run.getDescensionLevel();
       lblDescension.setVisible(descLevel > 0);
-      if (descLevel > 0) lblDescension.setText("Descension: " + descLevel);
+      if (descLevel > 0) {
+        lblDescension.setText("Descension: " + descLevel);
+        StringBuilder tooltip = new StringBuilder("<html>");
+        for (int level = 1; level <= descLevel; level++) {
+          DescensionLevel descension = DescensionLevel.forLevel(level);
+          if (descension == null) {
+            continue;
+          }
+          tooltip.append("* Level ").append(level)
+              .append(" - ").append(descension.name)
+              .append(": ").append(descension.description)
+              .append("<br>");
+        }
+        tooltip.append("</html>");
+        lblDescension.setToolTipText(tooltip.toString());
+      } else {
+        lblDescension.setToolTipText(null);
+      }
 
       // Populate active effects (echo boons, descension, event traits, chest traits, wounds...)
       List<RogueEffect> allEffects = RogueEffectComposite.getAllEffects(run);
+      allEffects.removeIf(effect -> effect instanceof DescensionLevel);
       RogueUIHelper.populateEffectPanel(pnlEffects, allEffects, run);
       populateCarryCardPanel(run.getCarryCards());
 
@@ -153,6 +172,7 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
       lblGold.setText("Gold: 0");
       lblRemovalCredits.setText("Removal Credits: 0");
       lblDescension.setVisible(false);
+      lblDescension.setToolTipText(null);
       populateCarryCardPanel(List.of());
       pathVisualizer.clearPath();
     }

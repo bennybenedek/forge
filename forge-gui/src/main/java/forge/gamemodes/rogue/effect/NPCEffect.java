@@ -7,7 +7,6 @@ import forge.gamemodes.rogue.RogueConfig;
 import forge.gamemodes.rogue.RogueRun;
 import forge.gamemodes.rogue.RogueRun.CarryCardType;
 import forge.gamemodes.rogue.npc.NPC;
-import forge.item.IPaperCard;
 import forge.item.PaperCard;
 import forge.item.PaperCardPredicates;
 import forge.util.MyRandom;
@@ -157,21 +156,10 @@ public enum NPCEffect implements RogueEffect {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
-            List<PaperCard> permanents = new ArrayList<>();
-            for (PaperCard card : human.getDeck().getMain().toFlatList()) {
-                if (card.getRules().getType().isPermanent()) {
-                    permanents.add(card);
-                }
-            }
-            if (permanents.isEmpty()) {
-                return;
-            }
-            Collections.shuffle(permanents, MyRandom.getRandom());
-            List<IPaperCard> toMove = new ArrayList<>();
-            for (int i = 0; i < Math.min(2, permanents.size()); i++) {
-                toMove.add(permanents.get(i));
-            }
-            RogueEffect.moveCardsFromDeckToBattlefield(toMove, human);
+            RogueEffect.moveCardsFromDeckToBattlefield(c ->
+                c.getRules().getType().isPermanent() && !c.getRules().getType().isLand()
+                    && c.getRules().getManaCost().getCMC() <= 3,
+                2, human);
         }
     },
     HENZIE_LOREMASTER("npc_henzie_loremaster", "Loremaster",

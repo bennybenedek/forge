@@ -33,4 +33,7 @@ public class BazaarContext {
 
     /** Discount amount in gold per discounted card. */
     public int discountAmount;
+
+    /** Flat adjustment applied to every final Bazaar offer price. */
+    public int priceAdjustment;
 }

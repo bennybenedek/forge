@@ -1146,24 +1146,11 @@ public enum EventEffect implements RogueEffect {
         }
     },
     STREET_OF_GREED_ACCEPT("street_of_greed_accept", ACCEPT,
-        "Gain 666 {{Gold}}. " + TRAIT_GAIN_DESCRIPTION,
-        EffectType.ONESHOT, "Event Trait - Arrogance") {
+        "Gain 666 {{Gold}}. " + TRAIT_GAIN_DESCRIPTION + " You cannot gain Life during the Run in any way.",
+        EffectType.ONESHOT, "Event Trait - Greed") {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             run.addGold(666);
-            run.addEventEffect(this);
-        }
-
-        @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-        }
-    },
-    STREET_OF_FORCEFULNESS_ACCEPT("street_of_forcefulness_accept", ACCEPT,
-        TRAIT_GAIN_DESCRIPTION + " You cannot gain Life during the Run in any way.",
-        EffectType.ONESHOT, "Event Trait - Forcefulness") {
-        @Override
-        public void applyEffect(RogueRun run, EffectResultContext ctx) {
             run.addEventEffect(this);
         }
 
@@ -1175,6 +1162,22 @@ public enum EventEffect implements RogueEffect {
         @Override
         public void onBeforeGainLife(GainLifeContext ctx, RogueRun run) {
             ctx.amount = 0;
+        }
+    },
+    STREET_OF_FORCEFULNESS_ACCEPT("street_of_forcefulness_accept", ACCEPT,
+        TRAIT_GAIN_DESCRIPTION,
+        EffectType.ONESHOT, "Event Trait - Forcefulness") {
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            run.addEventEffect(this);
+        }
+
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+            RogueEffect.moveCardsFromDeckToBattlefield(c ->
+                c.getRules().getType().isCreature() && c.getRules().getManaCost().getCMC() <= 3,
+                1, opponent);
         }
     },
     SHRINE_KNEEL("shrine_kneel", "Kneel", "You discover a hidden {{Sanctum}}.",

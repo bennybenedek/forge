@@ -10,6 +10,7 @@ import java.util.List;
 public class SanctumContext {
     public record SanctumChoice(String id, String label, String description) {}
 
+    public Integer healAmountOverride;
     public final List<NPCContext> preSanctumDialogs = new ArrayList<>();
     public final List<SanctumChoice> extraChoices = new ArrayList<>();
 }

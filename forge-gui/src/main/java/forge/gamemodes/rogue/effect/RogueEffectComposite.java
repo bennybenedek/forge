@@ -95,6 +95,11 @@ public enum RogueEffectComposite implements RogueEffect {
     }
 
     @Override
+    public void onBeforeBazaar(BazaarContext ctx, RogueRun run) {
+        forEachEffect(run, e -> e.onBeforeBazaar(ctx, run));
+    }
+
+    @Override
     public void onSanctumChoice(SanctumContext.SanctumChoice choice, RogueRun run) {
         forEachEffect(run, e -> e.onSanctumChoice(choice, run));
     }

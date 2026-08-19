@@ -288,6 +288,14 @@ public enum ChestEffect implements RogueEffect {
             addEffectCardToCommandZone(human);
         }
     },
+    RELIC_OF_ARTS("relic_of_arts", "Relic Of Arts",
+        TRAIT_GAIN_DESCRIPTION,
+        EffectType.PERMANENT, "Chest Trait - Relic Of Arts") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+        }
+    },
     RELIC_OF_EXPLORATION("relic_of_exploration", "Relic Of Exploration",
         TRAIT_GAIN_DESCRIPTION,
         EffectType.PERMANENT, "Chest Trait - Relic Of Exploration") {

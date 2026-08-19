@@ -210,6 +210,9 @@ public interface RogueEffect {
     /** Fired before a Sanctum dialog is shown. Modify ctx to inject choices or other setup. */
     default void onBeforeSanctum(SanctumContext ctx, RogueRun run) {}
 
+    /** Fired before a Bazaar dialog is shown. Modify ctx to adjust offers or pricing. */
+    default void onBeforeBazaar(BazaarContext ctx, RogueRun run) {}
+
     /** Fired after a custom Sanctum choice is selected. */
     default void onSanctumChoice(SanctumContext.SanctumChoice choice, RogueRun run) {}
 
@@ -579,6 +582,26 @@ public interface RogueEffect {
 
     static void addCardToBattlefield(PaperCard card, RegisteredPlayer human) {
         if (card != null) human.addExtraCardsOnBattlefield(Collections.singletonList(card));
+    }
+
+    static void moveCardsFromDeckToBattlefield(Predicate<PaperCard> filter,
+        Integer count, RegisteredPlayer player) {
+
+        if (player == null) {
+            return;
+        }
+        List<PaperCard> cards = new ArrayList<>();
+        for (PaperCard card : player.getDeck().getMain().toFlatList()) {
+            if (filter == null || filter.test(card)) {
+                cards.add(card);
+            }
+        }
+        List<PaperCard> selectedCards = getSubsetFromCollection(cards, count);
+        if (selectedCards.isEmpty()) {
+            return;
+        }
+        List<IPaperCard> toMove = new ArrayList<>(selectedCards);
+        moveCardsFromDeckToBattlefield(toMove, player);
     }
 
     /**

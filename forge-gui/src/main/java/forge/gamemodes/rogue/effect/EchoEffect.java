@@ -3,11 +3,6 @@ package forge.gamemodes.rogue.effect;
 import forge.game.player.RegisteredPlayer;
 import forge.gamemodes.rogue.AetherUpgrade;
 import forge.gamemodes.rogue.RogueRun;
-import forge.item.IPaperCard;
-import forge.item.PaperCard;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 
 /**
  * Enum defining all available Echo effects (=Boons) in Rogue Commander mode.
@@ -167,15 +162,8 @@ public enum EchoEffect implements RogueEffect {
             int rank = run.getRunEffectRank(getId());
             int count = getEffectValueAtRank(rank);
             if (count <= 0) return;
-            List<PaperCard> basicLands = new ArrayList<>();
-            for (PaperCard c : human.getDeck().getMain().toFlatList()) {
-                if (c.getRules().getType().isBasicLand()) basicLands.add(c);
-            }
-            if (basicLands.isEmpty()) return;
-            Collections.shuffle(basicLands);
-            List<IPaperCard> toMove = new ArrayList<>();
-            for (int i = 0; i < Math.min(count, basicLands.size()); i++) toMove.add(basicLands.get(i));
-            RogueEffect.moveCardsFromDeckToBattlefield(toMove, human);
+            RogueEffect.moveCardsFromDeckToBattlefield(c -> c.getRules().getType().isBasicLand(),
+                count, human);
             RogueEffect.addCardToCommandZone(getEffectCardReferenceForRank(rank), human);
         }
     },

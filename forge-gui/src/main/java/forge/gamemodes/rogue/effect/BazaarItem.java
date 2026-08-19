@@ -19,7 +19,7 @@ public record BazaarItem(PaperCard card, Type type, RogueEffect traitEffect,
     }
 
     public static BazaarItem forCard(PaperCard card, Integer priceOverride) {
-        return new BazaarItem(card, Type.CARD, null, null, priceOverride, null);
+        return new BazaarItem(card, Type.CARD, null, null, priceOverride, priceOverride);
     }
 
     public static BazaarItem forCurio(PaperCard card, int price) {
@@ -35,7 +35,11 @@ public record BazaarItem(PaperCard card, Type type, RogueEffect traitEffect,
     }
 
     public BazaarItem withPriceOverride(Integer price) {
-        return new BazaarItem(card, type, traitEffect, carryCardType, price, getBasePrice());
+        return withPrice(price, getBasePrice());
+    }
+
+    public BazaarItem withPrice(Integer price, Integer basePrice) {
+        return new BazaarItem(card, type, traitEffect, carryCardType, price, basePrice);
     }
 
     public int getPrice() {

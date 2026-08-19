@@ -44,7 +44,9 @@ class NodeSanctumHelper {
         NPCEncounterComposite.INSTANCE.onBeforeSanctum(sanctumCtx, currentRun, progress);
         showNpcDialogs(sanctumCtx.preSanctumDialogs);
 
-        int baseHealAmount = sanctumNode.getHealAmount();
+        int baseHealAmount = sanctumCtx.healAmountOverride != null
+            ? sanctumCtx.healAmountOverride
+            : sanctumNode.getHealAmount();
         int missingLife = Math.max(0, currentRun.getMaxLife() - currentRun.getCurrentLife());
         int effectiveHealAmount = Math.min(baseHealAmount, missingLife);
         boolean hasWounds = !currentRun.getActiveWoundEffects().isEmpty();

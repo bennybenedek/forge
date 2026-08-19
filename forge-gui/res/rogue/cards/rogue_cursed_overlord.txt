@@ -1,0 +1,6 @@
+Name:Cursed - Overlord
+ManaCost:no cost
+Types:Cursed
+T:Mode$ Phase | Phase$ Upkeep | ValidPlayer$ Opponent | TriggerZones$ Command | Execute$ TrigCopy | TriggerDescription$ At the beginning of each opponent's upkeep, that player may create a token that's a copy of up to one target permanent they control.
+SVar:TrigCopy:DB$ CopyPermanent | Optional$ True | ValidTgts$ Permanent.ControlledBy TriggeredPlayer | TgtPrompt$ Select up to one target permanent you control | TargetMin$ 0 | TargetMax$ 1 | TargetingPlayer$ TriggeredPlayer | Controller$ TriggeredPlayer
+Oracle:At the beginning of each opponent's upkeep, that player may create a token that's a copy of up to one target permanent they control.

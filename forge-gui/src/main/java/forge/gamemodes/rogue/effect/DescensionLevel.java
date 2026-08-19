@@ -81,7 +81,7 @@ public enum DescensionLevel implements RogueEffect {
         }
     },
 
-    LEVEL_4(4, "Elite Paths",
+    LEVEL_4(4, "Elite",
         "2 random Normal Planes of the Path are replaced by Elite Planes.",
         null) {
         @Override
@@ -136,9 +136,23 @@ public enum DescensionLevel implements RogueEffect {
         }
     },
 
-    LEVEL_6(6, "Taxing Mana",
+    LEVEL_6(6, "Crisis",
+        "Healing at a Sanctum only restores 2 Life, all Bazaar offers cost 2 more Gold.",
+        null) {
+        @Override
+        public void onBeforeSanctum(SanctumContext ctx, RogueRun run) {
+            ctx.healAmountOverride = 2;
+        }
+
+        @Override
+        public void onBeforeBazaar(BazaarContext ctx, RogueRun run) {
+            ctx.priceAdjustment += 2;
+        }
+    },
+
+    LEVEL_7(7, "Resistance",
         "Spells you cast cost {1} more to cast.",
-        "Descension - Taxing Mana") {
+        "Descension - Resistance") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);

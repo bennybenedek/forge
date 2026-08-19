@@ -1,5 +1,0 @@
-Name:Wrathful - Might
-ManaCost:no cost
-Types:Wrathful
-S:Mode$ Continuous | Affected$ Creature.IsCommander+OppCtrl | AddPower$ 2 | AddToughness$ 2 | EffectZone$ Command | Description$ Opponent's commander gets +2/+2.
-Oracle:Opponent's commander gets +2/+2.

@@ -343,7 +343,9 @@ public enum CSubmenuRogueStart implements ICDoc {
     DescensionLevel dl = DescensionLevel.forLevel(selectedDescensionLevel);
     boolean locked = selectedDescensionLevel > maxUnlocked;
 
-    String levelName = dl != null ? "Level " + selectedDescensionLevel + " \u2014 " + dl.name : "Level " + selectedDescensionLevel;
+    String levelName = dl != null
+        ? String.format("Level %d - %s", selectedDescensionLevel, dl.name)
+        : String.format("Level %d", selectedDescensionLevel);
     view.getLblDescensionLevel().setText(levelName);
     view.getLblDescensionLock().setVisible(locked);
     view.getBtnDescensionDown().setVisible(selectedDescensionLevel > 1);
@@ -353,9 +355,9 @@ public enum CSubmenuRogueStart implements ICDoc {
       view.getLblDescensionDesc().setText(dl != null ? dl.description : "");
       view.getBtnBeginRun().setEnabled(true);
     } else {
-      view.getLblDescensionDesc().setText(
-          "Win a Run with " + commanderName + " in Descension Level "
-          + (selectedDescensionLevel - 1) + " to unlock Level " + selectedDescensionLevel + ".");
+      view.getLblDescensionDesc().setText(String.format(
+          "Win a Run with %s in Descension Level %d to unlock Level %d.",
+          commanderName, selectedDescensionLevel - 1, selectedDescensionLevel));
       view.getBtnBeginRun().setEnabled(false);
     }
   }
