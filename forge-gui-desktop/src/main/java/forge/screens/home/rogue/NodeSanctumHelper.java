@@ -44,19 +44,22 @@ class NodeSanctumHelper {
         NPCEncounterComposite.INSTANCE.onBeforeSanctum(sanctumCtx, currentRun, progress);
         showNpcDialogs(sanctumCtx.preSanctumDialogs);
 
-        int baseHealAmount = sanctumCtx.healAmountOverride != null
-            ? sanctumCtx.healAmountOverride
-            : sanctumNode.getHealAmount();
+        int baseHealAmount = sanctumCtx.restLifeGainDisabled ? 0 : sanctumNode.getHealAmount();
         int missingLife = Math.max(0, currentRun.getMaxLife() - currentRun.getCurrentLife());
         int effectiveHealAmount = Math.min(baseHealAmount, missingLife);
         boolean hasWounds = !currentRun.getActiveWoundEffects().isEmpty();
         boolean restEnabled = effectiveHealAmount > 0 || hasWounds;
+        String restDescription = sanctumCtx.restLifeGainDisabled
+            ? "Cure all {{Wound}}s."
+            : "Gain " + effectiveHealAmount + " Life & Cure all {{Wound}}s.";
         String restDisabledReason = restEnabled
             ? null
-            : "You are already at maximum life and have no wounds to cure.";
+            : sanctumCtx.restLifeGainDisabled
+                ? "You have no wounds to cure."
+                : "You are already at maximum life and have no wounds to cure.";
 
         SanctumDialog dialog = new SanctumDialog(
-            effectiveHealAmount, restEnabled, restDisabledReason, sanctumCtx);
+            restDescription, restEnabled, restDisabledReason, sanctumCtx);
         SanctumDialog.SanctumChoice choice = dialog.show();
 
         switch (choice) {

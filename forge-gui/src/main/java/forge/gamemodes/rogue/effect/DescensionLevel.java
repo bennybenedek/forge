@@ -137,11 +137,11 @@ public enum DescensionLevel implements RogueEffect {
     },
 
     LEVEL_6(6, "Crisis",
-        "Healing at a Sanctum only restores 2 Life, all Bazaar offers cost 2 more Gold.",
+        "Healing at a Sanctum only cures all Wounds, all Bazaar offers cost 2 more Gold.",
         null) {
         @Override
         public void onBeforeSanctum(SanctumContext ctx, RogueRun run) {
-            ctx.healAmountOverride = 2;
+            ctx.restLifeGainDisabled = true;
         }
 
         @Override

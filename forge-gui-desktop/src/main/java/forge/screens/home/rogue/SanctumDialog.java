@@ -48,11 +48,11 @@ public class SanctumDialog {
   /**
    * Create a Sanctum dialog.
    *
-   * @param effectiveHealAmount Actual life gain the player would receive right now
+   * @param restDescription Text shown on the Rest choice
    * @param restEnabled Whether REST should be selectable
    * @param restDisabledReason Tooltip shown when REST is disabled
    */
-  public SanctumDialog(int effectiveHealAmount, boolean restEnabled, String restDisabledReason,
+  public SanctumDialog(String restDescription, boolean restEnabled, String restDisabledReason,
                        SanctumContext sanctumCtx) {
     panel = new MainPanel();
 
@@ -70,7 +70,6 @@ public class SanctumDialog {
         .build();
     int choiceButtonWidth = (DIALOG_WIDTH - 2 * PANEL_INSETS) * 4 / 5;
 
-    String restDescription = "Gain " + effectiveHealAmount + " Life & Cure all {{Wound}}s.";
     FButton btnRest = RogueButtonHelper.createChoiceButton(
         "Rest", TextHelper.stripPreviewMarkers(restDescription),
         TextHelper.extractPreviewReferences(restDescription));
