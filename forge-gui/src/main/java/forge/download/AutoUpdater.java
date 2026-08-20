@@ -37,18 +37,16 @@ public class AutoUpdater {
     private String packageUrl;
     private String packagePath;
     private String buildDate = "";
-    private String snapsBuildDate = "";
+    private Date snapsBuildDate;
 
     public AutoUpdater(boolean loading) {
-        // What do I need? Preferences? Splashscreen? UI? Skins?
         isLoading = loading;
         updateChannel = FModel.getPreferences().getPref(ForgePreferences.FPref.AUTO_UPDATE);
         buildVersion = BuildInfo.getVersionString();
     }
 
-    public boolean updateAvailable() {
-        // TODO Check if an update is available, and add a UI element to notify the user.
-        return verifyUpdateable();
+    public Date getSnapsBuildDate() {
+        return snapsBuildDate;
     }
 
     public boolean attemptToUpdate(CompletableFuture<String> cf) {
@@ -77,10 +75,9 @@ public class AutoUpdater {
         restartForge();
     }
 
-    private boolean verifyUpdateable() {
+    public boolean verifyUpdateable() {
         System.out.println("DEBUG: verifyUpdateable() - buildVersion: " + buildVersion);
         System.out.println("DEBUG: verifyUpdateable() - updateChannel: " + updateChannel);
-
         if (buildVersion.contains("GIT")) {
             System.out.println("DEBUG: Development build (GIT) - auto-updater not available");
             SOptionPane.showMessageDialog(
@@ -134,8 +131,12 @@ public class AutoUpdater {
 
         // Check the internet connection
         System.out.println("DEBUG: Testing network connection...");
-        // Determine which server to test based on build type
-        String serverToTest = buildVersion.contains("SNAPSHOT") ? "github.com" : "releases.cardforge.org";
+        String serverToTest;
+        try {
+            serverToTest = new URL(versionUrlString).getHost();
+        } catch (MalformedURLException e) {
+            serverToTest = "github.com";
+        }
         if (!testNetConnection(serverToTest)) {
             System.out.println("ERROR: Network connection test failed for " + serverToTest);
             SOptionPane.showMessageDialog("Cannot connect to update server (" + serverToTest + ").\n\nPlease check your internet connection.", "Network Error", SOptionPane.ERROR_ICON);
@@ -179,22 +180,20 @@ public class AutoUpdater {
                 System.out.println("DEBUG: Downloading build.txt from: " + url);
 
                 SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-                Date snapsTimestamp = simpleDateFormat.parse(FileUtil.readFileToString(url));
-                snapsBuildDate = snapsTimestamp.toString();
+                snapsBuildDate = simpleDateFormat.parse(FileUtil.readFileToString(url));
                 buildDate = BuildInfo.getTimestamp().toString();
-
                 System.out.println("DEBUG: Local build timestamp:  " + buildDate);
                 System.out.println("DEBUG: Remote build timestamp: " + snapsBuildDate);
 
                 // For rogueCommander development - allow immediate updates (no 23-hour threshold)
                 Date localTimestamp = BuildInfo.getTimestamp();
-                if (localTimestamp == null || snapsTimestamp == null) {
+                if (localTimestamp == null || snapsBuildDate == null) {
                     System.out.println("ERROR: Timestamp is null - cannot compare");
                     return false;
                 }
 
                 // Return true if remote build is ANY amount newer than local build
-                if (snapsTimestamp.after(localTimestamp)) {
+                if (snapsBuildDate.after(localTimestamp)) {
                     System.out.println("DEBUG: Remote build is newer - update available!");
                     return true;
                 } else {
@@ -214,7 +213,6 @@ public class AutoUpdater {
                 SOptionPane.showMessageDialog("Could not retrieve remote version information.", "Update Check Failed", SOptionPane.ERROR_ICON);
                 return false;
             }
-
             if (buildVersion.equals(version)) {
                 System.out.println("DEBUG: Versions match - already up to date");
                 SOptionPane.showMessageDialog("You are already running the latest version.\n\nCurrent version: " + buildVersion, "Up to Date", SOptionPane.INFORMATION_ICON);
@@ -272,8 +270,8 @@ public class AutoUpdater {
             // splashScreen.prepareForDialogs();
             return downloadFromBrowser();
         }
-        String logs = snapsBuildDate.isEmpty() ? "" : cf.get();
-        String v = snapsBuildDate.isEmpty() ? version : version + TextUtil.enclosedParen(snapsBuildDate);
+        String logs = snapsBuildDate == null ? "" : cf.get();
+        String v = snapsBuildDate == null ? version : version + TextUtil.enclosedParen(snapsBuildDate.toString());
         String b = buildDate.isEmpty() ? buildVersion : buildVersion + TextUtil.enclosedParen(buildDate);
         String message = localizer.getMessage("lblNewVersionForgeAvailableUpdateConfirm", v, b) + logs;
         final List<String> options = List.of(localizer.getMessage("lblUpdateNow"), localizer.getMessage("lblUpdateLater"));
