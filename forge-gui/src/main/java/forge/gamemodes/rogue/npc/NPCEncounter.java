@@ -7,6 +7,7 @@ import forge.gamemodes.rogue.effect.BazaarContext;
 import forge.gamemodes.rogue.effect.EventEffect;
 import forge.gamemodes.rogue.effect.NPCEffect;
 import forge.gamemodes.rogue.effect.SanctumContext;
+import forge.localinstance.achievements.RogueCommanderAchievements;
 import forge.util.MyRandom;
 import java.util.Collections;
 import java.util.List;
@@ -68,6 +69,8 @@ public interface NPCEncounter {
     default void incrementNpcLevel() {
         RogueMetaProgress p = RogueMetaProgress.getInstance();
         p.setNPCLevelIfHigher(getNpc().id, p.getNPCLevel(getNpc().id) + 1);
+        RogueCommanderAchievements.instance.evaluateNpcBoonUnlockAchievements(p);
+        RogueCommanderAchievements.instance.evaluateUpgradeAchievements(p);
     }
 
     /** Fired after each match. Return non-null to show NPC dialog. */

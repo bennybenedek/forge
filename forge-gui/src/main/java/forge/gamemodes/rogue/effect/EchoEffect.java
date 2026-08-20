@@ -3,6 +3,7 @@ package forge.gamemodes.rogue.effect;
 import forge.game.player.RegisteredPlayer;
 import forge.gamemodes.rogue.AetherUpgrade;
 import forge.gamemodes.rogue.RogueRun;
+import forge.item.PaperCard;
 
 /**
  * Enum defining all available Echo effects (=Boons) in Rogue Commander mode.
@@ -231,6 +232,11 @@ public enum EchoEffect implements RogueEffect {
 
     @Override
     public String getEffectCardReference() { return effectCardReference; }
+
+    @Override
+    public PaperCard getEffectCard() {
+        return null;
+    }
 
     public int getMaxRank() {
         return rankContext.maxRank();

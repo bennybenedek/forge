@@ -8,6 +8,7 @@ import forge.gamemodes.rogue.effect.DescensionLevel;
 import forge.gamemodes.rogue.effect.EchoEffect;
 import forge.gui.GuiBase;
 import forge.item.PaperCard;
+import forge.localinstance.achievements.RogueCommanderAchievements;
 import forge.localinstance.properties.ForgeConstants;
 import forge.localinstance.skin.FSkinProp;
 import forge.localinstance.skin.ISkinImage;
@@ -203,6 +204,8 @@ public class RogueMetaProgress {
             }
         }
 
+        RogueCommanderAchievements.instance.evaluateCommanderUnlockAchievements();
+
         if (changed) {
             save();
         }
@@ -350,6 +353,7 @@ public class RogueMetaProgress {
 
     public void setAetherUpgradeLevel(int level) {
         aetherUpgradeLevel = level;
+        RogueCommanderAchievements.instance.evaluateUpgradeAchievements(this);
         save();
     }
 
@@ -364,6 +368,7 @@ public class RogueMetaProgress {
         if (totalSparks < upgrade.sparkCost) return false;
         totalSparks -= upgrade.sparkCost;
         aetherUpgradeLevel = level;
+        RogueCommanderAchievements.instance.evaluateUpgradeAchievements(this);
         save();
         return true;
     }
@@ -632,6 +637,7 @@ public class RogueMetaProgress {
         } else {
             npcLevels.put(id, level);
         }
+        RogueCommanderAchievements.instance.evaluateUpgradeAchievements(this);
         save();
     }
 
