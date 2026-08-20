@@ -38,6 +38,7 @@ public enum CSubmenuRogueStart implements ICDoc {
   private final VSubmenuRogueStart view = VSubmenuRogueStart.SINGLETON_INSTANCE;
   private RogueDeck selectedDeck;
   private int selectedDescensionLevel = 0;
+  private boolean updatingDescensionUi;
 
   @Override
   public void register() {
@@ -119,6 +120,8 @@ public enum CSubmenuRogueStart implements ICDoc {
 
   private void loadAvailableCommanders() {
     List<RogueDeck> availableDecks = RogueConfig.loadRogueDecks();
+    String previousCommanderName = selectedDeck != null ? selectedDeck.getCommanderCardName() : null;
+    int previousDescensionLevel = selectedDescensionLevel;
 
     // Sort commanders: unlocked first (alphabetically), then locked (alphabetically)
     availableDecks.sort(Comparator
@@ -130,6 +133,7 @@ public enum CSubmenuRogueStart implements ICDoc {
 
     // Create card panel for each commander
     CommanderCardPanel firstUnlockedPanel = null;
+    CommanderCardPanel previousCommanderPanel = null;
     for (RogueDeck deck : availableDecks) {
       CommanderCardPanel cardPanel = new CommanderCardPanel(deck, view);
 
@@ -142,16 +146,23 @@ public enum CSubmenuRogueStart implements ICDoc {
       if (firstUnlockedPanel == null && !cardPanel.isLocked()) {
         firstUnlockedPanel = cardPanel;
       }
+      if (previousCommanderPanel == null && !cardPanel.isLocked()
+          && previousCommanderName != null
+          && previousCommanderName.equals(cardPanel.getCommander().getCommanderCardName())) {
+        previousCommanderPanel = cardPanel;
+      }
     }
 
     requestHiddenCardImageForLockedPanels();
 
-    // Select first unlocked commander by default
-    if (firstUnlockedPanel != null) {
-      firstUnlockedPanel.setSelected(true);
-      selectedDeck = firstUnlockedPanel.getCommander();
-      updateCommanderDetails(firstUnlockedPanel);
-      updateDescensionVisibility(firstUnlockedPanel);
+    // Restore previous commander selection when returning to this view; otherwise use first unlocked.
+    CommanderCardPanel panelToSelect = previousCommanderPanel != null ? previousCommanderPanel : firstUnlockedPanel;
+    if (panelToSelect != null) {
+      panelToSelect.setSelected(true);
+      selectedDeck = panelToSelect.getCommander();
+      selectedDescensionLevel = previousDescensionLevel;
+      updateCommanderDetails(panelToSelect);
+      updateDescensionVisibility(panelToSelect, previousCommanderPanel != null);
       view.getBtnBeginRun().setEnabled(true);
     } else {
       view.getBtnBeginRun().setEnabled(false);
@@ -227,7 +238,7 @@ public enum CSubmenuRogueStart implements ICDoc {
       selectedDeck = clickedPanel.getCommander();
       view.getBtnBeginRun().setEnabled(true);
       updateCommanderDetails(clickedPanel);
-      updateDescensionVisibility(clickedPanel);
+      updateDescensionVisibility(clickedPanel, false);
     } else {
       // If deselecting, clear details
       selectedDeck = null;
@@ -281,10 +292,12 @@ public enum CSubmenuRogueStart implements ICDoc {
     view.getTxtTheme().repaint();
   }
 
-  private void updateDescensionVisibility(CommanderCardPanel panel) {
-    // Always reset level state when switching commanders
+  private void updateDescensionVisibility(CommanderCardPanel panel, boolean preserveDescension) {
+    int previousDescensionLevel = preserveDescension ? selectedDescensionLevel : 0;
     selectedDescensionLevel = 0;
+    updatingDescensionUi = true;
     view.getChkDescension().setSelected(false);
+    updatingDescensionUi = false;
     view.getPnlDescensionLevel().setVisible(false);
 
     if (panel == null || panel.isLocked()) {
@@ -313,10 +326,22 @@ public enum CSubmenuRogueStart implements ICDoc {
     } else {
       view.getPnlDescensionLock().setVisible(false);
       view.getChkDescension().setVisible(true);
+      if (previousDescensionLevel > 0) {
+        selectedDescensionLevel = Math.min(previousDescensionLevel,
+            Math.min(maxUnlocked, DescensionLevel.getMaxLevel()));
+        updatingDescensionUi = true;
+        view.getChkDescension().setSelected(true);
+        updatingDescensionUi = false;
+        view.getPnlDescensionLevel().setVisible(true);
+        updateDescensionDisplay();
+      }
     }
   }
 
   private void onDescensionToggled() {
+    if (updatingDescensionUi) {
+      return;
+    }
     if (view.getChkDescension().isSelected()) {
       selectedDescensionLevel = 1;
       view.getLblDescensionLock().setVisible(false);

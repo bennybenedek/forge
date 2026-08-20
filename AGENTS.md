@@ -15,6 +15,7 @@ This repository is a Java 17+ multi-module Maven project (Forge / Rogue Commande
 ## High-priority operating rules
 
 - Do not compile or run builds/tests unless the user explicitly asks.
+- Exception: when resolving merge conflicts in Java source files, run the narrowest compile-only verification needed for the affected module(s) after resolving the conflicts, unless the user explicitly says not to build. Do not stop at textual conflict resolution if compile errors are still possible from surrounding non-conflict changes.
 - Do not add unit tests by default. Only add tests when the user explicitly asks for them, or when test additions are part of the agreed implementation plan.
 - Do not implement beyond explicit user requirements; if ambiguous, ask one focused question.
 - If the user asks for a specific change that appears already done, say so and wait for confirmation before substituting a different change.
