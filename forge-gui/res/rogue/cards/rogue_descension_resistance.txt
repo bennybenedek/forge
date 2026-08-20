@@ -1,5 +1,0 @@
-Name:Descension - Resistance
-ManaCost:no cost
-Types:Trait
-S:Mode$ RaiseCost | ValidCard$ Card | Activator$ You | Type$ Spell | Amount$ 1 | EffectZone$ Command | Description$ Spells you cast cost {1} more to cast.
-Oracle:Spells you cast cost {1} more to cast.

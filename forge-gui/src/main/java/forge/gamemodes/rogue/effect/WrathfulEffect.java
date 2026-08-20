@@ -24,54 +24,9 @@ public enum WrathfulEffect implements PlaneboundEffect {
             run.consumeEffect(getId());
         }
     },
-    FORESIGHT("wrathful_foresight", "Foresight",
-        "At the beginning of each of Planebound's upkeeps, they scry 1.",
-        "Wrathful - Foresight") {
-        @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-            run.consumeEffect(getId());
-        }
-    },
-    STRENGTH("wrathful_strength", "Strength",
-        "Planebound Commander gets +2/+2 and has trample.",
-        "Wrathful - Strength") {
-        @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-            run.consumeEffect(getId());
-        }
-    },
     FEASTING("wrathful_feasting", "Feasting",
         "Whenever a creature Planebound controls enters, Planebound gains 1 life.",
         "Wrathful - Feasting") {
-        @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-            run.consumeEffect(getId());
-        }
-    },
-    VIGOR("wrathful_vigor", "Vigor",
-        "Whenever a permanent Planebound controls enters tapped, untap it.",
-        "Wrathful - Vigor") {
-        @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-            run.consumeEffect(getId());
-        }
-    },
-    TYRANNY("wrathful_tyranny", "Tyranny",
-        "Planebound may play an additional land on each of their turns.",
-        "Wrathful - Tyranny") {
-        @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-            run.consumeEffect(getId());
-        }
-    },
-    WILDNESS("wrathful_wildness", "Wildness",
-        "At the beginning of Planebound's end step, untap all lands they control.",
-        "Wrathful - Wildness") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
@@ -87,9 +42,9 @@ public enum WrathfulEffect implements PlaneboundEffect {
             run.consumeEffect(getId());
         }
     },
-    WATCHING("wrathful_watching", "Watching",
-        "Creatures Planebound controls get +1/+1 and have vigilance.",
-        "Wrathful - Watching") {
+    FORESIGHT("wrathful_foresight", "Foresight",
+        "At the beginning of each of Planebound's upkeeps, they scry 1.",
+        "Wrathful - Foresight") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
@@ -117,6 +72,51 @@ public enum WrathfulEffect implements PlaneboundEffect {
     RESILIENCE("wrathful_resilience", "Resilience",
         "Planebound gains 1 life at the beginning of each of their upkeeps.",
         "Wrathful - Resilience") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+            run.consumeEffect(getId());
+        }
+    },
+    STRENGTH("wrathful_strength", "Strength",
+        "Planebound Commander gets +2/+2 and has trample.",
+        "Wrathful - Strength") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+            run.consumeEffect(getId());
+        }
+    },
+    TYRANNY("wrathful_tyranny", "Tyranny",
+        "Planebound may play an additional land on each of their turns.",
+        "Wrathful - Tyranny") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+            run.consumeEffect(getId());
+        }
+    },
+    VIGOR("wrathful_vigor", "Vigor",
+        "Whenever a permanent Planebound controls enters tapped, untap it.",
+        "Wrathful - Vigor") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+            run.consumeEffect(getId());
+        }
+    },
+    WATCHING("wrathful_watching", "Watching",
+        "Creatures Planebound controls get +1/+1 and have vigilance.",
+        "Wrathful - Watching") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+            run.consumeEffect(getId());
+        }
+    },
+    WILDNESS("wrathful_wildness", "Wildness",
+        "At the beginning of Planebound's end step, untap all lands they control.",
+        "Wrathful - Wildness") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);

@@ -1,6 +1,5 @@
 package forge.gamemodes.rogue.effect;
 
-import forge.game.player.RegisteredPlayer;
 import forge.gamemodes.rogue.RogueConfig;
 import forge.gamemodes.rogue.RoguePlanebound;
 import forge.gamemodes.rogue.RoguePlaneboundType;
@@ -58,7 +57,7 @@ public enum DescensionLevel implements RogueEffect {
             }
             if (planeboundNodes.isEmpty()) return;
 
-            int markerCount = planeboundNodes.size() / 2;
+            int markerCount = planeboundNodes.size() - 5;
             Random rng = MyRandom.getRandom();
             for (int i = 0; i < markerCount; i++) {
                 List<NodePlanebound> eligible = new ArrayList<>();
@@ -81,7 +80,7 @@ public enum DescensionLevel implements RogueEffect {
         }
     },
 
-    LEVEL_4(4, "Elite",
+    LEVEL_4(4, "Elites",
         "2 random Normal Planes of the Path are replaced by Elite Planes.",
         null) {
         @Override
@@ -150,12 +149,19 @@ public enum DescensionLevel implements RogueEffect {
         }
     },
 
-    LEVEL_7(7, "Resistance",
-        "Spells you cast cost {1} more to cast.",
-        "Descension - Resistance") {
+    LEVEL_7(7, "Nemesis",
+        "Bosses have +15 starting life and an additional instance of Cursed.",
+        null) {
         @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
+        public void afterPathGeneration(RogueRun run) {
+            for (RoguePathNode node : run.getPath().getNodes()) {
+                if (node instanceof NodePlanebound planebound
+                    && planebound.getPlaneboundType() == RoguePlaneboundType.BOSS) {
+                    planebound.setStartingLifeModification(
+                        planebound.getStartingLifeModification() + 15);
+                    planebound.setCursedCount(planebound.getCursedCount() + 1);
+                }
+            }
         }
     };
 

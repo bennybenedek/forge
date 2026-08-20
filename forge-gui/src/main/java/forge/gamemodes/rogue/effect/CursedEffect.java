@@ -6,9 +6,36 @@ import java.util.Set;
 
 public enum CursedEffect implements PlaneboundEffect {
 
+    ASCETICISM("cursed_asceticism", "Asceticism",
+        "Creatures Planebound controls have hexproof.",
+        "Cursed - Asceticism") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+            run.consumeEffect(getId());
+        }
+    },
+    ASSAULT("cursed_assault", "Assault",
+        "Creatures Planebound controls get +2/+2 and have deathtouch.",
+        "Cursed - Assault") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+            run.consumeEffect(getId());
+        }
+    },
     BARGAIN("cursed_bargain", "Bargain",
             "Planebound's spells cost {2} less to cast.",
         "Cursed - Bargain") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+            run.consumeEffect(getId());
+        }
+    },
+    BERSERKER("cursed_berserker", "Berserker",
+        "Attacking creatures Planebound controls have double strike.",
+        "Cursed - Berserker") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
@@ -24,6 +51,42 @@ public enum CursedEffect implements PlaneboundEffect {
             run.consumeEffect(getId());
         }
     },
+    CRUSADER("cursed_crusader", "Crusader",
+        "Whenever a creature Planebound controls enters, put a +1/+1 counter on each creature Planebound controls.",
+        "Cursed - Crusader") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+            run.consumeEffect(getId());
+        }
+    },
+    DEMONIC("cursed_demonic", "Demonic",
+        "At the beginning of Planebound's end step, if Planebound controls exactly one creature, they create a 5/5 black Demon creature token with flying.",
+        "Cursed - Demonic") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+            run.consumeEffect(getId());
+        }
+    },
+    DICTATOR("cursed_dictator", "Dictator",
+        "Whenever a creature Planebound controls dies, you sacrifice a creature.",
+        "Cursed - Dictator") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+            run.consumeEffect(getId());
+        }
+    },
+    GRACEFUL("cursed_graceful", "Graceful",
+        "At the beginning of Planebound's upkeep, they create a 1/1 white Spirit creature token with flying.",
+        "Cursed - Graceful") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+            run.consumeEffect(getId());
+        }
+    },
     INSIGHT("cursed_insight", "Insight",
             "Planebound draws 1 additional card at the start of each match.",
         "Cursed - Insight") {
@@ -31,6 +94,15 @@ public enum CursedEffect implements PlaneboundEffect {
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             if (opponent == null) return;
             opponent.setStartingHand(opponent.getStartingHand() + 1);
+            addEffectCardToCommandZone(human);
+            run.consumeEffect(getId());
+        }
+    },
+    OVERLORD("cursed_overlord", "Overlord",
+        "At the beginning of Planebound's upkeep, they may create a token that's a copy of up to one target permanent they control.",
+        "Cursed - Overlord") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
             run.consumeEffect(getId());
         }
@@ -54,78 +126,6 @@ public enum CursedEffect implements PlaneboundEffect {
                 c.getRules().getType().isPermanent() && !c.getRules().getType().isLand()
                     && c.getRules().getManaCost().getCMC() <= 3,
                 1, opponent);
-            run.consumeEffect(getId());
-        }
-    },
-    DICTATOR("cursed_dictator", "Dictator",
-        "Whenever a creature Planebound controls dies, you sacrifice a creature.",
-        "Cursed - Dictator") {
-        @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-            run.consumeEffect(getId());
-        }
-    },
-    DEMONIC("cursed_demonic", "Demonic",
-        "At the beginning of Planebound's end step, if Planebound controls exactly one creature, they create a 5/5 black Demon creature token with flying.",
-        "Cursed - Demonic") {
-        @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-            run.consumeEffect(getId());
-        }
-    },
-    GRACEFUL("cursed_graceful", "Graceful",
-        "At the beginning of Planebound's upkeep, they create a 1/1 white Spirit creature token with flying.",
-        "Cursed - Graceful") {
-        @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-            run.consumeEffect(getId());
-        }
-    },
-    OVERLORD("cursed_overlord", "Overlord",
-        "At the beginning of Planebound's upkeep, they may create a token that's a copy of up to one target permanent they control.",
-        "Cursed - Overlord") {
-        @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-            run.consumeEffect(getId());
-        }
-    },
-    BERSERKER("cursed_berserker", "Berserker",
-        "Attacking creatures Planebound controls have double strike.",
-        "Cursed - Berserker") {
-        @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-            run.consumeEffect(getId());
-        }
-    },
-    ASSAULT("cursed_assault", "Assault",
-        "Creatures Planebound controls get +2/+2 and have deathtouch.",
-        "Cursed - Assault") {
-        @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-            run.consumeEffect(getId());
-        }
-    },
-    ASCETICISM("cursed_asceticism", "Asceticism",
-        "Creatures Planebound controls have hexproof.",
-        "Cursed - Asceticism") {
-        @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-            run.consumeEffect(getId());
-        }
-    },
-    CRUSADER("cursed_crusader", "Crusader",
-        "Whenever a creature Planebound controls enters, put a +1/+1 counter on each creature Planebound controls.",
-        "Cursed - Crusader") {
-        @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
             run.consumeEffect(getId());
         }
     };
