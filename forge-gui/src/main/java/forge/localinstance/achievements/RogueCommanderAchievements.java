@@ -254,7 +254,7 @@ public class RogueCommanderAchievements extends AchievementCollection {
         private final String commanderName;
 
         private RogueCommanderHighestDescensionWin(String cardName, String displayName, String flavorText) {
-            super(getHighestDescensionAchievementKey(cardName), displayName + "'s Descension",
+            super(getHighestDescensionAchievementKey(cardName), getDescensionDisplayName(displayName),
                   "Win a Rogue Commander run with " + CardTranslation.getTranslatedName(cardName)
                       + " on the highest Descension Level",
                   flavorText, 0);
@@ -287,5 +287,13 @@ public class RogueCommanderAchievements extends AchievementCollection {
             }
             return null;
         }
+    }
+
+    private static String getDescensionDisplayName(String displayName) {
+        int possessiveIndex = displayName.indexOf("'s ");
+        if (possessiveIndex > 0) {
+            return displayName.substring(0, possessiveIndex) + "'s Descension";
+        }
+        return displayName + "'s Descension";
     }
 }
