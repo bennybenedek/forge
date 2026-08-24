@@ -151,6 +151,25 @@ public enum EchoEffect implements RogueEffect {
         }
     },
 
+    BRACKET_BREAKER("bracket_breaker", "Bracket Breaker",
+        "Replace %s non-mythic card(s) of Card Rewards with cards from the Gamechanger list.",
+        new EffectRankContext(
+            new int[]{8, 12, 16}, // Echo costs (rank 1-3)
+            new int[]{1, 2, 3},   // Effect values: replace 1/2/3 non-mythics
+            2, 1),
+        EffectType.PERMANENT, null) {
+        @Override
+        public void onCardReward(CardRewardContext ctx, RogueRun run) {
+            int count = getEffectValueAtRank(run.getRunEffectRank(getId()));
+            if (count <= 0) {
+                return;
+            }
+
+            ctx.nonMythicCardReplacementCount += count;
+            ctx.nonMythicCardReplacementCandidates.addAll(run.getGamechangerCardsForActiveCommander());
+        }
+    },
+
     SPARK_KINDLE("spark_kindle", "Spark Kindle",
         "Begin each match with %s basic land(s) on battlefield.",
         new EffectRankContext(

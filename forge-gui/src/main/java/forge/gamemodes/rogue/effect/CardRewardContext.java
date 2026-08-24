@@ -11,8 +11,10 @@ import java.util.List;
 public class CardRewardContext {
     public int maxPicks;
     public int nonMythicCardCountAdjustment;
+    public int nonMythicCardReplacementCount;
     public String title;
     public List<PaperCard> rewardCards = new ArrayList<>();
+    public List<PaperCard> nonMythicCardReplacementCandidates = new ArrayList<>();
 
     public CardRewardContext(int basePicks) {
         this.maxPicks = basePicks;

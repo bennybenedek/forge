@@ -6,8 +6,12 @@ import forge.gamemodes.rogue.effect.MatchRewardContext;
 import forge.gamemodes.rogue.effect.RogueEffectComposite;
 import forge.item.PaperCard;
 import forge.item.PaperCardPredicates;
+import forge.util.MyRandom;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Predicate;
 
 /**
@@ -62,58 +66,88 @@ public class CardRewardHelper {
                                             MatchRewardContext matchRewardCtx,
                                             CardRewardContext cardRewardCtx) {
         RogueDeck rogueDeck = run.getSelectedRogueDeck();
-        if (rogueDeck == null) return null;
+        if (rogueDeck == null) return List.of();
 
         boolean customReward = cardRewardCtx != null;
-        CardRewardContext rewardCtx = cardRewardCtx != null
-            ? cardRewardCtx
-            : createDefaultRewardContext(mythicOnly, matchRewardCtx);
+        CardRewardContext rewardCtx = getRewardContext(cardRewardCtx, mythicOnly, matchRewardCtx);
         RogueEffectComposite.INSTANCE.onCardReward(rewardCtx, run);
+
         CardSelectionContext selCtx = new CardSelectionContext();
         RogueEffectComposite.INSTANCE.onCardSelection(selCtx, run);
+
+        List<PaperCard> chosenCards = chooseRewardCards(run, rogueDeck, dialog, mythicOnly, rewardCtx, selCtx,
+            customReward);
+        applyChosenRewardCards(run, rogueDeck, chosenCards, customReward);
+
+        return chosenCards;
+    }
+
+    private static CardRewardContext getRewardContext(CardRewardContext cardRewardCtx, boolean mythicOnly,
+                                                      MatchRewardContext matchRewardCtx) {
+        return cardRewardCtx != null ? cardRewardCtx : createDefaultRewardContext(mythicOnly, matchRewardCtx);
+    }
+
+    private static List<PaperCard> chooseRewardCards(RogueRun run, RogueDeck rogueDeck, RewardDialog dialog,
+                                                     boolean mythicOnly, CardRewardContext rewardCtx,
+                                                     CardSelectionContext selCtx, boolean customReward) {
         int maxPicks = rewardCtx.maxPicks;
         int freeRerolls = customReward ? 0 : selCtx.freeRerolls;
         String title = getRewardTitle(rewardCtx, mythicOnly);
 
-        List<PaperCard> rewardOptions;
         List<PaperCard> chosenCards;
         int rerollCount = 0;
         do {
-            rewardOptions = customReward
-                ? buildCustomRewardOptions(run, rewardCtx)
-                : buildNormalRewardOptions(run, rogueDeck, mythicOnly, rewardCtx, selCtx);
+            List<PaperCard> rewardOptions = buildRewardOptions(run, rogueDeck, mythicOnly, rewardCtx, selCtx,
+                customReward);
+            if (rewardOptions.isEmpty()) return List.of();
 
-            if (rewardOptions.isEmpty()) return null;
-
-            String rerollLabel = customReward ? null : buildRerollLabel(freeRerolls, rerollCount);
-            boolean rerollEnabled = !customReward
-                && canAffordReroll(freeRerolls, rerollCount, run.getCurrentGold());
-            chosenCards = dialog.show(title, rewardOptions, maxPicks, rerollLabel, rerollEnabled, run.getCurrentGold());
+            chosenCards = showRewardDialog(run, dialog, rewardOptions, maxPicks, freeRerolls, rerollCount, title,
+                customReward);
             if (!customReward) {
                 rogueDeck.discardRewardOptions(rewardOptions);
             }
-
-            // chosenCards null -> reroll was selected
+            if (isPaidReroll(chosenCards, freeRerolls, rerollCount, customReward)) {
+                run.spendGold(getRerollCost(rerollCount - freeRerolls));
+            }
             if (!customReward && chosenCards == null) {
-                // Deduct gold for paid rerolls
-                if (rerollCount >= freeRerolls) {
-                    int cost = getRerollCost(rerollCount - freeRerolls);
-                    run.spendGold(cost);
-                }
                 rerollCount++;
             }
         } while (!customReward && chosenCards == null);
 
-        if (chosenCards == null) chosenCards = new ArrayList<>();
+        return chosenCards == null ? new ArrayList<>() : chosenCards;
+    }
 
-        if (!chosenCards.isEmpty()) {
-            if (!customReward) {
-                rogueDeck.removeFromCardPools(chosenCards);
-            }
-            run.addCardsToDeck(chosenCards, true);
+    private static List<PaperCard> showRewardDialog(RogueRun run, RewardDialog dialog, List<PaperCard> rewardOptions,
+                                                    int maxPicks, int freeRerolls, int rerollCount, String title,
+                                                    boolean customReward) {
+        String rerollLabel = customReward ? null : buildRerollLabel(freeRerolls, rerollCount);
+        boolean rerollEnabled = !customReward && canAffordReroll(freeRerolls, rerollCount, run.getCurrentGold());
+        return dialog.show(title, rewardOptions, maxPicks, rerollLabel, rerollEnabled, run.getCurrentGold());
+    }
+
+    private static boolean isPaidReroll(List<PaperCard> chosenCards, int freeRerolls, int rerollCount,
+                                        boolean customReward) {
+        return !customReward && chosenCards == null && rerollCount >= freeRerolls;
+    }
+
+    private static List<PaperCard> buildRewardOptions(RogueRun run, RogueDeck rogueDeck, boolean mythicOnly,
+                                                      CardRewardContext rewardCtx, CardSelectionContext selCtx,
+                                                      boolean customReward) {
+        return customReward
+            ? buildCustomRewardOptions(run, rewardCtx)
+            : buildNormalRewardOptions(run, rogueDeck, mythicOnly, rewardCtx, selCtx);
+    }
+
+    private static void applyChosenRewardCards(RogueRun run, RogueDeck rogueDeck, List<PaperCard> chosenCards,
+                                               boolean customReward) {
+        if (chosenCards.isEmpty()) {
+            return;
         }
 
-        return chosenCards;
+        if (!customReward) {
+            rogueDeck.removeFromCardPools(chosenCards);
+        }
+        run.addCardsToDeck(chosenCards, true);
     }
 
     private static CardRewardContext createDefaultRewardContext(boolean mythicOnly,
@@ -150,13 +184,64 @@ public class CardRewardHelper {
             ? rogueDeck.drawRewardOptions(baseNonMythics,
                 combineFilters(PaperCardPredicates.IS_MYTHIC_RARE.negate(), notAlreadyOwned))
             : new ArrayList<>();
+        Set<String> selectedReplacementCardNames = replaceNonMythicCards(nonMythicCards, baseNonMythics,
+            rewardCtx, notAlreadyOwned);
+
         List<PaperCard> mythicCards = rogueDeck.drawRewardOptions(baseMythics,
-            combineFilters(PaperCardPredicates.IS_MYTHIC_RARE, notAlreadyOwned));
+            combineFilters(PaperCardPredicates.IS_MYTHIC_RARE, notAlreadyOwned)
+                .and(card -> !selectedReplacementCardNames.contains(getNormalizedName(card))));
 
         List<PaperCard> rewardOptions = new ArrayList<>();
         rewardOptions.addAll(nonMythicCards);
         rewardOptions.addAll(mythicCards);
         return rewardOptions;
+    }
+
+    private static Set<String> replaceNonMythicCards(List<PaperCard> nonMythicCards, int baseNonMythics,
+                                                     CardRewardContext rewardCtx,
+                                                     Predicate<PaperCard> notAlreadyOwned) {
+        Set<String> selectedReplacementCardNames = new HashSet<>();
+        if (baseNonMythics <= 0 || rewardCtx.nonMythicCardReplacementCount <= 0
+            || rewardCtx.nonMythicCardReplacementCandidates.isEmpty()) {
+            return selectedReplacementCardNames;
+        }
+
+        Set<String> normalNonMythicCardNames = new HashSet<>();
+        for (PaperCard card : nonMythicCards) {
+            normalNonMythicCardNames.add(getNormalizedName(card));
+        }
+
+        List<PaperCard> replacementCandidates = new ArrayList<>();
+        for (PaperCard card : rewardCtx.nonMythicCardReplacementCandidates) {
+            String normalizedName = getNormalizedName(card);
+            if (notAlreadyOwned.test(card) && !normalNonMythicCardNames.contains(normalizedName)) {
+                replacementCandidates.add(card);
+            }
+        }
+        if (replacementCandidates.isEmpty()) {
+            return selectedReplacementCardNames;
+        }
+
+        Collections.shuffle(replacementCandidates, MyRandom.getRandom());
+        Collections.shuffle(nonMythicCards, MyRandom.getRandom());
+
+        int actualReplacementCount = Math.min(baseNonMythics, Math.min(nonMythicCards.size(),
+            Math.min(replacementCandidates.size(), rewardCtx.nonMythicCardReplacementCount)));
+        if (actualReplacementCount <= 0) {
+            return selectedReplacementCardNames;
+        }
+
+        nonMythicCards.subList(0, actualReplacementCount).clear();
+        List<PaperCard> selectedReplacementCards = replacementCandidates.subList(0, actualReplacementCount);
+        nonMythicCards.addAll(selectedReplacementCards);
+        for (PaperCard card : selectedReplacementCards) {
+            selectedReplacementCardNames.add(getNormalizedName(card));
+        }
+        return selectedReplacementCardNames;
+    }
+
+    private static String getNormalizedName(PaperCard card) {
+        return card.getRules().getNormalizedName();
     }
 
     private static List<PaperCard> buildCustomRewardOptions(RogueRun run, CardRewardContext rewardCtx) {
