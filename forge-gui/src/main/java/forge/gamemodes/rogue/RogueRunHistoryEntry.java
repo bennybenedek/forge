@@ -7,6 +7,7 @@ import forge.gamemodes.rogue.effect.RogueEffectComposite;
 import forge.gamemodes.rogue.path.*;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -26,7 +27,6 @@ public class RogueRunHistoryEntry {
     private Deck deckSnapshot;
     private int descensionLevel;                   // 0 = not used; XStream defaults to 0 for old saves
     private List<EffectSnapshot> activeEffects;    // null for old saves
-    private List<String> activeBoonNames;          // legacy field for older saves
     private long runTimeMillis;                    // XStream defaults to 0 for old saves
 
     public RogueRunHistoryEntry() {
@@ -101,17 +101,8 @@ public class RogueRunHistoryEntry {
         if (activeEffects != null) {
             return activeEffects;
         }
-        if (activeBoonNames == null || activeBoonNames.isEmpty()) {
-            return new ArrayList<>();
-        }
 
-        List<EffectSnapshot> migratedEffects = new ArrayList<>();
-        for (String effectName : activeBoonNames) {
-            if (effectName != null && !effectName.isBlank()) {
-                migratedEffects.add(new EffectSnapshot(effectName, null));
-            }
-        }
-        return migratedEffects;
+        return Collections.emptyList();
     }
 
     public static class EffectSnapshot {

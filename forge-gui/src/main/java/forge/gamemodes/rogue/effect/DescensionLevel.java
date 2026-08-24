@@ -62,7 +62,7 @@ public enum DescensionLevel implements RogueEffect {
             for (int i = 0; i < markerCount; i++) {
                 List<NodePlanebound> eligible = new ArrayList<>();
                 for (NodePlanebound np : planeboundNodes) {
-                    if (np.getCursedCount() < 2) eligible.add(np);
+                    if (np.getCursedCount() < 2 && np.getWrathfulCount() + np.getCursedCount() < 3) eligible.add(np);
                 }
                 if (eligible.isEmpty()) break;
                 NodePlanebound target = eligible.get(rng.nextInt(eligible.size()));

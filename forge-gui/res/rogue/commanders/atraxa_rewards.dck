@@ -7,6 +7,7 @@ Name=Aragorn Rewards
 1 Arcane Signet|ONC|1
 1 Ashiok, Dream Render|WAR|1
 1 Astral Cornucopia|EOC|1
+1 Atomize|PIP|1
 1 Bilious Skulldweller|ONE|1
 1 Bioessence Hydra|WAR|1
 1 Blightbelly Rat|ONE|1
@@ -30,7 +31,6 @@ Name=Aragorn Rewards
 1 Contagion Engine|SOM|1
 1 Contaminant Grafter|ONC|1
 1 Corpsejack Menace|IMA|1
-1 Corrupted Conscience|MBS|1
 1 Cultivate|ONC|1
 1 Crystalline Crawler|EOC|1
 1 Damning Verdict|NCC|1
@@ -38,7 +38,6 @@ Name=Aragorn Rewards
 1 Deepglow Skate|CMM|1
 1 Distorted Curiosity|ONE|1
 1 Djeru, With Eyes Open|HOU|1
-1 Drown in Ichor|ONE|1
 1 Eerie Ultimatum|IKO|1
 1 Everflowing Chalice|CMM|1
 1 Evolution Sage|LCC|1
@@ -63,6 +62,7 @@ Name=Aragorn Rewards
 1 Herald of Secret Streams|LCC|1
 1 Ignite the Beacon|WAR|1
 1 Incubation Druid|MOC|1
+1 Inexorable Tide|MM2|1
 1 Infectious Bite|ONE|1
 1 Infectious Inquiry|ONE|1
 1 Inkmoth Nexus|MBS|1
@@ -95,6 +95,7 @@ Name=Aragorn Rewards
 1 Nissa, Who Shakes the World|WAR|1
 1 Norn's Annex|ONC|1
 1 Norn's Decree|ONC|1
+1 Norn's Choirmaster|ONC|1
 1 Noxious Assault|ONE|1
 1 Oath of Ajani|AER|1
 1 Oath of Gideon|CMM|1
@@ -103,6 +104,7 @@ Name=Aragorn Rewards
 1 Oath of Liliana|EMN|1
 1 Oath of Nissa|OGW|1
 1 Oath of Teferi|CMM|1
+1 Ob Nixilis, the Hate-Twisted|WAR|1
 1 Onakke Oathkeeper|CMM|1
 1 Overgrown Tomb|ECL|1
 1 Ozolith, the Shattered Spire|MOM|1
@@ -142,7 +144,6 @@ Name=Aragorn Rewards
 1 Tainted Observer|ONE|1
 1 Tainted Strike|SOM|1
 1 Tamiyo, Collector of Tales|WAR|1
-1 Teferi, Temporal Archmage|CMM|1
 1 Teferi, Time Raveler|WAR|1
 1 Teferi's Talent|MOC|1
 1 Temple Garden|ECL|1

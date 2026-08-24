@@ -1,6 +1,7 @@
 package forge.screens.home.rogue;
 
 import forge.gamemodes.rogue.RogueRunHistoryEntry;
+import forge.gamemodes.rogue.effect.DescensionLevel;
 import forge.gui.framework.DragCell;
 import forge.gui.framework.DragTab;
 import forge.gui.framework.EDocID;
@@ -237,13 +238,15 @@ public enum VSubmenuRogueHistory implements IVSubmenu<CSubmenuRogueHistory> {
         txtPath = null;
       }
 
-      if (entry.getDescensionLevel() > 0) {
-        lblDescension = new FLabel.Builder()
-            .text("Descension: Level " + entry.getDescensionLevel())
-            .fontSize(12).fontAlign(SwingConstants.LEFT).build();
-        add(lblDescension);
+      DescensionLevel descensionLevel = DescensionLevel.forLevel(entry.getDescensionLevel());
+
+      if (descensionLevel != null) {
+           lblDescension = new FLabel.Builder()
+               .text("Descension: Level " + descensionLevel.level + " - " + descensionLevel.name)
+               .fontSize(12).fontAlign(SwingConstants.LEFT).build();
+           add(lblDescension);
       } else {
-        lblDescension = null;
+           lblDescension = null;
       }
 
       List<RogueRunHistoryEntry.EffectSnapshot> effects = entry.getActiveEffects();
