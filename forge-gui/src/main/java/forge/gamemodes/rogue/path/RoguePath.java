@@ -3,7 +3,9 @@ package forge.gamemodes.rogue.path;
 import forge.gamemodes.rogue.effect.PathUpdateContext;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -168,118 +170,101 @@ public class RoguePath {
             return new ArrayList<>();
         }
 
-        // Get nodes in the next row, order by columnIndex
-        int nextRow = fromNode.getRowIndex() + 1;
-        List<RoguePathNode> nextRowNodes = getNodesInRow(nextRow);
-
-        if (nextRowNodes.isEmpty()) {
+        List<RoguePathNode> currentRowNodes = getNodesInRow(fromNode.getRowIndex());
+        List<RoguePathNode> nextRowNodes = getNodesInRow(fromNode.getRowIndex() + 1);
+        if (currentRowNodes.isEmpty() || nextRowNodes.isEmpty()) {
             return new ArrayList<>();
         }
 
-        // Check if fromNode is single in its row
-        List<RoguePathNode> currentRowNodes = getNodesInRow(fromNode.getRowIndex());
-        boolean isSingleNode = currentRowNodes.size() == 1;
-
-        // Single nodes connect to ALL in next row
-        if (isSingleNode) {
+        if (currentRowNodes.size() == 1) {
             return nextRowNodes;
         }
 
-        // Multi-column plane: check if it's first/last (side) or middle node
         List<RoguePathNode> reachable = new ArrayList<>();
         int fromCol = fromNode.getColumnIndex();
+        int minCol = currentRowNodes.get(0).getColumnIndex();
+        int maxCol = currentRowNodes.get(currentRowNodes.size() - 1).getColumnIndex();
 
-        // Find min and max column indices in current row
-        int minCol = Integer.MAX_VALUE;
-        int maxCol = Integer.MIN_VALUE;
-        for (RoguePathNode node : currentRowNodes) {
-            int col = node.getColumnIndex();
-            if (col < minCol) minCol = col;
-            if (col > maxCol) maxCol = col;
-        }
-
-        boolean isFirstNode = (fromCol == minCol);
-        boolean isLastNode = (fromCol == maxCol);
-
-        // First node (leftmost):
-        if (isFirstNode) {
-            // same or smaller size: only reaches first node in next row (col = 0)
-            if (nextRowNodes.size() <= currentRowNodes.size()) {
-                nextRowNodes.stream()
-                    .filter(node -> node.getColumnIndex() == 0)
-                    .findFirst()
-                    .ifPresent(reachable::add);
-            }
-            // larger size: reaches first two nodes in next row (col = 0, 1)
-            else {
-                for (RoguePathNode node : nextRowNodes) {
-                    int toCol = node.getColumnIndex();
-                    if (toCol == 0 || toCol == 1) {
-                        reachable.add(node);
-                    }
-                }
-            }
-        // Last  node (rightmost):
-        } else if (isLastNode) {
-            // same or smaller size: only reaches last node in next row (col = max)
-            if (nextRowNodes.size() <= currentRowNodes.size()) {
-                // Find max column in next row
-                nextRowNodes.stream()
-                    .max(java.util.Comparator.comparingInt(RoguePathNode::getColumnIndex))
-                    .ifPresent(reachable::add);
-            }
-            // larger size: reaches last two nodes in next row (col = max, max-1)
-            else {
-                for (RoguePathNode node : nextRowNodes) {
-                    int toCol = node.getColumnIndex();
-                    if (toCol == nextRowNodes.size() - 1 || toCol == nextRowNodes.size() - 2) {
-                        reachable.add(node);
-                    }
-                }
-            }
+        if (fromCol == minCol) {
+            addReachableFromLeftEdge(currentRowNodes, nextRowNodes, reachable);
+        } else if (fromCol == maxCol) {
+            addReachableFromRightEdge(currentRowNodes, nextRowNodes, reachable);
         } else {
-            // Middle / non-edge nodes
-
-            // if current row and next row have same size,
-            // connect only to same column index
-            if (nextRowNodes.size() == currentRowNodes.size()) {
-                nextRowNodes.stream()
-                    .filter(node -> node.getColumnIndex() == fromCol)
-                    .findFirst()
-                    .ifPresent(reachable::add);
-
-                return reachable;
-            }
-
-            // otherwise: connect to adjacent columns
-
-            // if next row has less nodes, shift indices to right by difference of middle position
-            int indexShift = 0;
-            if (nextRowNodes.size() < currentRowNodes.size()) {
-                //get middle index of current row / next row
-                double middleIndexCurrent = currentRowNodes.size() / 2.0;
-                double middleIndexNext = nextRowNodes.size() / 2.0;
-
-                indexShift = (int) Math.round(middleIndexCurrent - middleIndexNext);
-            }
-
-            // if either both col.size of same row and col.size of next row is even or odd,
-            // connect only to same column index
-            boolean currentRowEven = currentRowNodes.size() % 2 == 0;
-            boolean nextRowEven = nextRowNodes.size() % 2 == 0;
-            boolean sameParity = currentRowEven == nextRowEven;
-
-            // if current row and next row are both even or both odd, connect only to same column
-            // otherwise connect to same column and +1 column
-            for (RoguePathNode node : nextRowNodes) {
-                int toCol = node.getColumnIndex() + indexShift;
-                if (toCol == fromCol || (!sameParity && toCol - fromCol == 1)) {
-                    reachable.add(node);
-                }
-            }
+            addReachableFromMiddle(fromCol, currentRowNodes, nextRowNodes, reachable);
         }
 
         return reachable;
+    }
+
+    private void addReachableFromLeftEdge(List<RoguePathNode> currentRowNodes,
+                                          List<RoguePathNode> nextRowNodes,
+                                          List<RoguePathNode> reachable) {
+        if (nextRowNodes.size() <= currentRowNodes.size()) {
+            addNodeAtColumn(nextRowNodes, 0, reachable);
+            return;
+        }
+
+        addNodesAtColumns(nextRowNodes, reachable, 0, 1);
+    }
+
+    private void addReachableFromRightEdge(List<RoguePathNode> currentRowNodes,
+                                           List<RoguePathNode> nextRowNodes,
+                                           List<RoguePathNode> reachable) {
+        if (nextRowNodes.size() <= currentRowNodes.size()) {
+            reachable.add(nextRowNodes.get(nextRowNodes.size() - 1));
+            return;
+        }
+
+        int lastColumn = nextRowNodes.size() - 1;
+        addNodesAtColumns(nextRowNodes, reachable, lastColumn, lastColumn - 1);
+    }
+
+    private void addReachableFromMiddle(int fromCol, List<RoguePathNode> currentRowNodes,
+                                        List<RoguePathNode> nextRowNodes,
+                                        List<RoguePathNode> reachable) {
+        if (nextRowNodes.size() == currentRowNodes.size()) {
+            addNodeAtColumn(nextRowNodes, fromCol, reachable);
+            return;
+        }
+
+        int indexShift = getMiddleIndexShift(currentRowNodes, nextRowNodes);
+        boolean sameParity = currentRowNodes.size() % 2 == nextRowNodes.size() % 2;
+
+        for (RoguePathNode node : nextRowNodes) {
+            int toCol = node.getColumnIndex() + indexShift;
+            if (toCol == fromCol || (!sameParity && toCol - fromCol == 1)) {
+                reachable.add(node);
+            }
+        }
+    }
+
+    private int getMiddleIndexShift(List<RoguePathNode> currentRowNodes,
+                                    List<RoguePathNode> nextRowNodes) {
+        if (nextRowNodes.size() >= currentRowNodes.size()) {
+            return 0;
+        }
+
+        double middleIndexCurrent = currentRowNodes.size() / 2.0;
+        double middleIndexNext = nextRowNodes.size() / 2.0;
+        return (int) Math.round(middleIndexCurrent - middleIndexNext);
+    }
+
+    private void addNodeAtColumn(List<RoguePathNode> rowNodes, int column,
+                                 List<RoguePathNode> target) {
+        rowNodes.stream()
+            .filter(node -> node.getColumnIndex() == column)
+            .findFirst()
+            .ifPresent(target::add);
+    }
+
+    private void addNodesAtColumns(List<RoguePathNode> rowNodes, List<RoguePathNode> target,
+                                   int firstColumn, int secondColumn) {
+        for (RoguePathNode node : rowNodes) {
+            int column = node.getColumnIndex();
+            if (column == firstColumn || column == secondColumn) {
+                target.add(node);
+            }
+        }
     }
 
     /**
@@ -317,44 +302,92 @@ public class RoguePath {
      * @return List of indices of visible nodes in current row
      */
     public List<Integer> getVisibleNodesInCurrentRow(int currentRow, PathUpdateContext pathCtx) {
-        List<Integer> visibleIndices = new ArrayList<>();
-
         if (pathCtx != null && pathCtx.allowAllNodesInCurrentRow) {
-            for (int i = 0; i < nodes.size(); i++) {
-                if (nodes.get(i).getRowIndex() == currentRow) {
-                    visibleIndices.add(i);
-                }
-            }
-            return visibleIndices;
+            return getNodeIndicesInRow(currentRow);
         }
 
-        // Find last completed node in previous row
-        int previousRow = currentRow - 1;
-        Integer lastCompletedInPrevRow = null;
-
-        if (previousRow >= 0) {
-            for (int i = 0; i < nodes.size(); i++) {
-                if (nodes.get(i).getRowIndex() == previousRow && nodes.get(i).isCompleted()) {
-                    lastCompletedInPrevRow = i;
-                    break;
-                }
-            }
-        }
-
-        // Calculate visible nodes
+        Integer lastCompletedInPrevRow = getCompletedNodeIndexInRow(currentRow - 1);
         if (lastCompletedInPrevRow != null) {
-            // Return reachable nodes from last completed in previous row
             return getReachableNodeIndices(lastCompletedInPrevRow);
-        } else {
-            // First row - all nodes in current row are visible
-            for (int i = 0; i < nodes.size(); i++) {
-                if (nodes.get(i).getRowIndex() == currentRow) {
-                    visibleIndices.add(i);
-                }
+        }
+
+        return getNodeIndicesInRow(currentRow);
+    }
+
+    public List<Integer> getVisibleNodesInFuturePlaneboundRows(int currentRow,
+                                                               PathUpdateContext pathCtx) {
+        if (pathCtx == null || pathCtx.additionalVisiblePlaneboundRows <= 0) {
+            return new ArrayList<>();
+        }
+
+        Set<Integer> visibleIndices = new LinkedHashSet<>();
+        List<Integer> frontier = getVisibleNodesInCurrentRow(currentRow, pathCtx);
+        int visiblePlaneboundRows = 0;
+
+        for (int row = currentRow + 1; row <= getMaxRow(); row++) {
+            frontier = getReachableNodeIndicesInRow(frontier, row);
+            if (frontier.isEmpty()) {
+                break;
+            }
+
+            List<Integer> visiblePlaneboundsInRow = getPlaneboundIndices(frontier);
+            if (visiblePlaneboundsInRow.isEmpty()) {
+                continue;
+            }
+
+            visibleIndices.addAll(visiblePlaneboundsInRow);
+            visiblePlaneboundRows++;
+            if (visiblePlaneboundRows >= pathCtx.additionalVisiblePlaneboundRows) {
+                break;
             }
         }
 
-        return visibleIndices;
+        return new ArrayList<>(visibleIndices);
+    }
+
+    private List<Integer> getReachableNodeIndicesInRow(List<Integer> fromNodeIndices, int row) {
+        Set<Integer> reachableInRow = new LinkedHashSet<>();
+        for (Integer fromNodeIndex : fromNodeIndices) {
+            for (Integer reachableIndex : getReachableNodeIndices(fromNodeIndex)) {
+                if (nodes.get(reachableIndex).getRowIndex() == row) {
+                    reachableInRow.add(reachableIndex);
+                }
+            }
+        }
+        return new ArrayList<>(reachableInRow);
+    }
+
+    private List<Integer> getPlaneboundIndices(List<Integer> nodeIndices) {
+        List<Integer> planeboundIndices = new ArrayList<>();
+        for (Integer nodeIndex : nodeIndices) {
+            if (nodes.get(nodeIndex) instanceof NodePlanebound) {
+                planeboundIndices.add(nodeIndex);
+            }
+        }
+        return planeboundIndices;
+    }
+
+    private List<Integer> getNodeIndicesInRow(int row) {
+        List<Integer> rowIndices = new ArrayList<>();
+        for (int i = 0; i < nodes.size(); i++) {
+            if (nodes.get(i).getRowIndex() == row) {
+                rowIndices.add(i);
+            }
+        }
+        return rowIndices;
+    }
+
+    private Integer getCompletedNodeIndexInRow(int row) {
+        if (row < 0) {
+            return null;
+        }
+
+        for (int i = 0; i < nodes.size(); i++) {
+            if (nodes.get(i).getRowIndex() == row && nodes.get(i).isCompleted()) {
+                return i;
+            }
+        }
+        return null;
     }
 
     /**

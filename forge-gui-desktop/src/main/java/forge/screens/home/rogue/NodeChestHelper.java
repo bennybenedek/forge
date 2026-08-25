@@ -50,7 +50,7 @@ class NodeChestHelper {
         }
 
         RogueTutorialHelper.showIfNotSeen(RogueTutorial.CHEST);
-        ChestEffect chestEffect = new ChestDialog(chestEffects).show();
+        ChestEffect chestEffect = new ChestDialog(chestEffects, currentRun).show();
         if (chestEffect == null) {
             return NodeFlowOutcome.COMPLETE_NODE;
         }

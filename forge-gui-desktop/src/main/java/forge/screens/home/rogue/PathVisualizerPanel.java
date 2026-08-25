@@ -83,6 +83,8 @@ public class PathVisualizerPanel extends SkinnedPanel {
 
     // Get visible nodes in current row (reachable from last completed in previous row)
     List<Integer> visibleInCurrentRow = path.getVisibleNodesInCurrentRow(currentRow, pathCtx);
+    List<Integer> visibleInFuturePlaneboundRows = path.getVisibleNodesInFuturePlaneboundRows(
+        currentRow, pathCtx);
 
     // Create panels for each node
     List<RoguePathNode> nodes = path.getNodes();
@@ -101,8 +103,8 @@ public class PathVisualizerPanel extends SkinnedPanel {
         // Current row - show visible nodes
         isFaceDown = !visibleInCurrentRow.contains(i);
       } else {
-        // Future rows - all face-down
-        isFaceDown = true;
+        // Future rows - Farsight can reveal reachable Planebound rows
+        isFaceDown = !visibleInFuturePlaneboundRows.contains(i);
       }
 
       // Wounded Eye: force planes in current and future rows to stay face-down

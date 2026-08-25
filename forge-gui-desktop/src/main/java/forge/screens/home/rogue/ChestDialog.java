@@ -1,10 +1,14 @@
 package forge.screens.home.rogue;
 
+import forge.deckchooser.FDeckViewer;
 import forge.gamemodes.rogue.PreviewReference;
+import forge.gamemodes.rogue.RogueRun;
 import forge.gamemodes.rogue.effect.ChestEffect;
+import forge.localinstance.skin.FSkinProp;
 import forge.toolbox.FButton;
 import forge.toolbox.FLabel;
 import forge.toolbox.FOptionPane;
+import forge.toolbox.FSkin;
 import forge.toolbox.FSkin.SkinnedPanel;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -27,14 +31,18 @@ public class ChestDialog {
   private static final int DIALOG_WIDTH = 400;
   private static final int MIN_DIALOG_HEIGHT = 400;
   private static final int PANEL_INSETS = 20;
+  private static final int VIEW_DECK_OPTION = 0;
+  private static final int LOOT_CHOICE_RESULT = 1;
 
   private final MainPanel panel;
+  private final RogueRun run;
   private final List<PreviewTarget> previewTargets = new ArrayList<>();
   private FOptionPane optionPane;
   private RoguePreviewPopup previewPopup;
   private ChestEffect selectedLoot;
 
-  public ChestDialog(List<ChestEffect> lootChoices) {
+  public ChestDialog(List<ChestEffect> lootChoices, RogueRun run) {
+    this.run = run;
     panel = new MainPanel();
 
     FLabel lblTitle = new FLabel.Builder()
@@ -56,7 +64,7 @@ public class ChestDialog {
       btnReward.addActionListener(e -> {
         selectedLoot = loot;
         hidePreview();
-        optionPane.setResult(0);
+        optionPane.setResult(LOOT_CHOICE_RESULT);
         optionPane.setVisible(false);
       });
       previewTargets.add(new PreviewTarget(btnReward, previewReferences));
@@ -69,7 +77,7 @@ public class ChestDialog {
     btnSkip.addActionListener(e -> {
       selectedLoot = null;
       hidePreview();
-      optionPane.setResult(0);
+      optionPane.setResult(LOOT_CHOICE_RESULT);
       optionPane.setVisible(false);
     });
     panel.add(btnSkip, "w 80%!, ax center, gap 0 0 10px 10px, wrap");
@@ -86,20 +94,38 @@ public class ChestDialog {
     previewPopup = new RoguePreviewPopup();
     previewTargets.forEach(target ->
         previewPopup.attachTo(target.component(), target.references()));
-    optionPane = new FOptionPane(null, "Chest", null, panel,
-        List.of(), -1);
-    optionPane.getTitleBar().setVisible(false);
-    panel.revalidate();
-    panel.repaint();
-    optionPane.setVisible(true);
-    hidePreview();
-    optionPane.dispose();
+    int result;
+    do {
+      optionPane = new FOptionPane(null, "Chest", null, panel,
+          List.of("View Deck"), VIEW_DECK_OPTION);
+      optionPane.getTitleBar().setVisible(false);
+      optionPane.getButton(VIEW_DECK_OPTION).setIcon(FSkin.getIcon(FSkinProp.ICO_CARD_IMAGE));
+      optionPane.getButton(VIEW_DECK_OPTION).setHorizontalTextPosition(SwingConstants.RIGHT);
+      panel.revalidate();
+      panel.repaint();
+      optionPane.setVisible(true);
+      result = optionPane.getResult();
+      hidePreview();
+      optionPane.dispose();
+
+      if (result == VIEW_DECK_OPTION) {
+        showCurrentDeck();
+      }
+    } while (result == VIEW_DECK_OPTION);
+
     return selectedLoot;
   }
 
   private void hidePreview() {
     if (previewPopup != null) {
       previewPopup.hide();
+    }
+  }
+
+  private void showCurrentDeck() {
+    hidePreview();
+    if (run != null && run.getCurrentDeck() != null) {
+      FDeckViewer.show(run.getCurrentDeck());
     }
   }
 

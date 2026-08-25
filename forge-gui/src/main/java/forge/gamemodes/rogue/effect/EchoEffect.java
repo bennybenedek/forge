@@ -170,6 +170,20 @@ public enum EchoEffect implements RogueEffect {
         public int getEffectiveMaxRank(int upgradeLevel) {
             return 1;
         }
+    },
+
+    FARSIGHT("farsight", "Farsight",
+        "Reveal %s more Planebound row(s) on the map.",
+        new EffectRankContext(
+            new int[]{6, 10, 14}, // Echo costs (rank 1-3)
+            new int[]{1, 2, 3},   // Effect values: reveal 1/2/3 more Planebound rows
+            2, 1),
+        EffectType.PERMANENT, null) {
+        @Override
+        public void onPathUpdate(PathUpdateContext ctx, RogueRun run) {
+            ctx.additionalVisiblePlaneboundRows += getEffectValueAtRank(
+                run.getRunEffectRank(getId()));
+        }
     };
 
 //    OPENING_VISION("foresight", "Opening Vision",
