@@ -118,8 +118,16 @@ public interface RogueEffect {
 
     /** Full display text for active-effect UI such as the RogueMap header. */
     default String getUIDisplayText() {
-        String prefix = getEffectCardReference() == null ? getUIDisplayPrefix(this) : "";
-        return prefix + getUIDisplayName();
+        PaperCard effectCard = getEffectCard();
+        if (effectCard != null) {
+            return effectCard.getName();
+        }
+
+        String displayName = getEffectCardDisplayName();
+        if (displayName.isEmpty()) {
+            displayName = getDisplayName();
+        }
+        return getUIDisplayPrefix(this) + displayName;
     }
 
     /** Tooltip text for long-lived effect displays such as the RogueMap header. */
