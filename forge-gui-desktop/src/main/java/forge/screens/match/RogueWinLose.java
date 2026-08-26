@@ -2,6 +2,7 @@ package forge.screens.match;
 
 import forge.game.GameView;
 import forge.gamemodes.rogue.RogueWinLoseController;
+import forge.gamemodes.rogue.effect.ChoiceRerollContext;
 import forge.gamemodes.rogue.npc.NPCContext;
 import forge.gamemodes.rogue.npc.NPCEncounterComposite;
 import forge.gui.framework.EDocID;
@@ -64,7 +65,7 @@ public class RogueWinLose extends ControlWinLose {
         // Check NPC after-match progression (e.g. Narset chaos tracking)
         if (currentRun != null) {
             for (NPCContext ctx : NPCEncounterComposite.INSTANCE.onAfterMatch(currentRun)) {
-                new NPCDialog(ctx).show();
+                new NPCDialog(ctx, new ChoiceRerollContext()).show();
             }
         }
 

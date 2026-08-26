@@ -13,6 +13,7 @@ import forge.gamemodes.rogue.effect.BazaarContext;
 import forge.gamemodes.rogue.effect.BazaarItem;
 import forge.gamemodes.rogue.effect.CardSelectionContext;
 import forge.gamemodes.rogue.effect.ChestEffect;
+import forge.gamemodes.rogue.effect.ChoiceRerollContext;
 import forge.gamemodes.rogue.effect.NPCEffect;
 import forge.gamemodes.rogue.effect.RogueEffect;
 import forge.gamemodes.rogue.effect.RogueEffectComposite;
@@ -159,7 +160,7 @@ class NodeBazaarHelper {
     private void showNpcBazaarPurchaseDialogs(BazaarContext bazaarCtx) {
         for (NPCContext npcContext : NPCEncounterComposite.INSTANCE.onAfterBazaarPurchase(
             bazaarCtx, RogueMetaProgress.getInstance())) {
-            new NPCDialog(npcContext).show();
+            new NPCDialog(npcContext, new ChoiceRerollContext()).show();
         }
     }
 

@@ -75,6 +75,26 @@ public enum RogueEffectComposite implements RogueEffect {
     }
 
     @Override
+    public void onBeforeNpcBoons(ChoiceRerollContext ctx, RogueRun run) {
+        forEachEffect(run, e -> e.onBeforeNpcBoons(ctx, run));
+    }
+
+    @Override
+    public void onBeforeChestLoot(ChoiceRerollContext ctx, RogueRun run) {
+        forEachEffect(run, e -> e.onBeforeChestLoot(ctx, run));
+    }
+
+    @Override
+    public void onBeforeEvent(ChoiceRerollContext ctx, RogueRun run) {
+        forEachEffect(run, e -> e.onBeforeEvent(ctx, run));
+    }
+
+    @Override
+    public void onChoiceReroll(ChoiceRerollContext ctx, RogueRun run) {
+        forEachEffect(run, e -> e.onChoiceReroll(ctx, run));
+    }
+
+    @Override
     public void afterPathGeneration(RogueRun run) {
         forEachEffect(run, e -> e.afterPathGeneration(run));
     }

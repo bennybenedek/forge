@@ -4,6 +4,7 @@ import forge.deckchooser.FDeckViewer;
 import forge.gamemodes.rogue.PreviewReference;
 import forge.gamemodes.rogue.RogueRun;
 import forge.gamemodes.rogue.effect.ChestEffect;
+import forge.gamemodes.rogue.effect.ChoiceRerollContext;
 import forge.localinstance.skin.FSkinProp;
 import forge.toolbox.FButton;
 import forge.toolbox.FLabel;
@@ -32,17 +33,20 @@ public class ChestDialog {
   private static final int MIN_DIALOG_HEIGHT = 400;
   private static final int PANEL_INSETS = 20;
   private static final int VIEW_DECK_OPTION = 0;
-  private static final int LOOT_CHOICE_RESULT = 1;
+  private static final int REROLL_OPTION = 1;
+  private static final int LOOT_CHOICE_RESULT = 2;
 
   private final MainPanel panel;
   private final RogueRun run;
+  private final ChoiceRerollContext rerollCtx;
   private final List<PreviewTarget> previewTargets = new ArrayList<>();
   private FOptionPane optionPane;
   private RoguePreviewPopup previewPopup;
   private ChestEffect selectedLoot;
 
-  public ChestDialog(List<ChestEffect> lootChoices, RogueRun run) {
+  public ChestDialog(List<ChestEffect> lootChoices, RogueRun run, ChoiceRerollContext rerollCtx) {
     this.run = run;
+    this.rerollCtx = rerollCtx;
     panel = new MainPanel();
 
     FLabel lblTitle = new FLabel.Builder()
@@ -89,15 +93,21 @@ public class ChestDialog {
     panel.setMinimumSize(dialogSize);
   }
 
-  public ChestEffect show() {
+  public DialogResult show() {
     selectedLoot = null;
+    boolean hasRerolls = rerollCtx.remainingRerolls > 0;
     previewPopup = new RoguePreviewPopup();
     previewTargets.forEach(target ->
         previewPopup.attachTo(target.component(), target.references()));
     int result;
     do {
+      List<String> buttons = new ArrayList<>();
+      buttons.add("View Deck");
+      if (hasRerolls) {
+        buttons.add("Reroll (" + rerollCtx.remainingRerolls + " left)");
+      }
       optionPane = new FOptionPane(null, "Chest", null, panel,
-          List.of("View Deck"), VIEW_DECK_OPTION);
+          buttons, VIEW_DECK_OPTION);
       optionPane.getTitleBar().setVisible(false);
       optionPane.getButton(VIEW_DECK_OPTION).setIcon(FSkin.getIcon(FSkinProp.ICO_CARD_IMAGE));
       optionPane.getButton(VIEW_DECK_OPTION).setHorizontalTextPosition(SwingConstants.RIGHT);
@@ -113,7 +123,7 @@ public class ChestDialog {
       }
     } while (result == VIEW_DECK_OPTION);
 
-    return selectedLoot;
+    return new DialogResult(hasRerolls && result == REROLL_OPTION, selectedLoot);
   }
 
   private void hidePreview() {
@@ -139,6 +149,8 @@ public class ChestDialog {
   }
 
   private record PreviewTarget(JComponent component, List<PreviewReference> references) {}
+
+  public record DialogResult(boolean rerollRequested, ChestEffect choice) {}
 
   private static class MainPanel extends SkinnedPanel {
     private MainPanel() {

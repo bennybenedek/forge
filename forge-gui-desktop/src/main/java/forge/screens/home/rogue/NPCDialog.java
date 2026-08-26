@@ -1,6 +1,7 @@
 package forge.screens.home.rogue;
 
 import forge.gamemodes.rogue.PreviewReference;
+import forge.gamemodes.rogue.effect.ChoiceRerollContext;
 import forge.gamemodes.rogue.effect.NPCEffect;
 import forge.gamemodes.rogue.npc.NPCContext;
 import forge.gamemodes.rogue.npc.NPCContext.NPCChoice;
@@ -32,14 +33,18 @@ public class NPCDialog {
     private static final int MIN_DIALOG_HEIGHT = 480;
     private static final int PANEL_INSETS = 20;
     private static final int FULL_WIDTH = DIALOG_WIDTH - 2 * PANEL_INSETS;
+    private static final int REROLL_OPTION = 0;
+    private static final int CHOICE_RESULT = 1;
 
     private final MainPanel panel;
+    private final ChoiceRerollContext rerollCtx;
     private final List<PreviewTarget> previewTargets = new ArrayList<>();
     private FOptionPane optionPane;
     private RoguePreviewPopup previewPopup;
     private NPCEffect selectedBoon;
 
-    public NPCDialog(NPCContext ctx) {
+    public NPCDialog(NPCContext ctx, ChoiceRerollContext rerollCtx) {
+        this.rerollCtx = rerollCtx;
         panel = new MainPanel();
 
         FLabel lblTitle = new FLabel.Builder()
@@ -70,7 +75,7 @@ public class NPCDialog {
             RogueButtonHelper.setChoiceButtonSizeHint(btn, choiceButtonWidth);
             btn.addActionListener(e -> {
                 hidePreview();
-                optionPane.setResult(0);
+                optionPane.setResult(CHOICE_RESULT);
                 optionPane.setVisible(false);
             });
             panel.add(btn, "w 80%!, ax center, gap 0 0 10px 10px, wrap");
@@ -84,7 +89,7 @@ public class NPCDialog {
                 btn.addActionListener(e -> {
                     hidePreview();
                     selectedBoon = choice.npcEffect();
-                    optionPane.setResult(0);
+                    optionPane.setResult(CHOICE_RESULT);
                     optionPane.setVisible(false);
                 });
                 previewTargets.add(new PreviewTarget(btn,
@@ -100,19 +105,22 @@ public class NPCDialog {
         panel.setMinimumSize(dialogSize);
     }
 
-    /** Show dialog and return selected NPCBoon, or null if closed without choosing. */
-    public NPCEffect show() {
+    /** Show dialog and return the selected action. */
+    public DialogResult show() {
+        selectedBoon = null;
+        boolean hasRerolls = rerollCtx.remainingRerolls > 0;
         optionPane = new FOptionPane(null, "NPC Encounter", null, panel,
-                List.of(), -1);
+                hasRerolls ? List.of("Reroll (" + rerollCtx.remainingRerolls + " left)") : List.of(), -1);
         optionPane.getTitleBar().setVisible(false);
         previewPopup = new RoguePreviewPopup();
         previewTargets.forEach(target -> previewPopup.attachTo(target.component(), target.references()));
         panel.revalidate();
         panel.repaint();
         optionPane.setVisible(true);
+        int result = optionPane.getResult();
         hidePreview();
         optionPane.dispose();
-        return selectedBoon;
+        return new DialogResult(result == REROLL_OPTION && hasRerolls, selectedBoon);
     }
 
     private void hidePreview() {
@@ -131,6 +139,8 @@ public class NPCDialog {
     }
 
     private record PreviewTarget(JComponent component, List<PreviewReference> references) {}
+
+    public record DialogResult(boolean rerollRequested, NPCEffect choice) {}
 
     private static class MainPanel extends SkinnedPanel {
         private MainPanel() {

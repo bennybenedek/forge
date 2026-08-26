@@ -4,14 +4,14 @@ import forge.gamemodes.rogue.RogueEvent;
 import forge.gamemodes.rogue.RogueMetaProgress;
 import forge.gamemodes.rogue.RogueRun;
 import forge.gamemodes.rogue.RogueTutorial;
-import forge.gamemodes.rogue.effect.EventEffect;
-import forge.gamemodes.rogue.effect.EffectResultContext;
-import forge.gamemodes.rogue.effect.RogueEffect;
+import forge.gamemodes.rogue.effect.*;
 import forge.gamemodes.rogue.npc.NPCContext;
 import forge.gamemodes.rogue.npc.NPCEncounterComposite;
 import forge.gamemodes.rogue.path.NodeEvent;
 import forge.localinstance.properties.ForgePreferences;
+import forge.util.MyRandom;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import javax.swing.JOptionPane;
 
@@ -40,7 +40,23 @@ class NodeEventHelper {
         event = resolveDevEventOverride(event);
         RogueTutorialHelper.showIfNotSeen(RogueTutorial.EVENT);
 
-        RogueEvent.EventChoice choice = new EventDialog(event, currentRun).show();
+        EventDialog.DialogResult result;
+        boolean rerollRequested;
+        do {
+            ChoiceRerollContext rerollCtx = new ChoiceRerollContext();
+            RogueEffectComposite.INSTANCE.onBeforeEvent(rerollCtx, currentRun);
+            result = new EventDialog(event, currentRun, rerollCtx).show();
+            rerollRequested = result.rerollRequested();
+
+            if (rerollRequested) {
+                RogueEffectComposite.INSTANCE.onChoiceReroll(rerollCtx, currentRun);
+                event = generateRerolledEvent(event);
+                event = resolveDevEventOverride(event);
+                eventNode.setEvent(event);
+            }
+        } while (rerollRequested);
+
+        RogueEvent.EventChoice choice = result.choice();
         if (choice == null) {
             return;
         }
@@ -54,6 +70,20 @@ class NodeEventHelper {
 
     private RogueEvent resolveEvent(NodeEvent eventNode) {
         return eventNode.getEvent();
+    }
+
+    private RogueEvent generateRerolledEvent(RogueEvent currentEvent) {
+        List<RogueEvent> events = new ArrayList<>();
+        for (RogueEvent event : RogueEvent.values()) {
+            if (event.isAvailable()) {
+                events.add(event);
+            }
+        }
+        if (events.size() > 1) {
+            events.remove(currentEvent);
+        }
+        Collections.shuffle(events, MyRandom.getRandom());
+        return events.isEmpty() ? currentEvent : events.get(0);
     }
 
     private RogueEvent resolveDevEventOverride(RogueEvent event) {
@@ -103,7 +133,7 @@ class NodeEventHelper {
 
     private void showNpcDialogs(List<NPCContext> contexts) {
         for (NPCContext context : contexts) {
-            new NPCDialog(context).show();
+            new NPCDialog(context, new ChoiceRerollContext()).show();
         }
     }
 

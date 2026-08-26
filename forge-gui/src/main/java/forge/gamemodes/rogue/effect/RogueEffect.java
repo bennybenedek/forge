@@ -245,6 +245,18 @@ public interface RogueEffect {
     /** Fired for both card reward and bazaar selections. */
     default void onCardSelection(CardSelectionContext ctx, RogueRun run) {}
 
+    /** Fired before run-start NPC boon choices are shown. Modify ctx to enable reroll actions. */
+    default void onBeforeNpcBoons(ChoiceRerollContext ctx, RogueRun run) {}
+
+    /** Fired before Chest loot choices are shown. Modify ctx to enable reroll actions. */
+    default void onBeforeChestLoot(ChoiceRerollContext ctx, RogueRun run) {}
+
+    /** Fired before Event choices are shown. Modify ctx to enable reroll actions. */
+    default void onBeforeEvent(ChoiceRerollContext ctx, RogueRun run) {}
+
+    /** Fired after a Rogue choice dialog is rerolled. Consume charges or apply side effects. */
+    default void onChoiceReroll(ChoiceRerollContext ctx, RogueRun run) {}
+
     default void addEffectCardToCommandZone(RegisteredPlayer human) {
         PaperCard effectCard = getEffectCard();
         if (effectCard != null) {

@@ -25,6 +25,7 @@ This repository is a Java 17+ multi-module Maven project (Forge / Rogue Commande
 - Preserve existing naming conventions when extending code; rename or extend within the established local vocabulary instead of introducing a new conceptual naming pattern for the same behavior.
 - Avoid method overloads by default. Prefer one explicit method signature with nullable/empty parameters when appropriate, and only add overloads if the user explicitly wants them or there is a strong established pattern nearby.
 - Check nearby code before editing; match the established approach in that package/module.
+- Before implementing non-trivial Rogue Commander UI/effect plumbing, inspect and follow a nearby established pattern, and do not add new helper methods/classes unless they are in the agreed plan or clearly remove real duplication without hiding ownership boundaries.
 - Reuse existing mechanisms for UI, loading, events, persistence, and rendering before adding helpers.
 - Avoid changes to shared/core Forge code (`forge-core`, `forge-game`, and generic shared desktop infrastructure) when a Rogue Commander-local fix can solve the issue. Only touch shared/core code when there is no reasonable Rogue-scoped solution, and call that out explicitly.
 - Use the least code that correctly solves the task; avoid speculative cleanup or side improvements.
@@ -168,6 +169,7 @@ These are mandatory when touching Rogue Commander code.
 - Keep NPC progression/dialog logic inside the `NPCEncounter` system.
 - `RogueEffect` implementations should own their trigger-specific behavior (`onRunStart`, `onMatchStart`, `onMatchWin`, `onDefeat`, etc.).
 - `NPCEncounter` implementations should own level-gated NPC logic and return `NPCContext` where appropriate.
+- For Rogue effect-driven UI changes, location/helper classes should create the relevant context, dispatch through `RogueEffectComposite.INSTANCE`, then render from the modified context.
 - Controllers should only:
   - persist raw run/match data
   - call composite trigger dispatchers

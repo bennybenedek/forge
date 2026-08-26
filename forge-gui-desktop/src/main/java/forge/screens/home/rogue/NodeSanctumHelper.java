@@ -5,6 +5,7 @@ import forge.gamemodes.rogue.RogueMetaProgress;
 import forge.gamemodes.rogue.RogueRun;
 import forge.gamemodes.rogue.RogueRun.CarryCardType;
 import forge.gamemodes.rogue.RogueTutorial;
+import forge.gamemodes.rogue.effect.ChoiceRerollContext;
 import forge.gamemodes.rogue.effect.RogueEffectComposite;
 import forge.gamemodes.rogue.effect.SanctumContext;
 import forge.gamemodes.rogue.npc.NPCContext;
@@ -106,7 +107,7 @@ class NodeSanctumHelper {
 
     private void showNpcDialogs(List<NPCContext> contexts) {
         for (NPCContext context : contexts) {
-            new NPCDialog(context).show();
+            new NPCDialog(context, new ChoiceRerollContext()).show();
         }
     }
 

@@ -5,6 +5,7 @@ import forge.gamemodes.rogue.PreviewReference;
 import forge.gamemodes.rogue.RogueEvent;
 import forge.gamemodes.rogue.RogueEvent.EventChoice;
 import forge.gamemodes.rogue.RogueRun;
+import forge.gamemodes.rogue.effect.ChoiceRerollContext;
 import forge.localinstance.skin.FSkinProp;
 import forge.toolbox.FButton;
 import forge.toolbox.FLabel;
@@ -34,17 +35,21 @@ public class EventDialog {
   private static final int MIN_DIALOG_HEIGHT = 400;
   private static final int PANEL_INSETS = 20;
   private static final int FULL_WIDTH = DIALOG_WIDTH - 2 * PANEL_INSETS;
-  private static final int CHOICE_RESULT = 1;
+  private static final int VIEW_DECK_OPTION = 0;
+  private static final int REROLL_OPTION = 1;
+  private static final int CHOICE_RESULT = 2;
 
   private final MainPanel panel;
   private final RogueRun run;
+  private final ChoiceRerollContext rerollCtx;
   private final List<PreviewTarget> previewTargets = new ArrayList<>();
   private FOptionPane optionPane;
   private RoguePreviewPopup previewPopup;
   private EventChoice selectedChoice;
 
-  public EventDialog(RogueEvent event, RogueRun run) {
+  public EventDialog(RogueEvent event, RogueRun run, ChoiceRerollContext rerollCtx) {
     this.run = run;
+    this.rerollCtx = rerollCtx;
     panel = new MainPanel();
 
     FLabel lblTitle = new FLabel.Builder()
@@ -90,13 +95,19 @@ public class EventDialog {
     panel.setMinimumSize(dialogSize);
   }
 
-  /** Show dialog and return selected choice, or null if skipped. */
-  public EventChoice show() {
-    final int VIEW_DECK_OPTION = 0;
+  /** Show dialog and return the selected action. */
+  public DialogResult show() {
+    selectedChoice = null;
+    boolean hasRerolls = rerollCtx.remainingRerolls > 0;
     int result;
     do {
+      List<String> buttons = new ArrayList<>();
+      buttons.add("View Deck");
+      if (hasRerolls) {
+        buttons.add("Reroll (" + rerollCtx.remainingRerolls + " left)");
+      }
       optionPane = new FOptionPane(null, "Event", null, panel,
-          List.of("View Deck"), VIEW_DECK_OPTION);
+          buttons, VIEW_DECK_OPTION);
       optionPane.getTitleBar().setVisible(false);
       optionPane.getButton(VIEW_DECK_OPTION).setIcon(FSkin.getIcon(FSkinProp.ICO_CARD_IMAGE));
       optionPane.getButton(VIEW_DECK_OPTION).setHorizontalTextPosition(SwingConstants.RIGHT);
@@ -114,7 +125,7 @@ public class EventDialog {
       }
     } while (result == VIEW_DECK_OPTION);
 
-    return selectedChoice;
+    return new DialogResult(hasRerolls && result == REROLL_OPTION, selectedChoice);
   }
 
   private void hidePreview() {
@@ -140,6 +151,8 @@ public class EventDialog {
   }
 
   private record PreviewTarget(JComponent component, List<PreviewReference> references) {}
+
+  public record DialogResult(boolean rerollRequested, EventChoice choice) {}
 
   private static class MainPanel extends SkinnedPanel {
     private MainPanel() {

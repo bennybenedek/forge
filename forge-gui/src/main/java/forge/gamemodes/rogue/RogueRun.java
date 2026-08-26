@@ -767,6 +767,11 @@ public class RogueRun {
         return rb != null ? rb.getRank() : 0;
     }
 
+    public int getRunEffectCharges(String id) {
+        RogueRunEffect rb = findRunEffect(id);
+        return rb != null ? Math.max(0, rb.getCharges()) : 0;
+    }
+
     @SuppressWarnings("unchecked")
     private List<RogueRunEffect>[] allEffectLists() {
         return new List[]{activeEchoBoons, activeEventEffects, activeChestEffects,

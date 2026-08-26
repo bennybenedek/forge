@@ -3,11 +3,7 @@ package forge.screens.home.rogue;
 import forge.ImageCache;
 import forge.ImageKeys;
 import forge.gamemodes.rogue.*;
-import forge.gamemodes.rogue.effect.DescensionLevel;
-import forge.gamemodes.rogue.effect.EffectResultContext;
-import forge.gamemodes.rogue.effect.NPCEffect;
-import forge.gamemodes.rogue.effect.RogueEffect;
-import forge.gamemodes.rogue.effect.RogueEffectComposite;
+import forge.gamemodes.rogue.effect.*;
 import forge.gamemodes.rogue.npc.NPCContext;
 import forge.gamemodes.rogue.npc.NPC;
 import forge.gamemodes.rogue.npc.NPCEncounterComposite;
@@ -429,8 +425,7 @@ public enum CSubmenuRogueStart implements ICDoc {
 
     // Show NPC encounter dialogs (e.g. Tyvar offering npcEffect choices)
     for (NPCContext ctx : NPCEncounterComposite.INSTANCE.onRunStart(progress, newRun)) {
-        NPCContext effectiveCtx = maybeOverrideNpcChoices(ctx);
-        NPCEffect chosen = new NPCDialog(effectiveCtx).show();
+      NPCEffect chosen = showRunStartNpcDialog(progress, newRun, ctx);
       if (chosen == null) {
         continue;
       }
@@ -463,6 +458,28 @@ public enum CSubmenuRogueStart implements ICDoc {
 
     // Navigate to the Rogue Map
     CHomeUI.SINGLETON_INSTANCE.itemClick(EDocID.HOME_ROGUEMAP);
+  }
+
+  private NPCEffect showRunStartNpcDialog(RogueMetaProgress progress, RogueRun newRun, NPCContext ctx) {
+    NPCContext effectiveCtx = maybeOverrideNpcChoices(ctx);
+    NPCDialog.DialogResult result;
+    boolean rerollRequested;
+    do {
+      ChoiceRerollContext rerollCtx = new ChoiceRerollContext();
+      RogueEffectComposite.INSTANCE.onBeforeNpcBoons(rerollCtx, newRun);
+      result = new NPCDialog(effectiveCtx, rerollCtx).show();
+      rerollRequested = result.rerollRequested();
+
+      if (rerollRequested) {
+        RogueEffectComposite.INSTANCE.onChoiceReroll(rerollCtx, newRun);
+        List<NPCContext> rerolledContexts = NPCEncounterComposite.INSTANCE.onRunStart(progress, newRun);
+        if (!rerolledContexts.isEmpty()) {
+          effectiveCtx = maybeOverrideNpcChoices(rerolledContexts.get(0));
+        }
+      }
+    } while (rerollRequested);
+
+    return result.choice();
   }
 
   private NPCContext maybeOverrideNpcChoices(NPCContext ctx) {
