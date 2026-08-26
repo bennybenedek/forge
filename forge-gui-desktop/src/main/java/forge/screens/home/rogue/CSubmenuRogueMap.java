@@ -255,10 +255,11 @@ public enum CSubmenuRogueMap implements ICDoc {
    * Get the appropriate button text for entering a node.
    */
   private String getEnterButtonText(RoguePathNode node) {
-    if (node instanceof NodePlanebound) {
+    if (node instanceof NodePlanebound nodePlanebound) {
       PathUpdateContext pathCtx = new PathUpdateContext();
       RogueEffectComposite.INSTANCE.onPathUpdate(pathCtx, currentRun);
-      String planeName = pathCtx.hidePlanes ? "???" : ((NodePlanebound) node).getRoguePlanebound().planeName();
+      String planeName = pathCtx.hidePlanes && !nodePlanebound.isRevealed()
+          ? "???" : nodePlanebound.getRoguePlanebound().planeName();
       return "Enter " + planeName;
     } else if (node instanceof NodeSanctum) {
       return "Enter Sanctum";

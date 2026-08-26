@@ -14,6 +14,7 @@ public class NodePlanebound extends RoguePathNode {
     private int wrathfulCount;
     private int cursedCount;
     private int startingLifeModification;
+    private boolean revealed;
 
     public NodePlanebound() {
         super();
@@ -55,6 +56,14 @@ public class NodePlanebound extends RoguePathNode {
 
     public void setStartingLifeModification(int startingLifeModification) {
         this.startingLifeModification = startingLifeModification;
+    }
+
+    public boolean isRevealed() {
+        return revealed;
+    }
+
+    public void setRevealed(boolean revealed) {
+        this.revealed = revealed;
     }
 
     public RoguePlaneboundType getPlaneboundType() {

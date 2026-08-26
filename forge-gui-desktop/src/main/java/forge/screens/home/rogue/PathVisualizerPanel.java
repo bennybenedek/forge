@@ -91,6 +91,8 @@ public class PathVisualizerPanel extends SkinnedPanel {
     List<NodePlaneboundPanel> toReveal = new ArrayList<>();
     for (int i = 0; i < nodes.size(); i++) {
       RoguePathNode node = nodes.get(i);
+      boolean wasAlreadyRevealed = node instanceof NodePlanebound planebound
+          && planebound.isRevealed();
 
       // Face-down logic: only show nodes that were reachable in their row
       boolean isFaceDown;
@@ -113,9 +115,17 @@ public class PathVisualizerPanel extends SkinnedPanel {
         isFaceDown = true;
       }
 
+      if (wasAlreadyRevealed) {
+        isFaceDown = false;
+      }
+
       // Animate reveal for visible planes in current row
-      boolean animateReveal = !isFaceDown && node.getRowIndex() == currentRow
+      boolean animateReveal = !wasAlreadyRevealed && !isFaceDown && node.getRowIndex() == currentRow
           && visibleInCurrentRow.contains(i);
+
+      if (!isFaceDown && node instanceof NodePlanebound planebound) {
+        planebound.setRevealed(true);
+      }
 
       // Calculate planebound row count for life display
       int planeboundRowCount = path.countPlaneboundRowsUpTo(node.getRowIndex());
