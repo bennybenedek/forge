@@ -119,9 +119,12 @@ public class PathVisualizerPanel extends SkinnedPanel {
         isFaceDown = false;
       }
 
-      // Animate reveal for visible planes in current row
-      boolean animateReveal = !wasAlreadyRevealed && !isFaceDown && node.getRowIndex() == currentRow
+      boolean isCurrentRowReveal = node.getRowIndex() == currentRow
           && visibleInCurrentRow.contains(i);
+      boolean isFutureReveal = node.getRowIndex() > currentRow
+          && visibleInFuturePlaneboundRows.contains(i);
+      boolean animateReveal = node instanceof NodePlanebound && !wasAlreadyRevealed && !isFaceDown
+          && (isCurrentRowReveal || isFutureReveal);
 
       if (!isFaceDown && node instanceof NodePlanebound planebound) {
         planebound.setRevealed(true);

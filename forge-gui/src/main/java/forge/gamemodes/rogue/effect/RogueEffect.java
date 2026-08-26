@@ -215,6 +215,9 @@ public interface RogueEffect {
     /** Fired when the path visualizer updates. Use to modify plane visibility. */
     default void onPathUpdate(PathUpdateContext ctx, RogueRun run) {}
 
+    /** Fired after a path node reroll action is used. Consume charges or apply side effects. */
+    default void onPathNodeReroll(PathUpdateContext ctx, RogueRun run) {}
+
     /** Fired before a Sanctum dialog is shown. Modify ctx to inject choices or other setup. */
     default void onBeforeSanctum(SanctumContext ctx, RogueRun run) {}
 

@@ -14,6 +14,7 @@ import forge.screens.home.CHomeUI;
 import forge.toolbox.FOptionPane;
 import forge.toolbox.FScrollPane;
 import forge.toolbox.FSkin;
+import forge.util.MyRandom;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GraphicsConfiguration;
@@ -35,6 +36,7 @@ public enum CSubmenuRogueMap implements ICDoc {
 
   private final ActionListener actEnterNode = arg0 -> enterNode();
   private final ActionListener actEditDeck = arg0 -> editDeck();
+  private final ActionListener actRerollPlane = arg0 -> rerollSelectedPlanebound();
   private final VSubmenuRogueMap view = VSubmenuRogueMap.SINGLETON_INSTANCE;
   private final NodeBazaarHelper nodeBazaarHelper = new NodeBazaarHelper(this);
   private final NodeChestHelper nodeChestHelper = new NodeChestHelper(this);
@@ -163,6 +165,7 @@ public enum CSubmenuRogueMap implements ICDoc {
   public void initialize() {
     view.getBtnEnterNode().addActionListener(actEnterNode);
     view.getBtnEditDeck().addActionListener(actEditDeck);
+    view.getBtnRerollPlane().addActionListener(actRerollPlane);
     view.getBtnDevWinRun().addActionListener(e -> devWinRun());
     view.getBtnDevNextNode().addActionListener(e -> devNextNode());
     view.getPathVisualizer().setNodeClickHandler(this::handleNodeClick);
@@ -242,22 +245,25 @@ public enum CSubmenuRogueMap implements ICDoc {
     if (currentNode == null) {
       view.getBtnEnterNode().setEnabled(false);
       view.getBtnEnterNode().setText("No Node Available");
+      view.getBtnRerollPlane().setVisible(false);
       return;
     }
+
+    PathUpdateContext pathCtx = new PathUpdateContext();
+    RogueEffectComposite.INSTANCE.onPathUpdate(pathCtx, currentRun);
 
     // Disable button if match already in progress (prevents duplicate match tabs)
     boolean matchInProgress = currentRun.getHostedMatch() != null;
     view.getBtnEnterNode().setEnabled(!matchInProgress);
-    view.getBtnEnterNode().setText(getEnterButtonText(currentNode));
+    view.getBtnEnterNode().setText(getEnterButtonText(currentNode, pathCtx));
+    updatePlaneboundRerollButton(currentNode, matchInProgress, pathCtx);
   }
 
   /**
    * Get the appropriate button text for entering a node.
    */
-  private String getEnterButtonText(RoguePathNode node) {
+  private String getEnterButtonText(RoguePathNode node, PathUpdateContext pathCtx) {
     if (node instanceof NodePlanebound nodePlanebound) {
-      PathUpdateContext pathCtx = new PathUpdateContext();
-      RogueEffectComposite.INSTANCE.onPathUpdate(pathCtx, currentRun);
       String planeName = pathCtx.hidePlanes && !nodePlanebound.isRevealed()
           ? "???" : nodePlanebound.getRoguePlanebound().planeName();
       return "Enter " + planeName;
@@ -272,6 +278,92 @@ public enum CSubmenuRogueMap implements ICDoc {
     } else {
       return "Enter Node";
     }
+  }
+
+  private void updatePlaneboundRerollButton(RoguePathNode currentNode, boolean matchInProgress,
+                                        PathUpdateContext pathCtx) {
+    JButton button = view.getBtnRerollPlane();
+    if (!(currentNode instanceof NodePlanebound nodePlanebound)
+        || matchInProgress
+        || pathCtx.remainingPlaneboundRerolls <= 0) {
+      button.setVisible(false);
+      button.setToolTipText(null);
+    } else {
+      button.setVisible(true);
+      button.setText("Reroll Plane (" + pathCtx.remainingPlaneboundRerolls + " left)");
+      boolean hasCandidates = !getPlaneboundRerollCandidates(nodePlanebound).isEmpty();
+      button.setEnabled(hasCandidates);
+      button.setToolTipText(hasCandidates
+          ? "Reroll the selected Planebound."
+          : "No alternative Planebound available.");
+    }
+
+    if (button.getParent() != null) {
+      button.getParent().revalidate();
+      button.getParent().repaint();
+    }
+  }
+
+  private void rerollSelectedPlanebound() {
+    if (currentRun == null || currentRun.getHostedMatch() != null) {
+      return;
+    }
+
+    RoguePathNode currentNode = currentRun.getCurrentNode();
+    if (!(currentNode instanceof NodePlanebound nodePlanebound)) {
+      return;
+    }
+
+    PathUpdateContext pathCtx = new PathUpdateContext();
+    RogueEffectComposite.INSTANCE.onPathUpdate(pathCtx, currentRun);
+    if (pathCtx.remainingPlaneboundRerolls <= 0) {
+      updateViewWithSelection();
+      return;
+    }
+
+    List<RoguePlanebound> candidates = getPlaneboundRerollCandidates(nodePlanebound);
+    if (candidates.isEmpty()) {
+      updateViewWithSelection();
+      return;
+    }
+
+    Collections.shuffle(candidates, MyRandom.getRandom());
+    nodePlanebound.setRoguePlanebound(candidates.get(0));
+    nodePlanebound.setRevealed(false);
+    RogueEffectComposite.INSTANCE.onPathNodeReroll(pathCtx, currentRun);
+    RogueIO.saveRun(currentRun);
+    updateView();
+  }
+
+  private List<RoguePlanebound> getPlaneboundRerollCandidates(NodePlanebound selectedNode) {
+    if (currentRun == null || currentRun.getPath() == null || selectedNode == null) {
+      return List.of();
+    }
+
+    RoguePathNode currentNode = currentRun.getCurrentNode();
+    if (currentNode == null) {
+      return List.of();
+    }
+
+    int currentRow = currentNode.getRowIndex();
+    Set<RoguePlanebound> excludedPlanebounds = new HashSet<>();
+    for (RoguePathNode node : currentRun.getPath().getNodes()) {
+      if (!(node instanceof NodePlanebound planebound)) {
+        continue;
+      }
+
+      boolean isCurrentRow = node.getRowIndex() == currentRow;
+      boolean isFutureRow = node.getRowIndex() > currentRow;
+      boolean isRevealedPreviousRow = node.getRowIndex() < currentRow && planebound.isRevealed();
+      if (isCurrentRow || isFutureRow || isRevealedPreviousRow) {
+        excludedPlanebounds.add(planebound.getRoguePlanebound());
+      }
+    }
+
+    List<RoguePlanebound> candidates = new ArrayList<>(RogueConfig.loadPlanebounds());
+    candidates.removeIf(planebound -> planebound.type() != selectedNode.getPlaneboundType()
+        || excludedPlanebounds.contains(planebound));
+    return candidates;
   }
 
   void enterNode() {

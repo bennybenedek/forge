@@ -110,6 +110,11 @@ public enum RogueEffectComposite implements RogueEffect {
     }
 
     @Override
+    public void onPathNodeReroll(PathUpdateContext ctx, RogueRun run) {
+        forEachEffect(run, e -> e.onPathNodeReroll(ctx, run));
+    }
+
+    @Override
     public void onBeforeSanctum(SanctumContext ctx, RogueRun run) {
         forEachEffect(run, e -> e.onBeforeSanctum(ctx, run));
     }

@@ -97,6 +97,7 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
   private JPanel pnlCarryCards;
   private final FButton btnEnterNode;
   private final FButton btnEditDeck;
+  private final FButton btnRerollPlane;
   private final FButton btnDevWinRun = new FButton("[DEV] Win Run");
   private final FButton btnDevNextNode = new FButton("[DEV] Next Node");
   private CardUtil zoomUtil;
@@ -117,6 +118,10 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
 
     btnEnterNode = new FButton("Enter Node");
     btnEnterNode.setIcon(FSkin.getIcon(FSkinProp.ICO_OPEN));
+
+    btnRerollPlane = new FButton("Reroll Plane");
+    btnRerollPlane.setIcon(FSkin.getImage(FSkinProp.ICO_FLIPCARD).resize(24, 24).getIcon());
+    btnRerollPlane.setVisible(false);
 
     // Setup scroll pane for path visualizer
     scrollPathDisplay = new FScrollPane(pathVisualizer, true);
@@ -173,6 +178,7 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
       lblRemovalCredits.setText("Removal Credits: 0");
       lblDescension.setVisible(false);
       lblDescension.setToolTipText(null);
+      btnRerollPlane.setVisible(false);
       populateCarryCardPanel(List.of());
       pathVisualizer.clearPath();
     }
@@ -222,10 +228,12 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(infoRow, "w 98%!, h pref!, gap 1% 0 10px 10px");
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay()
         .add(scrollPathDisplay, "w 96%!, gap 2% 2% 0 0, pushy, growy");
-    int split = ForgePreferences.DEV_MODE ? 4 : 2;
+    int split = ForgePreferences.DEV_MODE ? 5 : 3;
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay()
-        .add(btnEnterNode, "w 30%!, h 40px!, ax center, gap 0 2% 10px 20px, split " + split);
-    VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(btnEditDeck, "w 30%!, h 40px!");
+        .add(btnEnterNode, "w 25%!, h 40px!, ax center, gap 0 2% 10px 20px, split " + split);
+    VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(btnEditDeck, "w 25%!, h 40px!");
+    VHomeUI.SINGLETON_INSTANCE.getPnlDisplay()
+        .add(btnRerollPlane, "w 20%!, h 40px!, hidemode 3");
     if (ForgePreferences.DEV_MODE) {
       VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(btnDevNextNode, "w 15%!, h 40px!");
       VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(btnDevWinRun, "w 15%!, h 40px!");
@@ -241,6 +249,10 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
 
   public JButton getBtnEditDeck() {
     return btnEditDeck;
+  }
+
+  public JButton getBtnRerollPlane() {
+    return btnRerollPlane;
   }
 
   public JButton getBtnDevWinRun() {

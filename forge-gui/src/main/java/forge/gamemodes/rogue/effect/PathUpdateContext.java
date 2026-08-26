@@ -8,4 +8,5 @@ public class PathUpdateContext {
     public boolean hidePlanes;
     public boolean allowAllNodesInCurrentRow;
     public int additionalVisiblePlaneboundRows;
+    public int remainingPlaneboundRerolls;
 }

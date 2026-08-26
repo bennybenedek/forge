@@ -217,6 +217,29 @@ public enum EchoEffect implements RogueEffect {
         public void onChoiceReroll(ChoiceRerollContext ctx, RogueRun run) {
             run.consumeEffect(getId());
         }
+    },
+
+    PLANEBENDING("planebending", "Planebending",
+        "Reroll Planebound Nodes of the next row on the map up to %s time(s) during the Run.",
+        new EffectRankContext(
+            new int[]{6, 10, 14, 18}, // Echo costs (rank 1-4)
+            new int[]{1, 2, 3, 4},    // Effect values: 1/2/3/4 reroll charges
+            3, 1),
+        EffectType.CONSUME, null) {
+        @Override
+        public int getChargesForRank(int rank) {
+            return getEffectValueAtRank(rank);
+        }
+
+        @Override
+        public void onPathUpdate(PathUpdateContext ctx, RogueRun run) {
+            ctx.remainingPlaneboundRerolls = run.getRunEffectCharges(getId());
+        }
+
+        @Override
+        public void onPathNodeReroll(PathUpdateContext ctx, RogueRun run) {
+            run.consumeEffect(getId());
+        }
     };
 
 //    OPENING_VISION("foresight", "Opening Vision",
