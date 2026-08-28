@@ -110,7 +110,6 @@ Name=Nick Rewards
 1 Iron Man, Tony Stark|MSC|1
 1 Iron Spider, Stark Upgrade|SPM|1
 1 Jackdaw|ACR|1
-1 Justice, Vance Astrovik|MSH|1
 1 Katsumasa, the Animator|NEC|1
 1 Kid Loki|MSH|1
 1 Kindred Discovery|MSC|1
@@ -118,7 +117,6 @@ Name=Nick Rewards
 1 Kolodin, Triumph Caster|DFT|1
 1 Kona, Rescue Beastie|DSK|1
 1 Kutzil, Malamet Exemplar|LCI|1
-1 Kykar, Zephyr Awakener|FDN|1
 1 Lagorin, Soul of Alacria|DFT|1
 1 Leyline Axe|FDN|1
 1 Lifecraft Engine|DFT|1
@@ -267,7 +265,7 @@ Name=Nick Rewards
 1 Elbrus, the Binding Blade|DKA|1
 1 Embercleave|ELD|2
 1 Folk Hero|MSC|2
-1 Gemstone Caverns|TSR|1
+1 Gemstone Caverns|EOS|2
 1 Gwen Stacy|SPM|3
 1 Gwenom, Remorseless|SPM|2
 1 Halvar, God of Battle|KHM|1
@@ -301,7 +299,8 @@ Name=Nick Rewards
 1 Shang-Chi, Master of Kung Fu|MSH|2
 1 Shorikai, Genesis Engine|NEC|2
 1 Sigarda's Aid|SLD|2
-1 Skysovereign, Consul Flagship|NEC|1
+1 Skysovereign, Consul Flagship|SPG|1
+1 Spider-Man 2099, Miguel O'Hara|SPE|1
 1 Spider-Man, Miles Morales|SPE|1
 1 Sword of Feast and Famine|2XM|2
 1 T'Challa, the Black Panther|MSC|1
@@ -313,6 +312,5 @@ Name=Nick Rewards
 1 Thor, God of Thunder|MSH|2
 1 Tony Stark|MSH|2
 1 Valor's Flagship|DFT|2
-1 Venser, the Sojourner|SOM|1
 1 Weatherlight|NEC|1
 1 Wolverine, Best There Is|MAR|1

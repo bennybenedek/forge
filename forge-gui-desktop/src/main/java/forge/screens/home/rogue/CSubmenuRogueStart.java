@@ -174,7 +174,7 @@ public enum CSubmenuRogueStart implements ICDoc {
         .setToolTipText(hasCompletedRuns ? null : "Unlock the Run History by completing your first Run.");
     view.getBtnStats().setEnabled(hasCompletedRuns);
     view.getBtnStats()
-        .setToolTipText(hasCompletedRuns ? null : "Unlock Stats by completing your first Run.");
+        .setToolTipText(hasCompletedRuns ? null : "Unlock Codex by completing your first Run.");
 
     // Refresh layout
     view.getCommanderGridPanel().revalidate();
@@ -436,11 +436,14 @@ public enum CSubmenuRogueStart implements ICDoc {
         if (!EffectResultHelper.handleTrigger(effectCtx, newRun)) {
           continue;
         }
+        CodexHelper.recordAcquiredCards(newRun, effectCtx.addedCards);
+        CodexHelper.recordTraitAcquired(effectCtx.gainedWoundEffect);
         showNpcResultIfNeeded(chosen, effectCtx);
       } else {
         newRun.addNPCEffect(chosen);
       }
     }
+    CodexHelper.recordTraitsAcquired(newRun.getActiveWoundEffects());
 
     // Generate unique name for the run (used as filename)
     // Format: DeckName_Timestamp (e.g., "MeriaRogueCommander_12-11-25_143022")
@@ -467,6 +470,9 @@ public enum CSubmenuRogueStart implements ICDoc {
     do {
       ChoiceRerollContext rerollCtx = new ChoiceRerollContext();
       RogueEffectComposite.INSTANCE.onBeforeNpcBoons(rerollCtx, newRun);
+      CodexHelper.recordTraitChoices(effectiveCtx.choices().stream()
+          .map(NPCContext.NPCChoice::npcEffect)
+          .toList());
       result = new NPCDialog(effectiveCtx, rerollCtx).show();
       rerollRequested = result.rerollRequested();
 
@@ -479,7 +485,9 @@ public enum CSubmenuRogueStart implements ICDoc {
       }
     } while (rerollRequested);
 
-    return result.choice();
+    NPCEffect choice = result.choice();
+    CodexHelper.recordTraitAcquired(choice);
+    return choice;
   }
 
   private NPCContext maybeOverrideNpcChoices(NPCContext ctx) {

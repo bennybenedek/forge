@@ -3,10 +3,12 @@ package forge.screens.home.rogue;
 import forge.LobbyPlayer;
 import forge.deck.CardPool;
 import forge.deck.Deck;
-import forge.deck.io.DeckSerializer;
+import forge.game.Game;
 import forge.game.GameType;
+import forge.game.player.Player;
 import forge.game.player.RegisteredPlayer;
 import forge.gamemodes.match.HostedMatch;
+import forge.gamemodes.rogue.CodexHelper;
 import forge.gamemodes.rogue.RogueConfig;
 import forge.gamemodes.rogue.RoguePlanebound;
 import forge.gamemodes.rogue.RogueRun;
@@ -17,12 +19,10 @@ import forge.gamemodes.rogue.path.NodePlanebound;
 import forge.gui.GuiBase;
 import forge.gui.SOverlayUtils;
 import forge.item.PaperCard;
-import forge.localinstance.properties.ForgeConstants;
 import forge.localinstance.properties.ForgePreferences;
 import forge.player.GamePlayerUtil;
 import forge.toolbox.FOptionPane;
 import forge.toolbox.FSkin;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -63,7 +63,8 @@ class NodePlaneboundHelper {
         try {
             CardPool allPlanes = RogueConfig.getAllPlanes();
 
-            String cardPlaneName = node.getRoguePlanebound().planeName();
+            RoguePlanebound planebound = node.getRoguePlanebound();
+            String cardPlaneName = planebound.planeName();
             PaperCard designatedPlane = null;
             for (PaperCard card : allPlanes.toFlatList()) {
                 if (cardPlaneName.equalsIgnoreCase(card.getName())) {
@@ -101,16 +102,22 @@ class NodePlaneboundHelper {
                 RogueEffect.addCardToCommandZone(card.toPaperCard(), human);
             }
 
-            Deck planeboundDeck = loadPlaneboundDeck(node.getRoguePlanebound().deckPath());
+            Deck planeboundDeck = RogueConfig.loadPlaneboundDeck(planebound);
+            if (planeboundDeck == null) {
+                throw new RuntimeException("Planebound deck not found: " + planebound.deckPath());
+            }
+            CodexHelper.recordPlaneboundEncounter(planebound);
+            CodexHelper.recordPlaneboundCommanderCards(planebound, planeboundDeck.getCommanders());
 
             RegisteredPlayer ai = RegisteredPlayer.forVariants(
                 2, appliedVariants, planeboundDeck,
                 null, false, sharedPlaneDeck, null
             );
-            ai.setPlayer(GamePlayerUtil.createAiPlayer(
-                node.getRoguePlanebound().planeboundName(),
-                node.getRoguePlanebound().avatarIndex(),
-                0));
+            LobbyPlayer aiLobbyPlayer = GamePlayerUtil.createAiPlayer(
+                planebound.planeboundName(),
+                planebound.avatarIndex(),
+                0);
+            ai.setPlayer(aiLobbyPlayer);
 
             int planeboundRowCount = currentRun.getPath().countPlaneboundRowsUpTo(node.getRowIndex());
             ai.setStartingLife(node.getPlaneboundLife(planeboundRowCount));
@@ -119,6 +126,7 @@ class NodePlaneboundHelper {
 
             List<RegisteredPlayer> players = Arrays.asList(human, ai);
             HostedMatch hostedMatch = GuiBase.getInterface().hostMatch();
+            hostedMatch.setEndGameHook(() -> recordPlaneboundPublicCards(planebound, hostedMatch, aiLobbyPlayer));
             currentRun.setHostedMatch(hostedMatch);
 
             hostedMatch.startMatch(
@@ -134,6 +142,20 @@ class NodePlaneboundHelper {
         }
 
         SwingUtilities.invokeLater(SOverlayUtils::hideOverlay);
+    }
+
+    private void recordPlaneboundPublicCards(RoguePlanebound planebound, HostedMatch hostedMatch,
+                                             LobbyPlayer aiLobbyPlayer) {
+        Game game = hostedMatch.getGame();
+        if (game == null) {
+            return;
+        }
+        for (Player player : game.getRegisteredPlayers()) {
+            if (player.getLobbyPlayer() == aiLobbyPlayer) {
+                CodexHelper.recordPlaneboundPublicCards(planebound, player);
+                return;
+            }
+        }
     }
 
     private void handlePlaneboundBoons(NodePlanebound node, RogueRun currentRun) {
@@ -182,17 +204,5 @@ class NodePlaneboundHelper {
         String message = hasWrathful && hasCursed ? "This Planebound is Wrathful and Cursed!"
             : hasCursed ? "This Planebound is Cursed!" : "This Planebound is Wrathful!";
         FOptionPane.showOptionDialog(message, title, null, effectsPanel, List.of("OK"), 0);
-    }
-
-    private Deck loadPlaneboundDeck(String deckPath) {
-        File deckFile = new File(ForgeConstants.RES_DIR, deckPath);
-
-        if (!deckFile.exists()) {
-            throw new RuntimeException(
-                "Planebound deck not found: " + deckPath + " (full path: " + deckFile.getAbsolutePath()
-                    + ")");
-        }
-
-        return DeckSerializer.fromFile(deckFile);
     }
 }

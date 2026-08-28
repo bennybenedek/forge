@@ -113,7 +113,7 @@ public enum RogueTutorial {
       "Congratulations on completing a Run! Win or lose, you've earned Echoes " +
           "based on your progress. Use them in the Aether to unlock Boons to make you stronger in future Runs.\n"
           +
-          "Visit 'Stats' to view and reset your overall game progress and tutorials.\n"
+          "Visit 'Codex' to view and reset your overall game progress and tutorials.\n"
           +
           "View all your past Runs and Rogue Decks in 'History'."
   ),

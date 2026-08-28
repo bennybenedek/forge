@@ -100,6 +100,7 @@ public class CardRewardHelper {
             List<PaperCard> rewardOptions = buildRewardOptions(run, rogueDeck, mythicOnly, rewardCtx, selCtx,
                 customReward);
             if (rewardOptions.isEmpty()) return List.of();
+            CodexHelper.recordCardRewardOptions(run, rewardOptions);
 
             chosenCards = showRewardDialog(run, dialog, rewardOptions, maxPicks, freeRerolls, rerollCount, title,
                 customReward);
@@ -148,6 +149,7 @@ public class CardRewardHelper {
             rogueDeck.removeFromCardPools(chosenCards);
         }
         run.addCardsToDeck(chosenCards, true);
+        CodexHelper.recordAcquiredCards(run, chosenCards);
     }
 
     private static CardRewardContext createDefaultRewardContext(boolean mythicOnly,

@@ -1,9 +1,9 @@
 package forge.screens.home.rogue;
 
 import forge.deckchooser.FDeckViewer;
-import forge.card.CardType;
 import forge.gamemodes.rogue.RogueRun;
 import forge.item.PaperCard;
+import forge.itemmanager.GroupDef;
 import forge.toolbox.FLabel;
 import forge.toolbox.FOptionPane;
 import forge.toolbox.FScrollPane;
@@ -71,7 +71,7 @@ public class CardSelectionDialog {
     // Sort by type (Deck Editor order), then by CMC
     cards = new ArrayList<>(cards);
     cards.sort(Comparator
-        .<PaperCard>comparingInt(CardSelectionDialog::typeOrder)
+        .comparingInt(CardSelectionDialog::typeOrder)
         .thenComparingInt(c -> c.getRules().getManaCost().getCMC()));
 
     // Grid panel holds all cards with custom layout
@@ -159,29 +159,6 @@ public class CardSelectionDialog {
     }
   }
 
-  private void toggleCardSelection(SelectableCardPanel cardPanel) {
-    PaperCard card = cardPanel.card;
-
-    if (selectedCards.contains(card)) {
-      selectedCards.remove(card);
-      cardPanel.setSelected(false);
-    } else if (selectedCards.size() < maxSelections) {
-      selectedCards.add(card);
-      cardPanel.setSelected(true);
-    }
-
-    updateInfoLabel();
-    // Enable OK only when the current selection is within the allowed range.
-    if (optionPane != null) {
-      optionPane.setButtonEnabled(0, selectedCards.size() >= minSelections
-          && selectedCards.size() <= maxSelections);
-    }
-  }
-
-  private void updateInfoLabel() {
-    lblInfo.setText(getInfoText());
-  }
-
   private String getInfoText() {
     if (minSelections == maxSelections) {
       return String.format("%s (%d / %d selected)", subtitle, selectedCards.size(), maxSelections);
@@ -192,16 +169,8 @@ public class CardSelectionDialog {
 
   /** Returns type sort index matching Deck Editor order (GroupDef.CARD_TYPE). */
   private static int typeOrder(PaperCard c) {
-    CardType type = c.getRules().getType();
-    if (type.isLand()) return 6;
-    if (type.isPlaneswalker()) return 0;
-    if (type.isCreature()) return 1;
-    if (type.isSorcery()) return 2;
-    if (type.isInstant()) return 3;
-    if (type.isArtifact()) return 4;
-    if (type.isEnchantment()) return 5;
-    if (type.isBattle()) return 7;
-    return 8;
+    int groupIndex = GroupDef.CARD_TYPE.getItemGroupIndex(c);
+    return groupIndex < 0 ? 8 : groupIndex;
   }
 
   /** Grid panel that lays out cards in a fixed-width grid. */
@@ -228,8 +197,7 @@ public class CardSelectionDialog {
       while (cardIndex < cardPanels.size()) {
         int cardsInRow = Math.min(CARDS_PER_ROW, cardPanels.size() - cardIndex);
         int rowWidth = cardsInRow * cardWidth + (cardsInRow - 1) * spacing;
-        int startX = (totalWidth - rowWidth) / 2;
-        int x = startX;
+        int x = (totalWidth - rowWidth) / 2;
 
         for (int col = 0; col < cardsInRow; col++) {
           cardPanels.get(cardIndex).setBounds(x, y, cardWidth, cardHeight);
@@ -251,7 +219,24 @@ public class CardSelectionDialog {
 
     @Override
     protected void toggleSelection() {
-      toggleCardSelection(this);
+      if (selectedCards.contains(card)) {
+        selectedCards.remove(card);
+        setSelected(false);
+      } else if (selectedCards.size() < maxSelections) {
+        selectedCards.add(card);
+        setSelected(true);
+      }
+
+      updateInfoLabel();
+      // Enable OK only when the current selection is within the allowed range.
+      if (optionPane != null) {
+        optionPane.setButtonEnabled(0, selectedCards.size() >= minSelections
+            && selectedCards.size() <= maxSelections);
+      }
+    }
+
+    private void updateInfoLabel() {
+      lblInfo.setText(getInfoText());
     }
   }
 }

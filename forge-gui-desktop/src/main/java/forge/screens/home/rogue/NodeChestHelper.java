@@ -1,5 +1,6 @@
 package forge.screens.home.rogue;
 
+import forge.gamemodes.rogue.CodexHelper;
 import forge.gamemodes.rogue.RogueRun;
 import forge.gamemodes.rogue.RogueTutorial;
 import forge.gamemodes.rogue.effect.ChestEffect;
@@ -55,6 +56,7 @@ class NodeChestHelper {
         do {
             ChoiceRerollContext rerollCtx = new ChoiceRerollContext();
             RogueEffectComposite.INSTANCE.onBeforeChestLoot(rerollCtx, currentRun);
+            CodexHelper.recordTraitChoices(chestEffects);
             result = new ChestDialog(chestEffects, currentRun, rerollCtx).show();
             rerollRequested = result.rerollRequested();
 
@@ -70,14 +72,22 @@ class NodeChestHelper {
         if (chestEffect == null) {
             return NodeFlowOutcome.COMPLETE_NODE;
         }
+        CodexHelper.recordTraitAcquired(chestEffect);
 
         EffectResultContext ctx = new EffectResultContext();
         if (chestEffect.getEffectType() == RogueEffect.EffectType.ONESHOT) {
             chestEffect.applyEffect(currentRun, ctx);
             if (effectResultHelper == null) {
+                CodexHelper.recordAcquiredCards(currentRun, ctx.addedCards);
+                CodexHelper.recordTraitAcquired(ctx.gainedWoundEffect);
                 return NodeFlowOutcome.COMPLETE_NODE;
             }
-            return effectResultHelper.handleEffectTrigger(chestNode, ctx, currentRun);
+            NodeFlowOutcome outcome = effectResultHelper.handleEffectTrigger(chestNode, ctx, currentRun);
+            if (outcome == NodeFlowOutcome.COMPLETE_NODE) {
+                CodexHelper.recordAcquiredCards(currentRun, ctx.addedCards);
+                CodexHelper.recordTraitAcquired(ctx.gainedWoundEffect);
+            }
+            return outcome;
         } else {
             currentRun.addChestEffect(chestEffect);
         }

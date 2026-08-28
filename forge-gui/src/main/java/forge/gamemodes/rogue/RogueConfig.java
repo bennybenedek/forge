@@ -319,6 +319,19 @@ public class RogueConfig {
         return new RoguePlanebound(planeName, planeboundName, deckPath, avatarIndex, type);
     }
 
+    public static Deck loadPlaneboundDeck(RoguePlanebound planebound) {
+        if (planebound == null || planebound.deckPath() == null || planebound.deckPath().isBlank()) {
+            return null;
+        }
+
+        File deckFile = new File(ForgeConstants.RES_DIR, planebound.deckPath());
+        if (!deckFile.exists()) {
+            System.err.println("Warning: Planebound deck not found: " + deckFile.getAbsolutePath());
+            return null;
+        }
+        return DeckSerializer.fromFile(deckFile);
+    }
+
     // Helper method to get all unique cards from the database
     public static List<PaperCard> getAllCards() {
         return getAllCards(null);

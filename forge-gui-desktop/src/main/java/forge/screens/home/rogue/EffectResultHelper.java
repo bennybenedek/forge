@@ -2,6 +2,7 @@ package forge.screens.home.rogue;
 
 import forge.deck.DeckSection;
 import forge.gamemodes.rogue.CardRewardHelper;
+import forge.gamemodes.rogue.CodexHelper;
 import forge.gamemodes.rogue.RogueRun;
 import forge.gamemodes.rogue.effect.EffectResultContext;
 import forge.item.PaperCard;
@@ -60,11 +61,13 @@ final class EffectResultHelper {
                 currentRun.getSelectedRogueDeck().removeFromCardPools(ctx.replacementCards);
             }
             ctx.addedCards.addAll(ctx.replacementCards);
+            CodexHelper.recordAcquiredCards(currentRun, ctx.replacementCards);
         }
         if (ctx.replacementCarryCard != null && ctx.replacementCarryCard.card() != null) {
             currentRun.addCarryCard(ctx.replacementCarryCard.card(), ctx.replacementCarryCard.type(),
                 ctx.replacementCarryCard.sourceId());
             ctx.addedCards.add(ctx.replacementCarryCard.card());
+            CodexHelper.recordAcquiredCards(currentRun, List.of(ctx.replacementCarryCard.card()));
         }
         return true;
     }
@@ -76,6 +79,7 @@ final class EffectResultHelper {
             return;
         }
 
+        CodexHelper.recordCardRewardOptions(currentRun, ctx.candidateCards);
         List<PaperCard> added = new CardSelectionDialog(
             "Card Selection",
             getCardAdditionSubtitle(addMinCount, addMaxCount),
@@ -108,6 +112,7 @@ final class EffectResultHelper {
             currentRun.addCardsToDeck(added, false);
         }
         ctx.addedCards = added;
+        CodexHelper.recordAcquiredCards(currentRun, added);
     }
 
     private static void handleCardRewardTrigger(EffectResultContext ctx, RogueRun currentRun) {

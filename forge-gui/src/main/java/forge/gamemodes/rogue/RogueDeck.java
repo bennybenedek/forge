@@ -131,6 +131,11 @@ public class RogueDeck {
         }
     }
 
+    public List<PaperCard> getRewardPoolCards() {
+        ensureCardPools();
+        return new ArrayList<>(rewardPool.toFlatList());
+    }
+
     public String getDescription() {
         return description;
     }

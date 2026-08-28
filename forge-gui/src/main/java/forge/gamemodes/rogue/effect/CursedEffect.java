@@ -42,15 +42,6 @@ public enum CursedEffect implements PlaneboundEffect {
             run.consumeEffect(getId());
         }
     },
-    BLOODTHIRSTY("cursed_bloodthirsty", "Bloodthirsty",
-        "Planebound's creatures get +2/+2 and have haste.",
-        "Cursed - Bloodthirsty") {
-        @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-            run.consumeEffect(getId());
-        }
-    },
     CRUSADER("cursed_crusader", "Crusader",
         "Whenever a creature Planebound controls enters, put a +1/+1 counter on each creature Planebound controls.",
         "Cursed - Crusader") {
@@ -78,6 +69,15 @@ public enum CursedEffect implements PlaneboundEffect {
             run.consumeEffect(getId());
         }
     },
+    ETERNAL("cursed_bloodthirsty", "Bloodthirsty",
+        "Planebound's creatures get +2/+2 and have indestructible.",
+        "Cursed - Eternal") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+            run.consumeEffect(getId());
+        }
+    },
     GRACEFUL("cursed_graceful", "Graceful",
         "At the beginning of Planebound's upkeep, they create a 1/1 white Spirit creature token with flying.",
         "Cursed - Graceful") {
@@ -99,7 +99,7 @@ public enum CursedEffect implements PlaneboundEffect {
         }
     },
     OVERLORD("cursed_overlord", "Overlord",
-        "At the beginning of Planebound's upkeep, they may create a token that's a copy of up to one target permanent they control.",
+        "At the beginning of Planebound's upkeep, they may create a token that's a copy of up to one target nonland permanent they control.",
         "Cursed - Overlord") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {

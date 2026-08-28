@@ -6,6 +6,8 @@ import com.thoughtworks.xstream.security.NullPermission;
 import com.thoughtworks.xstream.security.PrimitiveTypePermission;
 import forge.gamemodes.rogue.effect.DescensionLevel;
 import forge.gamemodes.rogue.effect.EchoEffect;
+import forge.gamemodes.rogue.effect.RogueEffect;
+import forge.gui.FThreads;
 import forge.gui.GuiBase;
 import forge.item.PaperCard;
 import forge.localinstance.achievements.RogueCommanderAchievements;
@@ -38,6 +40,9 @@ public class RogueMetaProgress {
     // Stat tracking (unified map, keyed by RogueStats.conditionKey)
     private Map<String, Integer> statValues;
 
+    // Codex discovery state
+    private CodexProgress codexProgress;
+
     // Per-commander descension tracking
     private Map<String, Integer> maxDescensionWonPerCommander = new HashMap<>();
 
@@ -68,6 +73,7 @@ public class RogueMetaProgress {
         runsStartedPerCommander = new HashMap<>();
         runsWonPerCommander = new HashMap<>();
         statValues = new HashMap<>();
+        codexProgress = new CodexProgress();
 
         // Initialize Aether system
         totalEchoes = 0;
@@ -106,6 +112,7 @@ public class RogueMetaProgress {
         runsWonPerCommander = new HashMap<>();
         statValues = new HashMap<>();
         maxDescensionWonPerCommander = new HashMap<>();
+        codexProgress = new CodexProgress();
 
         // Reset Aether system
         totalEchoes = 0;
@@ -145,6 +152,89 @@ public class RogueMetaProgress {
             statValues.put(key, value);
         }
         checkForNewUnlocks(stat);
+    }
+
+    // ==================== Codex Progress ====================
+
+    CodexProgress getCodexProgress() {
+        if (codexProgress == null) {
+            codexProgress = new CodexProgress();
+        }
+        return codexProgress;
+    }
+
+    public boolean hasSeenCommanderRewardCard(String commanderName, PaperCard card) {
+        return getCodexProgress().hasSeenCommanderRewardCard(commanderName, getNormalizedCardName(card));
+    }
+
+    public boolean hasAcquiredCommanderRewardCard(String commanderName, PaperCard card) {
+        return getCodexProgress().hasAcquiredCommanderRewardCard(commanderName, getNormalizedCardName(card));
+    }
+
+    public boolean hasEncounteredPlanebound(RoguePlanebound planebound) {
+        return getCodexProgress().hasEncounteredPlanebound(getPlaneboundKey(planebound));
+    }
+
+    public boolean hasSeenPlaneboundCard(RoguePlanebound planebound, PaperCard card) {
+        return getCodexProgress().hasSeenPlaneboundCard(getPlaneboundKey(planebound),
+            getNormalizedCardName(card));
+    }
+
+    public boolean hasSeenTrait(RogueEffect effect) {
+        return getCodexProgress().hasSeenTrait(getEffectKey(effect));
+    }
+
+    public boolean hasAcquiredTrait(RogueEffect effect) {
+        return getCodexProgress().hasAcquiredTrait(getEffectKey(effect));
+    }
+
+    void markCommanderRewardCardSeen(String commanderName, PaperCard card) {
+        if (getCodexProgress().markCommanderRewardCardSeen(commanderName, getNormalizedCardName(card))) {
+            save();
+        }
+    }
+
+    void markCommanderRewardCardAcquired(String commanderName, PaperCard card) {
+        if (getCodexProgress().markCommanderRewardCardAcquired(commanderName, getNormalizedCardName(card))) {
+            save();
+        }
+    }
+
+    void markPlaneboundEncountered(RoguePlanebound planebound) {
+        if (getCodexProgress().markPlaneboundEncountered(getPlaneboundKey(planebound))) {
+            save();
+        }
+    }
+
+    void markPlaneboundCardSeen(RoguePlanebound planebound, PaperCard card) {
+        if (getCodexProgress().markPlaneboundCardSeen(getPlaneboundKey(planebound),
+            getNormalizedCardName(card))) {
+            save();
+        }
+    }
+
+    void markTraitSeen(RogueEffect effect) {
+        if (getCodexProgress().markTraitSeen(getEffectKey(effect))) {
+            save();
+        }
+    }
+
+    void markTraitAcquired(RogueEffect effect) {
+        if (getCodexProgress().markTraitAcquired(getEffectKey(effect))) {
+            save();
+        }
+    }
+
+    private static String getNormalizedCardName(PaperCard card) {
+        return card == null || card.getRules() == null ? null : card.getRules().getNormalizedName();
+    }
+
+    private static String getPlaneboundKey(RoguePlanebound planebound) {
+        return planebound == null ? null : planebound.deckPath();
+    }
+
+    private static String getEffectKey(RogueEffect effect) {
+        return effect == null ? null : effect.getId();
     }
 
     // ==================== Per-Commander Tracking ====================
@@ -261,10 +351,6 @@ public class RogueMetaProgress {
         return getStatValue(RogueStats.MAX_GOLD.getConditionKey());
     }
 
-    public Set<String> getCommandersUsed() {
-        return new HashSet<>(runsStartedPerCommander.keySet());
-    }
-
     public int getRunsStartedWithCommander(String commanderName) {
         return runsStartedPerCommander.getOrDefault(commanderName, 0);
     }
@@ -297,7 +383,7 @@ public class RogueMetaProgress {
             .createLayeredImage(card, forge.localinstance.skin.FSkinProp.IMG_SPECIAL_TROPHY,
                 forge.localinstance.properties.ForgeConstants.CACHE_ACHIEVEMENTS_DIR
                     + "/descension_" + commanderName.replace(" ", "_") + "_1.png", 1f);
-        forge.gui.GuiBase.getInterface().showImageDialog(image,
+        showDescensionUnlockDialog(image,
             "You unlocked Descension Mode for " + commanderName + "!",
             "Descension Level 1 Unlocked!");
     }
@@ -316,7 +402,8 @@ public class RogueMetaProgress {
                     .createLayeredImage(card, forge.localinstance.skin.FSkinProp.IMG_SPECIAL_TROPHY,
                         forge.localinstance.properties.ForgeConstants.CACHE_ACHIEVEMENTS_DIR
                             + "/descension_" + commanderName.replace(" ", "_") + "_" + unlockedLevel + ".png", 1f);
-                forge.gui.GuiBase.getInterface().showImageDialog(image,
+              if (descensionLevel == null) return false;
+              showDescensionUnlockDialog(image,
                     "You unlocked Descension Level " + unlockedLevel + ": " + descensionLevel.name + " for " + commanderName + "!",
                     "Descension Level " + unlockedLevel + " Unlocked!");
             }
@@ -324,6 +411,10 @@ public class RogueMetaProgress {
             return true;
         }
         return false;
+    }
+
+    private static void showDescensionUnlockDialog(ISkinImage image, String message, String title) {
+        FThreads.invokeInEdtLater(() -> GuiBase.getInterface().showImageDialog(image, message, title));
     }
 
     public boolean isDescensionModeUnlocked() {
@@ -392,15 +483,6 @@ public class RogueMetaProgress {
         }
     }
 
-    public boolean spendEchoes(int amount) {
-        if (amount > 0 && totalEchoes >= amount) {
-            totalEchoes -= amount;
-            save();
-            return true;
-        }
-        return false;
-    }
-
     // ==================== Aether System - Boon Management ====================
 
     /**
@@ -440,16 +522,6 @@ public class RogueMetaProgress {
         boonRanks.put(boon.getId(), currentRank + 1);
         save();
         return true;
-    }
-
-    /**
-     * Check if a boon is currently active.
-     */
-    public boolean isBoonActive(EchoEffect boon) {
-        if (activeEchoBoons == null) {
-            activeEchoBoons = new HashSet<>();
-        }
-        return activeEchoBoons.contains(boon.getId());
     }
 
     /**
@@ -612,6 +684,158 @@ public class RogueMetaProgress {
         save();
     }
 
+    public static class CodexProgress {
+        private Map<String, CardDiscovery> commanderRewardCards = new HashMap<>();
+        private Map<String, CardDiscovery> planeboundCards = new HashMap<>();
+        private Set<String> encounteredPlanebounds = new HashSet<>();
+        private CardDiscovery traits = new CardDiscovery();
+
+        private boolean hasSeenCommanderRewardCard(String commanderName, String cardName) {
+            return getCommanderCardDiscovery(commanderName, false).hasSeen(cardName);
+        }
+
+        private boolean hasAcquiredCommanderRewardCard(String commanderName, String cardName) {
+            return getCommanderCardDiscovery(commanderName, false).hasAcquired(cardName);
+        }
+
+        private boolean hasEncounteredPlanebound(String planeboundKey) {
+            if (encounteredPlanebounds == null) {
+                encounteredPlanebounds = new HashSet<>();
+            }
+            return planeboundKey != null && encounteredPlanebounds.contains(planeboundKey);
+        }
+
+        private boolean hasSeenPlaneboundCard(String planeboundKey, String cardName) {
+            return getPlaneboundCardDiscovery(planeboundKey, false).hasSeen(cardName);
+        }
+
+        private boolean hasSeenTrait(String effectId) {
+            return getTraitDiscovery().hasSeen(effectId);
+        }
+
+        private boolean hasAcquiredTrait(String effectId) {
+            return getTraitDiscovery().hasAcquired(effectId);
+        }
+
+        private boolean markCommanderRewardCardSeen(String commanderName, String cardName) {
+            if (commanderName == null || commanderName.isBlank()) {
+                return false;
+            }
+            return getCommanderCardDiscovery(commanderName, true).markSeen(cardName);
+        }
+
+        private boolean markCommanderRewardCardAcquired(String commanderName, String cardName) {
+            if (commanderName == null || commanderName.isBlank()) {
+                return false;
+            }
+            return getCommanderCardDiscovery(commanderName, true).markAcquired(cardName);
+        }
+
+        private boolean markPlaneboundEncountered(String planeboundKey) {
+            if (planeboundKey == null || planeboundKey.isBlank()) {
+                return false;
+            }
+            if (encounteredPlanebounds == null) {
+                encounteredPlanebounds = new HashSet<>();
+            }
+            return encounteredPlanebounds.add(planeboundKey);
+        }
+
+        private boolean markPlaneboundCardSeen(String planeboundKey, String cardName) {
+            if (planeboundKey == null || planeboundKey.isBlank()) {
+                return false;
+            }
+            return getPlaneboundCardDiscovery(planeboundKey, true).markSeen(cardName);
+        }
+
+        private boolean markTraitSeen(String effectId) {
+            return getTraitDiscovery().markSeen(effectId);
+        }
+
+        private boolean markTraitAcquired(String effectId) {
+            return getTraitDiscovery().markAcquired(effectId);
+        }
+
+        private CardDiscovery getCommanderCardDiscovery(String sourceKey, boolean create) {
+            if (commanderRewardCards == null) {
+                commanderRewardCards = new HashMap<>();
+            }
+            return getCardDiscovery(commanderRewardCards, sourceKey, create);
+        }
+
+        private CardDiscovery getPlaneboundCardDiscovery(String sourceKey, boolean create) {
+            if (planeboundCards == null) {
+                planeboundCards = new HashMap<>();
+            }
+            return getCardDiscovery(planeboundCards, sourceKey, create);
+        }
+
+        private CardDiscovery getCardDiscovery(Map<String, CardDiscovery> discoveryMap, String sourceKey,
+                                               boolean create) {
+            if (sourceKey == null || sourceKey.isBlank()) {
+                return CardDiscovery.EMPTY;
+            }
+            if (!create) {
+                CardDiscovery discovery = discoveryMap.get(sourceKey);
+                return discovery == null ? CardDiscovery.EMPTY : discovery;
+            }
+            return discoveryMap.computeIfAbsent(sourceKey, key -> new CardDiscovery());
+        }
+
+        private CardDiscovery getTraitDiscovery() {
+            if (traits == null) {
+                traits = new CardDiscovery();
+            }
+            return traits;
+        }
+    }
+
+    public static class CardDiscovery {
+        private static final CardDiscovery EMPTY = new CardDiscovery();
+
+        private Set<String> seen = new HashSet<>();
+        private Set<String> acquired = new HashSet<>();
+
+        private boolean hasSeen(String cardName) {
+            if (seen == null) {
+                seen = new HashSet<>();
+            }
+            return cardName != null && seen.contains(cardName);
+        }
+
+        private boolean hasAcquired(String cardName) {
+            if (acquired == null) {
+                acquired = new HashSet<>();
+            }
+            return cardName != null && acquired.contains(cardName);
+        }
+
+        private boolean markSeen(String cardName) {
+            if (cardName == null || cardName.isBlank()) {
+                return false;
+            }
+            if (seen == null) {
+                seen = new HashSet<>();
+            }
+            return seen.add(cardName);
+        }
+
+        private boolean markAcquired(String cardName) {
+            if (cardName == null || cardName.isBlank()) {
+                return false;
+            }
+            if (seen == null) {
+                seen = new HashSet<>();
+            }
+            if (acquired == null) {
+                acquired = new HashSet<>();
+            }
+            boolean changed = seen.add(cardName);
+            changed |= acquired.add(cardName);
+            return changed;
+        }
+    }
+
     // ==================== NPC Progression ====================
 
     public int getNPCLevel(String id) {
@@ -660,6 +884,8 @@ public class RogueMetaProgress {
         xStream.allowTypeHierarchy(Set.class);
         xStream.allowTypeHierarchy(List.class);
         xStream.allowTypeHierarchy(RogueMetaProgress.class);
+        xStream.allowTypeHierarchy(CodexProgress.class);
+        xStream.allowTypeHierarchy(CardDiscovery.class);
         xStream.allowTypesByWildcard(new String[] {
             RogueMetaProgress.class.getPackage().getName() + ".*",
             "forge.deck.*",

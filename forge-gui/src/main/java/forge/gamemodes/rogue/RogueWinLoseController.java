@@ -322,15 +322,17 @@ public class RogueWinLoseController {
 
     private void handleMatchData() {
         Game game = lastGame.getGame();
-        if (game == null) return;
+        if (game == null || currentRun == null) return;
         final LobbyPlayer humanLobbyPlayer = GamePlayerUtil.getGuiPlayer();
-        for (Player p : game.getPlayers()) {
+        NodePlanebound planeboundNode = resolvePlanebound(currentRun.getCurrentNode());
+        for (Player p : game.getRegisteredPlayers()) {
             if (p.getLobbyPlayer() == humanLobbyPlayer) {
                 currentRun.persistMatchLife(p.getLife());
                 currentRun.setLastMatchData(new RogueRun.LastMatchData(
                     p.getPlanarDieChaosThisGame(), p.getPlanarDiePlaneswalkThisGame()));
                 checkCarryCardSurvival(p);
-                break;
+            } else if (planeboundNode != null) {
+                CodexHelper.recordPlaneboundPublicCards(planeboundNode.getRoguePlanebound(), p);
             }
         }
     }

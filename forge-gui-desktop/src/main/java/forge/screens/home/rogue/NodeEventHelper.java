@@ -1,5 +1,6 @@
 package forge.screens.home.rogue;
 
+import forge.gamemodes.rogue.CodexHelper;
 import forge.gamemodes.rogue.RogueEvent;
 import forge.gamemodes.rogue.RogueMetaProgress;
 import forge.gamemodes.rogue.RogueRun;
@@ -45,6 +46,9 @@ class NodeEventHelper {
         do {
             ChoiceRerollContext rerollCtx = new ChoiceRerollContext();
             RogueEffectComposite.INSTANCE.onBeforeEvent(rerollCtx, currentRun);
+            CodexHelper.recordTraitChoices(event.getChoices().stream()
+                .map(RogueEvent.EventChoice::effect)
+                .toList());
             result = new EventDialog(event, currentRun, rerollCtx).show();
             rerollRequested = result.rerollRequested();
 
@@ -104,6 +108,7 @@ class NodeEventHelper {
         if (!effect.isChoiceAvailable(currentRun)) {
             return NodeFlowOutcome.DO_NOT_COMPLETE_NODE;
         }
+        CodexHelper.recordTraitAcquired(effect);
 
         EffectResultContext ctx = new EffectResultContext();
         if (effect.getEffectType() == RogueEffect.EffectType.ONESHOT) {
@@ -112,6 +117,8 @@ class NodeEventHelper {
             if (nodeFlowOutcome != NodeFlowOutcome.COMPLETE_NODE) {
                 return nodeFlowOutcome;
             }
+            CodexHelper.recordAcquiredCards(currentRun, ctx.addedCards);
+            CodexHelper.recordTraitAcquired(ctx.gainedWoundEffect);
         } else {
             currentRun.addEventEffect(effect);
         }

@@ -98,7 +98,7 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
     btnBeginRun = new FButton("Start Run");
     btnBeginRun.setIcon(FSkin.getImage(FSkinProp.ICO_ALPHASTRIKE).resize(24, 24).getIcon());
 
-    btnStats = new FButton("Stats");
+    btnStats = new FButton("Codex");
     btnStats.setIcon(FSkin.getImage(FSkinProp.ICO_QUEST_BOOK).resize(24, 24).getIcon());
 
     btnAether = new FButton("Aether");

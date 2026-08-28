@@ -66,7 +66,7 @@ public enum EchoEffect implements RogueEffect {
     },
 
     SPECTRAL_BARGAIN("spectral_bargain", "Spectral Bargain",
-        "%s free reroll(s) in Card Rewards and Bazaar.",
+        "Gain %s free reroll(s) in Card Rewards and Bazaar.",
         new EffectRankContext(
             new int[]{2, 4, 8, 12}, // Echo costs (rank 1-3)
             new int[]{1, 2, 3, 4},  // Effect values: 1/2/3 free rerolls
@@ -79,7 +79,7 @@ public enum EchoEffect implements RogueEffect {
     },
 
     MYTHIC_COLLECTOR("mythic_collector", "Mythic Collector",
-        "+%s more mythic cards in Rewards and Bazaar.",
+        "See +%s more mythic cards in Rewards and Bazaar.",
         new EffectRankContext(
             new int[]{3, 6, 9, 12}, // Echo costs per rank
             new int[]{1, 2, 3, 4},  // Effect values: +1/+2/+3/+4 extra mythics

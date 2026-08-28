@@ -4,6 +4,7 @@ import forge.card.CardRarity;
 import forge.card.CardSplitType;
 import forge.deck.DeckFormat;
 import forge.gamemodes.rogue.CardRewardHelper;
+import forge.gamemodes.rogue.CodexHelper;
 import forge.gamemodes.rogue.RogueConfig;
 import forge.gamemodes.rogue.RogueDeck;
 import forge.gamemodes.rogue.RogueMetaProgress;
@@ -81,6 +82,7 @@ class NodeBazaarHelper {
             return List.of();
         }
         applyActualItemPrices(bazaarCtx, inventory);
+        CodexHelper.recordBazaarInventory(currentRun, inventory);
 
         BazaarDialogResult dialogResult = showBazaarDialog(inventory, currentRun, bazaarCtx, null, false, 0);
         return applyBazaarPurchases(currentRun, rogueDeck, bazaarCtx, dialogResult.selectedItems(), true);
@@ -107,6 +109,7 @@ class NodeBazaarHelper {
             String rerollLabel = CardRewardHelper.buildRerollLabel(freeRerolls, rerollCount);
             boolean rerollEnabled =
                 CardRewardHelper.canAffordReroll(freeRerolls, rerollCount, currentRun.getCurrentGold());
+            CodexHelper.recordBazaarInventory(currentRun, inventory);
             dialogResult =
                 showBazaarDialog(inventory, currentRun, bazaarCtx, rerollLabel, rerollEnabled, selectedBazaarTab);
             selectedBazaarTab = dialogResult.selectedTabIndex();
@@ -487,6 +490,7 @@ class NodeBazaarHelper {
         bazaarCtx.purchasedItems.addAll(selectedItems);
 
         List<PaperCard> realCards = applyPurchasedItems(currentRun, selectedItems);
+        CodexHelper.recordBazaarPurchases(currentRun, selectedItems);
 
         if (!realCards.isEmpty()) {
             currentRun.addCardsToDeck(realCards, true);
