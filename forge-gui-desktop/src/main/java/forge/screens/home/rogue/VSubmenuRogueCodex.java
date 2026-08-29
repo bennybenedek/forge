@@ -16,6 +16,7 @@ import forge.gui.framework.EDocID;
 import forge.item.PaperCard;
 import forge.item.PaperCardPredicates;
 import forge.itemmanager.GroupDef;
+import forge.localinstance.properties.ForgePreferences;
 import forge.localinstance.skin.FSkinProp;
 import forge.screens.home.EMenuGroup;
 import forge.screens.home.IVSubmenu;
@@ -51,6 +52,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Consumer;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -115,6 +117,7 @@ public enum VSubmenuRogueCodex implements IVSubmenu<CSubmenuRogueCodex> {
   private final FButton btnBack;
   private final FButton btnReset;
   private final FButton btnResetTutorials;
+  private final FButton btnDevUnlockCodex = new FButton("[Dev] Unlock Codex");
 
   VSubmenuRogueCodex() {
     lblTitle.setBackground(FSkin.getColor(FSkin.Colors.CLR_THEME2));
@@ -286,6 +289,9 @@ public enum VSubmenuRogueCodex implements IVSubmenu<CSubmenuRogueCodex> {
     buttonPanel.setOpaque(false);
     buttonPanel.add(btnReset, "w 180px!, h 40px!");
     buttonPanel.add(btnResetTutorials, "w 180px!, h 40px!");
+    if (ForgePreferences.DEV_MODE) {
+      buttonPanel.add(btnDevUnlockCodex, "w 180px!, h 40px!");
+    }
     panel.add(buttonPanel, "ax center");
 
     return panel;
@@ -402,7 +408,6 @@ public enum VSubmenuRogueCodex implements IVSubmenu<CSubmenuRogueCodex> {
       return panel;
     }
 
-    panel.add(createCommanderStatsHeader(selectedCommander, progress), "growx, gapbottom 16");
     String commanderName = selectedCommander.getCommanderCardName();
     List<CodexCardGrid.Entry> nonMythicEntries = new ArrayList<>();
     List<CodexCardGrid.Entry> mythicEntries = new ArrayList<>();
@@ -413,6 +418,8 @@ public enum VSubmenuRogueCodex implements IVSubmenu<CSubmenuRogueCodex> {
     }
     sortCodexCardEntries(nonMythicEntries);
     sortCodexCardEntries(mythicEntries);
+    panel.add(createCommanderStatsHeader(selectedCommander, progress, nonMythicEntries, mythicEntries),
+        "growx, gapbottom 16");
 
     JPanel sections = new CodexSectionsPanel(new MigLayout("insets 0, gap 0, wrap 1", "[grow]"));
     sections.setOpaque(false);
@@ -433,14 +440,22 @@ public enum VSubmenuRogueCodex implements IVSubmenu<CSubmenuRogueCodex> {
         state == CodexCardGrid.CardState.HIDDEN ? "Unknown Card" : card.getName(), state);
   }
 
-  private JPanel createCommanderStatsHeader(RogueDeck selectedCommander, RogueMetaProgress progress) {
-    JPanel panel = new SkinnedPanel(new MigLayout("insets 8, gap 12", "[][][][]", ""));
+  private JPanel createCommanderStatsHeader(RogueDeck selectedCommander, RogueMetaProgress progress,
+                                            List<CodexCardGrid.Entry> nonMythicEntries,
+                                            List<CodexCardGrid.Entry> mythicEntries) {
+    JPanel panel = new SkinnedPanel(new MigLayout("insets 8, gap 12", "[][][][][][]", ""));
     panel.setOpaque(false);
     String commanderName = selectedCommander.getCommanderCardName();
+    List<CodexCardGrid.Entry> rewardEntries = new ArrayList<>(nonMythicEntries);
+    rewardEntries.addAll(mythicEntries);
     panel.add(new FLabel.Builder().text(selectedCommander.getName()).fontSize(16).fontStyle(Font.BOLD).build());
     panel.add(new FLabel.Builder().text("Runs: " + progress.getRunsStartedWithCommander(commanderName)).fontSize(13).build());
     panel.add(new FLabel.Builder().text("Wins: " + progress.getRunsWonWithCommander(commanderName)).fontSize(13).build());
     panel.add(new FLabel.Builder().text("Max Descension: " + progress.getMaxDescensionWon(commanderName)).fontSize(13).build());
+    panel.add(new FLabel.Builder().text("Seen: " + countSeenCards(rewardEntries) + " of "
+        + rewardEntries.size() + " Cards").fontSize(13).build());
+    panel.add(new FLabel.Builder().text("Acquired: " + countAcquiredCards(rewardEntries) + " of "
+        + rewardEntries.size() + " Cards").fontSize(13).build());
     return panel;
   }
 
@@ -453,12 +468,6 @@ public enum VSubmenuRogueCodex implements IVSubmenu<CSubmenuRogueCodex> {
       return panel;
     }
 
-    panel.add(new FLabel.Builder()
-        .text(selectedPlanebound.planeboundName() + " - " + selectedPlanebound.planeName())
-        .fontSize(16)
-        .fontStyle(Font.BOLD)
-        .build(), "gap 8 0 8 16");
-
     List<CodexCardGrid.Entry> entries = new ArrayList<>();
     Deck deck = RogueConfig.loadPlaneboundDeck(selectedPlanebound);
     List<CodexCardGrid.Entry> commanderEntries = new ArrayList<>();
@@ -468,6 +477,9 @@ public enum VSubmenuRogueCodex implements IVSubmenu<CSubmenuRogueCodex> {
       }
       Set<String> displayedBasicLandNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
       for (PaperCard card : deck.getAllCardsInASinglePool(false, false).toFlatList()) {
+        if (card == null || card.getRules() == null) {
+          continue;
+        }
         if (card.getRules().getType().isBasicLand() && !displayedBasicLandNames.add(card.getName())) {
           continue;
         }
@@ -476,11 +488,27 @@ public enum VSubmenuRogueCodex implements IVSubmenu<CSubmenuRogueCodex> {
     }
     sortCodexCardEntries(commanderEntries);
     sortCodexCardEntries(entries);
+    panel.add(createPlaneboundStatsHeader(selectedPlanebound, entries), "growx, gapbottom 16");
+
     JPanel sections = new CodexSectionsPanel(new MigLayout("insets 0, gap 0, wrap 1", "[grow]"));
     sections.setOpaque(false);
     sections.add(createPlaneboundTopSections(selectedPlanebound, commanderEntries), "w 100%!, growx, gapbottom 20");
     addCardGridSection(sections, "Deck", entries);
     panel.add(createPanelScrollPane(sections), "grow, push");
+    return panel;
+  }
+
+  private JPanel createPlaneboundStatsHeader(RoguePlanebound selectedPlanebound,
+                                             List<CodexCardGrid.Entry> deckEntries) {
+    JPanel panel = new SkinnedPanel(new MigLayout("insets 8, gap 12", "[][]", ""));
+    panel.setOpaque(false);
+    panel.add(new FLabel.Builder()
+        .text(selectedPlanebound.planeboundName() + " - " + selectedPlanebound.planeName())
+        .fontSize(16)
+        .fontStyle(Font.BOLD)
+        .build());
+    panel.add(new FLabel.Builder().text("Seen: " + countSeenCards(deckEntries) + " of "
+        + deckEntries.size() + " Cards").fontSize(13).build());
     return panel;
   }
 
@@ -577,6 +605,24 @@ public enum VSubmenuRogueCodex implements IVSubmenu<CSubmenuRogueCodex> {
 
   private void addCardGridSection(JPanel sections, String title, List<CodexCardGrid.Entry> entries) {
     sections.add(createCardGridSection(title, entries), "w 100%!, growx, gapbottom 20");
+  }
+
+  private int countSeenCards(List<CodexCardGrid.Entry> entries) {
+    return countCards(entries, entry -> entry.state() != CodexCardGrid.CardState.HIDDEN);
+  }
+
+  private int countAcquiredCards(List<CodexCardGrid.Entry> entries) {
+    return countCards(entries, entry -> entry.state() == CodexCardGrid.CardState.NORMAL);
+  }
+
+  private int countCards(List<CodexCardGrid.Entry> entries, Predicate<CodexCardGrid.Entry> filter) {
+    int count = 0;
+    for (CodexCardGrid.Entry entry : entries) {
+      if (filter.test(entry)) {
+        count++;
+      }
+    }
+    return count;
   }
 
   private void sortCodexCardEntries(List<CodexCardGrid.Entry> entries) {
@@ -1006,6 +1052,10 @@ public enum VSubmenuRogueCodex implements IVSubmenu<CSubmenuRogueCodex> {
 
   public JButton getBtnResetTutorials() {
     return btnResetTutorials;
+  }
+
+  public JButton getBtnDevUnlockCodex() {
+    return btnDevUnlockCodex;
   }
 
   @Override

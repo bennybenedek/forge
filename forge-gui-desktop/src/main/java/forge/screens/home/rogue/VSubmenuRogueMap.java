@@ -228,16 +228,18 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(infoRow, "w 98%!, h pref!, gap 1% 0 10px 10px");
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay()
         .add(scrollPathDisplay, "w 96%!, gap 2% 2% 0 0, pushy, growy");
-    int split = ForgePreferences.DEV_MODE ? 5 : 3;
-    VHomeUI.SINGLETON_INSTANCE.getPnlDisplay()
-        .add(btnEnterNode, "w 25%!, h 40px!, ax center, gap 0 2% 10px 20px, split " + split);
-    VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(btnEditDeck, "w 25%!, h 40px!");
-    VHomeUI.SINGLETON_INSTANCE.getPnlDisplay()
-        .add(btnRerollPlane, "w 20%!, h 40px!, hidemode 3");
+
+    JPanel buttonRow = new JPanel(new MigLayout("insets 0, gap 10, fillx"));
+    buttonRow.setOpaque(false);
+    buttonRow.add(btnEnterNode, "wmin 0, growx, shrinkx, h 40px!");
+    buttonRow.add(btnEditDeck, "wmin 0, growx, shrinkx, h 40px!");
+    buttonRow.add(btnRerollPlane, "wmin 0, growx, shrinkx, h 40px!, hidemode 3");
     if (ForgePreferences.DEV_MODE) {
-      VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(btnDevNextNode, "w 15%!, h 40px!");
-      VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(btnDevWinRun, "w 15%!, h 40px!");
+      buttonRow.add(btnDevNextNode, "wmin 0, growx, shrinkx, h 40px!");
+      buttonRow.add(btnDevWinRun, "wmin 0, growx, shrinkx, h 40px!");
     }
+    VHomeUI.SINGLETON_INSTANCE.getPnlDisplay()
+        .add(buttonRow, "w 96%!, h 40px!, gap 2% 2% 10px 20px, ax center");
 
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().repaintSelf();
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().revalidate();

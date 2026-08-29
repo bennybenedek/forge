@@ -68,6 +68,7 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
   private final FButton btnResetBoons;
   private final FButton btnDevMaxAether = new FButton("[Dev] Max Aether");
   private final FButton btnDevGainEchoes = new FButton("[Dev] +10 Echoes");
+  private final FButton btnDevGainSparks = new FButton("[Dev] +10 Sparks");
 
   VSubmenuRogueAether() {
     lblTitle.setBackground(FSkin.getColor(FSkin.Colors.CLR_THEME2));
@@ -156,6 +157,7 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
     if (ForgePreferences.DEV_MODE) {
       buttonPanel.add(btnDevMaxAether, "w 180px!, h 40px!");
       buttonPanel.add(btnDevGainEchoes, "w 180px!, h 40px!");
+      buttonPanel.add(btnDevGainSparks, "w 180px!, h 40px!");
     }
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(buttonPanel, "ax center, gap 0 0 10px 10px");
 
@@ -238,6 +240,10 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
 
   public JButton getBtnDevGainEchoes() {
     return btnDevGainEchoes;
+  }
+
+  public JButton getBtnDevGainSparks() {
+    return btnDevGainSparks;
   }
 
   public AetherUpgradeCard getUpgradeCard() {

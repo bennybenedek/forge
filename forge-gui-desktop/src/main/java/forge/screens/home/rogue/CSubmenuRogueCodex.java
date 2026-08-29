@@ -5,18 +5,15 @@ import forge.gamemodes.rogue.RogueConfig;
 import forge.gamemodes.rogue.RogueDeck;
 import forge.gamemodes.rogue.RogueMetaProgress;
 import forge.gamemodes.rogue.RoguePlanebound;
-import forge.gamemodes.rogue.effect.ChestEffect;
-import forge.gamemodes.rogue.effect.EventEffect;
-import forge.gamemodes.rogue.effect.NPCEffect;
+import forge.gamemodes.rogue.RogueTutorial;
 import forge.gamemodes.rogue.effect.RogueEffect;
-import forge.gamemodes.rogue.effect.WoundEffect;
 import forge.gui.framework.EDocID;
 import forge.gui.framework.ICDoc;
+import forge.localinstance.achievements.RogueCommanderAchievements;
+import forge.localinstance.properties.ForgePreferences;
 import forge.screens.home.CHomeUI;
 import forge.toolbox.FOptionPane;
-import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
 
@@ -41,11 +38,16 @@ public enum CSubmenuRogueCodex implements ICDoc {
     view.getBtnBack().addActionListener(e -> goBack());
     view.getBtnReset().addActionListener(e -> confirmReset());
     view.getBtnResetTutorials().addActionListener(e -> confirmResetTutorials());
+    if (ForgePreferences.DEV_MODE) {
+      view.getBtnDevUnlockCodex().addActionListener(e -> devUnlockCodex());
+    }
     view.setTabSelectionCallback(this::showTab);
   }
 
   @Override
   public void update() {
+    RogueCommanderAchievements.instance.evaluateCodexAchievements(RogueMetaProgress.getInstance());
+    RogueTutorialHelper.showIfNotSeen(RogueTutorial.CODEX);
     loadStatistics();
   }
 
@@ -136,30 +138,17 @@ public enum CSubmenuRogueCodex implements ICDoc {
   }
 
   private Map<CodexHelper.TraitCategory, List<RogueEffect>> loadTraits() {
-    Map<CodexHelper.TraitCategory, List<RogueEffect>> result = new EnumMap<>(CodexHelper.TraitCategory.class);
-    addTraits(result, List.of(NPCEffect.values()));
-    addTraits(result, List.of(ChestEffect.values()));
-    addTraits(result, List.of(EventEffect.values()));
-    addTraits(result, List.of(WoundEffect.values()));
-    return result;
-  }
-
-  private void addTraits(Map<CodexHelper.TraitCategory, List<RogueEffect>> result,
-                         List<? extends RogueEffect> effects) {
-    for (RogueEffect effect : effects) {
-      CodexHelper.TraitCategory category = CodexHelper.getTraitCategory(effect);
-      if (category == null) {
-        continue;
-      }
-      result.computeIfAbsent(category, key -> new ArrayList<>()).add(effect);
-    }
-    for (List<RogueEffect> categoryEffects : result.values()) {
-      categoryEffects.sort(Comparator.comparing(RogueEffect::getUIDisplayName, String.CASE_INSENSITIVE_ORDER));
-    }
+    return CodexHelper.getCodexTraitsByCategory();
   }
 
   private void goBack() {
     CHomeUI.SINGLETON_INSTANCE.itemClick(EDocID.HOME_ROGUESTART);
+  }
+
+  private void devUnlockCodex() {
+    CodexHelper.unlockCodex();
+    RogueCommanderAchievements.instance.evaluateCodexAchievements(RogueMetaProgress.getInstance());
+    loadStatistics();
   }
 
   private void confirmReset() {

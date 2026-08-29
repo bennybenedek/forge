@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.util.*;
+import java.util.function.Function;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -189,40 +190,46 @@ public class RogueMetaProgress {
     }
 
     void markCommanderRewardCardSeen(String commanderName, PaperCard card) {
-        if (getCodexProgress().markCommanderRewardCardSeen(commanderName, getNormalizedCardName(card))) {
-            save();
-        }
+        afterCodexProgressChanged(getCodexProgress().markCommanderRewardCardSeen(commanderName,
+            getNormalizedCardName(card)));
     }
 
     void markCommanderRewardCardAcquired(String commanderName, PaperCard card) {
-        if (getCodexProgress().markCommanderRewardCardAcquired(commanderName, getNormalizedCardName(card))) {
-            save();
-        }
+        afterCodexProgressChanged(getCodexProgress().markCommanderRewardCardAcquired(commanderName,
+            getNormalizedCardName(card)));
     }
 
     void markPlaneboundEncountered(RoguePlanebound planebound) {
-        if (getCodexProgress().markPlaneboundEncountered(getPlaneboundKey(planebound))) {
-            save();
-        }
+        afterCodexProgressChanged(getCodexProgress().markPlaneboundEncountered(getPlaneboundKey(planebound)));
     }
 
     void markPlaneboundCardSeen(RoguePlanebound planebound, PaperCard card) {
-        if (getCodexProgress().markPlaneboundCardSeen(getPlaneboundKey(planebound),
-            getNormalizedCardName(card))) {
-            save();
-        }
+        afterCodexProgressChanged(getCodexProgress().markPlaneboundCardSeen(getPlaneboundKey(planebound),
+            getNormalizedCardName(card)));
     }
 
     void markTraitSeen(RogueEffect effect) {
-        if (getCodexProgress().markTraitSeen(getEffectKey(effect))) {
-            save();
-        }
+        afterCodexProgressChanged(getCodexProgress().markTraitSeen(getEffectKey(effect)));
     }
 
     void markTraitAcquired(RogueEffect effect) {
-        if (getCodexProgress().markTraitAcquired(getEffectKey(effect))) {
-            save();
+        afterCodexProgressChanged(getCodexProgress().markTraitAcquired(getEffectKey(effect)));
+    }
+
+    boolean updateCodexProgress(Function<CodexProgress, Boolean> updater) {
+        if (updater == null) {
+            return false;
         }
+        boolean changed = Boolean.TRUE.equals(updater.apply(getCodexProgress()));
+        afterCodexProgressChanged(changed);
+        return changed;
+    }
+
+    private void afterCodexProgressChanged(boolean changed) {
+        if (!changed) {
+            return;
+        }
+        save();
     }
 
     private static String getNormalizedCardName(PaperCard card) {
@@ -483,6 +490,13 @@ public class RogueMetaProgress {
         }
     }
 
+    public void addSparks(int amount) {
+        if (amount > 0) {
+            totalSparks += amount;
+            save();
+        }
+    }
+
     // ==================== Aether System - Boon Management ====================
 
     /**
@@ -717,21 +731,21 @@ public class RogueMetaProgress {
             return getTraitDiscovery().hasAcquired(effectId);
         }
 
-        private boolean markCommanderRewardCardSeen(String commanderName, String cardName) {
+        boolean markCommanderRewardCardSeen(String commanderName, String cardName) {
             if (commanderName == null || commanderName.isBlank()) {
                 return false;
             }
             return getCommanderCardDiscovery(commanderName, true).markSeen(cardName);
         }
 
-        private boolean markCommanderRewardCardAcquired(String commanderName, String cardName) {
+        boolean markCommanderRewardCardAcquired(String commanderName, String cardName) {
             if (commanderName == null || commanderName.isBlank()) {
                 return false;
             }
             return getCommanderCardDiscovery(commanderName, true).markAcquired(cardName);
         }
 
-        private boolean markPlaneboundEncountered(String planeboundKey) {
+        boolean markPlaneboundEncountered(String planeboundKey) {
             if (planeboundKey == null || planeboundKey.isBlank()) {
                 return false;
             }
@@ -741,18 +755,18 @@ public class RogueMetaProgress {
             return encounteredPlanebounds.add(planeboundKey);
         }
 
-        private boolean markPlaneboundCardSeen(String planeboundKey, String cardName) {
+        boolean markPlaneboundCardSeen(String planeboundKey, String cardName) {
             if (planeboundKey == null || planeboundKey.isBlank()) {
                 return false;
             }
             return getPlaneboundCardDiscovery(planeboundKey, true).markSeen(cardName);
         }
 
-        private boolean markTraitSeen(String effectId) {
+        boolean markTraitSeen(String effectId) {
             return getTraitDiscovery().markSeen(effectId);
         }
 
-        private boolean markTraitAcquired(String effectId) {
+        boolean markTraitAcquired(String effectId) {
             return getTraitDiscovery().markAcquired(effectId);
         }
 

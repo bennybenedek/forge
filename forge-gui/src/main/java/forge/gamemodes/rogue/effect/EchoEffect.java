@@ -31,7 +31,7 @@ public enum EchoEffect implements RogueEffect {
         "Gain +%s starting Gold.",
         new EffectRankContext(
             new int[]{3, 6, 9, 12}, // Echo costs per rank
-            new int[]{3, 6, 9, 12}, // Effect values: +3/+6/+9/+12 gold
+            new int[]{2, 4, 6, 8}, // Effect values: +2/+4/+6/+8 gold
             3, 0),
         EffectType.PERMANENT, null) {
         @Override

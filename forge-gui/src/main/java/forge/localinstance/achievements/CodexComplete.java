@@ -3,16 +3,16 @@ package forge.localinstance.achievements;
 import forge.game.Game;
 import forge.game.player.Player;
 
-public class AetherFullyUpgraded extends Achievement {
-    public AetherFullyUpgraded() {
-        super("AetherFullyUpgraded", "Aether",
-              "Upgrade Aether to its highest level",
-              "The Aether is rebuilt.", 0);
+public class CodexComplete extends Achievement {
+    public CodexComplete() {
+        super("CodexComplete", "Codex",
+              "Complete the Codex",
+              "All records have been uncovered.", 0);
     }
 
     @Override
     protected int evaluate(Player player, Game game) {
-        return 0; // Not used; evaluated via evaluateUpgradeAchievements()
+        return 0; // Not used; evaluated via evaluateCodexAchievements()
     }
 
     @Override

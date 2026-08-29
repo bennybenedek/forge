@@ -5,6 +5,7 @@ import forge.game.GameType;
 import forge.game.player.Player;
 import forge.deck.Deck;
 import forge.gamemodes.rogue.AetherUpgrade;
+import forge.gamemodes.rogue.CodexHelper;
 import forge.gamemodes.rogue.RogueConfig;
 import forge.gamemodes.rogue.RogueDeck;
 import forge.gamemodes.rogue.RogueMetaProgress;
@@ -62,6 +63,7 @@ public class RogueCommanderAchievements extends AchievementCollection {
         add(new AllRogueCommandersUnlocked());
         add(new AetherFullyUpgraded());
         add(new BazaarFullyUpgraded());
+        add(new CodexComplete());
     }
 
     @Override
@@ -170,6 +172,12 @@ public class RogueCommanderAchievements extends AchievementCollection {
         if (progress.getNPCLevel(NPC.GONTI.id)
             >= GontiEncounter.OFFERING_DISCOUNTED_TRAITS_AND_CARRY_CARDS.getRequiredLevel()) {
             updateAchievement("BazaarFullyUpgraded");
+        }
+    }
+
+    public void evaluateCodexAchievements(RogueMetaProgress progress) {
+        if (CodexHelper.isCodexComplete(progress)) {
+            updateAchievement("CodexComplete");
         }
     }
 

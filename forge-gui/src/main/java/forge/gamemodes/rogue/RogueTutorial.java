@@ -140,6 +140,12 @@ public enum RogueTutorial {
           "- Fellows: Creatures that fight alongside you.\n" +
           "- Scrolls: Instants and sorceries kept in your command zone until used.\n" +
           "Items and fellows are lost permanently if they are neither in the command zone nor on the battlefield after a match. Scrolls are lost if they end a match outside the command zone."
+  ),
+
+  CODEX(
+      "Codex",
+      "The Codex tracks your Rogue Commander progress. Global Stats shows run and match records, Rogue Commanders shows each commander's reward cards, Planebounds shows encountered planes and their decks, and Traits shows discovered run traits.\n" +
+          "Entries have three states: Unknown entries are hidden, Seen entries were offered or revealed, and Acquired entries were added to your deck or gained during a Run."
   );
 
   private final String title;

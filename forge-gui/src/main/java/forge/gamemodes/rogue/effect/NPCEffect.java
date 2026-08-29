@@ -200,9 +200,9 @@ public enum NPCEffect implements RogueEffect {
             addEffectCardToCommandZone(human);
         }
     },
-    HENZIE_WELL_CONNECTED("npc_henzie_well_connected", "Well Connected",
+    HENZIE_CONNECTIONS("npc_henzie_connections", "Henzie's Connections",
         TRAIT_GAIN_DESCRIPTION, NPC.HENZIE,
-        EffectType.PERMANENT, "Henzie Trait - Well Connected") {
+        EffectType.PERMANENT, "Henzie Trait - Henzie's Connections") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);

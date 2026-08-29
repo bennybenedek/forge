@@ -1,5 +1,6 @@
 package forge.gamemodes.rogue;
 
+import forge.deck.Deck;
 import forge.game.card.Card;
 import forge.game.player.Player;
 import forge.game.zone.ZoneType;
@@ -10,11 +11,16 @@ import forge.gamemodes.rogue.effect.NPCEffect;
 import forge.gamemodes.rogue.effect.RogueEffect;
 import forge.gamemodes.rogue.effect.WoundEffect;
 import forge.item.PaperCard;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 public final class CodexHelper {
     public enum TraitCategory {
@@ -84,14 +90,14 @@ public final class CodexHelper {
     }
 
     public static void recordTraitChoice(RogueEffect effect) {
-        if (getTraitCategory(effect) == null) {
+        if (getCodexVisibleTraitCategory(effect) == null) {
             return;
         }
         RogueMetaProgress.getInstance().markTraitSeen(effect);
     }
 
     public static void recordTraitAcquired(RogueEffect effect) {
-        if (getTraitCategory(effect) == null) {
+        if (getCodexVisibleTraitCategory(effect) == null) {
             return;
         }
         RogueMetaProgress.getInstance().markTraitAcquired(effect);
@@ -135,6 +141,60 @@ public final class CodexHelper {
         }
     }
 
+    public static void unlockCodex() {
+        RogueMetaProgress.getInstance().updateCodexProgress(codexProgress -> {
+            boolean changed = false;
+            for (RogueDeck commander : RogueConfig.loadRogueDecks()) {
+                changed |= unlockCommanderCodex(codexProgress, commander);
+            }
+            for (RoguePlanebound planebound : RogueConfig.loadPlanebounds()) {
+                changed |= unlockPlaneboundCodex(codexProgress, planebound);
+            }
+            for (List<RogueEffect> traits : getCodexTraitsByCategory().values()) {
+                for (RogueEffect trait : traits) {
+                    changed |= codexProgress.markTraitAcquired(trait.getId());
+                }
+            }
+            return changed;
+        });
+    }
+
+    public static boolean isCodexComplete(RogueMetaProgress progress) {
+        if (progress == null) {
+            return false;
+        }
+
+        List<RogueDeck> commanders = RogueConfig.loadRogueDecks();
+        List<RoguePlanebound> planebounds = RogueConfig.loadPlanebounds();
+        if (commanders.isEmpty() || planebounds.isEmpty()) {
+            return false;
+        }
+
+        for (RogueDeck commander : commanders) {
+            if (!isCommanderCodexComplete(progress, commander)) {
+                return false;
+            }
+        }
+        for (RoguePlanebound planebound : planebounds) {
+            if (!isPlaneboundCodexComplete(progress, planebound)) {
+                return false;
+            }
+        }
+        return areCodexTraitsComplete(progress);
+    }
+
+    public static Map<TraitCategory, List<RogueEffect>> getCodexTraitsByCategory() {
+        Map<TraitCategory, List<RogueEffect>> result = new EnumMap<>(TraitCategory.class);
+        addCodexTraits(result, List.of(NPCEffect.values()));
+        addCodexTraits(result, List.of(ChestEffect.values()));
+        addCodexTraits(result, List.of(EventEffect.values()));
+        addCodexTraits(result, List.of(WoundEffect.values()));
+        for (List<RogueEffect> traits : result.values()) {
+            traits.sort(Comparator.comparing(RogueEffect::getUIDisplayName, String.CASE_INSENSITIVE_ORDER));
+        }
+        return result;
+    }
+
     public static TraitCategory getTraitCategory(RogueEffect effect) {
         if (effect == null || effect.getId() == null || effect.getId().isBlank()) {
             return null;
@@ -156,6 +216,123 @@ public final class CodexHelper {
             return TraitCategory.EVENT;
         }
         return null;
+    }
+
+    private static TraitCategory getCodexVisibleTraitCategory(RogueEffect effect) {
+        TraitCategory category = getTraitCategory(effect);
+        if (category == null || effect.getEffectCard() == null) {
+            return null;
+        }
+        return category;
+    }
+
+    private static boolean isCommanderCodexComplete(RogueMetaProgress progress, RogueDeck commander) {
+        if (commander == null || commander.getCommanderCardName() == null) {
+            return true;
+        }
+        for (PaperCard card : commander.getRewardPoolCards()) {
+            if (!isValidCard(card)) {
+                continue;
+            }
+            if (!progress.hasAcquiredCommanderRewardCard(commander.getCommanderCardName(), card)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean isPlaneboundCodexComplete(RogueMetaProgress progress, RoguePlanebound planebound) {
+        if (!progress.hasEncounteredPlanebound(planebound)) {
+            return false;
+        }
+        for (PaperCard card : getPlaneboundCodexCards(planebound)) {
+            if (!progress.hasSeenPlaneboundCard(planebound, card)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean areCodexTraitsComplete(RogueMetaProgress progress) {
+        boolean hasTraits = false;
+        for (List<RogueEffect> traits : getCodexTraitsByCategory().values()) {
+            for (RogueEffect trait : traits) {
+                hasTraits = true;
+                if (!progress.hasAcquiredTrait(trait)) {
+                    return false;
+                }
+            }
+        }
+        return hasTraits;
+    }
+
+    private static boolean unlockCommanderCodex(RogueMetaProgress.CodexProgress codexProgress,
+                                                RogueDeck commander) {
+        if (commander == null || commander.getCommanderCardName() == null) {
+            return false;
+        }
+        boolean changed = false;
+        for (PaperCard card : commander.getRewardPoolCards()) {
+            if (!isValidCard(card)) {
+                continue;
+            }
+            changed |= codexProgress.markCommanderRewardCardAcquired(commander.getCommanderCardName(),
+                normalize(card));
+        }
+        return changed;
+    }
+
+    private static boolean unlockPlaneboundCodex(RogueMetaProgress.CodexProgress codexProgress,
+                                                 RoguePlanebound planebound) {
+        if (planebound == null || planebound.deckPath() == null || planebound.deckPath().isBlank()) {
+            return false;
+        }
+
+        boolean changed = codexProgress.markPlaneboundEncountered(planebound.deckPath());
+        for (PaperCard card : getPlaneboundCodexCards(planebound)) {
+            changed |= codexProgress.markPlaneboundCardSeen(planebound.deckPath(), normalize(card));
+        }
+        return changed;
+    }
+
+    private static List<PaperCard> getPlaneboundCodexCards(RoguePlanebound planebound) {
+        Deck deck = RogueConfig.loadPlaneboundDeck(planebound);
+        if (deck == null) {
+            return List.of();
+        }
+
+        List<PaperCard> cards = new ArrayList<>();
+        for (PaperCard commander : deck.getCommanders()) {
+            if (isValidCard(commander)) {
+                cards.add(commander);
+            }
+        }
+
+        Set<String> displayedBasicLandNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+        for (PaperCard card : deck.getAllCardsInASinglePool(false, false).toFlatList()) {
+            if (isValidCard(card)) {
+                boolean shouldAddCard = !card.getRules().getType().isBasicLand()
+                    || displayedBasicLandNames.add(card.getName());
+                if (shouldAddCard) {
+                    cards.add(card);
+                }
+            }
+        }
+        return cards;
+    }
+
+    private static boolean isValidCard(PaperCard card) {
+        return card != null && card.getRules() != null;
+    }
+
+    private static void addCodexTraits(Map<TraitCategory, List<RogueEffect>> result,
+                                       List<? extends RogueEffect> traits) {
+        for (RogueEffect trait : traits) {
+            TraitCategory category = getCodexVisibleTraitCategory(trait);
+            if (category != null) {
+                result.computeIfAbsent(category, key -> new ArrayList<>()).add(trait);
+            }
+        }
     }
 
     private static void recordCommanderRewardCards(RogueRun run, Collection<PaperCard> cards, boolean acquired) {

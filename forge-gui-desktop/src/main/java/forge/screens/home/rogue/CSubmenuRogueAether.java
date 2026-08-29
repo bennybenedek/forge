@@ -44,6 +44,10 @@ public enum CSubmenuRogueAether implements ICDoc {
         RogueMetaProgress.getInstance().addEchoes(10);
         refreshDisplay();
       });
+      view.getBtnDevGainSparks().addActionListener(e -> {
+        RogueMetaProgress.getInstance().addSparks(10);
+        refreshDisplay();
+      });
     }
 
     // Setup listeners for each boon panel
