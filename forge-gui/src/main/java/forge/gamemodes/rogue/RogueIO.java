@@ -141,6 +141,40 @@ public class RogueIO {
         return runs;
     }
 
+    public static boolean isContinuableRun(RogueRun run) {
+        return run != null && run.getRunState() == RogueRunState.STARTED && !run.isRunFailed();
+    }
+
+    public static List<RogueRun> loadContinuableRuns() {
+        return loadAllRuns().stream()
+            .filter(RogueIO::isContinuableRun)
+            .toList();
+    }
+
+    public static Optional<RogueRun> loadMostRecentContinuableRun() {
+        List<RogueRun> continuableRuns = loadContinuableRuns();
+        if (continuableRuns.isEmpty()) {
+            return Optional.empty();
+        }
+        if (continuableRuns.size() == 1) {
+            return Optional.of(continuableRuns.get(0));
+        }
+        return continuableRuns.stream()
+            .max(Comparator.comparingLong(run -> extractRunTimestamp(run.getName())));
+    }
+
+    private static long extractRunTimestamp(String filename) {
+        int lastUnderscore = filename.lastIndexOf('_');
+        if (lastUnderscore >= 0 && lastUnderscore < filename.length() - 1) {
+            try {
+                return Long.parseLong(filename.substring(lastUnderscore + 1));
+            } catch (NumberFormatException e) {
+                return 0;
+            }
+        }
+        return 0;
+    }
+
     public static RogueRun loadRun(final File xmlSaveFile) {
         boolean isCorrupt = false;
         try (GZIPInputStream zin = new GZIPInputStream(Files.newInputStream(xmlSaveFile.toPath()));

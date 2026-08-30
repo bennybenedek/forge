@@ -18,6 +18,7 @@ import forge.toolbox.FOptionPane;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -391,9 +392,8 @@ public enum CSubmenuRogueStart implements ICDoc {
 
     var progress = RogueMetaProgress.getInstance();
 
-    // Warn if there's an active run that will be abandoned
-    RogueRun existingRun = CSubmenuRogueMap.SINGLETON_INSTANCE.getCurrentRun();
-    if (existingRun != null && existingRun.getRunState() == RogueRunState.STARTED) {
+    List<RogueRun> runsToAbandon = getContinuableRunsToAbandon();
+    if (!runsToAbandon.isEmpty()) {
       boolean confirmed = FOptionPane.showConfirmDialog(
           "You have an active Run in progress.\nStarting a new Run will abandon it. Continue?",
           "Abandon Current Run",
@@ -403,9 +403,11 @@ public enum CSubmenuRogueStart implements ICDoc {
       );
       if (!confirmed) return;
 
-      existingRun.getRunTimer().stop();
-      progress.addRunHistoryEntry(
-          RogueRunHistoryEntry.fromRun(existingRun, "ABANDONED", ""));
+      for (RogueRun run : runsToAbandon) {
+        run.getRunTimer().stop();
+        progress.addRunHistoryEntry(
+            RogueRunHistoryEntry.fromRun(run, "ABANDONED", ""));
+      }
     }
 
     // Delete all old run save files — history is preserved in RogueMetaProgress
@@ -461,6 +463,23 @@ public enum CSubmenuRogueStart implements ICDoc {
 
     // Navigate to the Rogue Map
     CHomeUI.SINGLETON_INSTANCE.itemClick(EDocID.HOME_ROGUEMAP);
+  }
+
+  private List<RogueRun> getContinuableRunsToAbandon() {
+    Map<String, RogueRun> runsByName = new LinkedHashMap<>();
+    addContinuableRun(runsByName, CSubmenuRogueMap.SINGLETON_INSTANCE.getCurrentRun());
+    for (RogueRun run : RogueIO.loadContinuableRuns()) {
+      addContinuableRun(runsByName, run);
+    }
+    return new ArrayList<>(runsByName.values());
+  }
+
+  private void addContinuableRun(Map<String, RogueRun> runsByName, RogueRun run) {
+    if (!RogueIO.isContinuableRun(run)) {
+      return;
+    }
+    String key = run.getName() != null ? run.getName() : "run@" + System.identityHashCode(run);
+    runsByName.putIfAbsent(key, run);
   }
 
   private NPCEffect showRunStartNpcDialog(RogueMetaProgress progress, RogueRun newRun, NPCContext ctx) {

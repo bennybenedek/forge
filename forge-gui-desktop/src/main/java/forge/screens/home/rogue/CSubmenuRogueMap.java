@@ -57,7 +57,7 @@ public enum CSubmenuRogueMap implements ICDoc {
   public void update() {
     // If no run exists in memory, try to load from saved runs
     if (currentRun == null) {
-      currentRun = loadMostRecentContinuableRun();
+      currentRun = RogueIO.loadMostRecentContinuableRun().orElse(null);
     }
 
     // If still no run (no saved runs or all completed/failed), navigate to start screen
@@ -99,61 +99,6 @@ public enum CSubmenuRogueMap implements ICDoc {
         RogueTutorialHelper.showIfNotSeen(RogueTutorial.PRE_BATTLE);
       }
     }
-  }
-
-  /**
-   * Load the most recent continuable run from saved files. A continuable run is one that is in
-   * STARTED state (not WON or LOST).
-   *
-   * @return The most recent continuable run, or null if none exist.
-   */
-  private RogueRun loadMostRecentContinuableRun() {
-    List<RogueRun> allRuns = RogueIO.loadAllRuns();
-    if (allRuns.isEmpty()) {
-      return null;
-    }
-
-    // Filter for continuable runs (STARTED state, not failed)
-    List<RogueRun> continuableRuns = allRuns.stream()
-        .filter(run -> run.getRunState() == RogueRunState.STARTED && !run.isRunFailed())
-        .toList();
-
-    if (continuableRuns.isEmpty()) {
-      return null;
-    }
-
-    // If only one continuable run, use it
-    if (continuableRuns.size() == 1) {
-      return continuableRuns.get(0);
-    }
-
-    // Multiple continuable runs - pick the most recent by filename timestamp
-    // Filename format: {DeckName}_{timestamp} where timestamp is System.currentTimeMillis()
-    return continuableRuns.stream()
-        .max((r1, r2) -> {
-          // Extract timestamp from filename (after last underscore)
-          String name1 = r1.getName();
-          String name2 = r2.getName();
-          long ts1 = extractTimestamp(name1);
-          long ts2 = extractTimestamp(name2);
-          return Long.compare(ts1, ts2);
-        })
-        .orElse(continuableRuns.get(0));
-  }
-
-  /**
-   * Extract timestamp from run filename. Format: {DeckName}_{timestamp}
-   */
-  private long extractTimestamp(String filename) {
-    int lastUnderscore = filename.lastIndexOf('_');
-    if (lastUnderscore >= 0 && lastUnderscore < filename.length() - 1) {
-      try {
-        return Long.parseLong(filename.substring(lastUnderscore + 1));
-      } catch (NumberFormatException e) {
-        return 0;
-      }
-    }
-    return 0;
   }
 
   @Override
