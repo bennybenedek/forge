@@ -152,7 +152,8 @@ class NodePlaneboundHelper {
         }
         for (Player player : game.getRegisteredPlayers()) {
             if (player.getLobbyPlayer() == aiLobbyPlayer) {
-                CodexHelper.recordPlaneboundPublicCards(planebound, player);
+                CodexHelper.recordPlaneboundPublicCardsOwnedBy(planebound, game.getRegisteredPlayers(),
+                    List.of(player));
                 return;
             }
         }

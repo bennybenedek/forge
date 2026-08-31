@@ -115,6 +115,7 @@ public enum VSubmenuRogueCodex implements IVSubmenu<CSubmenuRogueCodex> {
   private final FLabel lblMaxLegendaryPermanents = new FLabel.Builder().text("Max Legendary Permanents: 0").fontSize(14).build();
 
   private final FButton btnBack;
+  private final FButton btnStatsBack;
   private final FButton btnReset;
   private final FButton btnResetTutorials;
   private final FButton btnDevUnlockCodex = new FButton("[Dev] Unlock Codex");
@@ -132,6 +133,8 @@ public enum VSubmenuRogueCodex implements IVSubmenu<CSubmenuRogueCodex> {
 
     btnBack = new FButton("Back");
     btnBack.setIcon(FSkin.getImage(FSkinProp.ICO_OPEN).resize(24, 24).getIcon());
+    btnStatsBack = new FButton("Back");
+    btnStatsBack.setIcon(FSkin.getImage(FSkinProp.ICO_OPEN).resize(24, 24).getIcon());
 
     btnReset = new FButton("Reset Progress");
     btnReset.setIcon(FSkin.getImage(FSkinProp.ICO_DELETE).resize(24, 24).getIcon());
@@ -200,16 +203,33 @@ public enum VSubmenuRogueCodex implements IVSubmenu<CSubmenuRogueCodex> {
     setActiveTab(CodexTab.TRAITS);
     SkinnedPanel pnlContent = getContentPanel(CodexTab.TRAITS);
     pnlContent.removeAll();
-    pnlContent.setLayout(new MigLayout("insets 0, gap 0", "[grow]", "[grow]"));
+    pnlContent.setLayout(new MigLayout("insets 0, gap 0, wrap 1", "[grow]", "[][grow]"));
 
     JPanel sections = new CodexSectionsPanel(new MigLayout("insets 12, gap 0, wrap 1", "[grow]"));
     sections.setOpaque(false);
-    addTraitSection(sections, "Chest", traitsByCategory.get(CodexHelper.TraitCategory.CHEST), progress);
-    addTraitSection(sections, "NPC", traitsByCategory.get(CodexHelper.TraitCategory.NPC), progress);
-    addTraitSection(sections, "Event", traitsByCategory.get(CodexHelper.TraitCategory.EVENT), progress);
-    addTraitSection(sections, "Wound", traitsByCategory.get(CodexHelper.TraitCategory.WOUND), progress);
 
-    pnlContent.add(createPanelScrollPane(sections), "w 100%!, h 100%!");
+    List<CodexCardGrid.Entry> chestEntries = createTraitEntries(
+        traitsByCategory.get(CodexHelper.TraitCategory.CHEST), progress);
+    List<CodexCardGrid.Entry> npcEntries = createTraitEntries(
+        traitsByCategory.get(CodexHelper.TraitCategory.NPC), progress);
+    List<CodexCardGrid.Entry> eventEntries = createTraitEntries(
+        traitsByCategory.get(CodexHelper.TraitCategory.EVENT), progress);
+    List<CodexCardGrid.Entry> woundEntries = createTraitEntries(
+        traitsByCategory.get(CodexHelper.TraitCategory.WOUND), progress);
+
+    List<CodexCardGrid.Entry> traitEntries = new ArrayList<>();
+    traitEntries.addAll(chestEntries);
+    traitEntries.addAll(npcEntries);
+    traitEntries.addAll(eventEntries);
+    traitEntries.addAll(woundEntries);
+
+    addTraitSection(sections, "Chest", chestEntries);
+    addTraitSection(sections, "NPC", npcEntries);
+    addTraitSection(sections, "Event", eventEntries);
+    addTraitSection(sections, "Wound", woundEntries);
+
+    pnlContent.add(createTraitStatsHeader(traitEntries), "growx, gapbottom 16");
+    pnlContent.add(createPanelScrollPane(sections), "grow, push");
     refreshContent();
   }
 
@@ -287,6 +307,7 @@ public enum VSubmenuRogueCodex implements IVSubmenu<CSubmenuRogueCodex> {
 
     JPanel buttonPanel = new SkinnedPanel(new MigLayout("insets 0, gap 10"));
     buttonPanel.setOpaque(false);
+    buttonPanel.add(btnStatsBack, "w 180px!, h 40px!");
     buttonPanel.add(btnReset, "w 180px!, h 40px!");
     buttonPanel.add(btnResetTutorials, "w 180px!, h 40px!");
     if (ForgePreferences.DEV_MODE) {
@@ -573,8 +594,17 @@ public enum VSubmenuRogueCodex implements IVSubmenu<CSubmenuRogueCodex> {
         state == CodexCardGrid.CardState.HIDDEN ? "Unknown Card" : card.getName(), state);
   }
 
-  private void addTraitSection(JPanel sections, String title, List<RogueEffect> effects,
-                               RogueMetaProgress progress) {
+  private JPanel createTraitStatsHeader(List<CodexCardGrid.Entry> traitEntries) {
+    JPanel panel = new SkinnedPanel(new MigLayout("insets 8, gap 12", "[][]", ""));
+    panel.setOpaque(false);
+    panel.add(new FLabel.Builder().text("Seen: " + countSeenCards(traitEntries) + " of "
+        + traitEntries.size() + " Traits").fontSize(13).build());
+    panel.add(new FLabel.Builder().text("Acquired: " + countAcquiredCards(traitEntries) + " of "
+        + traitEntries.size() + " Traits").fontSize(13).build());
+    return panel;
+  }
+
+  private List<CodexCardGrid.Entry> createTraitEntries(List<RogueEffect> effects, RogueMetaProgress progress) {
     if (effects == null) {
       effects = List.of();
     }
@@ -592,6 +622,10 @@ public enum VSubmenuRogueCodex implements IVSubmenu<CSubmenuRogueCodex> {
       entries.add(new CodexCardGrid.Entry(card, label,
           state == CodexCardGrid.CardState.HIDDEN ? "Unknown Trait" : label, state));
     }
+    return entries;
+  }
+
+  private void addTraitSection(JPanel sections, String title, List<CodexCardGrid.Entry> entries) {
     addCardGridSection(sections, title, entries);
   }
 
@@ -1044,6 +1078,10 @@ public enum VSubmenuRogueCodex implements IVSubmenu<CSubmenuRogueCodex> {
 
   public JButton getBtnBack() {
     return btnBack;
+  }
+
+  public JButton getBtnStatsBack() {
+    return btnStatsBack;
   }
 
   public JButton getBtnReset() {

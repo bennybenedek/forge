@@ -129,14 +129,25 @@ public final class CodexHelper {
         }
     }
 
-    public static void recordPlaneboundPublicCards(RoguePlanebound planebound, Player player) {
-        if (planebound == null || player == null) {
+    public static void recordPlaneboundPublicCardsOwnedBy(RoguePlanebound planebound,
+                                                          Collection<Player> zonePlayers,
+                                                          Collection<Player> cardOwners) {
+        if (planebound == null || zonePlayers == null || zonePlayers.isEmpty()
+            || cardOwners == null || cardOwners.isEmpty()) {
             return;
         }
 
-        for (ZoneType zone : PLANEBOUND_PUBLIC_ZONES) {
-            for (Card card : player.getCardsIn(zone)) {
-                recordPlaneboundCard(planebound, card);
+        Set<Player> ownerSet = new HashSet<>(cardOwners);
+        for (Player zonePlayer : zonePlayers) {
+            if (zonePlayer == null) {
+                continue;
+            }
+            for (ZoneType zone : PLANEBOUND_PUBLIC_ZONES) {
+                for (Card card : zonePlayer.getCardsIn(zone)) {
+                    if (card != null && ownerSet.contains(card.getOwner())) {
+                        recordPlaneboundCard(planebound, card);
+                    }
+                }
             }
         }
     }

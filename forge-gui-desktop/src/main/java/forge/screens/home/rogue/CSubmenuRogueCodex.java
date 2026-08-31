@@ -36,6 +36,7 @@ public enum CSubmenuRogueCodex implements ICDoc {
   @Override
   public void initialize() {
     view.getBtnBack().addActionListener(e -> goBack());
+    view.getBtnStatsBack().addActionListener(e -> goBack());
     view.getBtnReset().addActionListener(e -> confirmReset());
     view.getBtnResetTutorials().addActionListener(e -> confirmResetTutorials());
     if (ForgePreferences.DEV_MODE) {
