@@ -2,7 +2,10 @@ package forge.screens.home.rogue;
 
 import forge.gamemodes.rogue.RogueMetaProgress;
 import forge.gamemodes.rogue.RogueTutorial;
-import forge.toolbox.FOptionPane;
+import forge.gamemodes.rogue.effect.ChoiceRerollContext;
+import forge.gamemodes.rogue.npc.NPC;
+import forge.gamemodes.rogue.npc.NPCContext;
+import java.util.List;
 
 /**
  * Helper class for showing Rogue Commander tutorials. Centralizes the logic for checking and
@@ -22,7 +25,7 @@ public class RogueTutorialHelper {
     RogueMetaProgress progress = RogueMetaProgress.getInstance();
     for (RogueTutorial tutorial : tutorials) {
       progress.markTutorialSeen(tutorial);
-      FOptionPane.showMessageDialog(tutorial.getMessage(), tutorial.getTitle());
+      showTutorialDialog(tutorial);
     }
   }
 
@@ -36,7 +39,7 @@ public class RogueTutorialHelper {
     for (RogueTutorial tutorial : tutorials) {
       if (!hasSeenTutorial(tutorial)) {
         progress.markTutorialSeen(tutorial);
-        FOptionPane.showMessageDialog(tutorial.getMessage(), tutorial.getTitle());
+        showTutorialDialog(tutorial);
       }
     }
   }
@@ -44,5 +47,13 @@ public class RogueTutorialHelper {
   public static boolean hasSeenTutorial(RogueTutorial tutorial) {
     RogueMetaProgress progress = RogueMetaProgress.getInstance();
     return progress.hasSeenTutorial(tutorial);
+  }
+
+  private static void showTutorialDialog(RogueTutorial tutorial) {
+    NPCContext context = new NPCContext(
+        NPC.TEFERI,
+        tutorial.getMessage(),
+        List.of(new NPCContext.NPCChoice("Continue", null)));
+    new NPCDialog(context, new ChoiceRerollContext()).show();
   }
 }

@@ -9,6 +9,7 @@ public enum NPC {
     GONTI("gonti", "Gonti, Lord of Luxury", 121),
     HENZIE("henzie", "Henzie \"Toolbox\" Torre", 59),
     NARSET("narset", "Narset, Planeshard Collector", 11),
+    TEFERI("teferi", "Teferi, Master of Time", 65),
     TYVAR("tyvar", "Tyvar Kell", 14);
 
     public final String id;

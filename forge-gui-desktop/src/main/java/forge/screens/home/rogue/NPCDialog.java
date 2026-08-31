@@ -35,10 +35,12 @@ public class NPCDialog {
     private static final int FULL_WIDTH = DIALOG_WIDTH - 2 * PANEL_INSETS;
     private static final int REROLL_OPTION = 0;
     private static final int CHOICE_RESULT = 1;
+    private static final float FLAVOR_FONT_SIZE = 15f;
 
     private final MainPanel panel;
     private final ChoiceRerollContext rerollCtx;
     private final List<PreviewTarget> previewTargets = new ArrayList<>();
+    private final RogueUIHelper.TypewriterText typewriterText;
     private FOptionPane optionPane;
     private RoguePreviewPopup previewPopup;
     private NPCEffect selectedBoon;
@@ -46,6 +48,7 @@ public class NPCDialog {
     public NPCDialog(NPCContext ctx, ChoiceRerollContext rerollCtx) {
         this.rerollCtx = rerollCtx;
         panel = new MainPanel();
+        String flavorText = ctx.flavorText() == null ? "" : ctx.flavorText();
 
         FLabel lblTitle = new FLabel.Builder()
                 .text(ctx.displayName())
@@ -54,9 +57,9 @@ public class NPCDialog {
         FLabel lblAvatar = new FLabel.Builder().build();
         lblAvatar.setIcon(FSkin.getAvatars().get(ctx.avatarIndex()));
 
-        FTextArea txtFlavor = new FTextArea(ctx.flavorText());
-        txtFlavor.setFont(txtFlavor.getFont().deriveFont(14f));
-        txtFlavor.setSize(FULL_WIDTH, Short.MAX_VALUE);
+        FTextArea txtFlavor = new FTextArea(flavorText);
+        txtFlavor.setFont(txtFlavor.getFont().deriveFont(FLAVOR_FONT_SIZE));
+        typewriterText = RogueUIHelper.prepareTypewriterText(txtFlavor, panel, flavorText, FULL_WIDTH);
         int choiceButtonWidth = FULL_WIDTH * 4 / 5;
 
         int desiredHeight = PANEL_INSETS;
@@ -116,8 +119,10 @@ public class NPCDialog {
         previewTargets.forEach(target -> previewPopup.attachTo(target.component(), target.references()));
         panel.revalidate();
         panel.repaint();
+        typewriterText.start();
         optionPane.setVisible(true);
         int result = optionPane.getResult();
+        typewriterText.stop();
         hidePreview();
         optionPane.dispose();
         return new DialogResult(result == REROLL_OPTION && hasRerolls, selectedBoon);

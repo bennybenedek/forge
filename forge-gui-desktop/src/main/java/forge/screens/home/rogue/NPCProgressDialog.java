@@ -54,6 +54,9 @@ public class NPCProgressDialog {
 
     for (NPC npc : NPC.values()) {
       List<LevelOption> options = getOptionsForNpc(npc);
+      if (options.isEmpty()) {
+        continue;
+      }
       FComboBox<LevelOption> comboBox = new FComboBox<>(options);
       comboBox.setSelectedItem(getSelectedOption(options, progress.getNPCLevel(npc.id)));
       levelInputs.put(npc, comboBox);
@@ -102,7 +105,11 @@ public class NPCProgressDialog {
       case GONTI -> GontiEncounter.values();
       case NARSET -> NarsetEncounter.values();
       case HENZIE -> HenzieEncounter.values();
+      case TEFERI -> new NPCEncounter[0];
     };
+    if (encounters.length == 0) {
+      return List.of();
+    }
 
     List<LevelOption> options = new ArrayList<>();
     boolean hasLevelZero = false;

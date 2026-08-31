@@ -43,6 +43,7 @@ public class EventDialog {
   private final RogueRun run;
   private final ChoiceRerollContext rerollCtx;
   private final List<PreviewTarget> previewTargets = new ArrayList<>();
+  private final RogueUIHelper.TypewriterText typewriterText;
   private FOptionPane optionPane;
   private RoguePreviewPopup previewPopup;
   private EventChoice selectedChoice;
@@ -58,7 +59,7 @@ public class EventDialog {
 
     FTextArea txtDescription = new FTextArea(event.getDescription());
     txtDescription.setFont(txtDescription.getFont().deriveFont(14f));
-    txtDescription.setSize(FULL_WIDTH, Short.MAX_VALUE);
+    typewriterText = RogueUIHelper.prepareTypewriterText(txtDescription, panel, event.getDescription(), FULL_WIDTH);
     previewTargets.add(new PreviewTarget(txtDescription, event.getPreviewReferences()));
     int choiceButtonWidth = FULL_WIDTH * 4 / 5;
 
@@ -115,8 +116,10 @@ public class EventDialog {
       previewTargets.forEach(target -> previewPopup.attachTo(target.component(), target.references()));
       panel.revalidate();
       panel.repaint();
+      typewriterText.start();
       optionPane.setVisible(true);
       result = optionPane.getResult();
+      typewriterText.stop();
       hidePreview();
       optionPane.dispose();
 
