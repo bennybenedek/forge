@@ -64,14 +64,19 @@ public final class RogueUIHelper {
   }
 
   public static TypewriterText prepareTypewriterText(FTextArea textArea, JComponent skipComponent,
-      String fullText, int width) {
-    TypewriterText typewriterText = new TypewriterText(textArea, fullText);
-    textArea.setText(typewriterText.fullText);
-    textArea.setSize(width, Short.MAX_VALUE);
-    Dimension textSize = new Dimension(width, textArea.getPreferredSize().height);
+      List<String> fullTexts, int width) {
+    TypewriterText typewriterText = new TypewriterText(textArea);
+    List<String> texts = fullTexts == null || fullTexts.isEmpty() ? List.of("") : fullTexts;
+    int textHeight = 0;
+    for (String fullText : texts) {
+      textArea.setText(fullText == null ? "" : fullText);
+      textArea.setSize(width, Short.MAX_VALUE);
+      textHeight = Math.max(textHeight, textArea.getPreferredSize().height);
+    }
+    Dimension textSize = new Dimension(width, textHeight);
     textArea.setPreferredSize(textSize);
     textArea.setMinimumSize(textSize);
-    textArea.setText("");
+    typewriterText.setFullText(texts.get(0));
 
     MouseAdapter skipRevealListener = new MouseAdapter() {
       @Override
@@ -89,14 +94,22 @@ public final class RogueUIHelper {
 
   public static final class TypewriterText {
     private final FTextArea textArea;
-    private final String fullText;
+    private String fullText;
     private Timer timer;
     private int revealedCharacters;
     private boolean fullyRevealed;
 
-    private TypewriterText(FTextArea textArea, String fullText) {
+    private TypewriterText(FTextArea textArea) {
       this.textArea = textArea;
+      fullText = "";
+    }
+
+    public void setFullText(String fullText) {
+      stop();
       this.fullText = fullText == null ? "" : fullText;
+      revealedCharacters = 0;
+      fullyRevealed = this.fullText.isEmpty();
+      textArea.setText(fullyRevealed ? this.fullText : "");
     }
 
     public void start() {

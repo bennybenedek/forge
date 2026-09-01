@@ -4,13 +4,20 @@ import forge.gamemodes.rogue.effect.NPCEffect;
 import java.util.List;
 
 /**
- * Data bag for NPC dialog display. Holds NPC identity, flavor text, and available choices.
+ * Data bag for NPC dialog display. Holds NPC identity, flavor text chunks, and available choices.
  */
-public record NPCContext(NPC npc, String flavorText, List<NPCChoice> choices, String displayNameOverride,
+public record NPCContext(NPC npc, List<String> flavorTextChunks, List<NPCChoice> choices, String displayNameOverride,
                          Integer avatarIndexOverride) {
 
-    public NPCContext(NPC npc, String flavorText, List<NPCChoice> choices) {
-        this(npc, flavorText, choices, null, null);
+    public NPCContext {
+        flavorTextChunks = flavorTextChunks == null || flavorTextChunks.isEmpty()
+            ? List.of("")
+            : flavorTextChunks.stream().map(text -> text == null ? "" : text).toList();
+        choices = choices == null ? List.of() : List.copyOf(choices);
+    }
+
+    public String flavorText() {
+        return String.join("\n", flavorTextChunks);
     }
 
     public String displayName() {

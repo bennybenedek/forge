@@ -21,9 +21,12 @@ public enum TyvarEncounter implements NPCEncounter {
             }
             ctx.preSanctumDialogs.add(buildContext(
                 "Stranger", STRANGER_AVATAR_INDEX,
-                "Near the Sanctum's cold stone floor, a man in ripped clothes drags himself forward, " +
-                    "leaving a thin trail of blood behind him. His face is pale, his breathing ragged, " +
-                    "and one trembling hand reaches toward you. \"Help me... please.\"",
+                List.of(
+                    "Near the Sanctum's cold stone floor, a man in ripped clothes drags himself forward, " +
+                        "leaving a thin trail of blood behind him.",
+                    "His face is pale, his breathing ragged, " +
+                        "and one trembling hand reaches toward you. \"Help me... please.\""
+                ),
                 List.of()
             ));
             addHelpStrangerChoice(ctx);
@@ -44,10 +47,12 @@ public enum TyvarEncounter implements NPCEncounter {
             }
             incrementNpcLevel();
             return buildContext(
-                "The stranger steadies himself, pain still written across every movement, but pride returning to his eyes. " +
-                    "\"I am Tyvar Kell. You did not owe me aid, but you gave it anyway. I won't forget that.\" " +
+                List.of(
+                    "The stranger steadies himself, pain still written across every movement, but pride returning to his eyes. " +
+                        "\"I am Tyvar Kell. You did not owe me aid, but you gave it anyway. I won't forget that.\"",
                     "He grips your forearm with surprising strength. \"Let me repay you properly. From now on, " +
-                    "when your journey begins, I will help train your Commander for the battles ahead.\"",
+                        "when your journey begins, I will help train your Commander for the battles ahead.\""
+                ),
                 List.of()
             );
         }

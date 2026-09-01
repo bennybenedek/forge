@@ -50,13 +50,17 @@ public enum GontiEncounter implements NPCEncounter {
 
             incrementNpcLevel();
             return buildContext(
-                "A figure steps out from behind the bazaar stall, eyes wide with both disbelief and fascination. " +
-                "\"You... you actually bought it? Ha!! That thing has been sitting there for ages! " +
-                "Nobody ever even looks at it twice!\" The figure composes itself, extending a hand. " +
-                "\"I'm Gonti. And anyone willing to pay ten gold for that worthless piece of junk " +
-                "deserves my personal attention. How about this...from now on you'll get some special " +
-                "discounts whenever you set foot in here again. Oh, and feel free to buy other stuff " +
-                "nobody else wants, I'll promise you won't regret it.",
+                List.of(
+                    "A figure steps out from behind the bazaar stall, eyes wide with both disbelief and fascination. " +
+                        "\"You... you actually bought it? Ha!! That thing has been sitting there for ages! " +
+                        "Nobody ever even looks at it twice!\"",
+                    "The figure composes itself, extending a hand. " +
+                        "\"I'm Gonti. And anyone willing to pay ten gold for that worthless piece of junk " +
+                        "deserves my personal attention.",
+                    "How about this...from now on you'll get some special " +
+                        "discounts whenever you set foot in here again. Oh, and feel free to buy other stuff " +
+                        "nobody else wants, I'll promise you won't regret it."
+                ),
 
                 List.of(new NPCContext.NPCChoice("Accept", null))
             );
@@ -94,12 +98,15 @@ public enum GontiEncounter implements NPCEncounter {
 
             incrementNpcLevel();
             return buildContext(
-                "Gonti freezes when the bauble changes hands, then leans over the stall with a grin " +
-                "that is far too sharp for such a harmless sale. \"Again? You bought another one? " +
-                "I was certain even you would notice that this one does even less than the last. " +
-                "Remarkable. Truly remarkable.\" He lowers his voice. \"Very well. Next time you find " +
-                "me at a bazaar, ask for the special selection. I keep the stranger pieces away from " +
-                "ordinary customers.\"",
+                List.of(
+                    "Gonti freezes when the bauble changes hands, then leans over the stall with a grin " +
+                        "that is far too sharp for such a harmless sale. \"Again? You bought another one?",
+                    "I was certain even you would notice that this one does even less than the last. " +
+                        "Remarkable. Truly remarkable.\"",
+                    "He lowers his voice. \"Very well. Next time you find " +
+                        "me at a bazaar, ask for the special selection. I keep the stranger pieces away from " +
+                        "ordinary customers.\""
+                ),
 
                 List.of(new NPCContext.NPCChoice("Accept", null))
             );
@@ -139,14 +146,16 @@ public enum GontiEncounter implements NPCEncounter {
 
             incrementNpcLevel();
             return buildContext(
-                "Gonti stares at the contraption in your hands as if watching a prophecy come true " +
-                "in the least dignified way possible. \"No. No, that cannot be right. That device " +
-                "doesn't open, doesn't close, doesn't hum, doesn't glow, and I am almost certain one " +
-                "of the little wheels is decorative because it is painted on.\" He laughs, breathless " +
-                "and delighted. \"You have gone beyond customer, beyond patron, beyond accomplice. " +
-                "You are a collector of impossibilities. Very well. From now on, the strangest shelf " +
-                "gets the same generous treatment as the ordinary wares. Discounts, even there. " +
-                "Do try not to make me regret encouraging this.\"",
+                List.of(
+                    "Gonti stares at the contraption in your hands as if watching a prophecy come true " +
+                        "in the least dignified way possible. \"No. No, that cannot be right.",
+                    "That device doesn't open, doesn't close, doesn't hum, doesn't glow, and I am almost certain one " +
+                        "of the little wheels is decorative because it is painted on.\"",
+                    "He laughs, breathless and delighted. \"You have gone beyond customer, beyond patron, beyond accomplice. " +
+                        "You are a collector of impossibilities. Very well. From now on, the strangest shelf " +
+                        "gets the same generous treatment as the ordinary wares. Discounts, even there. " +
+                        "Do try not to make me regret encouraging this.\""
+                ),
 
                 List.of(new NPCContext.NPCChoice("Accept", null))
             );

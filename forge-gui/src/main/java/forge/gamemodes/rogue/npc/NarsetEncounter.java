@@ -27,11 +27,14 @@ public enum NarsetEncounter implements NPCEncounter {
             if (run.getLastMatchData().chaosCount() <= 0) return null;
             incrementNpcLevel();
             return buildContext(
-                "A woman in travel-worn Jeskai robes steps out of the planar turbulence, calm and composed despite " +
-                    "the chaos still breaking around her. One hand rests near a scroll case at her hip while her " +
-                    "steady gaze studies you for a long moment. \"Listen. The worlds ahead are not scattering at " +
-                    "random. To stop the Phyrexian Invasion, you must understand what moves between them and why. " +
-                    "You seem to improve in using Planeswalking and Chaos to your advantage. But you are far from mastering it. Call Me Narset. And let me help you with your task from now on.\"",
+                List.of(
+                    "A woman in travel-worn Jeskai robes steps out of the planar turbulence, calm and composed despite " +
+                        "the chaos still breaking around her.",
+                    "One hand rests near a scroll case at her hip while her " +
+                        "steady gaze studies you for a long moment. \"Listen. The worlds ahead are not scattering at " +
+                        "random. To stop the Phyrexian Invasion, you must understand what moves between them and why.",
+                    "You seem to improve in using Planeswalking and Chaos to your advantage. But you are far from mastering it. Call Me Narset. And let me help you with your task from now on.\""
+                ),
                 List.of());
         }
     },

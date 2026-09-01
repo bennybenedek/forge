@@ -35,20 +35,25 @@ public class NPCDialog {
     private static final int FULL_WIDTH = DIALOG_WIDTH - 2 * PANEL_INSETS;
     private static final int REROLL_OPTION = 0;
     private static final int CHOICE_RESULT = 1;
-    private static final float FLAVOR_FONT_SIZE = 15f;
+    private static final float FLAVOR_FONT_SIZE = 16f;
 
     private final MainPanel panel;
     private final ChoiceRerollContext rerollCtx;
+    private final List<String> flavorTextChunks;
+    private final List<FButton> choiceButtons = new ArrayList<>();
     private final List<PreviewTarget> previewTargets = new ArrayList<>();
     private final RogueUIHelper.TypewriterText typewriterText;
+    private FButton btnContinue;
     private FOptionPane optionPane;
     private RoguePreviewPopup previewPopup;
     private NPCEffect selectedBoon;
+    private int currentChunkIndex;
 
     public NPCDialog(NPCContext ctx, ChoiceRerollContext rerollCtx) {
         this.rerollCtx = rerollCtx;
         panel = new MainPanel();
-        String flavorText = ctx.flavorText() == null ? "" : ctx.flavorText();
+        flavorTextChunks = ctx.flavorTextChunks();
+        String firstFlavorText = flavorTextChunks.get(0);
 
         FLabel lblTitle = new FLabel.Builder()
                 .text(ctx.displayName())
@@ -57,9 +62,9 @@ public class NPCDialog {
         FLabel lblAvatar = new FLabel.Builder().build();
         lblAvatar.setIcon(FSkin.getAvatars().get(ctx.avatarIndex()));
 
-        FTextArea txtFlavor = new FTextArea(flavorText);
+        FTextArea txtFlavor = new FTextArea(firstFlavorText);
         txtFlavor.setFont(txtFlavor.getFont().deriveFont(FLAVOR_FONT_SIZE));
-        typewriterText = RogueUIHelper.prepareTypewriterText(txtFlavor, panel, flavorText, FULL_WIDTH);
+        typewriterText = RogueUIHelper.prepareTypewriterText(txtFlavor, panel, flavorTextChunks, FULL_WIDTH);
         int choiceButtonWidth = FULL_WIDTH * 4 / 5;
 
         int desiredHeight = PANEL_INSETS;
@@ -73,34 +78,32 @@ public class NPCDialog {
         panel.add(txtFlavor, "w 100%!, ax center, gap 0 0 10px 20px, wrap");
         desiredHeight += txtFlavor.getPreferredSize().height + 10 + 20;
 
-        if (ctx.choices().isEmpty()) {
-            FButton btn = RogueButtonHelper.createChoiceButton("Continue", "");
+        if (flavorTextChunks.size() > 1 || ctx.choices().isEmpty()) {
+            btnContinue = RogueButtonHelper.createChoiceButton("Continue", "");
+            RogueButtonHelper.setChoiceButtonSizeHint(btnContinue, choiceButtonWidth);
+            btnContinue.addActionListener(e -> advanceChunkOrClose());
+            panel.add(btnContinue, "w 80%!, ax center, gap 0 0 10px 10px, wrap");
+            desiredHeight += btnContinue.getPreferredSize().height + 10 + 10;
+        }
+
+        for (NPCChoice choice : ctx.choices()) {
+            String desc = choice.npcEffect() != null ? choice.npcEffect().getDescription() : "";
+            FButton btn = RogueButtonHelper.createChoiceButton(choice.label(), desc,
+                    choice.npcEffect() == null ? List.of() : choice.npcEffect().getPreviewReferences());
             RogueButtonHelper.setChoiceButtonSizeHint(btn, choiceButtonWidth);
             btn.addActionListener(e -> {
                 hidePreview();
+                selectedBoon = choice.npcEffect();
                 optionPane.setResult(CHOICE_RESULT);
                 optionPane.setVisible(false);
             });
+            choiceButtons.add(btn);
+            previewTargets.add(new PreviewTarget(btn,
+                    choice.npcEffect() == null ? List.of() : choice.npcEffect().getPreviewReferences()));
             panel.add(btn, "w 80%!, ax center, gap 0 0 10px 10px, wrap");
             desiredHeight += btn.getPreferredSize().height + 10 + 10;
-        } else {
-            for (NPCChoice choice : ctx.choices()) {
-                String desc = choice.npcEffect() != null ? choice.npcEffect().getDescription() : "";
-                FButton btn = RogueButtonHelper.createChoiceButton(choice.label(), desc,
-                        choice.npcEffect() == null ? List.of() : choice.npcEffect().getPreviewReferences());
-                RogueButtonHelper.setChoiceButtonSizeHint(btn, choiceButtonWidth);
-                btn.addActionListener(e -> {
-                    hidePreview();
-                    selectedBoon = choice.npcEffect();
-                    optionPane.setResult(CHOICE_RESULT);
-                    optionPane.setVisible(false);
-                });
-                previewTargets.add(new PreviewTarget(btn,
-                        choice.npcEffect() == null ? List.of() : choice.npcEffect().getPreviewReferences()));
-                panel.add(btn, "w 80%!, ax center, gap 0 0 10px 10px, wrap");
-                desiredHeight += btn.getPreferredSize().height + 10 + 10;
-            }
         }
+        updateButtonVisibility();
 
         int dialogHeight = Math.min(Math.max(desiredHeight + PANEL_INSETS, MIN_DIALOG_HEIGHT), getMaxDialogHeight());
         Dimension dialogSize = new Dimension(DIALOG_WIDTH, dialogHeight);
@@ -111,6 +114,9 @@ public class NPCDialog {
     /** Show dialog and return the selected action. */
     public DialogResult show() {
         selectedBoon = null;
+        currentChunkIndex = 0;
+        typewriterText.setFullText(flavorTextChunks.get(currentChunkIndex));
+        updateButtonVisibility();
         boolean hasRerolls = rerollCtx.remainingRerolls > 0;
         optionPane = new FOptionPane(null, "NPC Encounter", null, panel,
                 hasRerolls ? List.of("Reroll (" + rerollCtx.remainingRerolls + " left)") : List.of(), -1);
@@ -126,6 +132,32 @@ public class NPCDialog {
         hidePreview();
         optionPane.dispose();
         return new DialogResult(result == REROLL_OPTION && hasRerolls, selectedBoon);
+    }
+
+    private void advanceChunkOrClose() {
+        hidePreview();
+        if (currentChunkIndex < flavorTextChunks.size() - 1) {
+            currentChunkIndex++;
+            typewriterText.setFullText(flavorTextChunks.get(currentChunkIndex));
+            updateButtonVisibility();
+            panel.revalidate();
+            panel.repaint();
+            typewriterText.start();
+            return;
+        }
+
+        optionPane.setResult(CHOICE_RESULT);
+        optionPane.setVisible(false);
+    }
+
+    private void updateButtonVisibility() {
+        boolean isFinalChunk = currentChunkIndex >= flavorTextChunks.size() - 1;
+        if (btnContinue != null) {
+            btnContinue.setVisible(!isFinalChunk || choiceButtons.isEmpty());
+        }
+        for (FButton choiceButton : choiceButtons) {
+            choiceButton.setVisible(isFinalChunk);
+        }
     }
 
     private void hidePreview() {

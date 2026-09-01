@@ -32,9 +32,12 @@ public enum HenzieEncounter implements NPCEncounter {
             }
             incrementNpcLevel();
             return buildContext(
-                "The next contract does not vanish with the others. A devil in a tailored coat plucks it from the air, " +
-                "grins, and gives a shallow bow. \"Efficient. Name's Henzie. " +
-                "You seem like know when a good deal presents itself. I might have a few tools for your next run.\"",
+                List.of(
+                    "The next contract does not vanish with the others. A devil in a tailored coat plucks it from the air, " +
+                        "grins, and gives a shallow bow.",
+                    "\"Efficient. Name's Henzie. " +
+                        "You seem like know when a good deal presents itself. I might have a few tools for your next run.\""
+                ),
                 List.of()
             );
         }

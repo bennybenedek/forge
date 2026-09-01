@@ -58,8 +58,9 @@ public class EventDialog {
         .fontSize(20).fontStyle(Font.BOLD).fontAlign(SwingConstants.CENTER).build();
 
     FTextArea txtDescription = new FTextArea(event.getDescription());
-    txtDescription.setFont(txtDescription.getFont().deriveFont(14f));
-    typewriterText = RogueUIHelper.prepareTypewriterText(txtDescription, panel, event.getDescription(), FULL_WIDTH);
+    txtDescription.setFont(txtDescription.getFont().deriveFont(15f));
+    typewriterText = RogueUIHelper.prepareTypewriterText(txtDescription, panel,
+        List.of(event.getDescription()), FULL_WIDTH);
     previewTargets.add(new PreviewTarget(txtDescription, event.getPreviewReferences()));
     int choiceButtonWidth = FULL_WIDTH * 4 / 5;
 

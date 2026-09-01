@@ -25,13 +25,13 @@ public interface NPCEncounter {
     int getRequiredLevel();
 
     /** Builds an NPCContext using shared NPC identity and the given per-level data. */
-    default NPCContext buildContext(String flavorText, List<NPCContext.NPCChoice> choices) {
-        return new NPCContext(getNpc(), flavorText, choices);
+    default NPCContext buildContext(List<String> flavorTextChunks, List<NPCContext.NPCChoice> choices) {
+        return new NPCContext(getNpc(), flavorTextChunks, choices, null, null);
     }
 
     default NPCContext buildContext(String displayNameOverride, int avatarIndexOverride,
-                                    String flavorText, List<NPCContext.NPCChoice> choices) {
-        return new NPCContext(getNpc(), flavorText, choices, displayNameOverride, avatarIndexOverride);
+                                    List<String> flavorTextChunks, List<NPCContext.NPCChoice> choices) {
+        return new NPCContext(getNpc(), flavorTextChunks, choices, displayNameOverride, avatarIndexOverride);
     }
 
     /** Run-start boon monologues for NPCs that offer choices. */
@@ -58,7 +58,7 @@ public interface NPCEncounter {
         Collections.shuffle(pool, MyRandom.getRandom());
         int choiceCount = Math.min(3, pool.size());
         return buildContext(
-            getRandomBoonMonologue(),
+            List.of(getRandomBoonMonologue()),
             pool.subList(0, choiceCount).stream()
                 .map(effect -> new NPCContext.NPCChoice(effect.getDisplayName(), effect))
                 .toList()

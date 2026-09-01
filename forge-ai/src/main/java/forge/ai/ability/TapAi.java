@@ -17,6 +17,8 @@ import forge.game.spellability.SpellAbility;
 import forge.game.zone.ZoneType;
 import forge.util.collect.FCollectionView;
 
+import java.util.List;
+
 public class TapAi extends TapAiBase {
 
     @Override
@@ -96,14 +98,24 @@ public class TapAi extends TapAiBase {
                     Integer amount = lifeCost.convertAmount();
                     if (payer.getLife() > (amount + 1) && payer.canPayLife(amount, true, sa)) {
                         final int landsize = payer.getLandsInPlay().size() + 1;
-                        for (Card c : payer.getCardsIn(ZoneType.Hand)) {
-                            // Check if the AI has enough lands to play the card
-                            if (landsize != c.getCMC()) {
+                        final List<SpellAbility> all = ComputerUtilAbility.getSpellAbilities(
+                                payer.getCardsIn(ZoneType.Hand, ZoneType.Command), payer);
+
+                        for (final SpellAbility testSa : ComputerUtilAbility.getOriginalAndAltCostAbilities(all, payer)) {
+                            final Cost payCosts = testSa.getPayCosts();
+                            if (payCosts == null) {
                                 continue;
                             }
-                            // Check if the AI intends to play the card and if it can pay for it with the mana it has
-                            boolean willPlay = ComputerUtil.hasReasonToPlayCardThisTurn(payer, c);
-                            boolean canPay = c.getManaCost().canBePaidWithAvailable(ColorSet.fromNames(ComputerUtilCost.getAvailableManaColors(payer, source)).getColor());
+
+                            // Check if the untapped land would let the AI cast a spell it already wants to play.
+                            if (landsize != payCosts.getTotalMana().getCMC()) {
+                                continue;
+                            }
+
+                            final AiPlayDecision playDecision = ((PlayerControllerAi) payer.getController()).getAi().canPlaySa(testSa);
+                            final boolean willPlay = playDecision == AiPlayDecision.WillPlay || playDecision == AiPlayDecision.WaitForMain2;
+                            final boolean canPay = payCosts.getTotalMana().canBePaidWithAvailable(ColorSet.fromNames(
+                                    ComputerUtilCost.getAvailableManaColors(payer, source)).getColor());
                             if (canPay && willPlay) {
                                 return true;
                             }
