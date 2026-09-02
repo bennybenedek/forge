@@ -54,6 +54,14 @@ public enum ChestEffect implements RogueEffect {
             run.addMaxLife(10);
         }
     },
+    POTION_OF_MERCY("potion_of_mercy", "Potion Of Mercy",
+        "Your life total becomes equal to your Max. Life total.",
+        EffectType.ONESHOT, null) {
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            run.gainLifeUpToMax(run.getMaxLife());
+        }
+    },
     TREASURE("treasure", "Treasure", "Gain 10 {{Gold}} and 10 {{Echoes}}.", EffectType.ONESHOT,
         null) {
         @Override
@@ -294,6 +302,14 @@ public enum ChestEffect implements RogueEffect {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
+        }
+    },
+    RELIC_OF_CHARISMA("relic_of_charisma", "Relic Of Charisma",
+        TRAIT_GAIN_DESCRIPTION,
+        EffectType.PERMANENT, "Chest Trait - Relic Of Charisma") {
+        @Override
+        public void onBeforeBazaar(BazaarContext ctx, RogueRun run) {
+            ctx.priceAdjustment -= 2;
         }
     },
     RELIC_OF_EXPLORATION("relic_of_exploration", "Relic Of Exploration",
