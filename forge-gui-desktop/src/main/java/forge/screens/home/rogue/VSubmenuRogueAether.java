@@ -213,7 +213,7 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
     // Update upgrade card if visible
     AetherUpgrade next = AetherUpgrade.forLevel(upgradeLevel + 1);
     if (next != null && descensionUnlocked) {
-      upgradeCard.update(next, sparks);
+      upgradeCard.update(next, echoes, sparks);
     }
 
     // Update boon panels
@@ -272,7 +272,6 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
     private final FLabel lblName;
     private final FLabel lblDescription;
     private final FButton btnUpgrade;
-    private final javax.swing.Icon sparkIcon;
     private boolean isHovered = false;
 
     AetherUpgradeCard() {
@@ -284,15 +283,6 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
         @Override public void mouseExited(MouseEvent e)  { isHovered = false; repaint(); }
       });
 
-      final javax.swing.Icon rawSparkIcon = FSkin.getImage(FSkinProp.ICO_QUEST_ELIXIR).resize(16, 16).getIcon();
-      sparkIcon = new javax.swing.Icon() {
-        public int getIconWidth()  { return rawSparkIcon.getIconWidth(); }
-        public int getIconHeight() { return rawSparkIcon.getIconHeight(); }
-        public void paintIcon(java.awt.Component c, java.awt.Graphics g, int x, int y) {
-          rawSparkIcon.paintIcon(c, g, x, y - 2);
-        }
-      };
-
       lblName = new FLabel.Builder()
           .text("")
           .fontSize(16).fontStyle(Font.BOLD).fontAlign(SwingConstants.CENTER).build();
@@ -302,24 +292,79 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
           .fontSize(14).fontAlign(SwingConstants.CENTER).build();
 
       btnUpgrade = new FButton("Upgrade");
-      btnUpgrade.setIcon(sparkIcon);
       btnUpgrade.setHorizontalTextPosition(SwingConstants.LEFT);
 
       add(lblName, "growx, ax center");
       add(lblDescription, "growx, ax center, wmax 370px");
       add(new JPanel() {{ setOpaque(false); }}, "growy, pushy");
-      add(btnUpgrade, "ax center, w 160px!, h 30px!");
+      add(btnUpgrade, "ax center, w 220px!, h 30px!");
     }
 
-    void update(AetherUpgrade upgrade, int sparks) {
+    void update(AetherUpgrade upgrade, int echoes, int sparks) {
       lblName.setText(upgrade.name);
       lblDescription.setText(upgrade.description);
-      btnUpgrade.setText("Upgrade: " + upgrade.sparkCost);
-      btnUpgrade.setIcon(sparkIcon);
-      btnUpgrade.setEnabled(sparks >= upgrade.sparkCost);
+      btnUpgrade.setText("Upgrade:");
+      btnUpgrade.setIcon(new UpgradeCostIcon(upgrade.sparkCost, upgrade.echoCost));
+      btnUpgrade.setEnabled(sparks >= upgrade.sparkCost && echoes >= upgrade.echoCost);
     }
 
     FButton getBtnUpgrade() { return btnUpgrade; }
+
+    private static class UpgradeCostIcon implements javax.swing.Icon {
+      private static final int ICON_SIZE = 16;
+      private static final int GAP = 4;
+
+      private final int sparkCost;
+      private final int echoCost;
+      private final javax.swing.Icon sparkIcon;
+      private final javax.swing.Icon echoIcon;
+
+      private UpgradeCostIcon(int sparkCost, int echoCost) {
+        this.sparkCost = sparkCost;
+        this.echoCost = echoCost;
+        sparkIcon = FSkin.getImage(FSkinProp.ICO_QUEST_ELIXIR).resize(ICON_SIZE, ICON_SIZE).getIcon();
+        echoIcon = FSkin.getImage(FSkinProp.ICO_QUEST_GOLD).resize(ICON_SIZE, ICON_SIZE).getIcon();
+      }
+
+      @Override
+      public int getIconWidth() {
+        FontMetrics metrics = getFontMetrics();
+        return metrics.stringWidth(String.valueOf(sparkCost))
+            + ICON_SIZE
+            + metrics.stringWidth(String.valueOf(echoCost))
+            + ICON_SIZE
+            + (GAP * 3);
+      }
+
+      @Override
+      public int getIconHeight() {
+        return ICON_SIZE;
+      }
+
+      @Override
+      public void paintIcon(java.awt.Component c, java.awt.Graphics g, int x, int y) {
+        FontMetrics metrics = getFontMetrics();
+        int textY = y + ((ICON_SIZE - metrics.getHeight()) / 2) + metrics.getAscent() - 1;
+        int iconY = y - 2;
+        Color oldColor = g.getColor();
+        Color textColor = c.isEnabled() ? c.getForeground() : UIManager.getColor("Button.disabledText");
+        g.setColor(textColor != null ? textColor : oldColor);
+
+        g.drawString(String.valueOf(sparkCost), x, textY);
+        x += metrics.stringWidth(String.valueOf(sparkCost)) + GAP;
+        sparkIcon.paintIcon(c, g, x, iconY);
+        x += ICON_SIZE + GAP;
+
+        g.drawString(String.valueOf(echoCost), x, textY);
+        x += metrics.stringWidth(String.valueOf(echoCost)) + GAP;
+        echoIcon.paintIcon(c, g, x, iconY);
+        g.setColor(oldColor);
+      }
+
+      private FontMetrics getFontMetrics() {
+        return new JLabel().getFontMetrics(FSkin.getFont(14).getBaseFont());
+      }
+    }
 
     @Override
     public void paint(Graphics g) {

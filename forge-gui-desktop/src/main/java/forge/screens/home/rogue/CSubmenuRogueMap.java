@@ -94,7 +94,7 @@ public enum CSubmenuRogueMap implements ICDoc {
     for (RoguePathNode node : currentRun.getPath().getNodesInRow(currentRow)) {
       if (node instanceof NodePlanebound planebound
           && planebound.getPlaneboundType() == RoguePlaneboundType.ELITE) {
-        RogueTutorialHelper.showIfNotSeen(RogueTutorial.ELITE_ENCOUNTER);
+        RogueTutorialHelper.showIfNotSeen(RogueTutorial.ELITE_PLANEBOUND);
       } else if (node instanceof NodePlanebound) {
         RogueTutorialHelper.showIfNotSeen(RogueTutorial.PRE_BATTLE);
       }

@@ -12,7 +12,6 @@ Name=Kaalia Rewards
 1 Animate Dead|MKC|1
 1 Arcane Signet|TDC|1
 1 Archfiend of Depravity|SCD|1
-1 Ardyn, the Usurper|FIN|1
 1 Arena of Glory|MH3|1
 1 Arid Mesa|MH2|1
 1 Aurelia, the Law Above|MKM|1
@@ -26,7 +25,7 @@ Name=Kaalia Rewards
 1 Blood Speaker|CHK|1
 1 Bloodgift Demon|J25|1
 1 Bloodstained Mire|MH3|1
-1 Bloodthirster|40K|1
+1 Boon-Bringer Valkyrie|MOM|1
 1 Boros Charm|CMR|1
 1 Bruna, the Fading Light|INR|1
 1 Chaos Warp|TDC|1
@@ -56,12 +55,13 @@ Name=Kaalia Rewards
 1 Giada, Font of Hope|J25|1
 1 Gisela, Blade of Goldnight|CMM|1
 1 Godless Shrine|EOE|1
-1 Harvester of Souls|J25|1
 1 Hellkite Charger|CMM|1
 1 Hellkite Tyrant|PLST|1
 1 Helm of the Host|PLST|1
 1 Herald of Slaanesh|40K|1
 1 Herald's Horn|CMM|1
+1 Hidetsugu, Devouring Chaos|NEO|1
+1 Indulgent Tormentor|IMA|1
 1 Inevitable Defeat|TDM|1
 1 Isshin, Two Heavens as One|NEO|1
 1 Kindred Dominance|CMM|1
@@ -92,6 +92,7 @@ Name=Kaalia Rewards
 1 Read the Bones|J25|1
 1 Reanimate|DSC|1
 1 Reconnaissance|ACR|1
+1 Reya Dawnbringer|UMA|1
 1 Righteous Valkyrie|J25|1
 1 Rogue's Passage|CMM|1
 1 Ruinous Ultimatum|IKO|1
@@ -152,7 +153,6 @@ Name=Kaalia Rewards
 1 Dragonhawk, Fate's Tempest|BLB|1
 1 Gisela, the Broken Blade|INR|1
 1 Goldspan Dragon|M3C|1
-1 Griselbrand|INR|1
 1 Herald of Eternal Dawn|FDN|2
 1 Kaalia, Zenith Seeker|M20|1
 1 Lord of the Void|RVR|3
@@ -160,6 +160,7 @@ Name=Kaalia Rewards
 1 Master of Cruelties|GK2|1
 1 Neriv, Heart of the Storm|TDM|1
 1 Ob Nixilis, the Adversary|SNC|2
+1 Rakdos, Lord of Riots|DSC|1
 1 Rakdos, Patron of Chaos|MKM|1
 1 Rakdos, the Muscle|OTJ|1
 1 Rakdos, the Showstopper|RNA|1

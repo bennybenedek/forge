@@ -377,6 +377,11 @@ public class RogueMetaProgress {
         return maxDescensionWonPerCommander.getOrDefault(commanderName, 0);
     }
 
+    public int getHighestDescensionWon() {
+        if (maxDescensionWonPerCommander == null) return 0;
+        return maxDescensionWonPerCommander.values().stream().mapToInt(Integer::intValue).max().orElse(0);
+    }
+
     /** Returns max descension level available to START. Normal win = Level 1 unlocked. */
     public int getMaxDescensionUnlocked(String commanderName) {
         if (!hasWonWithCommander(commanderName)) return 0;
@@ -463,8 +468,9 @@ public class RogueMetaProgress {
     public boolean purchaseAetherUpgrade(int level) {
         AetherUpgrade upgrade = AetherUpgrade.forLevel(level);
         if (upgrade == null || aetherUpgradeLevel >= level || level != aetherUpgradeLevel + 1) return false;
-        if (totalSparks < upgrade.sparkCost) return false;
+        if (totalSparks < upgrade.sparkCost || totalEchoes < upgrade.echoCost) return false;
         totalSparks -= upgrade.sparkCost;
+        totalEchoes -= upgrade.echoCost;
         aetherUpgradeLevel = level;
         RogueCommanderAchievements.instance.evaluateUpgradeAchievements(this);
         save();
@@ -472,7 +478,7 @@ public class RogueMetaProgress {
     }
 
     /**
-     * Get the number of active Boon slots (base 3, +1 from Aether Upgrade 2).
+     * Get the number of active Boon slots from base slots plus purchased Aether Upgrades.
      */
     public int getActiveBoonSlots() {
         int slots = 3;

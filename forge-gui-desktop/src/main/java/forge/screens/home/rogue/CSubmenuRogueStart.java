@@ -109,9 +109,21 @@ public enum CSubmenuRogueStart implements ICDoc {
       RogueTutorialHelper.showIfNotSeen(RogueTutorial.RUN_COMPLETE);
     }
 
+    if (progress.getTotalRunsWon() > 0) {
+      RogueTutorialHelper.showIfNotSeen(RogueTutorial.FIRST_RUN_WIN);
+    }
+
     // Show Descension tutorial once when it becomes unlocked
     if (progress.isDescensionModeUnlocked()) {
       RogueTutorialHelper.showIfNotSeen(RogueTutorial.DESCENSION_UNLOCKED);
+    }
+
+    int highestDescensionWon = progress.getHighestDescensionWon();
+    if (highestDescensionWon >= 1) {
+      RogueTutorialHelper.showIfNotSeen(RogueTutorial.DESCENSION_LEVEL_1_WIN);
+    }
+    if (highestDescensionWon >= 7) {
+      RogueTutorialHelper.showIfNotSeen(RogueTutorial.DESCENSION_LEVEL_7_WIN);
     }
   }
 

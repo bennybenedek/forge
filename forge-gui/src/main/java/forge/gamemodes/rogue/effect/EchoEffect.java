@@ -118,14 +118,14 @@ public enum EchoEffect implements RogueEffect {
         }
     },
 
-    //  Aether Upgrade 1
+    // Advanced boons — visible after Aether Upgrade(s)
 
     EXPANDED_MIND("expanded_mind", "Expanded Mind",
         "Keep +%s extra cards from Card Rewards.",
         new EffectRankContext(
             new int[]{8, 12}, // Echo costs (rank 1-2)
             new int[]{1, 2},  // Effect values: +1/+2 extra picks
-            1, 1),
+            1, 2),
         EffectType.PERMANENT, null) {
         @Override
         public void onCardReward(CardRewardContext ctx, RogueRun run) {
@@ -138,7 +138,7 @@ public enum EchoEffect implements RogueEffect {
         new EffectRankContext(
             new int[]{8, 12, 16}, // Echo costs (rank 1-3)
             new int[]{1, 2, 3},   // Effect values: replace 1/2/3 non-mythics
-            2, 1),
+            2, 2),
         EffectType.PERMANENT, null) {
         @Override
         public void onCardReward(CardRewardContext ctx, RogueRun run) {
@@ -157,7 +157,7 @@ public enum EchoEffect implements RogueEffect {
         new EffectRankContext(
             new int[]{10}, // Echo cost
             new int[]{1},  // Non-ranked boon
-            1, 1),
+            1, 2),
         EffectType.PERMANENT, "Echo Boon - Fortitude") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
@@ -177,7 +177,7 @@ public enum EchoEffect implements RogueEffect {
         new EffectRankContext(
             new int[]{6, 10, 14}, // Echo costs (rank 1-3)
             new int[]{1, 2, 3},   // Effect values: reveal 1/2/3 more Planebound rows
-            2, 1),
+            2, 2),
         EffectType.PERMANENT, null) {
         @Override
         public void onPathUpdate(PathUpdateContext ctx, RogueRun run) {
@@ -191,7 +191,7 @@ public enum EchoEffect implements RogueEffect {
         new EffectRankContext(
             new int[]{6, 10, 14, 18}, // Echo costs (rank 1-4)
             new int[]{1, 2, 3, 4},    // Effect values: 1/2/3/4 reroll charges
-            3, 1),
+            3, 2),
         EffectType.CONSUME, null) {
         @Override
         public int getChargesForRank(int rank) {
@@ -224,7 +224,7 @@ public enum EchoEffect implements RogueEffect {
         new EffectRankContext(
             new int[]{6, 10, 14, 18}, // Echo costs (rank 1-4)
             new int[]{1, 2, 3, 4},    // Effect values: 1/2/3/4 reroll charges
-            3, 1),
+            3, 2),
         EffectType.CONSUME, null) {
         @Override
         public int getChargesForRank(int rank) {
@@ -241,59 +241,6 @@ public enum EchoEffect implements RogueEffect {
             run.consumeEffect(getId());
         }
     };
-
-//    OPENING_VISION("foresight", "Opening Vision",
-//        "Start each match with +%s opening hand card.",
-//        new EffectRankContext(
-//        new int[]{8, 12}, // Echo costs (rank 1-2)
-//        new int[]{1, 2},  // Effect values: +1/+2 cards
-//        1, 1),
-//    EffectType.PERMANENT, "Echo Boon - Opening Vision") {
-//        @Override
-//        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-//            int rank = run.getRunEffectRank(getId());
-//            int extra = getEffectValueAtRank(rank);
-//            if (extra > 0) {
-//                human.setStartingHand(human.getStartingHand() + extra);
-//                RogueEffect.addCardToCommandZone(getEffectCardReferenceForRank(rank), human);
-//            }
-//        }
-//    },
-
-//    SPARK_KINDLE("spark_kindle", "Spark Kindle",
-//        "Begin each match with %s basic land(s) on battlefield.",
-//        new EffectRankContext(
-//            new int[]{5, 10, 20}, // Echo costs (rank 1-3)
-//            new int[]{1, 2, 3},   // Effect values: 1/2/3 tapped lands
-//            2, 1),
-//        EffectType.PERMANENT, "Echo Boon - Spark Kindle") {
-//        @Override
-//        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-//            int rank = run.getRunEffectRank(getId());
-//            int count = getEffectValueAtRank(rank);
-//            if (count <= 0) return;
-//            RogueEffect.moveCardsFromDeckToBattlefield(c -> c.getRules().getType().isBasicLand(),
-//                count, human);
-//            RogueEffect.addCardToCommandZone(getEffectCardReferenceForRank(rank), human);
-//        }
-//    },
-
-//    FRACTURED_BINDING("fractured_binding", "Fractured Binding",
-//        "Your Commander costs %s less to cast.",
-//        new EffectRankContext(
-//            new int[]{4, 8, 12, 16}, // Echo costs (rank 1-4)
-//            new int[]{1, 2, 3, 4},   // Effect values: {1}/{2}/{3}/{4} less
-//            3, 1),
-//        EffectType.PERMANENT, "Echo Boon - Fractured Binding") {
-//        @Override
-//        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-//            int rank = run.getRunEffectRank(getId());
-//            int reduction = getEffectValueAtRank(rank);
-//            if (reduction > 0) {
-//                RogueEffect.addCardToCommandZone(getEffectCardReferenceForRank(rank), human);
-//            }
-//        }
-//    };
 
     private final String id;
     private final String displayName;

@@ -16,6 +16,7 @@ import forge.gamemodes.rogue.RogueRun.CarryCard;
 import forge.gamemodes.rogue.RogueTutorial;
 import forge.gamemodes.rogue.effect.*;
 import forge.gamemodes.rogue.path.NodePlanebound;
+import forge.gui.FThreads;
 import forge.gui.GuiBase;
 import forge.gui.SOverlayUtils;
 import forge.item.PaperCard;
@@ -126,6 +127,15 @@ class NodePlaneboundHelper {
 
             List<RegisteredPlayer> players = Arrays.asList(human, ai);
             HostedMatch hostedMatch = GuiBase.getInterface().hostMatch();
+            if (!RogueTutorialHelper.hasSeenTutorial(RogueTutorial.MATCH_UI)
+                    || !RogueTutorialHelper.hasSeenTutorial(RogueTutorial.MATCH_CARD_HIGHLIGHTING)
+                    || !RogueTutorialHelper.hasSeenTutorial(RogueTutorial.MATCH_PHASES_AND_YIELDS)) {
+                hostedMatch.setStartGameHook(() -> {
+                    RogueTutorialHelper.registerMatchTutorials(hostedMatch.getGame());
+                    FThreads.invokeInEdtAndWait(() -> RogueTutorialHelper.showIfNotSeen(RogueTutorial.MATCH_UI));
+                    hostedMatch.setStartGameHook(null);
+                });
+            }
             hostedMatch.setEndGameHook(() -> recordPlaneboundPublicCards(planebound, hostedMatch, aiLobbyPlayer));
             currentRun.setHostedMatch(hostedMatch);
 
