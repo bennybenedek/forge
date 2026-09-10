@@ -51,7 +51,6 @@ import forge.game.player.PlayerActionConfirmMode;
 import forge.game.player.PlayerCollection;
 import forge.game.replacement.ReplaceMoved;
 import forge.game.replacement.ReplacementEffect;
-import forge.game.replacement.ReplacementLayer;
 import forge.game.replacement.ReplacementType;
 import forge.game.spellability.*;
 import forge.game.staticability.StaticAbility;
@@ -477,6 +476,7 @@ public class AiController {
         }
 
         CardCollection nonLandsInHand = CardLists.filter(player.getCardsIn(ZoneType.Hand), CardPredicates.NON_LANDS);
+        CardCollection landDropSpellCandidates = getLandDropSpellCandidates(nonLandsInHand);
 
         // Some considerations for Momir/MoJhoSto
         boolean hasMomir = player.isCardInCommand("Momir Vig, Simic Visionary Avatar");
@@ -515,36 +515,11 @@ public class AiController {
         if (!unreflectedLands.isEmpty()) {
             landList = unreflectedLands;
         }
-
         // try to skip lands that enter the battlefield tapped if we might want to play something this turn
-        if (!nonLandsInHand.isEmpty()) {
+        if (!landDropSpellCandidates.isEmpty()) {
             CardCollection nonTappedLands = new CardCollection();
             for (Card land : landList) {
-                // check replacement effects if land would enter tapped or not
-                final Map<AbilityKey, Object> repParams = AbilityKey.mapFromAffected(land);
-                repParams.put(AbilityKey.Origin, land.getZone().getZoneType());
-                repParams.put(AbilityKey.Destination, ZoneType.Battlefield);
-
-                // add Params for AddCounter Replacements
-                GameEntityCounterTable table = new GameEntityCounterTable();
-                repParams.put(AbilityKey.EffectOnly, true);
-                repParams.put(AbilityKey.CounterTable, table);
-                repParams.put(AbilityKey.CounterMap, table.column(land));
-
-                boolean foundTapped = false;
-                for (ReplacementEffect re : player.getGame().getReplacementHandler().getReplacementList(ReplacementType.Moved, repParams, ReplacementLayer.Other)) {
-                    SpellAbility reSA = re.ensureAbility();
-                    if (reSA == null || !ApiType.Tap.equals(reSA.getApi())) {
-                        continue;
-                    }
-                    reSA.setActivatingPlayer(reSA.getHostCard().getController());
-                    if (reSA.metConditions()) {
-                        foundTapped = true;
-                        break;
-                    }
-                }
-
-                // TODO if this is the only source for a color we need badly prioritize it instead
+                final boolean foundTapped = ComputerUtil.predictLandWillEnterTapped(player, land);
                 if (foundTapped) {
                     continue;
                 }
@@ -562,27 +537,90 @@ public class AiController {
                 } else {
                     // get the costs of the nonland cards in hand and the mana we have available.
                     // If adding one won't make something new castable, then pick a tapland.
+                    final Map<Card, Integer> manaIncreaseByLand = new HashMap<>();
+                    final Map<Card, CardCollection> fetchTargetsByLand = new HashMap<>();
                     int max_inc = 0;
                     for (Card c : nonTappedLands) {
-                        max_inc = max(max_inc, c.getMaxManaProduced());
+                        int manaProduced = c.getMaxManaProduced();
+                        if (manaProduced == 0) {
+                            for (final SpellAbility fetchSa : c.getNonManaAbilities()) {
+                                if (fetchSa.getApi() != ApiType.ChangeZone
+                                        || !"Library".equals(fetchSa.getParam("Origin"))
+                                        || !"Battlefield".equals(fetchSa.getParam("Destination"))
+                                        || "True".equalsIgnoreCase(fetchSa.getParam("Tapped"))
+                                        || fetchSa.getPayCosts() == null) {
+                                    continue;
+                                }
+
+                                boolean hasTapCost = false;
+                                boolean sacrificesSource = false;
+                                for (final CostPart part : fetchSa.getPayCosts().getCostParts()) {
+                                    if (part instanceof CostTap) {
+                                        hasTapCost = true;
+                                    } else if (part instanceof CostSacrifice && part.payCostFromSource()) {
+                                        sacrificesSource = true;
+                                    }
+                                }
+                                final String changeType = fetchSa.getParam("ChangeType");
+                                final CardCollection fetchTargets = changeType == null ? new CardCollection()
+                                        : CardLists.getValidCards(player.getCardsIn(ZoneType.Library), changeType,
+                                        player, c, fetchSa);
+                                final boolean canPayFetchCost = ComputerUtilCost.checkLifeCost(
+                                        player, fetchSa.getPayCosts(), c, 4, fetchSa);
+                                if (hasTapCost && sacrificesSource && !fetchTargets.isEmpty() && canPayFetchCost) {
+                                    final CardCollection untappedFetchTargets = CardLists.filter(fetchTargets,
+                                            target -> !ComputerUtil.predictLandWillEnterTapped(player, target));
+                                    if (!untappedFetchTargets.isEmpty()) {
+                                        manaProduced = 1;
+                                        fetchTargetsByLand.put(c, untappedFetchTargets);
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                        manaIncreaseByLand.put(c, manaProduced);
+                        max_inc = max(max_inc, manaProduced);
                     }
                     // check for lands with no mana abilities
                     if (max_inc > 0) {
-                        boolean found = false;
-                        for (Card c : nonLandsInHand) {
-                            // TODO make this work better with split cards and Monocolored Hybrid
-                            ManaCost cost = c.getManaCost();
-                            // check for incremental cmc
-                            // check for X cost spells
-                            if ((cost.getCMC() - mana_available) * (cost.getCMC() - mana_available - max_inc - 1) < 0 ||
-                                    (cost.countX() > 0 && cost.getCMC() >= mana_available)) {
-                                found = true;
-                                break;
+                        final CardCollection spellEnablingLands = new CardCollection();
+                        for (final Card land : nonTappedLands) {
+                            final int manaIncrease = manaIncreaseByLand.getOrDefault(land, 0);
+                            if (manaIncrease <= 0) {
+                                continue;
+                            }
+                            final CardCollection effectiveManaSources = fetchTargetsByLand.getOrDefault(
+                                    land, new CardCollection(land));
+                            for (final Card spell : landDropSpellCandidates) {
+                                // TODO make this work better with split cards and Monocolored Hybrid
+                                final ManaCost cost = spell.getManaCost();
+                                // Check the incremental CMC using this land's contribution, then verify colors.
+                                final boolean newlyCastable = (cost.getCMC() - mana_available)
+                                        * (cost.getCMC() - mana_available - manaIncrease - 1) < 0
+                                        || (cost.countX() > 0 && cost.getCMC() >= mana_available);
+                                if (!newlyCastable) {
+                                    continue;
+                                }
+
+                                boolean colorsFit = false;
+                                for (final Card effectiveManaSource : effectiveManaSources) {
+                                    final ColorSet availableColors = ColorSet.fromNames(
+                                            ComputerUtilCost.getAvailableManaColors(player, effectiveManaSource));
+                                    final boolean sourceColorsFit = cost.canBePaidWithAvailable(availableColors.getColor());
+                                    if (sourceColorsFit) {
+                                        colorsFit = true;
+                                        break;
+                                    }
+                                }
+                                if (colorsFit) {
+                                    spellEnablingLands.add(land);
+                                    break;
+                                }
                             }
                         }
 
-                        if (found) {
-                            landList = nonTappedLands;
+                        if (!spellEnablingLands.isEmpty()) {
+                            landList = spellEnablingLands;
                         }
                     }
                 }
@@ -685,6 +723,14 @@ public class AiController {
                     return score;
                 }));
         return toReturn;
+    }
+
+    private CardCollection getLandDropSpellCandidates(final CardCollection nonLandsInHand) {
+        final CardCollection candidates = new CardCollection(nonLandsInHand);
+        final CardCollection commandSpells = CardLists.filter(
+                player.getCardsIn(ZoneType.Command), card -> card.getSpells().anyMatch(SpellAbility::isSpell));
+        candidates.addAll(commandSpells);
+        return candidates;
     }
 
     // if return true, go to next phase
@@ -1418,6 +1464,7 @@ public class AiController {
         }
 
         CardCollection inHand = CardLists.filter(player.getCardsIn(ZoneType.Hand), CardPredicates.NON_LANDS);
+        CardCollection landDropSpellCandidates = getLandDropSpellCandidates(inHand);
         CardCollectionView otb = player.getCardsIn(ZoneType.Battlefield);
 
         if (getBoolProperty(AiProps.HOLD_LAND_DROP_ONLY_IF_HAVE_OTHER_PERMS)) {
@@ -1434,14 +1481,14 @@ public class AiController {
             }
         }
 
-        int totalCMCInHand = Aggregates.sum(inHand, Card::getCMC);
-        int minCMCInHand = Aggregates.min(inHand, Card::getCMC);
-        if (minCMCInHand == Integer.MAX_VALUE)
-            minCMCInHand = 0;
+        int totalCMCCandidates = Aggregates.sum(landDropSpellCandidates, Card::getCMC);
+        int minCMCCandidate = Aggregates.min(landDropSpellCandidates, Card::getCMC);
+        if (minCMCCandidate == Integer.MAX_VALUE)
+            minCMCCandidate = 0;
         int predictedMana = getAvailableManaEstimate(player, true);
 
-        boolean canCastWithLandDrop = (predictedMana + 1 >= minCMCInHand) && minCMCInHand > 0 && !isTapLand;
-        boolean cantCastAnythingNow = predictedMana < minCMCInHand;
+        boolean canCastWithLandDrop = (predictedMana + 1 >= minCMCCandidate) && minCMCCandidate > 0 && !isTapLand;
+        boolean cantCastAnythingNow = predictedMana < minCMCCandidate;
 
         boolean hasRelevantAbsOTB = otb.anyMatch(card -> {
             boolean isTapLand1 = false;
@@ -1504,7 +1551,7 @@ public class AiController {
             // Hopefully there's not much to do with the extra mana immediately, can wait for Main 2
             return true;
         }
-        if ((predictedMana <= totalCMCInHand && canCastWithLandDrop) || (hasRelevantAbsOTB && !isTapLand) || hasLandBasedEffect) {
+        if ((predictedMana <= totalCMCCandidates && canCastWithLandDrop) || (hasRelevantAbsOTB && !isTapLand) || hasLandBasedEffect) {
             // Might need an extra land to cast something, or for some kind of an ETB ability with a cost or an
             // alternative cost (if we cast it in Main 1), or to use an activated ability on the battlefield
             return false;

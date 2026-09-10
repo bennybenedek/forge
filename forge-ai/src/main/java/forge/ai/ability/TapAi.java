@@ -3,6 +3,7 @@ package forge.ai.ability;
 import forge.ai.*;
 import forge.card.ColorSet;
 import forge.game.ability.AbilityUtils;
+import forge.game.ability.ApiType;
 import forge.game.card.Card;
 import forge.game.card.CardCollection;
 import forge.game.card.CardLists;
@@ -17,6 +18,7 @@ import forge.game.spellability.SpellAbility;
 import forge.game.zone.ZoneType;
 import forge.util.collect.FCollectionView;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class TapAi extends TapAiBase {
@@ -97,7 +99,13 @@ public class TapAi extends TapAiBase {
                     final CostPayLife lifeCost = (CostPayLife) part;
                     Integer amount = lifeCost.convertAmount();
                     if (payer.getLife() > (amount + 1) && payer.canPayLife(amount, true, sa)) {
-                        final int landsize = payer.getLandsInPlay().size() + 1;
+                        final int availableMana = ComputerUtilMana.getAvailableManaEstimate(payer);
+                        final int sourceMana = source.getMaxManaProduced();
+                        final int manaWithSource = availableMana + sourceMana;
+                        final ColorSet availableColorsWithoutSource = ColorSet.fromNames(
+                                ComputerUtilCost.getAvailableManaColors(payer, List.of()));
+                        final ColorSet availableColorsWithSource = ColorSet.fromNames(
+                                ComputerUtilCost.getAvailableManaColors(payer, source));
                         final List<SpellAbility> all = ComputerUtilAbility.getSpellAbilities(
                                 payer.getCardsIn(ZoneType.Hand, ZoneType.Command), payer);
 
@@ -107,17 +115,68 @@ public class TapAi extends TapAiBase {
                                 continue;
                             }
 
-                            // Check if the untapped land would let the AI cast a spell it already wants to play.
-                            if (landsize != payCosts.getTotalMana().getCMC()) {
+                            // Pay life only when this land adds the mana needed for a spell the AI wants to play.
+                            final int spellManaCost = payCosts.getTotalMana().getCMC();
+                            final boolean colorsFitWithoutSource = payCosts.getTotalMana()
+                                    .canBePaidWithAvailable(availableColorsWithoutSource.getColor());
+                            final boolean colorsFitWithSource = payCosts.getTotalMana()
+                                    .canBePaidWithAvailable(availableColorsWithSource.getColor());
+                            final boolean payableWithoutSource = availableMana >= spellManaCost && colorsFitWithoutSource;
+                            final boolean payableWithSource = manaWithSource >= spellManaCost && colorsFitWithSource;
+                            if (payableWithoutSource || !payableWithSource) {
                                 continue;
                             }
 
-                            final AiPlayDecision playDecision = ((PlayerControllerAi) payer.getController()).getAi().canPlaySa(testSa);
+                            final boolean ignoreMain2Preference = payer.getGame().getPhaseHandler().is(PhaseType.MAIN1, payer)
+                                    && testSa.isSpell() && (testSa.getApi() == ApiType.PermanentCreature
+                                    || testSa.getApi() == ApiType.PermanentNoncreature);
+                            SpellAbility evaluationSa = testSa;
+                            if (ignoreMain2Preference) {
+                                // An untapped land can also fund a permanent the AI prefers to cast after combat.
+                                evaluationSa = testSa.copy(payer);
+                                evaluationSa.putParam("AIIgnoreMain2Preference", "True");
+                            }
+                            final AiPlayDecision playDecision = ((PlayerControllerAi) payer.getController()).getAi().canPlaySa(evaluationSa);
                             final boolean willPlay = playDecision == AiPlayDecision.WillPlay || playDecision == AiPlayDecision.WaitForMain2;
-                            final boolean canPay = payCosts.getTotalMana().canBePaidWithAvailable(ColorSet.fromNames(
-                                    ComputerUtilCost.getAvailableManaColors(payer, source)).getColor());
-                            if (canPay && willPlay) {
+                            if (colorsFitWithSource && willPlay) {
                                 return true;
+                            }
+                        }
+
+                        final boolean fetchedShockland = source.getZone() != null
+                                && source.getZone().getZoneType() == ZoneType.Library
+                                && payer.getGame().getStack().isResolving()
+                                && payer.getGame().getPhaseHandler().is(PhaseType.MAIN1, payer);
+                        if (fetchedShockland) {
+                            final List<SpellAbility> rawPermanentSpells = new ArrayList<>();
+                            for (final Card card : payer.getCardsIn(ZoneType.Hand, ZoneType.Command)) {
+                                for (final SpellAbility rawSa : card.getSpells()) {
+                                    if (rawSa.getApi() == ApiType.PermanentCreature
+                                            || rawSa.getApi() == ApiType.PermanentNoncreature) {
+                                        rawPermanentSpells.add(rawSa);
+                                    }
+                                }
+                            }
+
+                            for (final SpellAbility testSa : ComputerUtilAbility.getOriginalAndAltCostAbilities(rawPermanentSpells, payer)) {
+                                final Cost payCosts = testSa.getPayCosts();
+                                if (payCosts == null || !payCosts.isOnlyManaCost()) {
+                                    continue;
+                                }
+                                final int spellManaCost = payCosts.getTotalMana().getCMC();
+                                final boolean colorsFitWithoutSource = payCosts.getTotalMana()
+                                        .canBePaidWithAvailable(availableColorsWithoutSource.getColor());
+                                final boolean colorsFitWithSource = payCosts.getTotalMana()
+                                        .canBePaidWithAvailable(availableColorsWithSource.getColor());
+                                final boolean payableWithoutSource = availableMana >= spellManaCost && colorsFitWithoutSource;
+                                final boolean payableWithSource = manaWithSource >= spellManaCost && colorsFitWithSource;
+                                if (payableWithoutSource || !payableWithSource) {
+                                    continue;
+                                }
+
+                                if (colorsFitWithSource) {
+                                    return true;
+                                }
                             }
                         }
                     }

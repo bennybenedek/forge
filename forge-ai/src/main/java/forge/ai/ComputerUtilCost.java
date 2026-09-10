@@ -1,6 +1,7 @@
 package forge.ai;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -649,7 +650,12 @@ public class ComputerUtilCost {
         for (Card c : cardsToConsider) {
             for (SpellAbility sa : c.getManaAbilities()) {
                 if (sa.getManaPart() != null) {
-                    colorsAvailable.add(sa.getManaPart().getOrigProduced());
+                    if (sa.getManaPart().isComboMana()) {
+                        final String comboColors = sa.getManaPart().getComboColors(sa);
+                        Collections.addAll(colorsAvailable, comboColors.split(" "));
+                    } else {
+                        colorsAvailable.add(sa.getManaPart().getOrigProduced());
+                    }
                 }
             }
         }

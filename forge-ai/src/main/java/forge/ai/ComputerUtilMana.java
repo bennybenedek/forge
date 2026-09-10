@@ -1311,10 +1311,8 @@ public class ComputerUtilMana {
                 ma.setActivatingPlayer(p);
                 if (!checkPlayable || ma.canPlay()) {
                     int costsToActivate = ma.getPayCosts().getCostMana() != null ? ma.getPayCosts().getCostMana().convertAmount() : 0;
-                    int producedMana = ma.getParamOrDefault("Produced", "").split(" ").length;
-                    int producedAmount = AbilityUtils.calculateAmount(src, ma.getParamOrDefault("Amount", "1"), ma);
-
-                    int producedTotal = producedMana * producedAmount - costsToActivate;
+                    // Combo lists color choices, not separate mana produced by one activation.
+                    int producedTotal = ma.amountOfManaGenerated(true) - costsToActivate;
 
                     if (costsToActivate > 0) {
                         producedWithCost += producedTotal;

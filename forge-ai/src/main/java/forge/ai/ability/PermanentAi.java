@@ -34,6 +34,11 @@ public class PermanentAi extends SpellAbilityAi {
             return false;
         }
 
+        // Only temporary shockland evaluation copies bypass the ordinary postcombat preference.
+        if (sa.isSpell() && ph.is(PhaseType.MAIN1, ai) && "True".equals(sa.getParam("AIIgnoreMain2Preference"))) {
+            return true;
+        }
+
         // Wait for Main2 if possible
         return !ph.is(PhaseType.MAIN1) || !ph.isPlayerTurn(ai) || sa.hasParam("WithoutManaCost") || ComputerUtil.castPermanentInMain1(ai, sa);
     }

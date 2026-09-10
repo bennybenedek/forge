@@ -41,6 +41,7 @@ import forge.game.phase.PhaseHandler;
 import forge.game.phase.PhaseType;
 import forge.game.player.GameLossReason;
 import forge.game.player.Player;
+import forge.game.player.PlayerCollection;
 import forge.game.replacement.ReplacementEffect;
 import forge.game.replacement.ReplacementLayer;
 import forge.game.replacement.ReplacementType;
@@ -77,6 +78,50 @@ import java.util.stream.Collectors;
  */
 public class ComputerUtil {
     private static final double DEVOUR_SACRIFICE_VALUE_FACTOR = 0.8;
+
+    /**
+     * Predict whether a land enters tapped, including the AI's existing shockland payment decision.
+     */
+    public static boolean predictLandWillEnterTapped(final Player player, final Card land) {
+        final Map<AbilityKey, Object> repParams = AbilityKey.mapFromAffected(land);
+        repParams.put(AbilityKey.Origin, land.getZone().getZoneType());
+        repParams.put(AbilityKey.Destination, ZoneType.Battlefield);
+
+        final GameEntityCounterTable table = new GameEntityCounterTable();
+        repParams.put(AbilityKey.EffectOnly, true);
+        repParams.put(AbilityKey.CounterTable, table);
+        repParams.put(AbilityKey.CounterMap, table.column(land));
+
+        for (final ReplacementEffect re : player.getGame().getReplacementHandler().getReplacementList(
+                ReplacementType.Moved, repParams, ReplacementLayer.Other)) {
+            final SpellAbility reSa = re.ensureAbility();
+            if (reSa == null || reSa.getApi() != ApiType.Tap) {
+                continue;
+            }
+
+            reSa.setActivatingPlayer(reSa.getHostCard().getController());
+            if (!reSa.metConditions()) {
+                continue;
+            }
+
+            if (reSa.hasParam("ETB") && reSa.getHostCard().equals(land)
+                    && "Self".equals(reSa.getParam("Defined"))
+                    && "You".equals(reSa.getParam("UnlessPayer"))
+                    && !reSa.hasParam("UnlessSwitched")
+                    && reSa.getParamOrDefault("UnlessCost", "").matches("PayLife<[0-9]+>")) {
+                final Cost unlessCost = AbilityUtils.calculateUnlessCost(reSa, reSa.getParam("UnlessCost"), true);
+                if (unlessCost != null && unlessCost.getCostParts().size() == 1
+                        && unlessCost.getCostParts().get(0) instanceof CostPayLife
+                        && unlessCost.getCostParts().get(0).convertAmount() != null
+                        && SpellApiToAi.Converter.get(reSa).willPayUnlessCost(
+                                player, reSa, unlessCost, false, new PlayerCollection(player))) {
+                    continue;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
 
     public static boolean handlePlayingSpellAbility(final Player ai, SpellAbility sa, Consumer<SpellAbility> chooseTargets) {
         final Card source = sa.getHostCard();

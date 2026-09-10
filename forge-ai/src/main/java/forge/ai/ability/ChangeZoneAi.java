@@ -6,8 +6,10 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Multiset;
 
 import forge.ai.*;
+import forge.card.ColorSet;
 import forge.card.CardType;
 import forge.card.MagicColor;
+import forge.card.mana.ManaCost;
 import forge.card.mana.ManaCostShard;
 import forge.game.Game;
 import forge.game.GameEntity;
@@ -283,6 +285,9 @@ public class ChangeZoneAi extends SpellAbilityAi {
             origin = ZoneType.listValueOf(sa.getParam("Origin"));
         }
         final String destination = sa.getParam("Destination");
+        final boolean isActivatedLandFetch = source.isLand() && sa.isActivatedAbility()
+                && origin != null && origin.contains(ZoneType.Library)
+                && "Battlefield".equals(destination);
 
         if (sa.isNinjutsu()) {
             if (!source.ignoreLegendRule() && ai.isCardInPlay(source.getName())) {
@@ -356,7 +361,6 @@ public class ChangeZoneAi extends SpellAbilityAi {
                 // FIXME: make this properly interact with several origin zones
                 list = CardLists.getValidCards(list, type, source.getController(), source, sa);
             }
-
             if (!activateForCost &&
                     (p == ai || !canIgnoreEmptyDefinedPlayers(ai, sa, origin, destination, pDefined)) &&
                     (list.isEmpty() || ("Battlefield".equals(destination) && Iterables.any(list, card -> ComputerUtil.isETBprevented(card))))) {
@@ -407,6 +411,17 @@ public class ChangeZoneAi extends SpellAbilityAi {
 
         if (ComputerUtil.playImmediately(ai, sa)) {
             return new AiAbilityDecision(100, AiPlayDecision.WillPlay);
+        }
+
+        final boolean ownMain1 = ai.getGame().getPhaseHandler().is(PhaseType.MAIN1, ai);
+        final boolean forcedTappedFetch = "True".equalsIgnoreCase(sa.getParam("Tapped"));
+        final boolean consumesManaSource = sa.getPayCosts() != null
+                && (sa.getPayCosts().hasTapCost() || sa.getPayCosts().getCostParts().stream()
+                .anyMatch(part -> part instanceof CostSacrifice && part.payCostFromSource()));
+        if (isActivatedLandFetch && ownMain1 && forcedTappedFetch && !activateForCost
+                && !sa.hasParam("ActivationPhases") && consumesManaSource
+                && !ComputerUtilMana.getAIPlayableMana(source).isEmpty()) {
+            return new AiAbilityDecision(0, AiPlayDecision.WaitForMain2);
         }
 
         // don't use fetching to top of library/graveyard before main2
@@ -1502,6 +1517,8 @@ public class ChangeZoneAi extends SpellAbilityAi {
     }
 
     public static Card chooseCardToHiddenOriginChangeZone(ZoneType destination, List<ZoneType> origin, SpellAbility sa, CardCollection fetchList, Player player, final Player decider) {
+        final boolean isActivatedLandFetch = sa.getHostCard().isLand() && sa.isActivatedAbility()
+                && origin.contains(ZoneType.Library) && ZoneType.Battlefield.equals(destination);
         if (fetchList.isEmpty()) {
             return null;
         }
@@ -1612,6 +1629,42 @@ public class ChangeZoneAi extends SpellAbilityAi {
             }
         } else if (origin.contains(ZoneType.Library) && (type.contains("Basic") || areAllBasics(type))) {
             if (keycardFound != null) return keycardFound;
+
+            if (isActivatedLandFetch && !"True".equalsIgnoreCase(sa.getParam("Tapped"))) {
+                final int availableMana = ComputerUtilMana.getAvailableManaEstimate(decider);
+                final CardCollection immediateFetchTargets = new CardCollection();
+                for (final Card target : fetchList) {
+                    if (ComputerUtil.predictLandWillEnterTapped(decider, target)) {
+                        continue;
+                    }
+
+                    final int manaIncrease = target.getMaxManaProduced();
+                    if (manaIncrease <= 0) {
+                        continue;
+                    }
+                    final ColorSet availableColors = ColorSet.fromNames(
+                            ComputerUtilCost.getAvailableManaColors(decider, target));
+                    boolean enablesSpell = false;
+                    for (final Card spell : CardLists.filter(decider.getCardsIn(ZoneType.Hand), CardPredicates.NON_LANDS)) {
+                        final ManaCost cost = spell.getManaCost();
+                        final boolean newlyCastable = (cost.getCMC() - availableMana)
+                                * (cost.getCMC() - availableMana - manaIncrease - 1) < 0
+                                || (cost.countX() > 0 && cost.getCMC() >= availableMana);
+                        final boolean colorsFit = cost.canBePaidWithAvailable(availableColors.getColor());
+                        if (newlyCastable && colorsFit) {
+                            enablesSpell = true;
+                            break;
+                        }
+                    }
+                    if (enablesSpell) {
+                        immediateFetchTargets.add(target);
+                    }
+                }
+
+                if (!immediateFetchTargets.isEmpty()) {
+                    fetchList = immediateFetchTargets;
+                }
+            }
 
             c = basicManaFixing(decider, fetchList);
         } else if (ZoneType.Hand.equals(destination) && CardLists.getNotType(fetchList, "Creature").isEmpty()) {
