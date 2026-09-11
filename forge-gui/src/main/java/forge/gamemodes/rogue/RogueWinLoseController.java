@@ -103,7 +103,7 @@ public class RogueWinLoseController {
             // Won the match but life is still <= 0 (e.g. "can't lose the game" effect) — run is lost
             if (currentRun.getCurrentLife() <= 0) {
                 RogueStats.fireOnMatchCompleted(currentRun, RogueMetaProgress.getInstance(), true);
-                handleRunDefeat();
+                handleRunDefeat("being unable to continue the run at 0 or less life");
                 return;
             }
         }
@@ -250,11 +250,11 @@ public class RogueWinLoseController {
         }
 
         RogueStats.fireOnMatchCompleted(currentRun, RogueMetaProgress.getInstance(), false);
-        handleRunDefeat();
+        handleRunDefeat(getDefeatedByCurrentNode(currentRun));
     }
 
-    private void handleRunDefeat() {
-        finalizeRunDefeat(currentRun, getDefeatedByCurrentNode(currentRun));
+    private void handleRunDefeat(String defeatedBy) {
+        finalizeRunDefeat(currentRun, defeatedBy);
         view.getBtnQuit().setText(BTN_LOSE_RUN);
         view.showMessage("You were defeated! Your Run has ended.", "Defeat", FSkinProp.ICO_QUEST_ZEP);
     }
