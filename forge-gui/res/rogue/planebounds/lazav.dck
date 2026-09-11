@@ -6,14 +6,13 @@ type=2
 [Commander]
 1 Lazav, Dimir Mastermind|GK1|1
 [Main]
-1 Arcane Signet|OTC|1
+1 Arcane Signet|CMM|1
 1 Bruvac the Grandiloquent|RVR|1
 1 Choked Estuary|LCC|1
 1 Command Tower|DSC|1
 1 Consuming Aberration|GK1|1
 1 Counterspell|DSC|1
 1 Cruel Somnophage|WOE|1
-1 Dimir Charm|GK1|1
 1 Drown in the Loch|CLB|1
 1 Drowned Catacomb|DRC|1
 1 Duskmantle Guildmage|GTC|1
@@ -23,6 +22,7 @@ type=2
 1 Grisly Spectacle|IMA|1
 6 Island|GK1|1
 1 Maddening Cacophony|ZNR|1
+1 Mana Drain|2X2|1
 1 Memory Erosion|PLST|1
 1 Mind Funeral|MMA|1
 1 Mind Grind|GTC|1

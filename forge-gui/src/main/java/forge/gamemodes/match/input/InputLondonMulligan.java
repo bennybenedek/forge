@@ -22,6 +22,7 @@ import forge.game.GameEntityView;
 import forge.game.card.Card;
 import forge.game.card.CardCollection;
 import forge.game.card.CardCollectionView;
+import forge.game.card.CardView;
 import forge.game.player.Player;
 import forge.game.zone.ZoneType;
 import forge.player.PlayerControllerHuman;
@@ -50,6 +51,10 @@ public class InputLondonMulligan extends InputSyncronizedBase {
         super(controller);
         player = humanPlayer;
         toReturn = returning;
+        if (toReturn > 0) {
+            getController().getGui().setSelectables(
+                    CardView.getCollection(player.getZone(ZoneType.Hand).getCards()), toReturn, toReturn);
+        }
     }
 
     /** {@inheritDoc} */
@@ -104,6 +109,13 @@ public class InputLondonMulligan extends InputSyncronizedBase {
         resetCardHighlights();
         getController().getGame().getView().updateIsMulligan(false);
         stop();
+    }
+
+    @Override
+    protected void onStop() {
+        if (toReturn > 0) {
+            getController().getGui().clearSelectables();
+        }
     }
 
     volatile boolean cardSelectLocked = false;

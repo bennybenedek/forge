@@ -7,11 +7,12 @@ type=0
 1 Morophon, the Boundless|MH1|1
 [Main]
 1 Absorb Identity|KHM|1
-1 Amoeboid Changeling|LRW|1
+1 Avian Changeling|LRW|1
 1 Bloodline Pretender|KHM|1
-1 Breeding Pool|PEOE|1
+1 Breeding Pool|EOE|1
 1 Changeling Outcast|MH1|1
 1 Chomping Changeling|ECL|1
+1 Cloudshredder Sliver|CMM|1
 1 Command Tower|M3C|1
 1 Crib Swap|M3C|1
 1 Cultivate|ECC|1
@@ -29,7 +30,6 @@ type=0
 1 Leyline of Mutation|DSK|1
 1 Manaweft Sliver|CMM|1
 1 Masked Vandal|KHM|1
-1 Mirror Entity|OTC|1
 1 Mountain|ECL|1
 1 Overgrown Tomb|ECL|1
 1 Path of Ancestry|ECC|1
@@ -41,6 +41,7 @@ type=0
 1 Sacred Foundry|PEOE|1
 1 Secluded Courtyard|ECC|1
 1 Sol Ring|ECC|2
+1 Steam Vents|ECL|1
 1 Swamp|ECL|1
 1 Swarmyard|BLC|1
 1 Taurean Mauler|FDN|1
