@@ -65,7 +65,7 @@ public enum RogueTutorial {
 
   MATCH_PHASES_AND_YIELDS(
       "Phase Stops and Yield Settings",
-      "Let us put the game's yield controls to work, Commander. Click the phase buttons to enable or disable the default priority stops during a turn. " +
+      "Finally, let us sort out the game's yield controls, Commander. Click the phase buttons to enable or disable the default priority stops during a turn. " +
           "You are choosing when the game pauses for your input, not removing phases from the game.",
       "The 'End Turn' button at the bottom left passes automatically through the rest of the current turn, subject to yield interruptions. " +
           "It does not end the turn immediately. When your last action can be undone, that button shows 'Undo' instead.",
@@ -74,7 +74,8 @@ public enum RogueTutorial {
           "Unlike the temporary yield requested by 'End Turn', Auto-Pass stays enabled until you turn it off.",
       "Open 'Game > Yield Settings' to choose which events interrupt a yield and return control to you, such as being targeted or having attackers declared against you. " +
           "Set these controls to suit your pace.",
-      "Check 'Forge -> Help -> Getting Started -> 'How to Play' and the Forge Wiki for more details on the rules of Magic The Gathering and how to play in Forge."
+      "Check 'Forge -> Help -> Getting Started -> 'How to Play' and the Forge Wiki for more details on the rules of Magic The Gathering and how to play in Forge.\n" +
+          "You're now on your own, Commander."
   ),
 
   POST_BATTLE(

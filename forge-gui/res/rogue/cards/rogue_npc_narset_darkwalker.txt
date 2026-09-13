@@ -1,6 +1,6 @@
 Name:Narset Trait - Darkwalker
 ManaCost:no cost
 Types:Trait
-T:Mode$ Planeswalk | TriggerZones$ Command | ValidPlayer$ You | ValidCause$ PlanarDie | Execute$ TrigLoseLife | TriggerDescription$ Whenever you planeswalk as a result of rolling the planar die, each opponent loses 3 life.
-SVar:TrigLoseLife:DB$ LoseLife | Defined$ Opponent | LifeAmount$ 3
-Oracle:Whenever you planeswalk as a result of rolling the planar die, each opponent loses 3 life.
+T:Mode$ Planeswalk | TriggerZones$ Command | ValidPlayer$ You | ValidCause$ PlanarDie | Execute$ TrigDealDamage | TriggerDescription$ Whenever you planeswalk as a result of rolling the planar die, this Trait deals 3 damage to any target.
+SVar:TrigDealDamage:DB$ DealDamage | ValidTgts$ Any | NumDmg$ 3
+Oracle:Whenever you planeswalk as a result of rolling the planar die, this Trait deals 3 damage to any target.

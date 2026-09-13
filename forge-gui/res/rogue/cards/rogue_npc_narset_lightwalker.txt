@@ -1,6 +1,6 @@
 Name:Narset Trait - Lightwalker
 ManaCost:no cost
 Types:Trait
-T:Mode$ Planeswalk | TriggerZones$ Command | ValidPlayer$ You | ValidCause$ PlanarDie | Execute$ TrigGainLife | TriggerDescription$ Whenever you planeswalk as a result of rolling the planar die, you gain 3 life.
-SVar:TrigGainLife:DB$ GainLife | Defined$ You | LifeAmount$ 3
-Oracle:Whenever you planeswalk as a result of rolling the planar die, you gain 3 life.
+T:Mode$ Planeswalk | TriggerZones$ Command | ValidPlayer$ You | ValidCause$ PlanarDie | Execute$ TrigGainLife | TriggerDescription$ Whenever you planeswalk as a result of rolling the planar die, you gain 5 life.
+SVar:TrigGainLife:DB$ GainLife | Defined$ You | LifeAmount$ 5
+Oracle:Whenever you planeswalk as a result of rolling the planar die, you gain 5 life.

@@ -443,9 +443,9 @@ public enum ChestEffect implements RogueEffect {
             addEffectCardToCommandZone(human);
         }
     },
-    SHIELD_OF_GHOSTLY_SAFETY("shield_of_ghostly_safety", "Shield Of Ghostly Safety",
+    SHIELD_OF_GHOSTS("shield_of_ghosts", "Shield Of Ghosts",
         TRAIT_GAIN_DESCRIPTION,
-        EffectType.PERMANENT, "Chest Trait - Shield Of Ghostly Safety") {
+        EffectType.PERMANENT, "Chest Trait - Shield Of Ghosts") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
