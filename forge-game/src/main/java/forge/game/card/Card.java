@@ -3335,19 +3335,27 @@ public class Card extends GameEntity implements Comparable<Card>, IHasSVars, ITr
         return false;
     }
 
-    public final boolean canProduceSameManaTypeWith(final Card c) {
-        if (getManaAbilities().isEmpty()) {
-            return false;
-        }
+    /** Every color this card could produce, walking its mana abilities once. */
+    public final Set<String> getProducibleColors() {
         Set<String> colors = new HashSet<>();
-        for (final SpellAbility ab : c.getManaAbilities()) {
+        for (final SpellAbility ab : getManaAbilities()) {
             if (ab.getApi() == ApiType.ManaReflected) {
                 colors.addAll(CardUtil.getReflectableManaColors(ab));
             } else {
                 colors = CardUtil.canProduce(6, ab, colors);
             }
+            if (colors.size() == MagicColor.Constant.COLORS_AND_COLORLESS.size()) {
+                break; // nothing left for a further ability to add
+            }
         }
-        return canProduceColorMana(colors);
+        return colors;
+    }
+
+    public final boolean canProduceSameManaTypeWith(final Card c) {
+        if (getManaAbilities().isEmpty()) {
+            return false;
+        }
+        return canProduceColorMana(c.getProducibleColors());
     }
 
     public final int getMaxManaProduced() {
@@ -3405,7 +3413,7 @@ public class Card extends GameEntity implements Comparable<Card>, IHasSVars, ITr
         if (changedCardTypes.isEmpty()) {
             return false;
         }
-        // only Layer 4 are affected, and it's never intrinsic
+        // CR 305.7 only Layer 4 are affected, and it's never intrinsic
         return changedCardTypes.values().stream().anyMatch(ICardChangedType::isRemoveLandTypes);
     }
 
@@ -4985,8 +4993,6 @@ public class Card extends GameEntity implements Comparable<Card>, IHasSVars, ITr
 
     public final void updateKeywords() {
         getCurrentState().getView().updateKeywords(this, getCurrentState());
-        // Keywords (and P/T from them) can affect displayed lethal damage
-        getView().updateLethalDamage(this);
     }
 
     public final void addChangedCardKeywords(final List<String> keywords, final List<String> removeKeywords,

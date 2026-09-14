@@ -1,11 +1,11 @@
 package forge.ai;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
 
+import forge.card.MagicColor;
 import forge.game.GameObject;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -648,15 +648,9 @@ public class ComputerUtilCost {
         }
 
         for (Card c : cardsToConsider) {
-            for (SpellAbility sa : c.getManaAbilities()) {
-                if (sa.getManaPart() != null) {
-                    if (sa.getManaPart().isComboMana()) {
-                        final String comboColors = sa.getManaPart().getComboColors(sa);
-                        Collections.addAll(colorsAvailable, comboColors.split(" "));
-                    } else {
-                        colorsAvailable.add(sa.getManaPart().getOrigProduced());
-                    }
-                }
+            colorsAvailable.addAll(c.getProducibleColors());
+            if (colorsAvailable.size() == MagicColor.Constant.COLORS_AND_COLORLESS.size()) {
+                break; // nothing left for a further source to add
             }
         }
 
