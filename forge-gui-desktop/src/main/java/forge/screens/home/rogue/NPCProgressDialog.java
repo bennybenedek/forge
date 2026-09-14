@@ -25,7 +25,7 @@ import net.miginfocom.swing.MigLayout;
  */
 public class NPCProgressDialog {
 
-  private static final int DIALOG_WIDTH = 420;
+  private static final int DIALOG_WIDTH = 820;
   private static final int DIALOG_HEIGHT = 280;
   private static final int SAVE_OPTION = 0;
 
@@ -53,17 +53,18 @@ public class NPCProgressDialog {
     panel.add(lblDescription, "w 100%!, ax center, gap 0 0 18px 0, wrap");
 
     for (NPC npc : NPC.values()) {
-      List<LevelOption> options = getOptionsForNpc(npc);
+      int currentLevel = progress.getNPCLevel(npc.id);
+      List<LevelOption> options = getOptionsForNpc(npc, currentLevel);
       if (options.isEmpty()) {
         continue;
       }
       FComboBox<LevelOption> comboBox = new FComboBox<>(options);
-      comboBox.setSelectedItem(getSelectedOption(options, progress.getNPCLevel(npc.id)));
+      comboBox.setSelectedIndex(0);
       levelInputs.put(npc, comboBox);
 
       panel.add(new FLabel.Builder().text(npc.name).fontSize(14).build(),
           "split 2, w 240px!, h 28px!");
-      panel.add(comboBox, "w 120px!, h 28px!, wrap");
+      panel.add(comboBox, "w 520px!, h 28px!, wrap");
     }
 
     Dimension dialogSize = new Dimension(DIALOG_WIDTH, DIALOG_HEIGHT);
@@ -99,7 +100,7 @@ public class NPCProgressDialog {
     return updatedLevels;
   }
 
-  private static List<LevelOption> getOptionsForNpc(NPC npc) {
+  private static List<LevelOption> getOptionsForNpc(NPC npc, int currentLevel) {
     NPCEncounter[] encounters = switch (npc) {
       case TYVAR -> TyvarEncounter.values();
       case GONTI -> GontiEncounter.values();
@@ -112,6 +113,9 @@ public class NPCProgressDialog {
     }
 
     List<LevelOption> options = new ArrayList<>();
+    options.add(new LevelOption(
+        "Keep current level (" + currentLevel + " - " + getActiveEncounterName(encounters, currentLevel) + ")",
+        currentLevel));
     boolean hasLevelZero = false;
     for (NPCEncounter encounter : encounters) {
       if (encounter.getRequiredLevel() < 0) {
@@ -120,10 +124,11 @@ public class NPCProgressDialog {
       if (encounter.getRequiredLevel() == 0) {
         hasLevelZero = true;
       }
-      options.add(new LevelOption(getEnumName(encounter), encounter.getRequiredLevel()));
+      options.add(new LevelOption(
+          encounter.getRequiredLevel() + " - " + getEnumName(encounter), encounter.getRequiredLevel()));
     }
     if (!hasLevelZero) {
-      options.add(0, new LevelOption("NONE", 0));
+      options.add(1, new LevelOption("0 - NONE", 0));
     }
     return options;
   }
@@ -132,13 +137,16 @@ public class NPCProgressDialog {
     return ((Enum<?>) encounter).name();
   }
 
-  private static LevelOption getSelectedOption(List<LevelOption> options, int currentLevel) {
-    for (LevelOption option : options) {
-      if (option.level() == currentLevel) {
-        return option;
+  private static String getActiveEncounterName(NPCEncounter[] encounters, int currentLevel) {
+    NPCEncounter activeEncounter = null;
+    for (NPCEncounter encounter : encounters) {
+      int requiredLevel = encounter.getRequiredLevel();
+      if (requiredLevel >= 0 && requiredLevel <= currentLevel
+          && (activeEncounter == null || requiredLevel > activeEncounter.getRequiredLevel())) {
+        activeEncounter = encounter;
       }
     }
-    return options.get(0);
+    return activeEncounter == null ? "NONE" : getEnumName(activeEncounter);
   }
 
   private record LevelOption(String label, int level) {
@@ -151,7 +159,7 @@ public class NPCProgressDialog {
   private static class MainPanel extends SkinnedPanel {
 
     private MainPanel() {
-      super(new MigLayout("insets 20, gap 10, wrap 2", "[grow][120px!]", ""));
+      super(new MigLayout("insets 20, gap 10, wrap 2", "[grow][520px!]", ""));
       setOpaque(false);
     }
   }

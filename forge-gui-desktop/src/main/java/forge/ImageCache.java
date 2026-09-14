@@ -582,8 +582,8 @@ public class ImageCache {
         if (1 == bestFitScale) {
             result = original;
         } else {
-            int destWidth  = (int)(original.getWidth()  * bestFitScale);
-            int destHeight = (int)(original.getHeight() * bestFitScale);
+            int destWidth  = Math.max(3, (int)(original.getWidth()  * bestFitScale));
+            int destHeight = Math.max(3, (int)(original.getHeight() * bestFitScale));
 
             ResampleOp resampler = new ResampleOp(destWidth, destHeight);
             result = resampler.filter(original, null);

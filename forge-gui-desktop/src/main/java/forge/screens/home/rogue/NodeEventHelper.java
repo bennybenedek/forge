@@ -38,6 +38,8 @@ class NodeEventHelper {
             return;
         }
 
+        RogueMetaProgress progress = RogueMetaProgress.getInstance();
+        event = NPCEncounterComposite.INSTANCE.onBeforeEvent(event, currentRun, progress);
         event = resolveDevEventOverride(event);
         RogueTutorialHelper.showIfNotSeen(RogueTutorial.EVENT);
 
@@ -113,14 +115,20 @@ class NodeEventHelper {
         EffectResultContext ctx = new EffectResultContext();
         if (effect.getEffectType() == RogueEffect.EffectType.ONESHOT) {
             effect.applyEffect(currentRun, ctx);
+        } else {
+            currentRun.addEventEffect(effect);
+        }
+
+        List<NPCContext> npcContexts = NPCEncounterComposite.INSTANCE.onAfterEventChoice(
+            event, choice, effect, currentRun, RogueMetaProgress.getInstance());
+        if (effect.getEffectType() == RogueEffect.EffectType.ONESHOT) {
             NodeFlowOutcome nodeFlowOutcome = effectResultHelper.handleEffectTrigger(eventNode, ctx, currentRun);
             if (nodeFlowOutcome != NodeFlowOutcome.COMPLETE_NODE) {
+                showNpcDialogs(npcContexts);
                 return nodeFlowOutcome;
             }
             CodexHelper.recordAcquiredCards(currentRun, ctx.addedCards);
             CodexHelper.recordTraitAcquired(ctx.gainedWoundEffect);
-        } else {
-            currentRun.addEventEffect(effect);
         }
 
         if (map.checkSideNodeDefeat(event.getDisplayName())) {
@@ -128,8 +136,7 @@ class NodeEventHelper {
         }
 
         showEventResult(choice, ctx);
-        showNpcDialogs(NPCEncounterComposite.INSTANCE.onAfterEventChoice(
-            event, choice, effect, currentRun, RogueMetaProgress.getInstance()));
+        showNpcDialogs(npcContexts);
         return NodeFlowOutcome.COMPLETE_NODE;
     }
 

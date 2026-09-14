@@ -85,6 +85,9 @@ public interface NPCEncounter {
     /** Fired after a custom Sanctum choice is selected. */
     default NPCContext onSanctumChoice(SanctumContext.SanctumChoice choice, RogueRun run) { return null; }
 
+    /** Fired before an Event dialog is shown. Return the Event that should be presented. */
+    default RogueEvent onBeforeEvent(RogueEvent event, RogueRun run) { return event; }
+
     /** Fired after an event choice resolves. Return non-null to show NPC dialog. */
     default NPCContext onAfterEventChoice(RogueEvent event, RogueEvent.EventChoice choice,
                                           EventEffect effect, RogueRun run) { return null; }

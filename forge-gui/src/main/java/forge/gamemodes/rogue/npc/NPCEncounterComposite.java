@@ -96,6 +96,14 @@ public enum NPCEncounterComposite {
         return results;
     }
 
+    public RogueEvent onBeforeEvent(RogueEvent event, RogueRun run, RogueMetaProgress progress) {
+        RogueEvent resolvedEvent = event;
+        for (NPCEncounter enc : getEncountersForCurrentLevel(progress)) {
+            resolvedEvent = enc.onBeforeEvent(resolvedEvent, run);
+        }
+        return resolvedEvent;
+    }
+
     public List<NPCContext> onAfterEventChoice(RogueEvent event, RogueEvent.EventChoice choice,
                                                EventEffect effect, RogueRun run, RogueMetaProgress progress) {
         List<NPCContext> results = new ArrayList<>();
