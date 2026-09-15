@@ -231,10 +231,17 @@ public final class CodexHelper {
 
     private static TraitCategory getCodexVisibleTraitCategory(RogueEffect effect) {
         TraitCategory category = getTraitCategory(effect);
-        if (category == null || effect.getEffectCard() == null) {
+        if (category == null) {
             return null;
         }
-        return category;
+
+        PaperCard effectCard = effect.getEffectCard();
+        if (!isValidCard(effectCard)) {
+            return null;
+        }
+
+        String expectedCardType = category == TraitCategory.WOUND ? "Wound" : "Trait";
+        return effectCard.getRules().getType().hasStringType(expectedCardType) ? category : null;
     }
 
     private static boolean isCommanderCodexComplete(RogueMetaProgress progress, RogueDeck commander) {

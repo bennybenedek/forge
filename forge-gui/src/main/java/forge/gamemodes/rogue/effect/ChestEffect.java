@@ -312,6 +312,14 @@ public enum ChestEffect implements RogueEffect {
             ctx.priceAdjustment -= 2;
         }
     },
+    RELIC_OF_ENDLESS_WATER("relic_of_endless_water", "Relic Of Endless Water",
+        TRAIT_GAIN_DESCRIPTION,
+        EffectType.PERMANENT, "Chest Trait - Relic Of Endless Water") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+        }
+    },
     RELIC_OF_EXPLORATION("relic_of_exploration", "Relic Of Exploration",
         TRAIT_GAIN_DESCRIPTION,
         EffectType.PERMANENT, "Chest Trait - Relic Of Exploration") {
@@ -320,9 +328,17 @@ public enum ChestEffect implements RogueEffect {
             addEffectCardToCommandZone(human);
         }
     },
-    RELIC_OF_ENDLESS_WATER("relic_of_endless_water", "Relic Of Endless Water",
+    RELIC_OF_ICHOR("relic_of_ichor", "Relic Of Ichor",
         TRAIT_GAIN_DESCRIPTION,
-        EffectType.PERMANENT, "Chest Trait - Relic Of Endless Water") {
+        EffectType.PERMANENT, "Chest Trait - Relic Of Ichor") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+        }
+    },
+    RELIC_OF_INSIGHT("relic_of_insight", "Relic Of Insight",
+        TRAIT_GAIN_DESCRIPTION,
+        EffectType.PERMANENT, "Chest Trait - Relic Of Insight") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
@@ -360,14 +376,6 @@ public enum ChestEffect implements RogueEffect {
             addEffectCardToCommandZone(human);
         }
     },
-    RELIC_OF_TELEPATHY("relic_of_telepathy", "Relic Of Telepathy",
-        TRAIT_GAIN_DESCRIPTION,
-        EffectType.PERMANENT, "Chest Trait - Relic Of Telepathy") {
-        @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-        }
-    },
     RELIC_OF_REGENERATION("relic_of_regeneration", "Relic Of Regeneration",
         TRAIT_GAIN_DESCRIPTION + " !{{Max. Life}}",
         EffectType.PERMANENT, "Chest Trait - Relic Of Regeneration") {
@@ -384,6 +392,14 @@ public enum ChestEffect implements RogueEffect {
     RELIC_OF_STRENGTH("relic_of_strength", "Relic Of Strength",
         TRAIT_GAIN_DESCRIPTION,
         EffectType.PERMANENT, "Chest Trait - Relic Of Strength") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+        }
+    },
+    RELIC_OF_TELEPATHY("relic_of_telepathy", "Relic Of Telepathy",
+        TRAIT_GAIN_DESCRIPTION,
+        EffectType.PERMANENT, "Chest Trait - Relic Of Telepathy") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
@@ -542,6 +558,14 @@ public enum ChestEffect implements RogueEffect {
     SIGIL_OF_THE_MOLTEN("sigil_of_the_molten", "Sigil Of The Molten",
         TRAIT_GAIN_DESCRIPTION,
         EffectType.PERMANENT, "Chest Trait - Sigil Of The Molten") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+        }
+    },
+    SIGIL_OF_THE_VEIL("sigil_of_the_veil", "Sigil Of The Veil",
+        TRAIT_GAIN_DESCRIPTION,
+        EffectType.PERMANENT, "Chest Trait - Sigil Of The Veil") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
