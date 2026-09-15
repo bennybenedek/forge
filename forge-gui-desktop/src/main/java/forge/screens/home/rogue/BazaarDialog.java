@@ -1,6 +1,7 @@
 package forge.screens.home.rogue;
 
 import forge.deckchooser.FDeckViewer;
+import forge.gamemodes.rogue.RogueRun;
 import forge.gamemodes.rogue.effect.BazaarItem;
 import forge.localinstance.skin.FSkinProp;
 import forge.toolbox.FLabel;
@@ -54,6 +55,7 @@ public class BazaarDialog {
   private final List<BazaarItem> availableItems;
   private final List<BazaarItem> cardItems = new ArrayList<>();
   private final List<BazaarItem> specialItems = new ArrayList<>();
+  private final RogueRun run;
   private final int availableGold;
   private final String dialogTitle;
   private final String rerollButtonLabel;
@@ -69,9 +71,11 @@ public class BazaarDialog {
   private int cardHeight;
   private int priceLabelHeight;
 
-  public BazaarDialog(List<BazaarItem> items, int gold, String title, String rerollButtonLabel,
+  public BazaarDialog(List<BazaarItem> items, RogueRun run, int gold, String title,
+                      String rerollButtonLabel,
                       int selectedTabIndex) {
     this.availableItems = new ArrayList<>(items);
+    this.run = run;
     this.availableGold = gold;
     this.dialogTitle = title != null ? title : "Bazaar";
     this.rerollButtonLabel = rerollButtonLabel;
@@ -228,13 +232,15 @@ public class BazaarDialog {
     final boolean showReroll = rerollButtonLabel != null;
     final int REROLL_OPTION = showReroll ? 1 : -1;
     final int VIEW_DECK_OPTION = showReroll ? 2 : 1;
-    final int SKIP_OPTION = showReroll ? 3 : 2;
+    final int VIEW_MAP_OPTION = showReroll ? 3 : 2;
+    final int SKIP_OPTION = showReroll ? 4 : 3;
     final List<String> buttons = new ArrayList<>();
     buttons.add(specialItems.isEmpty() ? "Buy Selected Cards" : "Buy Selected");
     if (showReroll) {
       buttons.add(rerollButtonLabel);
     }
     buttons.add("View Deck");
+    buttons.add("View Map");
     buttons.add(localizer.getMessage("lblSkip"));
 
     final javax.swing.Icon coinIcon = createCoinIcon();
@@ -252,6 +258,9 @@ public class BazaarDialog {
 
       optionPane.getButton(VIEW_DECK_OPTION).setIcon(FSkin.getIcon(FSkinProp.ICO_CARD_IMAGE));
       optionPane.getButton(VIEW_DECK_OPTION).setHorizontalTextPosition(SwingConstants.RIGHT);
+      optionPane.getButton(VIEW_MAP_OPTION).setIcon(
+          FSkin.getImage(FSkinProp.ICO_QUEST_MAP).resize(24, 24).getIcon());
+      optionPane.getButton(VIEW_MAP_OPTION).setHorizontalTextPosition(SwingConstants.RIGHT);
 
       if (showReroll) {
         optionPane.getButton(REROLL_OPTION).setIcon(coinIcon);
@@ -276,8 +285,10 @@ public class BazaarDialog {
 
       if (result == VIEW_DECK_OPTION) {
         showCurrentDeck();
+      } else if (result == VIEW_MAP_OPTION) {
+        RogueMapDialog.show(run);
       }
-    } while (result == VIEW_DECK_OPTION);
+    } while (result == VIEW_DECK_OPTION || result == VIEW_MAP_OPTION);
 
     if (result == BUY_OPTION) {
       return selectedItems;
@@ -307,9 +318,8 @@ public class BazaarDialog {
   }
 
   private void showCurrentDeck() {
-    var currentRun = CSubmenuRogueMap.SINGLETON_INSTANCE.getCurrentRun();
-    if (currentRun != null && currentRun.getCurrentDeck() != null) {
-      FDeckViewer.show(currentRun.getCurrentDeck());
+    if (run != null && run.getCurrentDeck() != null) {
+      FDeckViewer.show(run.getCurrentDeck());
     }
   }
 

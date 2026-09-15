@@ -142,6 +142,7 @@ class NodeBazaarHelper {
                                                 boolean rerollEnabled, int selectedBazaarTab) {
         BazaarDialog dialog = new BazaarDialog(
             inventory,
+            currentRun,
             currentRun.getCurrentGold(),
             bazaarCtx.title,
             rerollLabel,

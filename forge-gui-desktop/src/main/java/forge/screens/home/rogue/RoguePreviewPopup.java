@@ -65,6 +65,7 @@ public class RoguePreviewPopup {
     private final List<CardPreviewPanel> currentCardPanels = new ArrayList<>();
     private Popup popup;
     private CardUtil zoomUtil;
+    private Window zoomWindow;
     private JComponent activeSourceComponent;
     private boolean hoveringSource;
     private boolean hoveringPreview;
@@ -175,15 +176,14 @@ public class RoguePreviewPopup {
     }
 
     private void ensureZoomUtil(JComponent component) {
-        if (zoomUtil != null) {
+        Window window = SwingUtilities.getWindowAncestor(component);
+        if (window == null || window == zoomWindow) {
             return;
         }
 
-        Window window = SwingUtilities.getWindowAncestor(component);
-        if (window != null) {
-            zoomUtil = new CardUtil(window);
-            zoomUtil.setupZoomOverlay();
-        }
+        zoomWindow = window;
+        zoomUtil = new CardUtil(window);
+        zoomUtil.setupZoomOverlay();
     }
 
     private void handleWheel(JComponent component, PaperCard previewCard, int wheelRotation) {
@@ -191,7 +191,9 @@ public class RoguePreviewPopup {
             return;
         }
 
-        ensureZoomUtil(component);
+        // Preview panels can live in a separate heavyweight popup, but the zoom overlay
+        // must remain attached to the dialog containing the originating component.
+        ensureZoomUtil(activeSourceComponent == null ? component : activeSourceComponent);
         if (zoomUtil == null) {
             return;
         }

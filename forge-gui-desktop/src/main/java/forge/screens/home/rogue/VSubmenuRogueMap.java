@@ -17,7 +17,6 @@ import forge.screens.home.IVSubmenu;
 import forge.screens.home.VHomeUI;
 import forge.toolbox.FButton;
 import forge.toolbox.FLabel;
-import forge.toolbox.FScrollPane;
 import forge.toolbox.FSkin;
 import forge.item.PaperCard;
 import forge.util.Localizer;
@@ -43,13 +42,6 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
   final Localizer localizer = Localizer.getInstance();
   private DragCell parentCell;
   private final DragTab tab = new DragTab("Rogue Commander");
-
-  private final FLabel lblTitle = new FLabel.Builder()
-      .text("Rogue Commander - Map")
-      .fontAlign(SwingConstants.CENTER)
-      .opaque(true)
-      .fontSize(16)
-      .build();
 
   private final FLabel lblCommanderAvatar = new FLabel.Builder()
       .iconScaleFactor(0.99f).iconInBackground(true).build();
@@ -90,11 +82,9 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
       .fontStyle(Font.BOLD)
       .build();
 
-  private final PathVisualizerPanel pathVisualizer = new PathVisualizerPanel();
-  private final FScrollPane scrollPathDisplay;
-
-  private JPanel pnlEffects;
-  private JPanel pnlCarryCards;
+  private final JPanel pnlEffects;
+  private final JPanel pnlCarryCards;
+  private final RogueMapPanel mapPanel;
   private final FButton btnEnterNode;
   private final FButton btnEditDeck;
   private final FButton btnRerollPlane;
@@ -103,8 +93,6 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
   private CardUtil zoomUtil;
 
   VSubmenuRogueMap() {
-    lblTitle.setBackground(FSkin.getColor(FSkin.Colors.CLR_THEME2));
-
     // Add icons to labels
     lblGold.setIcon(FSkin.getIcon(FSkinProp.ICO_QUEST_COIN));
     lblEchoes.setIcon(FSkin.getIcon(FSkinProp.ICO_QUEST_GOLD));
@@ -123,9 +111,10 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
     btnRerollPlane.setIcon(FSkin.getImage(FSkinProp.ICO_FLIPCARD).resize(24, 24).getIcon());
     btnRerollPlane.setVisible(false);
 
-    // Setup scroll pane for path visualizer
-    scrollPathDisplay = new FScrollPane(pathVisualizer, true);
-    scrollPathDisplay.setOpaque(false);
+    pnlEffects = RogueUIHelper.createEffectPanel();
+    pnlCarryCards = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+    pnlCarryCards.setOpaque(false);
+    mapPanel = new RogueMapPanel(createInfoRow());
   }
 
   /**
@@ -169,7 +158,7 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
       RogueUIHelper.populateEffectPanel(pnlEffects, allEffects, run);
       populateCarryCardPanel(run.getCarryCards());
 
-      pathVisualizer.updatePath(run);
+      mapPanel.updatePath(run);
     } else {
       lblCommanderName.setText("");
       lblCommanderAvatar.setIcon(FSkin.getIcon(FSkinProp.ICO_MINUS));
@@ -180,7 +169,7 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
       lblDescension.setToolTipText(null);
       btnRerollPlane.setVisible(false);
       populateCarryCardPanel(List.of());
-      pathVisualizer.clearPath();
+      mapPanel.clearPath();
     }
   }
 
@@ -204,30 +193,8 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().removeAll();
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().setLayout(new MigLayout("insets 0, gap 0, wrap"));
 
-    VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(lblTitle, "w 98%!, h 30px!, gap 1% 0 15px 15px");
-
-    // Info row — responsive: wraps when window narrows
-    JPanel infoRow = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 3));
-    infoRow.setOpaque(false);
-    lblCommanderAvatar.setPreferredSize(new Dimension(45, 45));
-    infoRow.add(lblCommanderAvatar);
-    infoRow.add(lblCommanderName);
-    infoRow.add(lblLife);
-    infoRow.add(lblGold);
-    infoRow.add(lblEchoes);
-    infoRow.add(lblRemovalCredits);
-    infoRow.add(lblDescension);
-
-    // Active effects panel (echo boons, descension, event traits, chest traits, wounds)
-    pnlEffects = RogueUIHelper.createEffectPanel();
-    infoRow.add(pnlEffects);
-    pnlCarryCards = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
-    pnlCarryCards.setOpaque(false);
-    infoRow.add(pnlCarryCards);
-
-    VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(infoRow, "w 98%!, h pref!, gap 1% 0 10px 10px");
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay()
-        .add(scrollPathDisplay, "w 96%!, gap 2% 2% 0 0, pushy, growy");
+        .add(mapPanel, "w 100%!, gap 0, pushy, growy");
 
     JPanel buttonRow = new JPanel(new MigLayout("insets 0, gap 10, fillx"));
     buttonRow.setOpaque(false);
@@ -266,7 +233,7 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
   }
 
   public PathVisualizerPanel getPathVisualizer() {
-    return pathVisualizer;
+    return mapPanel.getPathVisualizer();
   }
 
   @Override
@@ -347,6 +314,22 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
       case FELLOW -> "Fellow";
       case SCROLL -> "Scroll";
     } + ")";
+  }
+
+  private JPanel createInfoRow() {
+    JPanel infoRow = new JPanel(new FlowLayout(FlowLayout.CENTER, 20, 3));
+    infoRow.setOpaque(false);
+    lblCommanderAvatar.setPreferredSize(new Dimension(45, 45));
+    infoRow.add(lblCommanderAvatar);
+    infoRow.add(lblCommanderName);
+    infoRow.add(lblLife);
+    infoRow.add(lblGold);
+    infoRow.add(lblEchoes);
+    infoRow.add(lblRemovalCredits);
+    infoRow.add(lblDescension);
+    infoRow.add(pnlEffects);
+    infoRow.add(pnlCarryCards);
+    return infoRow;
   }
 
   private CardUtil getZoomUtil() {

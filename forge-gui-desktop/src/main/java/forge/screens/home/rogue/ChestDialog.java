@@ -33,8 +33,9 @@ public class ChestDialog {
   private static final int MIN_DIALOG_HEIGHT = 400;
   private static final int PANEL_INSETS = 20;
   private static final int VIEW_DECK_OPTION = 0;
-  private static final int REROLL_OPTION = 1;
-  private static final int LOOT_CHOICE_RESULT = 2;
+  private static final int VIEW_MAP_OPTION = 1;
+  private static final int REROLL_OPTION = 2;
+  private static final int LOOT_CHOICE_RESULT = 3;
 
   private final MainPanel panel;
   private final RogueRun run;
@@ -103,6 +104,7 @@ public class ChestDialog {
     do {
       List<String> buttons = new ArrayList<>();
       buttons.add("View Deck");
+      buttons.add("View Map");
       if (hasRerolls) {
         buttons.add("Reroll (" + rerollCtx.remainingRerolls + " left)");
       }
@@ -111,6 +113,9 @@ public class ChestDialog {
       optionPane.getTitleBar().setVisible(false);
       optionPane.getButton(VIEW_DECK_OPTION).setIcon(FSkin.getIcon(FSkinProp.ICO_CARD_IMAGE));
       optionPane.getButton(VIEW_DECK_OPTION).setHorizontalTextPosition(SwingConstants.RIGHT);
+      optionPane.getButton(VIEW_MAP_OPTION).setIcon(
+          FSkin.getImage(FSkinProp.ICO_QUEST_MAP).resize(24, 24).getIcon());
+      optionPane.getButton(VIEW_MAP_OPTION).setHorizontalTextPosition(SwingConstants.RIGHT);
       panel.revalidate();
       panel.repaint();
       optionPane.setVisible(true);
@@ -120,8 +125,10 @@ public class ChestDialog {
 
       if (result == VIEW_DECK_OPTION) {
         showCurrentDeck();
+      } else if (result == VIEW_MAP_OPTION) {
+        RogueMapDialog.show(run);
       }
-    } while (result == VIEW_DECK_OPTION);
+    } while (result == VIEW_DECK_OPTION || result == VIEW_MAP_OPTION);
 
     return new DialogResult(hasRerolls && result == REROLL_OPTION, selectedLoot);
   }
