@@ -38,6 +38,9 @@ public class RogueMetaProgress {
     private Map<String, Integer> runsStartedPerCommander;
     private Map<String, Integer> runsWonPerCommander;
 
+    // Per-Planebound match tracking, keyed by deck path
+    private Map<String, PlaneboundStats> planeboundStats;
+
     // Stat tracking (unified map, keyed by RogueStats.conditionKey)
     private Map<String, Integer> statValues;
 
@@ -73,6 +76,7 @@ public class RogueMetaProgress {
     private RogueMetaProgress() {
         runsStartedPerCommander = new HashMap<>();
         runsWonPerCommander = new HashMap<>();
+        planeboundStats = new HashMap<>();
         statValues = new HashMap<>();
         codexProgress = new CodexProgress();
 
@@ -111,6 +115,7 @@ public class RogueMetaProgress {
     public void reset() {
         runsStartedPerCommander = new HashMap<>();
         runsWonPerCommander = new HashMap<>();
+        planeboundStats = new HashMap<>();
         statValues = new HashMap<>();
         maxDescensionWonPerCommander = new HashMap<>();
         codexProgress = new CodexProgress();
@@ -368,6 +373,40 @@ public class RogueMetaProgress {
             if (wins > 0) count++;
         }
         return count;
+    }
+
+    // ==================== Per-Planebound Tracking ====================
+
+    void recordPlaneboundResult(RoguePlanebound planebound, boolean won) {
+        String key = getPlaneboundKey(planebound);
+        if (key == null || key.isBlank()) {
+            return;
+        }
+        if (planeboundStats == null) {
+            planeboundStats = new HashMap<>();
+        }
+        PlaneboundStats stats = planeboundStats.computeIfAbsent(key, ignored -> new PlaneboundStats());
+        if (won) {
+            stats.wins++;
+        } else {
+            stats.losses++;
+        }
+    }
+
+    public int getPlaneboundWins(RoguePlanebound planebound) {
+        if (planeboundStats == null) {
+            return 0;
+        }
+        PlaneboundStats stats = planeboundStats.get(getPlaneboundKey(planebound));
+        return stats == null ? 0 : stats.wins;
+    }
+
+    public int getPlaneboundLosses(RoguePlanebound planebound) {
+        if (planeboundStats == null) {
+            return 0;
+        }
+        PlaneboundStats stats = planeboundStats.get(getPlaneboundKey(planebound));
+        return stats == null ? 0 : stats.losses;
     }
 
     // ==================== Descension Management ====================
@@ -810,6 +849,11 @@ public class RogueMetaProgress {
         }
     }
 
+    private static class PlaneboundStats {
+        private int wins;
+        private int losses;
+    }
+
     public static class CardDiscovery {
         private static final CardDiscovery EMPTY = new CardDiscovery();
 
@@ -906,6 +950,7 @@ public class RogueMetaProgress {
         xStream.allowTypeHierarchy(RogueMetaProgress.class);
         xStream.allowTypeHierarchy(CodexProgress.class);
         xStream.allowTypeHierarchy(CardDiscovery.class);
+        xStream.allowTypeHierarchy(PlaneboundStats.class);
         xStream.allowTypesByWildcard(new String[] {
             RogueMetaProgress.class.getPackage().getName() + ".*",
             "forge.deck.*",

@@ -102,7 +102,7 @@ public class RogueWinLoseController {
 
             // Won the match but life is still <= 0 (e.g. "can't lose the game" effect) — run is lost
             if (currentRun.getCurrentLife() <= 0) {
-                RogueStats.fireOnMatchCompleted(currentRun, RogueMetaProgress.getInstance(), true);
+                recordMatchStats(RogueMetaProgress.getInstance(), true);
                 handleRunDefeat("being unable to continue the run at 0 or less life");
                 return;
             }
@@ -152,7 +152,7 @@ public class RogueWinLoseController {
         showLostCarryCards();
 
         // Track meta progress for match
-        RogueStats.fireOnMatchCompleted(currentRun, progress, true);
+        recordMatchStats(progress, true);
 
         // Evaluate run-level achievements after rewards
         RogueCommanderAchievements.instance.evaluateRunAchievements(currentRun);
@@ -183,7 +183,7 @@ public class RogueWinLoseController {
         var progress = RogueMetaProgress.getInstance();
         progress.addRunHistoryEntry(RogueRunHistoryEntry.fromRun(currentRun, "VICTORY", bossName));
 
-        RogueStats.fireOnMatchCompleted(currentRun, progress, true);
+        recordMatchStats(progress, true);
         RogueStats.fireOnRunCompleted(currentRun, progress, true);
 
         RogueCommanderAchievements.instance.recordRunWon(
@@ -242,14 +242,14 @@ public class RogueWinLoseController {
         RogueEffectComposite.INSTANCE.onDefeat(defeatCtx, currentRun);
         if (defeatCtx.revived) {
             currentRun.setCurrentLife(defeatCtx.reviveLife);
-            RogueStats.fireOnMatchCompleted(currentRun, RogueMetaProgress.getInstance(), false);
+            recordMatchStats(RogueMetaProgress.getInstance(), false);
             RogueIO.saveRun(currentRun);
             view.getBtnQuit().setText(BTN_CONTINUE_RUN);
             view.showMessage("Last Spark activated! You survived with " + defeatCtx.reviveLife + " life!", "Last Spark!", FSkinProp.ICO_QUEST_ELIXIR);
             return;
         }
 
-        RogueStats.fireOnMatchCompleted(currentRun, RogueMetaProgress.getInstance(), false);
+        recordMatchStats(RogueMetaProgress.getInstance(), false);
         handleRunDefeat(getDefeatedByCurrentNode(currentRun));
     }
 
@@ -296,6 +296,14 @@ public class RogueWinLoseController {
             return pb;
         }
         return null;
+    }
+
+    private void recordMatchStats(RogueMetaProgress progress, boolean won) {
+        NodePlanebound planeboundNode = resolvePlanebound(currentRun.getCurrentNode());
+        if (planeboundNode != null && planeboundNode.getRoguePlanebound() != null) {
+            progress.recordPlaneboundResult(planeboundNode.getRoguePlanebound(), won);
+        }
+        RogueStats.fireOnMatchCompleted(currentRun, progress, won);
     }
 
     private void showLostCarryCards() {

@@ -509,7 +509,8 @@ public enum VSubmenuRogueCodex implements IVSubmenu<CSubmenuRogueCodex> {
     }
     sortCodexCardEntries(commanderEntries);
     sortCodexCardEntries(entries);
-    panel.add(createPlaneboundStatsHeader(selectedPlanebound, entries), "growx, gapbottom 16");
+    panel.add(createPlaneboundStatsHeader(selectedPlanebound, progress, entries),
+        "growx, gapbottom 16");
 
     JPanel sections = new CodexSectionsPanel(new MigLayout("insets 0, gap 0, wrap 1", "[grow]"));
     sections.setOpaque(false);
@@ -520,14 +521,19 @@ public enum VSubmenuRogueCodex implements IVSubmenu<CSubmenuRogueCodex> {
   }
 
   private JPanel createPlaneboundStatsHeader(RoguePlanebound selectedPlanebound,
+                                             RogueMetaProgress progress,
                                              List<CodexCardGrid.Entry> deckEntries) {
-    JPanel panel = new SkinnedPanel(new MigLayout("insets 8, gap 12", "[][]", ""));
+    JPanel panel = new SkinnedPanel(new MigLayout("insets 8, gap 12", "[][][][]", ""));
     panel.setOpaque(false);
     panel.add(new FLabel.Builder()
         .text(selectedPlanebound.planeboundName() + " - " + selectedPlanebound.planeName())
         .fontSize(16)
         .fontStyle(Font.BOLD)
         .build());
+    panel.add(new FLabel.Builder().text("Slain: " + progress.getPlaneboundWins(selectedPlanebound)
+        + " times").fontSize(13).build());
+    panel.add(new FLabel.Builder().text("Defeated by: " + progress.getPlaneboundLosses(selectedPlanebound)
+        + " times").fontSize(13).build());
     panel.add(new FLabel.Builder().text("Seen: " + countSeenCards(deckEntries) + " of "
         + deckEntries.size() + " Cards").fontSize(13).build());
     return panel;
