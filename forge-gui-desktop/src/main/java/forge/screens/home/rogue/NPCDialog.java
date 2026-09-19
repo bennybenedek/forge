@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.SwingConstants;
+import javax.swing.WindowConstants;
 import net.miginfocom.swing.MigLayout;
 
 /**
@@ -120,6 +121,7 @@ public class NPCDialog {
         boolean hasRerolls = rerollCtx.remainingRerolls > 0;
         optionPane = new FOptionPane(null, "NPC Encounter", null, panel,
                 hasRerolls ? List.of("Reroll (" + rerollCtx.remainingRerolls + " left)") : List.of(), -1);
+        optionPane.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
         optionPane.getTitleBar().setVisible(false);
         previewPopup = new RoguePreviewPopup();
         previewTargets.forEach(target -> previewPopup.attachTo(target.component(), target.references()));

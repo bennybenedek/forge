@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
+import javax.swing.WindowConstants;
 
 /**
  * Dialog for selecting cards from a provided list. Cards are shown face-up in a scrollable grid.
@@ -129,6 +130,7 @@ public class CardSelectionDialog {
     int result;
     do {
       optionPane = new FOptionPane(null, title, null, wrapper, List.of("OK", "View Deck"), 0);
+      optionPane.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
       optionPane.getTitleBar().setVisible(false);
       optionPane.setButtonEnabled(OK_OPTION, minSelections == 0
           || selectedCards.size() >= minSelections && selectedCards.size() <= maxSelections);

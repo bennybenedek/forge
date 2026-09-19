@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.SwingConstants;
+import javax.swing.WindowConstants;
 import net.miginfocom.swing.MigLayout;
 
 /**
@@ -162,6 +163,7 @@ public class SanctumDialog {
         List.of("Skip"),
         0
     );
+    optionPane.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
     optionPane.getTitleBar().setVisible(false);
     previewPopup = new RoguePreviewPopup();
     previewTargets.forEach(target -> previewPopup.attachTo(target.component(), target.references()));

@@ -18,6 +18,7 @@ import java.util.Set;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import javax.swing.WindowConstants;
 
 /**
  * Dialog for selecting reward cards visually. Displays cards as images and allows selecting up to a
@@ -196,6 +197,7 @@ public class CardRewardDialog {
           buttons,
           0
       );
+      optionPane.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
       optionPane.getButton(VIEW_DECK_OPTION).setIcon(FSkin.getIcon(FSkinProp.ICO_CARD_IMAGE));
       optionPane.getButton(VIEW_DECK_OPTION).setHorizontalTextPosition(SwingConstants.RIGHT);

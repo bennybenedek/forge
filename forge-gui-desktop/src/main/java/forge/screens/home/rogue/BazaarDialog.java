@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.SwingConstants;
 import javax.swing.Timer;
+import javax.swing.WindowConstants;
 import net.miginfocom.swing.MigLayout;
 
 /**
@@ -255,6 +256,7 @@ public class BazaarDialog {
           buttons,
           SKIP_OPTION
       );
+      optionPane.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
 
       optionPane.getButton(VIEW_DECK_OPTION).setIcon(FSkin.getIcon(FSkinProp.ICO_CARD_IMAGE));
       optionPane.getButton(VIEW_DECK_OPTION).setHorizontalTextPosition(SwingConstants.RIGHT);
