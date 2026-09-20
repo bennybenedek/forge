@@ -11,7 +11,6 @@ import forge.gamemodes.rogue.effect.RogueEffectComposite;
 import forge.gamemodes.rogue.path.NodeChest;
 import forge.localinstance.properties.ForgePreferences;
 import forge.util.MyRandom;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -42,8 +41,10 @@ class NodeChestHelper {
 
     NodeFlowOutcome resolveChest(RogueRun currentRun, NodeChest chestNode) {
         List<ChestEffect> chestEffects = chestNode.getChestEffects();
-        if (chestEffects.size() < CHEST_LOOT_CHOICE_COUNT) {
-            chestEffects = generateChestLootChoices();
+        List<ChestEffect> availableEffects = ChestEffect.getAvailableEffects(currentRun, null);
+        if (chestEffects.size() < CHEST_LOOT_CHOICE_COUNT
+            || !availableEffects.containsAll(chestEffects)) {
+            chestEffects = generateChestLootChoices(currentRun, List.of());
             chestNode.setChestEffects(chestEffects);
         }
 
@@ -62,7 +63,7 @@ class NodeChestHelper {
 
             if (rerollRequested) {
                 RogueEffectComposite.INSTANCE.onChoiceReroll(rerollCtx, currentRun);
-                chestEffects = generateChestLootChoices(chestEffects);
+                chestEffects = generateChestLootChoices(currentRun, chestEffects);
                 chestEffects = maybeOverrideChestChoices(chestEffects);
                 chestNode.setChestEffects(chestEffects);
             }
@@ -94,12 +95,9 @@ class NodeChestHelper {
         return NodeFlowOutcome.COMPLETE_NODE;
     }
 
-    private List<ChestEffect> generateChestLootChoices() {
-        return generateChestLootChoices(List.of());
-    }
-
-    private List<ChestEffect> generateChestLootChoices(List<ChestEffect> excludedChoices) {
-        List<ChestEffect> chestEffects = new ArrayList<>(List.of(ChestEffect.values()));
+    private List<ChestEffect> generateChestLootChoices(RogueRun currentRun,
+                                                       List<ChestEffect> excludedChoices) {
+        List<ChestEffect> chestEffects = ChestEffect.getAvailableEffects(currentRun, null);
         if (chestEffects.size() - excludedChoices.size() >= CHEST_LOOT_CHOICE_COUNT) {
             chestEffects.removeAll(excludedChoices);
         }
