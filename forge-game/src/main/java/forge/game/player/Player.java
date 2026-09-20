@@ -1154,7 +1154,11 @@ public class Player extends GameEntity implements Comparable<Player> {
             if (gameStarted && !canDraw()) {
                 return drawn;
             }
-            drawn.addAll(doDraw(toReveal, cause, params, zone));
+            CardCollectionView cards = doDraw(toReveal, cause, params, zone);
+            if (cards == null) {
+                break;
+            }
+            drawn.addAll(cards);
         }
 
         // reveal multiple drawn cards when playing with the top of the library revealed
@@ -1167,7 +1171,8 @@ public class Player extends GameEntity implements Comparable<Player> {
     }
 
     /**
-     * @return a CardCollectionView of cards actually drawn
+     * @return a CardCollectionView of cards actually drawn, or null if the library is empty and no
+     *         replacement effect applies, since every further draw of the same batch would do the same
      */
     private CardCollectionView doDraw(Map<Player, CardCollection> revealed, SpellAbility sa, Map<AbilityKey, Object> params, PlayerZone hand) {
         final CardCollection drawn = new CardCollection();
@@ -1186,6 +1191,10 @@ public class Player extends GameEntity implements Comparable<Player> {
             repParams.put(AbilityKey.ExtraDraws, numExtraDrawnThisTurn);
             if (params != null) {
                 repParams.putAll(params);
+            }
+            if (library.isEmpty() && game.getReplacementHandler().getReplacementList(ReplacementType.Draw, repParams, null).isEmpty()) {
+                triedToDrawFromEmptyLibrary = true;
+                return null;
             }
             if (game.getReplacementHandler().run(ReplacementType.Draw, repParams) != ReplacementResult.NotReplaced) {
                 return drawn;
@@ -2066,12 +2075,13 @@ public class Player extends GameEntity implements Comparable<Player> {
     }
 
     public final boolean hasWon() {
-        if (cantWin()) {
+        // no outcome means the player is still in the game, so the replacement check cannot change the answer
+        if (getOutcome() == null || getOutcome().lossState != null) {
             return false;
         }
         // in multiplayer game one player's win is replaced by all other's lose (rule 103.4h)
         // so if someone cannot lose, the game appears to continue
-        return getOutcome() != null && getOutcome().lossState == null;
+        return !cantWin();
     }
 
     public final boolean isInGame() {
