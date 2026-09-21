@@ -9,6 +9,7 @@ import javax.swing.JMenu;
 import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
 
+import forge.game.GameType;
 import forge.localinstance.properties.ForgePreferences.FPref;
 import forge.localinstance.skin.FSkinProp;
 import forge.menus.MenuUtil;
@@ -51,11 +52,13 @@ public final class DeckFileMenu {
     private static SkinnedMenuItem menuItem_Save, menuItem_SaveAs;
 
     public static void updateSaveEnabled() {
+        final var editor = CDeckEditorUI.SINGLETON_INSTANCE.getCurrentEditorController();
+        final boolean canSave = editor != null && editor.getGameType() != GameType.RogueCommander;
         if (menuItem_Save != null) {
-            menuItem_Save.setEnabled(CDeckEditorUI.SINGLETON_INSTANCE.hasChanges());
+            menuItem_Save.setEnabled(canSave && CDeckEditorUI.SINGLETON_INSTANCE.hasChanges());
         }
         if (menuItem_SaveAs != null) {
-            menuItem_SaveAs.setEnabled(CDeckEditorUI.SINGLETON_INSTANCE.getCurrentEditorController() != null);
+            menuItem_SaveAs.setEnabled(canSave);
         }
     }
 

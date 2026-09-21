@@ -190,11 +190,9 @@ public enum VSubmenuPreferences implements IVSubmenu<CSubmenuPreferences> {
         pnlPrefs.add(btnReset, twoButtonConstraints1);
         pnlPrefs.add(btnDeleteMatchUI, twoButtonConstraints2);
         pnlPrefs.add(btnDeleteEditorUI, twoButtonConstraints1);
-        pnlPrefs.add(btnDeleteWorkshopUI, twoButtonConstraints2);
-        pnlPrefs.add(btnUserProfileUI, twoButtonConstraints1);
-        pnlPrefs.add(btnContentDirectoryUI, twoButtonConstraints2);
-        pnlPrefs.add(btnClearImageCache, twoButtonConstraints1);
-        pnlPrefs.add(btnTokenPreviewer, twoButtonConstraints2);
+        pnlPrefs.add(btnUserProfileUI, twoButtonConstraints2);
+        pnlPrefs.add(btnContentDirectoryUI, twoButtonConstraints1);
+        pnlPrefs.add(btnClearImageCache, twoButtonConstraints2);
 
         // Search bar
         pnlPrefs.add(getSearchPanel(), "w 80%!, h 28px!, gap 25px 0 30px 40px, span 2 1");
@@ -208,12 +206,6 @@ public enum VSubmenuPreferences implements IVSubmenu<CSubmenuPreferences> {
         pnlPrefs.add(cbpDefaultLanguage, comboBoxConstraints);
         pnlPrefs.add(new NoteLabel(localizer.getMessage("nlSelectLanguage")), descriptionConstraints);
 
-        pnlPrefs.add(getPlayerNamePanel(), titleConstraints + ", h 26px!");
-        pnlPrefs.add(new NoteLabel(localizer.getMessage("nlPlayerName")), descriptionConstraints);
-
-        pnlPrefs.add(cbCompactMainMenu, titleConstraints);
-        pnlPrefs.add(new NoteLabel(localizer.getMessage("nlCompactMainMenu")), descriptionConstraints);
-
         pnlPrefs.add(cbUseSentry, titleConstraints);
         pnlPrefs.add(new NoteLabel(localizer.getMessage("nlUseSentry")), descriptionConstraints);
 
@@ -225,30 +217,6 @@ public enum VSubmenuPreferences implements IVSubmenu<CSubmenuPreferences> {
         // Gameplay Options
         pnlPrefs.add(new SectionLabel(localizer.getMessage("GamePlay")), sectionConstraints);
 
-        pnlPrefs.add(cbpMulliganRule, comboBoxConstraints);
-        pnlPrefs.add(new NoteLabel(localizer.getMessage("nlpMulliganRule")), descriptionConstraints);
-
-        pnlPrefs.add(cbpAiProfiles, comboBoxConstraints);
-        pnlPrefs.add(new NoteLabel(localizer.getMessage("nlpAiProfiles")), descriptionConstraints);
-
-        pnlPrefs.add(cbAnte, titleConstraints);
-        pnlPrefs.add(new NoteLabel(localizer.getMessage("nlAnte")), descriptionConstraints);
-
-        pnlPrefs.add(cbAnteMatchRarity, titleConstraints);
-        pnlPrefs.add(new NoteLabel(localizer.getMessage("nlAnteMatchRarity")), descriptionConstraints);
-
-        pnlPrefs.add(cbAnteIncludeBasicLands, titleConstraints);
-        pnlPrefs.add(new NoteLabel(localizer.getMessage("nlAnteIncludeBasicLands")), descriptionConstraints);
-
-        pnlPrefs.add(cbEnableAICheats, titleConstraints);
-        pnlPrefs.add(new NoteLabel(localizer.getMessage("nlEnableAICheats")), descriptionConstraints);
-
-        pnlPrefs.add(cbManaBurn, titleConstraints);
-        pnlPrefs.add(new NoteLabel(localizer.getMessage("nlManaBurn")), descriptionConstraints);
-
-        pnlPrefs.add(cbOrderCombatants, titleConstraints);
-        pnlPrefs.add(new NoteLabel(localizer.getMessage("nlOrderCombatants")), descriptionConstraints);
-
         pnlPrefs.add(cbManaLostPrompt, titleConstraints);
         pnlPrefs.add(new NoteLabel(localizer.getMessage("nlManaLostPrompt")), descriptionConstraints);
 
@@ -258,26 +226,14 @@ public enum VSubmenuPreferences implements IVSubmenu<CSubmenuPreferences> {
         pnlPrefs.add(cbpLandPlayed, comboBoxConstraints);
         pnlPrefs.add(new NoteLabel(localizer.getMessage("nlpLandPlayed")), descriptionConstraints);
 
-        pnlPrefs.add(cbEnforceDeckLegality, titleConstraints);
-        pnlPrefs.add(new NoteLabel(localizer.getMessage("nlEnforceDeckLegality")), descriptionConstraints);
-
         pnlPrefs.add(cbPerformanceMode, titleConstraints);
         pnlPrefs.add(new NoteLabel(localizer.getMessage("nlPerformanceMode")), descriptionConstraints);
-
-        pnlPrefs.add(cbpAiSideboardingMode, titleConstraints);
-        pnlPrefs.add(new NoteLabel(localizer.getMessage("nlpAiSideboardingMode")), descriptionConstraints);
-
-        pnlPrefs.add(cbExperimentalRestore, titleConstraints);
-        pnlPrefs.add(new NoteLabel(localizer.getMessage("nlExperimentalRestore")), descriptionConstraints);
 
         pnlPrefs.add(cbpAiTimeout, titleConstraints);
         pnlPrefs.add(new NoteLabel(localizer.getMessage("nlAITimeout")), descriptionConstraints);
 
         pnlPrefs.add(cbOrderHand, titleConstraints);
         pnlPrefs.add(new NoteLabel(localizer.getMessage("nlOrderHand")), descriptionConstraints);
-
-        pnlPrefs.add(cbFilteredHands, titleConstraints);
-        pnlPrefs.add(new NoteLabel(localizer.getMessage("nlFilteredHands")), descriptionConstraints);
 
         pnlPrefs.add(cbCloneImgSource, titleConstraints);
         pnlPrefs.add(new NoteLabel(localizer.getMessage("nlCloneImgSource")), descriptionConstraints);
@@ -306,61 +262,11 @@ public enum VSubmenuPreferences implements IVSubmenu<CSubmenuPreferences> {
         pnlPrefs.add(cbpAutoDecisionMode, comboBoxConstraints);
         pnlPrefs.add(new NoteLabel(localizer.getMessage("nlpAutoDecisionMode")), descriptionConstraints);
 
-        //Server Preferences
-        pnlPrefs.add(new SectionLabel(localizer.getMessage("ServerPreferences")), sectionConstraints);
-
-        pnlPrefs.add(cbpServerUPnPOption, comboBoxConstraints);
-        pnlPrefs.add(new NoteLabel(localizer.getMessage("nlServerUPnPOptions")), descriptionConstraints);
-
-        pnlPrefs.add(getServerPortPanel(), titleConstraints + ", h 26px!");
-        pnlPrefs.add(new NoteLabel(localizer.getMessage("nlServerPort")), descriptionConstraints);
-
-        pnlPrefs.add(getAfkTimeoutPanel(), titleConstraints + ", h 26px!");
-        pnlPrefs.add(new NoteLabel(localizer.getMessage("nlAfkTimeout")), descriptionConstraints);
-
-        // Deck building options
-        pnlPrefs.add(new SectionLabel(localizer.getMessage("RandomDeckGeneration")), sectionConstraints);
-
-        pnlPrefs.add(cbRemoveSmall, titleConstraints);
-        pnlPrefs.add(new NoteLabel(localizer.getMessage("nlRemoveSmall")), descriptionConstraints);
-
-        pnlPrefs.add(cbSingletons, titleConstraints);
-        pnlPrefs.add(new NoteLabel(localizer.getMessage("nlSingletons")), descriptionConstraints);
-
-        pnlPrefs.add(cbRemoveArtifacts, titleConstraints);
-        pnlPrefs.add(new NoteLabel(localizer.getMessage("nlRemoveArtifacts")), descriptionConstraints);
-
-        pnlPrefs.add(cbCardBased, titleConstraints);
-        pnlPrefs.add(new NoteLabel(localizer.getMessage("nlCardBased")), descriptionConstraints);
-
-        // Deck Editor options
-        pnlPrefs.add(new SectionLabel(localizer.getMessage("DeckEditorOptions")), sectionConstraints);
-
-        pnlPrefs.add(cbFilterLandsByColorId, titleConstraints);
-        pnlPrefs.add(new NoteLabel(localizer.getMessage("nlFilterLandsByColorId")), descriptionConstraints);
-
-        pnlPrefs.add(cbpCardArtPreference, comboBoxConstraints);
-        pnlPrefs.add(new NoteLabel(localizer.getMessage("nlPreferredArt")), descriptionConstraints);
-
-        pnlPrefs.add(cbCardArtCoreExpansionsOnlyOpt, titleConstraints);
-        pnlPrefs.add(new NoteLabel(localizer.getMessage("nlPrefArtExpansionOnly")), descriptionConstraints);
-
-        pnlPrefs.add(cbSmartCardArtSelectionOpt, titleConstraints);
-        pnlPrefs.add(new NoteLabel(localizer.getMessage("nlSmartCardArtOpt")), "w 80%!, h pref!, gap 28px 0 0 0, span 2 1");
-        pnlPrefs.add(new NoteLabel(localizer.getMessage("nlSmartCardArtOptNote")), descriptionConstraints);
-
-        //Draft Ranking Overlay
-        pnlPrefs.add(cbShowDraftRanking, titleConstraints);
-        pnlPrefs.add(new NoteLabel(localizer.getMessage("nlShowDraftRankingOverlay")), descriptionConstraints);
-
         // Advanced
         pnlPrefs.add(new SectionLabel(localizer.getMessage("AdvancedSettings")), sectionConstraints);
 
         pnlPrefs.add(cbDevMode, titleConstraints);
         pnlPrefs.add(new NoteLabel(localizer.getMessage("nlDevMode")), descriptionConstraints);
-
-        pnlPrefs.add(cbWorkshopSyntax, titleConstraints);
-        pnlPrefs.add(new NoteLabel(localizer.getMessage("nlWorkshopSyntax")), descriptionConstraints);
 
         pnlPrefs.add(cbpGameLogEntryType, comboBoxConstraints);
         pnlPrefs.add(new NoteLabel(localizer.getMessage("nlGameLogEntryType")), descriptionConstraints);
@@ -371,21 +277,6 @@ public enum VSubmenuPreferences implements IVSubmenu<CSubmenuPreferences> {
 
         pnlPrefs.add(cbLoadCardsLazily, titleConstraints);
         pnlPrefs.add(new NoteLabel(localizer.getMessage("nlLoadCardsLazily")), descriptionConstraints);
-
-        pnlPrefs.add(cbLoadArchivedFormats, titleConstraints);
-        pnlPrefs.add(new NoteLabel(localizer.getMessage("nlLoadArchivedFormats")), descriptionConstraints);
-
-        pnlPrefs.add(cbEnableUnknownCards, titleConstraints);
-        pnlPrefs.add(new NoteLabel(localizer.getMessage("nlEnableUnknownCards")), descriptionConstraints);
-
-        pnlPrefs.add(cbEnableNonLegalCards, titleConstraints);
-        pnlPrefs.add(new NoteLabel(localizer.getMessage("nlEnableNonLegalCards")), descriptionConstraints);
-
-        pnlPrefs.add(cbAllowCustomCardsDeckConformance, titleConstraints);
-        pnlPrefs.add(new NoteLabel(localizer.getMessage("nlAllowCustomCardsInDecks")), descriptionConstraints);
-
-        pnlPrefs.add(cbAiPicker, titleConstraints);
-        pnlPrefs.add(new NoteLabel(localizer.getMessage("nlAiPickerSettings")), descriptionConstraints);
 
         // Graphic Options
         pnlPrefs.add(new SectionLabel(localizer.getMessage("GraphicOptions")), sectionConstraints + ", gaptop 2%");
@@ -458,9 +349,6 @@ public enum VSubmenuPreferences implements IVSubmenu<CSubmenuPreferences> {
 
         pnlPrefs.add(cbCardTextHideReminder, titleConstraints);
         pnlPrefs.add(new NoteLabel(localizer.getMessage("nlCardTextHideReminder")), descriptionConstraints);
-
-        pnlPrefs.add(cbOpenPacksIndiv, titleConstraints);
-        pnlPrefs.add(new NoteLabel(localizer.getMessage("nlOpenPacksIndiv")), descriptionConstraints);
 
         pnlPrefs.add(cbTokensInSeparateRow, titleConstraints);
         pnlPrefs.add(new NoteLabel(localizer.getMessage("nlTokensInSeparateRow")), descriptionConstraints);

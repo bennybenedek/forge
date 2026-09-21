@@ -18,6 +18,7 @@
 package forge.screens.deckeditor.controllers;
 
 import java.awt.event.ActionListener;
+import javax.swing.JPanel;
 import forge.card.MagicColor;
 import forge.Singletons;
 import forge.deck.CardPool;
@@ -28,6 +29,7 @@ import forge.gamemodes.rogue.RogueIO;
 import forge.gamemodes.rogue.RogueRun;
 import forge.gamemodes.rogue.RogueTutorial;
 import forge.gui.UiCommand;
+import forge.gui.framework.DragCell;
 import forge.gui.framework.EDocID;
 import forge.gui.framework.FScreen;
 import forge.localinstance.achievements.RogueCommanderAchievements;
@@ -36,8 +38,14 @@ import forge.itemmanager.CardManager;
 import forge.itemmanager.ItemManagerConfig;
 import forge.model.FModel;
 import forge.screens.deckeditor.AddBasicLandsDialog;
+import forge.screens.deckeditor.views.VAllDecks;
+import forge.screens.deckeditor.views.VBrawlDecks;
 import forge.screens.deckeditor.views.VCardCatalog;
+import forge.screens.deckeditor.views.VCommanderDecks;
 import forge.screens.deckeditor.views.VCurrentDeck;
+import forge.screens.deckeditor.views.VDeckgen;
+import forge.screens.deckeditor.views.VOathbreakerDecks;
+import forge.screens.deckeditor.views.VTinyLeadersDecks;
 import forge.screens.home.CHomeUI;
 import forge.screens.home.rogue.CSubmenuRogueMap;
 import forge.screens.home.rogue.RogueTutorialHelper;
@@ -68,11 +76,18 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
     private final List<DeckSection> allSections = new ArrayList<>();
     private final ItemPool<PaperCard> basicLandPool;
     private final ItemPool<PaperCard> emptyCatalogPool = new ItemPool<>(PaperCard.class);
+    private DragCell allDecksParent;
+    private DragCell commanderDecksParent;
+    private DragCell oathbreakerDecksParent;
+    private DragCell brawlDecksParent;
+    private DragCell tinyLeadersDecksParent;
+    private DragCell deckGenParent;
     private RogueRun rogueRun;
 
     // Rogue-specific UI elements
     private forge.toolbox.FLabel lblRemovalCredits;
     private FButton btnUndo;
+    private FButton btnBackToPath;
 
 
     // Undo action tracking
@@ -278,7 +293,6 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
 
     @Override
     protected void resetUI() {
-        FButton btnBackToPath;
         super.resetUI();
 
         // Hide add buttons (can't add cards from catalog)
@@ -305,27 +319,38 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
 
         // Set title
         VCurrentDeck.SINGLETON_INSTANCE.getLblTitle().setText("Rogue Commander Deck:");
-        VCardCatalog.SINGLETON_INSTANCE.getTabLabel().setText("Rogue Commander");
+        VCardCatalog.SINGLETON_INSTANCE.getTabLabel().setText("Basic Lands");
         getCbxSection().setVisible(true);
 
-        // Add Rogue-specific UI elements to deck manager button panel
-        // These will automatically be isolated to this editor instance (not shared)
-        lblRemovalCredits = new forge.toolbox.FLabel.Builder()
-            .text(REMOVAL_CREDITS + ": " + rogueRun.getRemovalCredits())
-            .tooltip(rogueRun.getRemovalCredits() + " Removal Credits left for removing non-basic land cards from current deck")
-            .fontSize(14)
-            .build();
-        this.getDeckManager().getPnlButtons().add(lblRemovalCredits, "w 22%!, h 30px!, gapx 5");
+        final JPanel buttonPanel = this.getDeckManager().getPnlButtons();
+        if (lblRemovalCredits == null) {
+            lblRemovalCredits = new forge.toolbox.FLabel.Builder()
+                .text(REMOVAL_CREDITS + ": " + rogueRun.getRemovalCredits())
+                .tooltip(rogueRun.getRemovalCredits() + " Removal Credits left for removing non-basic land cards from current deck")
+                .fontSize(14)
+                .build();
+        }
+        if (lblRemovalCredits.getParent() != buttonPanel) {
+            buttonPanel.add(lblRemovalCredits, "w 22%!, h 30px!, gapx 5");
+        }
 
-        btnUndo = new FButton("Undo");
-        btnUndo.setToolTipText("Undo last addition / removal");
-        btnUndo.setCommand(this::undoLastRemoval);
-        this.getDeckManager().getPnlButtons().add(btnUndo, "w 12%!, h 30px!, gapx 60");
+        if (btnUndo == null) {
+            btnUndo = new FButton("Undo");
+            btnUndo.setToolTipText("Undo last addition / removal");
+            btnUndo.setCommand(this::undoLastRemoval);
+        }
+        if (btnUndo.getParent() != buttonPanel) {
+            buttonPanel.add(btnUndo, "w 12%!, h 30px!, gapx 60");
+        }
 
-        btnBackToPath = new FButton("Back To Map");
-        btnBackToPath.setToolTipText("Return to the Rogue Commander map");
-        btnBackToPath.setCommand(this::navigateBackToPath);
-        this.getDeckManager().getPnlButtons().add(btnBackToPath, "w 18%!, h 30px!, gapx 5");
+        if (btnBackToPath == null) {
+            btnBackToPath = new FButton("Back To Map");
+            btnBackToPath.setToolTipText("Return to the Rogue Commander map");
+            btnBackToPath.setCommand(this::navigateBackToPath);
+        }
+        if (btnBackToPath.getParent() != buttonPanel) {
+            buttonPanel.add(btnBackToPath, "w 18%!, h 30px!, gapx 5");
+        }
 
         // Update label text and button state
         updateRemovalCreditsLabel();
@@ -360,6 +385,38 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
         VCurrentDeck.SINGLETON_INSTANCE.getTxfTitle().setEnabled(true);
         getBtnAdd().setVisible(true);
         getBtnAdd4().setVisible(true);
+
+        final JPanel buttonPanel = this.getDeckManager().getPnlButtons();
+        if (lblRemovalCredits != null) {
+            buttonPanel.remove(lblRemovalCredits);
+        }
+        if (btnUndo != null) {
+            buttonPanel.remove(btnUndo);
+        }
+        if (btnBackToPath != null) {
+            buttonPanel.remove(btnBackToPath);
+        }
+        buttonPanel.revalidate();
+        buttonPanel.repaint();
+
+        if (allDecksParent != null) {
+            allDecksParent.addDoc(VAllDecks.SINGLETON_INSTANCE);
+        }
+        if (commanderDecksParent != null) {
+            commanderDecksParent.addDoc(VCommanderDecks.SINGLETON_INSTANCE);
+        }
+        if (oathbreakerDecksParent != null) {
+            oathbreakerDecksParent.addDoc(VOathbreakerDecks.SINGLETON_INSTANCE);
+        }
+        if (brawlDecksParent != null) {
+            brawlDecksParent.addDoc(VBrawlDecks.SINGLETON_INSTANCE);
+        }
+        if (tinyLeadersDecksParent != null) {
+            tinyLeadersDecksParent.addDoc(VTinyLeadersDecks.SINGLETON_INSTANCE);
+        }
+        if (deckGenParent != null) {
+            deckGenParent.addDoc(VDeckgen.SINGLETON_INSTANCE);
+        }
     }
 
     @Override
@@ -384,6 +441,13 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
         this.getDeckController().setModel(rogueRun.getCurrentDeck());
 
         resetUI();
+        allDecksParent = removeTab(VAllDecks.SINGLETON_INSTANCE);
+        commanderDecksParent = removeTab(VCommanderDecks.SINGLETON_INSTANCE);
+        oathbreakerDecksParent = removeTab(VOathbreakerDecks.SINGLETON_INSTANCE);
+        brawlDecksParent = removeTab(VBrawlDecks.SINGLETON_INSTANCE);
+        tinyLeadersDecksParent = removeTab(VTinyLeadersDecks.SINGLETON_INSTANCE);
+        deckGenParent = removeTab(VDeckgen.SINGLETON_INSTANCE);
+
         getCbxSection().removeAllItems();
         for (DeckSection section : allSections) {
             getCbxSection().addItem(section);

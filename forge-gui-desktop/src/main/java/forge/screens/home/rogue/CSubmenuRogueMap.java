@@ -200,6 +200,7 @@ public enum CSubmenuRogueMap implements ICDoc {
     // Disable button if match already in progress (prevents duplicate match tabs)
     boolean matchInProgress = currentRun.getHostedMatch() != null;
     view.getBtnEnterNode().setEnabled(!matchInProgress);
+    view.getBtnEditDeck().setEnabled(!matchInProgress);
     view.getBtnEnterNode().setText(getEnterButtonText(currentNode, pathCtx));
     updatePlaneboundRerollButton(currentNode, matchInProgress, pathCtx);
   }
@@ -473,8 +474,8 @@ public enum CSubmenuRogueMap implements ICDoc {
     CHomeUI.SINGLETON_INSTANCE.itemClick(EDocID.HOME_ROGUESTART);
   }
 
-  private void editDeck() {
-    if (currentRun == null) {
+  public void editDeck() {
+    if (currentRun == null || currentRun.getHostedMatch() != null) {
       return;
     }
 

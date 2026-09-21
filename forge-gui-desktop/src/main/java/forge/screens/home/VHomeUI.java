@@ -21,6 +21,7 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -151,20 +152,27 @@ public enum VHomeUI implements IVTopLevelUI {
         allSubmenus.add(VSubmenuDownloaders.SINGLETON_INSTANCE);
         allSubmenus.add(VSubmenuReleaseNotes.SINGLETON_INSTANCE);
 
-        // For each group: init its panel
+        final EnumSet<EMenuGroup> visibleMenuGroups = EnumSet.of(
+                EMenuGroup.ROGUE, EMenuGroup.SETTINGS);
+
+        // For each visible group: init its panel
         final SortedMap<EMenuGroup, JPanel> allGroupPanels = new TreeMap<>();
-        for (final EMenuGroup e : EMenuGroup.values()) {
+        for (final EMenuGroup e : visibleMenuGroups) {
             allGroupPanels.put(e, new PnlGroup());
             allGroupPanels.get(e).setVisible(false);
             allGroupPanels.get(e).setLayout(new MigLayout("insets 0, gap 0, wrap"));
             allGroupPanels.get(e).setName(e.toString());
         }
 
-        // For each item: Add to its group, and add to the card layout in right panel.
+        // Add only items belonging to visible groups.
         for (final IVSubmenu<? extends ICDoc> item : allSubmenus) {
-            allSubmenuLabels.put(item.getItemEnum(), new LblMenuItem(item));
-            allGroupPanels.get(item.getGroupEnum()).add(
-                    allSubmenuLabels.get(item.getItemEnum()), "w 100%!, h 30px!, gap 0 0 1px 1px");
+            final JPanel groupPanel = allGroupPanels.get(item.getGroupEnum());
+            if (groupPanel == null) {
+                continue;
+            }
+            final LblMenuItem submenuLabel = new LblMenuItem(item);
+            allSubmenuLabels.put(item.getItemEnum(), submenuLabel);
+            groupPanel.add(submenuLabel, "w 100%!, h 30px!, gap 0 0 1px 1px");
         }
 
         // For each group: add its title, then its panel, then "click" if necessary.

@@ -27,9 +27,9 @@ import forge.Singletons;
 import forge.gamemodes.match.AbstractGuiGame;
 import forge.gui.framework.FScreen;
 import forge.gui.framework.ILocalRepaint;
-import forge.localinstance.properties.ForgePreferences;
 import forge.menus.ForgeMenu;
 import forge.menus.LayoutMenu;
+import forge.screens.home.rogue.CSubmenuRogueMap;
 import forge.toolbox.FButton;
 import forge.toolbox.FDigitalClock;
 import forge.toolbox.FSkin;
@@ -95,10 +95,6 @@ public class FNavigationBar extends FTitleBarBase {
 
         addNavigationTab(FScreen.HOME_SCREEN);
         addNavigationTab(FScreen.DECK_EDITOR_CONSTRUCTED);
-        if (ForgePreferences.DEV_MODE) {
-            //TODO: Make Workshop available outside developer mode when custom cards supported
-            addNavigationTab(FScreen.WORKSHOP_SCREEN);
-        }
 
         super.addControls();
 
@@ -404,7 +400,11 @@ public class FNavigationBar extends FTitleBarBase {
                     if (!NavigationTab.this.isEnabled()) { return; }
                     if (SwingUtilities.isLeftMouseButton(e)) {
                         if (!selected) {
-                            Singletons.getControl().setCurrentScreen(screen);
+                            if (screen == FScreen.DECK_EDITOR_CONSTRUCTED) {
+                                CSubmenuRogueMap.SINGLETON_INSTANCE.editDeck();
+                            } else {
+                                Singletons.getControl().setCurrentScreen(screen);
+                            }
                         }
                     }
                     else if (SwingUtilities.isMiddleMouseButton(e) && screen.allowTabClose()) {

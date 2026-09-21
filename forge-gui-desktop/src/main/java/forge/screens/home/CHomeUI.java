@@ -12,7 +12,7 @@ import forge.localinstance.properties.ForgePreferences.FPref;
 import forge.menus.IMenuProvider;
 import forge.menus.MenuUtil;
 import forge.model.FModel;
-import forge.screens.home.sanctioned.VSubmenuConstructed;
+import forge.screens.home.rogue.VSubmenuRogueStart;
 import forge.toolbox.FAbsolutePositioner;
 
 /**
@@ -28,7 +28,7 @@ public enum CHomeUI implements ICDoc, IMenuProvider {
     EDocID currentDocID;
     Object previousDoc = null;
 
-    private LblMenuItem lblSelected = new LblMenuItem(VSubmenuConstructed.SINGLETON_INSTANCE);
+    private LblMenuItem lblSelected = new LblMenuItem(VSubmenuRogueStart.SINGLETON_INSTANCE);
 
     /** Programatically selects a menu item.
      *  @param id0 {@link forge.gui.framework.EDocID} */
@@ -112,7 +112,7 @@ public enum CHomeUI implements ICDoc, IMenuProvider {
             itemClick(selected);
         }
         else {
-            itemClick(EDocID.HOME_CONSTRUCTED);
+            itemClick(EDocID.HOME_ROGUESTART);
         }
     }
 

@@ -190,11 +190,11 @@ public class ForgePreferences extends AbstractPreferences<ForgePreferences.FPref
         LOAD_GAME_SCREEN("BoosterDraft"),
         PLAY_ONLINE_SCREEN("Lobby"),
 
-        SUBMENU_CURRENTMENU ("CONSTRUCTED"),
+        SUBMENU_CURRENTMENU ("HOME_ROGUESTART"),
         SUBMENU_SANCTIONED ("true"),
         SUBMENU_ONLINE ("false"),
         SUBMENU_GAUNTLET ("false"),
-        SUBMENU_ROGUE ("false"),
+        SUBMENU_ROGUE ("true"),
         SUBMENU_QUEST ("false"),
         SUBMENU_PUZZLE("false"),
         SUBMENU_SETTINGS ("false"),
