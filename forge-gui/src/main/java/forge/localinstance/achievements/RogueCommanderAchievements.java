@@ -9,6 +9,7 @@ import forge.gamemodes.rogue.CodexHelper;
 import forge.gamemodes.rogue.RogueConfig;
 import forge.gamemodes.rogue.RogueDeck;
 import forge.gamemodes.rogue.RogueMetaProgress;
+import forge.gamemodes.rogue.RoguePlanebound;
 import forge.gamemodes.rogue.RogueRun;
 import forge.gamemodes.rogue.effect.DescensionLevel;
 import forge.gamemodes.rogue.effect.RogueEffect;
@@ -64,6 +65,7 @@ public class RogueCommanderAchievements extends AchievementCollection {
         add(new AetherFullyUpgraded());
         add(new BazaarFullyUpgraded());
         add(new CodexComplete());
+        add(new PlaneboundSlayer());
     }
 
     @Override
@@ -92,6 +94,13 @@ public class RogueCommanderAchievements extends AchievementCollection {
         // Gold Hoarder: have 15+ gold
         if (run.getCurrentGold() >= 15) {
             updateAchievement("GoldHoarder");
+        }
+
+        List<RoguePlanebound> planebounds = RogueConfig.loadPlanebounds();
+        RogueMetaProgress progress = RogueMetaProgress.getInstance();
+        if (!planebounds.isEmpty()
+            && planebounds.stream().allMatch(planebound -> progress.getPlaneboundWins(planebound) > 0)) {
+            updateAchievement("PlaneboundSlayer");
         }
 
         // Legendary Army: 20+ legendary permanents in deck

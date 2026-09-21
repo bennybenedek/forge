@@ -42,6 +42,7 @@ import forge.screens.home.CHomeUI;
 import forge.screens.home.rogue.CSubmenuRogueMap;
 import forge.screens.home.rogue.RogueTutorialHelper;
 import forge.screens.match.controllers.CDetailPicture;
+import forge.toolbox.FButton;
 import forge.util.ItemPool;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -71,7 +72,7 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
 
     // Rogue-specific UI elements
     private forge.toolbox.FLabel lblRemovalCredits;
-    private forge.toolbox.FLabel btnUndo;
+    private FButton btnUndo;
 
 
     // Undo action tracking
@@ -277,7 +278,7 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
 
     @Override
     protected void resetUI() {
-        forge.toolbox.FLabel btnBackToPath;
+        FButton btnBackToPath;
         super.resetUI();
 
         // Hide add buttons (can't add cards from catalog)
@@ -316,23 +317,13 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
             .build();
         this.getDeckManager().getPnlButtons().add(lblRemovalCredits, "w 22%!, h 30px!, gapx 5");
 
-        btnUndo = new forge.toolbox.FLabel.Builder()
-            .text("Undo")
-            .tooltip("Undo last addition / removal")
-            .fontSize(14)
-            .opaque(true)
-            .hoverable(true)
-            .build();
+        btnUndo = new FButton("Undo");
+        btnUndo.setToolTipText("Undo last addition / removal");
         btnUndo.setCommand(this::undoLastRemoval);
         this.getDeckManager().getPnlButtons().add(btnUndo, "w 12%!, h 30px!, gapx 60");
 
-        btnBackToPath = new forge.toolbox.FLabel.Builder()
-            .text("Back To Map")
-            .tooltip("Return to the Rogue Commander map")
-            .fontSize(14)
-            .opaque(true)
-            .hoverable(true)
-            .build();
+        btnBackToPath = new FButton("Back To Map");
+        btnBackToPath.setToolTipText("Return to the Rogue Commander map");
         btnBackToPath.setCommand(this::navigateBackToPath);
         this.getDeckManager().getPnlButtons().add(btnBackToPath, "w 18%!, h 30px!, gapx 5");
 
