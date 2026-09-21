@@ -49,16 +49,29 @@ public final class DeckFileMenu {
         return menu;
     }
 
-    private static SkinnedMenuItem menuItem_Save, menuItem_SaveAs;
+    private static SkinnedMenuItem menuItem_New, menuItem_Open, menuItem_Import;
+    private static SkinnedMenuItem menuItem_Save, menuItem_SaveAs, menuItem_Print;
 
     public static void updateSaveEnabled() {
         final var editor = CDeckEditorUI.SINGLETON_INSTANCE.getCurrentEditorController();
-        final boolean canSave = editor != null && editor.getGameType() != GameType.RogueCommander;
+        final boolean canManageDeckFiles = editor != null && editor.getGameType() != GameType.RogueCommander;
+        if (menuItem_New != null) {
+            menuItem_New.setEnabled(canManageDeckFiles);
+        }
+        if (menuItem_Open != null) {
+            menuItem_Open.setEnabled(canManageDeckFiles);
+        }
+        if (menuItem_Import != null) {
+            menuItem_Import.setEnabled(canManageDeckFiles);
+        }
         if (menuItem_Save != null) {
-            menuItem_Save.setEnabled(canSave && CDeckEditorUI.SINGLETON_INSTANCE.hasChanges());
+            menuItem_Save.setEnabled(canManageDeckFiles && CDeckEditorUI.SINGLETON_INSTANCE.hasChanges());
         }
         if (menuItem_SaveAs != null) {
-            menuItem_SaveAs.setEnabled(canSave);
+            menuItem_SaveAs.setEnabled(canManageDeckFiles);
+        }
+        if (menuItem_Print != null) {
+            menuItem_Print.setEnabled(canManageDeckFiles);
         }
     }
 
@@ -68,6 +81,7 @@ public final class DeckFileMenu {
         menuItem.setIcon(showIcons ? MenuUtil.getMenuIcon(FSkinProp.ICO_NEW) : null);
         menuItem.setAccelerator(MenuUtil.getAcceleratorKey(KeyEvent.VK_N));
         menuItem.addActionListener(e -> VCurrentDeck.SINGLETON_INSTANCE.getBtnNew().getCommand().run());
+        menuItem_New = menuItem;
         return menuItem;
     }
 
@@ -77,6 +91,7 @@ public final class DeckFileMenu {
         menuItem.setIcon(showIcons ? MenuUtil.getMenuIcon(FSkinProp.ICO_OPEN) : null);
         menuItem.setAccelerator(MenuUtil.getAcceleratorKey(KeyEvent.VK_O));
         menuItem.addActionListener(e -> VCurrentDeck.SINGLETON_INSTANCE.getBtnOpen().getCommand().run());
+        menuItem_Open = menuItem;
         return menuItem;
     }
 
@@ -85,6 +100,7 @@ public final class DeckFileMenu {
         SkinnedMenuItem menuItem = new SkinnedMenuItem(localizer.getMessage("lblImportDeck"));
         menuItem.setAccelerator(MenuUtil.getAcceleratorKey(KeyEvent.VK_I));
         menuItem.addActionListener(e -> VCurrentDeck.SINGLETON_INSTANCE.getBtnImport().getCommand().run());
+        menuItem_Import = menuItem;
         return menuItem;
     }
 
@@ -114,6 +130,7 @@ public final class DeckFileMenu {
         menuItem.setIcon(showIcons ? MenuUtil.getMenuIcon(FSkinProp.ICO_PRINT) : null);
         menuItem.setAccelerator(MenuUtil.getAcceleratorKey(KeyEvent.VK_P));
         menuItem.addActionListener(e -> VCurrentDeck.SINGLETON_INSTANCE.getBtnPrintProxies().getCommand().run());
+        menuItem_Print = menuItem;
         return menuItem;
     }
 
