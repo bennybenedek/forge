@@ -237,7 +237,7 @@ public class RogueWinLoseController {
         // Persist life total and check carry card survival
         handleMatchData();
 
-        // Check revive effects (e.g. Last Spark) BEFORE marking run as failed
+        // Check revive effects (e.g. Continuum Engine) BEFORE marking run as failed
         DefeatContext defeatCtx = new DefeatContext();
         RogueEffectComposite.INSTANCE.onDefeat(defeatCtx, currentRun);
         if (defeatCtx.revived) {
@@ -245,7 +245,8 @@ public class RogueWinLoseController {
             recordMatchStats(RogueMetaProgress.getInstance(), false);
             RogueIO.saveRun(currentRun);
             view.getBtnQuit().setText(BTN_CONTINUE_RUN);
-            view.showMessage("Last Spark activated! You survived with " + defeatCtx.reviveLife + " life!", "Last Spark!", FSkinProp.ICO_QUEST_ELIXIR);
+            view.showMessage("Continuum Engine activated! You survived with " + defeatCtx.reviveLife + " life!",
+                "Continuum Engine!", FSkinProp.ICO_QUEST_ELIXIR);
             return;
         }
 

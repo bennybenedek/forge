@@ -42,8 +42,8 @@ public class RogueRun {
     // Descension
     private int descensionLevel;                // 0 = no descension; XStream defaults int to 0 for old saves
 
-    // Echo boons (snapshotted from RogueMetaProgress at run creation)
-    private List<RogueRunEffect> activeEchoBoons;
+    // Aether effects (Aetherworks) (snapshotted from RogueMetaProgress at run creation)
+    private List<RogueRunEffect> activeAetherEffects;
 
     // NPC effects (gained from NPC encounters at run start)
     private List<RogueRunEffect> activeNPCEffects;
@@ -706,13 +706,13 @@ public class RogueRun {
         this.descensionLevel = level;
     }
 
-    // Echo boon management
-    public void snapshotEchoBoons(RogueMetaProgress progress) {
-        activeEchoBoons = new ArrayList<>();
-        for (EchoEffect boon : progress.getActiveEchoBoons()) {
-            int rank = progress.getBoonRank(boon);
-            int charges = boon.getChargesForRank(rank);
-            activeEchoBoons.add(new RogueRunEffect(boon.getId(), rank, charges));
+    // Aetherwork management
+    public void snapshotAetherEffects(RogueMetaProgress progress) {
+        activeAetherEffects = new ArrayList<>();
+        for (AetherEffect aetherEffect : progress.getActiveAetherEffects()) {
+            int rank = progress.getAetherEffectRank(aetherEffect);
+            int charges = aetherEffect.getChargesForRank(rank);
+            activeAetherEffects.add(new RogueRunEffect(aetherEffect.getId(), rank, charges));
         }
     }
 
@@ -730,7 +730,7 @@ public class RogueRun {
         return result;
     }
 
-    public List<RogueEffect> getActiveEchoEffects()  { return mapEffects(activeEchoBoons, EchoEffect::fromId); }
+    public List<RogueEffect> getActiveAetherEffects() { return mapEffects(activeAetherEffects, AetherEffect::fromId); }
     public List<RogueEffect> getActiveEventEffects() { return mapEffects(activeEventEffects, EventEffect::fromId); }
     public List<RogueEffect> getActiveChestEffects() { return mapEffects(activeChestEffects, ChestEffect::fromId); }
     public List<RogueEffect> getActiveWoundEffects()     { return mapEffects(activeWounds, WoundEffect::fromId); }
@@ -774,7 +774,7 @@ public class RogueRun {
 
     @SuppressWarnings("unchecked")
     private List<RogueRunEffect>[] allEffectLists() {
-        return new List[]{activeEchoBoons, activeEventEffects, activeChestEffects,
+        return new List[]{activeAetherEffects, activeEventEffects, activeChestEffects,
                 activeWounds, activeWrathful, activeCursed, activeNPCEffects};
     }
 

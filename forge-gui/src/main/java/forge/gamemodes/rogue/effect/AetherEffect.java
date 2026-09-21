@@ -6,14 +6,14 @@ import forge.gamemodes.rogue.RogueRun;
 import forge.item.PaperCard;
 
 /**
- * Enum defining all available Echo effects (=Boons) in Rogue Commander mode.
+ * Enum defining all available Aetherworks in Rogue Commander mode.
  * Each constant implements its own RogueRunEffect trigger methods.
  */
-public enum EchoEffect implements RogueEffect {
+public enum AetherEffect implements RogueEffect {
 
-    // Base boons (requiredUpgradeLevel=0) — always visible
+    // Base Aetherworks (requiredUpgradeLevel=0) — always visible
 
-    VITAL_INFUSION("vital_infusion", "Vital Infusion",
+    ZHALFIRIN_SANCTUARY("zhalfirin_sanctuary", "Zhalfirin Sanctuary",
         "Begin each Run with +%s Max Life.",
         new EffectRankContext(
             new int[]{3, 6, 9, 12}, // Echo costs per rank (rank 1-4)
@@ -27,7 +27,7 @@ public enum EchoEffect implements RogueEffect {
         }
     },
 
-    AETHER_MARKET("aether_market", "Aether Market",
+    AETHER_EXCHANGE("aether_exchange", "Aether Exchange",
         "Gain +%s starting Gold.",
         new EffectRankContext(
             new int[]{3, 6, 9, 12}, // Echo costs per rank
@@ -41,13 +41,13 @@ public enum EchoEffect implements RogueEffect {
         }
     },
 
-    LINGERING_AURA("lingering_aura", "Lingering Aura",
+    RESTORATION_CHAMBER("restoration_chamber", "Restoration Chamber",
         "Gain %s life after each match victory.",
         new EffectRankContext(
             new int[]{2, 4, 8, 16}, // Echo costs per rank
             new int[]{2, 4, 6, 8},  // Effect values: gain 2/4/6/8 life
             3, 0),
-        EffectType.PERMANENT, "Echo Boon - Lingering Aura") {
+        EffectType.PERMANENT, "Aetherwork - Restoration Chamber") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             int rank = run.getRunEffectRank(getId());
@@ -65,7 +65,7 @@ public enum EchoEffect implements RogueEffect {
         }
     },
 
-    SPECTRAL_BARGAIN("spectral_bargain", "Spectral Bargain",
+    SPECTRAL_EXPANDER("spectral_expander", "Spectral Expander",
         "Gain %s free reroll(s) in Card Rewards and Bazaar.",
         new EffectRankContext(
             new int[]{2, 4, 8, 12}, // Echo costs (rank 1-3)
@@ -78,7 +78,7 @@ public enum EchoEffect implements RogueEffect {
         }
     },
 
-    MYTHIC_COLLECTOR("mythic_collector", "Mythic Collector",
+    TOLARIAN_ARCHIVE("tolarian_archive", "Tolarian Archive",
         "See +%s more mythic cards in Rewards and Bazaar.",
         new EffectRankContext(
             new int[]{3, 6, 9, 12}, // Echo costs per rank
@@ -91,13 +91,13 @@ public enum EchoEffect implements RogueEffect {
         }
     },
 
-    LAST_SPARK("last_spark", "Last Spark",
+    CONTINUUM_ENGINE("continuum_engine", "Continuum Engine",
         "Survive defeat and revive with 5 life, %s time(s).",
         new EffectRankContext(
             new int[]{10, 20}, // Echo costs (rank 1-2)
             new int[]{1, 2},   // Effect values: 1/2 revive charges
             1, 0),
-        EffectType.CONSUME, "Echo Boon - Last Spark") {
+        EffectType.CONSUME, "Aetherwork - Continuum Engine") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             int rank = run.getRunEffectRank(getId());
@@ -118,9 +118,9 @@ public enum EchoEffect implements RogueEffect {
         }
     },
 
-    // Advanced boons — visible after Aether Upgrade(s)
+    // Advanced Aetherworks — visible after Aether Upgrade(s)
 
-    EXPANDED_MIND("expanded_mind", "Expanded Mind",
+    MEMORY_CACHE("memory_cache", "Memory Cache",
         "Keep +%s extra cards from Card Rewards.",
         new EffectRankContext(
             new int[]{8, 12}, // Echo costs (rank 1-2)
@@ -152,13 +152,13 @@ public enum EchoEffect implements RogueEffect {
         }
     },
 
-    FORTITUDE("fortitude", "Fortitude",
+    ZHALFIRIN_WARD("zhalfirin_ward", "Zhalfirin Ward",
         "Fellows and Items you control have hexproof and indestructible.",
         new EffectRankContext(
             new int[]{10}, // Echo cost
-            new int[]{1},  // Non-ranked boon
+            new int[]{1},  // Non-ranked Aetherwork
             1, 2),
-        EffectType.PERMANENT, "Echo Boon - Fortitude") {
+        EffectType.PERMANENT, "Aetherwork - Zhalfirin Ward") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             if (run.getRunEffectRank(getId()) > 0) {
@@ -172,7 +172,7 @@ public enum EchoEffect implements RogueEffect {
         }
     },
 
-    FARSIGHT("farsight", "Farsight",
+    TEMPORAL_OBSERVATORY("temporal_observatory", "Temporal Observatory",
         "Reveal %s more Planebound row(s) on the map.",
         new EffectRankContext(
             new int[]{6, 10, 14}, // Echo costs (rank 1-3)
@@ -186,7 +186,7 @@ public enum EchoEffect implements RogueEffect {
         }
     },
 
-    FATEBENDING("fatebending", "Fatebending",
+    FATEBENDER("fatebender", "Fatebender",
         "Reroll NPC Boons, Chest Loot and Events up to %s time(s) during the Run.",
         new EffectRankContext(
             new int[]{6, 10, 14, 18}, // Echo costs (rank 1-4)
@@ -219,7 +219,7 @@ public enum EchoEffect implements RogueEffect {
         }
     },
 
-    PLANEBENDING("planebending", "Planebending",
+    PLANEBENDER("planebender", "Planebender",
         "Reroll Planebound Nodes of the next row on the map up to %s time(s) during the Run.",
         new EffectRankContext(
             new int[]{6, 10, 14, 18}, // Echo costs (rank 1-4)
@@ -248,8 +248,8 @@ public enum EchoEffect implements RogueEffect {
     private final EffectRankContext rankContext;
     private final EffectType effectType;
     private final String effectCardReference;
-    EchoEffect(String id, String displayName, String description, EffectRankContext rankContext,
-             EffectType effectType, String effectCardReference) {
+    AetherEffect(String id, String displayName, String description, EffectRankContext rankContext,
+                 EffectType effectType, String effectCardReference) {
         this.id = id;
         this.displayName = displayName;
         this.description = description;
@@ -299,7 +299,7 @@ public enum EchoEffect implements RogueEffect {
     }
 
     /**
-     * Whether this boon is accessible given the current Aether Upgrade level.
+     * Whether this Aetherwork is accessible given the current Aether Upgrade level.
      */
     public boolean isAccessibleAt(int upgradeLevel) {
         return rankContext.requiredUpgradeLevel() <= upgradeLevel;
@@ -307,20 +307,20 @@ public enum EchoEffect implements RogueEffect {
 
     /**
      * Get the effective maximum rank, including any bonus from Aether Upgrades.
-     * Aether Upgrade 3 adds +1 max rank to all boons.
+     * Aether Upgrades can add bonus ranks to all Aetherworks.
      */
     public int getEffectiveMaxRank(int upgradeLevel) {
         int bonus = 0;
         for (int l = 1; l <= upgradeLevel; l++) {
             AetherUpgrade u = AetherUpgrade.forLevel(l);
-            if (u != null) bonus += u.extraBoonRanks;
+            if (u != null) bonus += u.extraEffectRanks;
         }
         return rankContext.maxRank() + bonus;
     }
 
     /**
      * Get the echo cost to upgrade from (rank-1) to (rank).
-     * Bounds use echoCosts.length to allow the extra rank from Aether Upgrade 3.
+     * Bounds use echoCosts.length to allow the extra rank from Aether Upgrade 4.
      * @param rank The target rank (1-indexed)
      * @return The cost in echoes, or 0 if invalid rank
      */
@@ -333,7 +333,7 @@ public enum EchoEffect implements RogueEffect {
 
     /**
      * Get the effect value at a specific rank.
-     * Bounds use effectValues.length to allow the extra rank from Aether Upgrade 3.
+     * Bounds use effectValues.length to allow the extra rank from Aether Upgrade 4.
      * @param rank The current rank (1-indexed)
      * @return The effect magnitude, or 0 if not unlocked
      */
@@ -382,10 +382,10 @@ public enum EchoEffect implements RogueEffect {
                                      int requiredUpgradeLevel) { }
 
     /**
-     * Find a BoonType by its ID.
+     * Find an Aetherwork by its ID.
      */
-    public static EchoEffect fromId(String id) {
-        for (EchoEffect type : values()) {
+    public static AetherEffect fromId(String id) {
+        for (AetherEffect type : values()) {
             if (type.id.equals(id)) {
                 return type;
             }

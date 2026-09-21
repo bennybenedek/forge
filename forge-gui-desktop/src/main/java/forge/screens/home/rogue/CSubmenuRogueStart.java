@@ -427,11 +427,11 @@ public enum CSubmenuRogueStart implements ICDoc {
       RogueIO.deleteRun(old);
     }
 
-    // Create new run and snapshot active echo boons
+    // Create new run and snapshot active Aetherworks
     RogueRun newRun = new RogueRun(selectedDeck);
     newRun.getRunTimer().start();
     newRun.setDescensionLevel(selectedDescensionLevel);
-    newRun.snapshotEchoBoons(progress);
+    newRun.snapshotAetherEffects(progress);
 
     // Generate path and apply run start effects
     RoguePathGenerator.generateRandomPath(newRun);

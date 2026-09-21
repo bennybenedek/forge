@@ -151,7 +151,7 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
         lblDescension.setToolTipText(null);
       }
 
-      // Populate active effects (echo boons, descension, event traits, chest traits, wounds...)
+      // Populate active effects (Aetherworks, descension, event traits, chest traits, wounds...)
       List<RogueEffect> allEffects = RogueEffectComposite.getAllEffects(run);
       allEffects.removeIf(effect -> effect instanceof DescensionLevel);
       RogueUIHelper.populateEffectPanel(pnlEffects, allEffects, run);

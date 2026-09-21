@@ -82,7 +82,7 @@ public enum RogueTutorial {
       "After a battle",
       "The gold you earned from the battle can be spent at any Bazaar, but any unspent Gold will be lost at the end of a Run.\n"
           +
-          "Your won Echoes can be spent on Boons, which are permanent upgrades that apply to all future Runs, and are not lost at the end of a Run.",
+          "The Echoes you earned are memories of the Aether before the Phyrexian invasion. They persist between Runs and can be used to rebuild its lost Aetherworks.",
       "The cards you earned were added to your Rogue deck. You can view your deck at any time by clicking 'Edit Rogue Deck'.\n"
           +
           "If you gained life above your Run's Max Life during the battle, it will reset back to your Max Life after the battle."
@@ -148,8 +148,8 @@ public enum RogueTutorial {
 
   RUN_COMPLETE(
       "Run Complete",
-      "You completed your first Run! Win or lose, you've earned Echoes " +
-          "based on your progress. Visit the Aether to unlock Boons to make you stronger in future Runs.",
+      "You completed your first Run! Win or lose, you've earned Echoes: persistent memories of the Aether before the Phyrexian invasion. " +
+          "Use them to rebuild lost Aetherworks that strengthen future Runs.",
       "Open the 'Codex' to view and reset your overall game progress, stats, unlocked cards and tutorials.\n"
           +
           "View all your past Runs and Rogue Decks in the 'History'."
@@ -165,16 +165,19 @@ public enum RogueTutorial {
 
   AETHER(
       "Welcome to the Aether",
-      "Welcome to my realm. In the Aether, you can spend your Echoes on powerful Boons that provide permanent upgrades for all future Runs. "
-          +
-          "Unlock and upgrade boons with Echoes, then activate up to 3 boons at the same time."
+      "Welcome to my realm. Before the Phyrexian invasion, the Aether was filled with buildings and machines that have since been lost. " +
+          "The Echoes you recover preserve memories of what once stood here. Spend them to rebuild and upgrade these Aetherworks.",
+      "Only so much energy can flow through the Aether at once. Each active Aetherwork uses one unit of Aether Energy, " +
+          "so you can initially operate up to three at the same time. Activate or deactivate an Aetherwork by selecting it.",
+      "Spend Sparks on Aether upgrades to restore more Aetherworks and increase the Aether's Energy capacity."
   ),
 
   DESCENSION_UNLOCKED(
       "Descension Mode Unlocked",
       "You have won Runs with 3 different Commanders - Descension Mode is now unlocked!\n" +
           "Descension Mode adds stacking difficulty modifiers to your Runs. Select a Commander you have already won with to enable it.",
-      "Winning at a Descension Level unlocks the next level for that Commander, and earns you a Spark. Sparks can be used to unlock special upgrades in the Aether."
+      "Winning at a Descension Level unlocks the next level for that Commander, and earns you a Spark. " +
+          "Sparks can restore more Aetherworks and expand the Aether's Energy capacity."
   ),
 
   DESCENSION_LEVEL_1_WIN(
@@ -183,7 +186,7 @@ public enum RogueTutorial {
           "Descension Level 2 is now unlocked for the Commander who earned this victory.",
       "Remember: each Descension Level includes the modifiers of every previous level. " +
           "Level 2 adds its own challenge on top of Level 1, and that pattern continues as you descend.",
-      "You also earned a Spark. Bring it to the Aether, where Sparks and Echoes can be spent on upgrades to the Aether itself. " +
+      "You also earned a Spark. Bring it to the Aether, where Sparks and Echoes can restore Aetherworks and expand the energy that keeps them active. " +
           "Prepare well. There is more for us to discover."
   ),
 

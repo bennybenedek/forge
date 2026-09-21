@@ -121,7 +121,7 @@ public class RogueCommanderAchievements extends AchievementCollection {
             if (run.getRunTimeMillis() < 20 * 60 * 1000) {
                 updateAchievement("Speedrunner");
             }
-            if (run.getActiveEchoEffects().isEmpty()) {
+            if (run.getActiveAetherEffects().isEmpty()) {
                 updateAchievement("Roguelike");
             }
             if (run.getCarryCards().size() >= 4) {

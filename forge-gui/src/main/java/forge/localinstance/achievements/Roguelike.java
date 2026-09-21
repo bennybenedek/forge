@@ -6,7 +6,7 @@ import forge.game.player.Player;
 public class Roguelike extends Achievement {
     public Roguelike() {
         super("Roguelike", "Roguelike",
-              "Win a Rogue Commander run without active Echo Boons",
+              "Win a Rogue Commander run without active Aetherworks",
               "No echoes. No shortcuts.", 0);
     }
 

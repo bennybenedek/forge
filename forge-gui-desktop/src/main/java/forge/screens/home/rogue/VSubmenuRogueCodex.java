@@ -388,10 +388,7 @@ public enum VSubmenuRogueCodex implements IVSubmenu<CSubmenuRogueCodex> {
   }
 
   private SkinImage getQuestionAvatarImage() {
-    return FSkin.getAvatars().keySet().stream()
-        .max(Integer::compareTo)
-        .map(index -> FSkin.getAvatars().get(index))
-        .orElse(null);
+    return FSkin.getAvatars().get(125);
   }
 
   private FScrollPane createSidebarScrollPane(JPanel sidebar) {

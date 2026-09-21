@@ -105,7 +105,7 @@ public class PathVisualizerPanel extends SkinnedPanel {
         // Current row - show visible nodes
         isFaceDown = !visibleInCurrentRow.contains(i);
       } else {
-        // Future rows - Farsight can reveal reachable Planebound rows
+        // Future rows - Temporal Observatory can reveal reachable Planebound rows
         isFaceDown = !visibleInFuturePlaneboundRows.contains(i);
       }
 

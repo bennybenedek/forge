@@ -2,7 +2,7 @@ package forge.screens.home.rogue;
 
 import forge.gamemodes.rogue.AetherUpgrade;
 import forge.gamemodes.rogue.RogueMetaProgress;
-import forge.gamemodes.rogue.effect.EchoEffect;
+import forge.gamemodes.rogue.effect.AetherEffect;
 import forge.gui.framework.DragCell;
 import forge.gui.framework.DragTab;
 import forge.gui.framework.EDocID;
@@ -26,7 +26,7 @@ import net.miginfocom.swing.MigLayout;
 
 /**
  * Assembles Swing components for the Aether screen. Allows players to spend Echoes on permanent
- * upgrades (Boons).
+ * upgrades (Aetherworks).
  */
 public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
   SINGLETON_INSTANCE;
@@ -35,7 +35,7 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
   private final DragTab tab = new DragTab("Aether");
 
   private final FLabel lblTitle = new FLabel.Builder()
-      .text("The Aether - Codex of Echoes")
+      .text("The Aether")
       .fontAlign(SwingConstants.CENTER)
       .opaque(true)
       .fontSize(16)
@@ -53,19 +53,20 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
       .fontStyle(Font.BOLD)
       .build();
 
-  private final FLabel lblActiveBoons = new FLabel.Builder()
-      .text("Active Boons: 0/3 (click to toggle)")
+  private final FLabel lblAetherEnergy = new FLabel.Builder()
+      .text("Aether Energy: 0/3 in use (click Aetherworks to toggle)")
       .fontSize(14)
       .build();
 
-  // Boon panels - one for each boon
-  private final Map<EchoEffect, BoonPanel> boonPanels = new EnumMap<>(EchoEffect.class);
+  // One panel for each Aetherwork
+  private final Map<AetherEffect, AetherworkPanel> aetherworkPanels =
+      new EnumMap<>(AetherEffect.class);
 
   // Aether Upgrade card (persistent so listener can be wired once in initialize)
   private final AetherUpgradeCard upgradeCard = new AetherUpgradeCard();
 
   private final FButton btnBack;
-  private final FButton btnResetBoons;
+  private final FButton btnResetAetherworks;
   private final FButton btnDevMaxAether = new FButton("[Dev] Max Aether");
   private final FButton btnDevGainEchoes = new FButton("[Dev] +10 Echoes");
   private final FButton btnDevGainSparks = new FButton("[Dev] +10 Sparks");
@@ -77,12 +78,12 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
     lblSparks.setVisible(false);
     btnBack = new FButton("Back");
     btnBack.setIcon(FSkin.getImage(FSkinProp.ICO_OPEN).resize(24, 24).getIcon());
-    btnResetBoons = new FButton("Reset Boons");
-    btnResetBoons.setIcon(FSkin.getImage(FSkinProp.ICO_DELETE).resize(24, 24).getIcon());
+    btnResetAetherworks = new FButton("Reset Aetherworks");
+    btnResetAetherworks.setIcon(FSkin.getImage(FSkinProp.ICO_DELETE).resize(24, 24).getIcon());
 
-    // Create boon panels once at construction time (so listeners can be attached in initialize)
-    for (EchoEffect boon : EchoEffect.values()) {
-      boonPanels.put(boon, new BoonPanel(boon));
+    // Create Aetherwork panels once so listeners can be attached in initialize
+    for (AetherEffect aetherEffect : AetherEffect.values()) {
+      aetherworkPanels.put(aetherEffect, new AetherworkPanel(aetherEffect));
     }
   }
 
@@ -123,15 +124,15 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
 
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(lblTitle, "w 98%!, h 30px!, gap 1% 0 15px 15px");
 
-    // Echo and active boon display
+    // Echo and Aether Energy display
     JPanel headerPanel = new JPanel(new MigLayout("insets 10, gap 20"));
     headerPanel.setOpaque(false);
     headerPanel.add(lblEchoes);
     headerPanel.add(lblSparks, "hidemode 3");
-    headerPanel.add(lblActiveBoons);
+    headerPanel.add(lblAetherEnergy);
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(headerPanel, "w 98%!, gap 1% 0 10px 10px");
 
-    // Boon grid in a scroll pane — takes all remaining vertical space
+    // Aetherwork grid in a scroll pane — takes all remaining vertical space
     RogueMetaProgress progress = RogueMetaProgress.getInstance();
     int upgradeLevel = progress.getAetherUpgradeLevel();
     AetherUpgrade next = AetherUpgrade.forLevel(upgradeLevel + 1);
@@ -143,17 +144,18 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
     } else {
       cardToShow = null;
     }
-    BoonGridPanel boonGrid = createBoonGrid(upgradeLevel, cardToShow);
-    FScrollPane scrollBoons = new FScrollPane(boonGrid, true,
+    AetherworkGridPanel aetherworkGrid = createAetherworkGrid(upgradeLevel, cardToShow);
+    FScrollPane scrollAetherworks = new FScrollPane(aetherworkGrid, true,
         ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
         ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-    VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(scrollBoons, "w 98%!, gap 1% 0 10px 10px, pushy, growy");
+    VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(scrollAetherworks,
+        "w 98%!, gap 1% 0 10px 10px, pushy, growy");
 
     // Buttons always below the scroll area — always visible
     JPanel buttonPanel = new JPanel(new MigLayout("insets 0, gap 10"));
     buttonPanel.setOpaque(false);
     buttonPanel.add(btnBack, "w 180px!, h 40px!");
-    buttonPanel.add(btnResetBoons, "w 180px!, h 40px!");
+    buttonPanel.add(btnResetAetherworks, "w 180px!, h 40px!");
     if (ForgePreferences.DEV_MODE) {
       buttonPanel.add(btnDevMaxAether, "w 180px!, h 40px!");
       buttonPanel.add(btnDevGainEchoes, "w 180px!, h 40px!");
@@ -165,14 +167,14 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().revalidate();
   }
 
-  private BoonGridPanel createBoonGrid(int upgradeLevel, JComponent card) {
-    List<BoonPanel> visible = new ArrayList<>();
-    for (EchoEffect boon : EchoEffect.values()) {
-      if (boon.isAccessibleAt(upgradeLevel)) {
-        visible.add(boonPanels.get(boon));
+  private AetherworkGridPanel createAetherworkGrid(int upgradeLevel, JComponent card) {
+    List<AetherworkPanel> visible = new ArrayList<>();
+    for (AetherEffect aetherEffect : AetherEffect.values()) {
+      if (aetherEffect.isAccessibleAt(upgradeLevel)) {
+        visible.add(aetherworkPanels.get(aetherEffect));
       }
     }
-    return new BoonGridPanel(visible, card);
+    return new AetherworkGridPanel(visible, card);
   }
 
   private static JComponent createLockedInfoPanel() {
@@ -183,7 +185,8 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
 
     FLabel lblInfo = new FLabel.Builder()
         .text("<html><center>Unlock Descension Mode and earn Sparks<br>"
-            + "to get more Boons, Active Boon-Slots and other Upgrades for the Aether</center></html>")
+            + "to restore more Aetherworks, expand Aether Energy<br>"
+            + "and unlock other upgrades for the Aether</center></html>")
         .icon(FSkin.getImage(FSkinProp.ICO_LOCK).resize(20, 20))
         .iconScaleAuto(false)
         .fontSize(13)
@@ -196,19 +199,21 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
   /**
    * Update the display with current meta progress data.
    */
-  public void updateDisplay(int echoes, int sparks, boolean descensionUnlocked, int activeBoonCount,
-      int upgradeLevel, Map<EchoEffect, Integer> boonRanks, Set<EchoEffect> activeBoons) {
+  public void updateDisplay(int echoes, int sparks, boolean descensionUnlocked,
+      int activeAetherworkCount, int upgradeLevel, Map<AetherEffect, Integer> effectRanks,
+      Set<AetherEffect> activeEffects) {
     lblEchoes.setText("Echoes: " + echoes);
     lblSparks.setText("Sparks: " + sparks);
     lblSparks.setVisible(descensionUnlocked);
 
     // Compute actual slot count for label
-    int boonSlots = 3;
+    int energyCapacity = 3;
     for (int l = 1; l <= upgradeLevel; l++) {
       AetherUpgrade u = AetherUpgrade.forLevel(l);
-      if (u != null) boonSlots += u.extraBoonSlots;
+      if (u != null) energyCapacity += u.extraEnergy;
     }
-    lblActiveBoons.setText("Active Boons: " + activeBoonCount + "/" + boonSlots + " (click to toggle)");
+    lblAetherEnergy.setText("Aether Energy: " + activeAetherworkCount + "/" + energyCapacity
+        + " in use (click Aetherworks to toggle)");
 
     // Update upgrade card if visible
     AetherUpgrade next = AetherUpgrade.forLevel(upgradeLevel + 1);
@@ -216,13 +221,13 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
       upgradeCard.update(next, echoes, sparks);
     }
 
-    // Update boon panels
-    for (Map.Entry<EchoEffect, BoonPanel> entry : boonPanels.entrySet()) {
-      EchoEffect boon = entry.getKey();
-      BoonPanel panel = entry.getValue();
-      int rank = boonRanks.getOrDefault(boon, 0);
-      boolean isActive = activeBoons.contains(boon);
-      panel.update(rank, isActive, echoes, activeBoonCount, upgradeLevel);
+    // Update Aetherwork panels
+    for (Map.Entry<AetherEffect, AetherworkPanel> entry : aetherworkPanels.entrySet()) {
+      AetherEffect aetherEffect = entry.getKey();
+      AetherworkPanel panel = entry.getValue();
+      int rank = effectRanks.getOrDefault(aetherEffect, 0);
+      boolean isActive = activeEffects.contains(aetherEffect);
+      panel.update(rank, isActive, echoes, activeAetherworkCount, upgradeLevel);
     }
   }
 
@@ -230,8 +235,8 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
     return btnBack;
   }
 
-  public JButton getBtnResetBoons() {
-    return btnResetBoons;
+  public JButton getBtnResetAetherworks() {
+    return btnResetAetherworks;
   }
 
   public JButton getBtnDevMaxAether() {
@@ -250,8 +255,8 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
     return upgradeCard;
   }
 
-  public Map<EchoEffect, BoonPanel> getBoonPanels() {
-    return boonPanels;
+  public Map<AetherEffect, AetherworkPanel> getAetherworkPanels() {
+    return aetherworkPanels;
   }
 
   @Override
@@ -265,8 +270,8 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
   }
 
   /**
-   * Card displayed in the first row of the boon grid when an Aether Upgrade is available.
-   * Same visual structure as BoonPanel: name (top), description (middle), button (bottom).
+   * Card displayed in the first row of the Aetherwork grid when an Aether Upgrade is available.
+   * Same visual structure as AetherworkPanel: name (top), description (middle), button (bottom).
    */
   static class AetherUpgradeCard extends FSkin.SkinnedPanel {
     private final FLabel lblName;
@@ -384,27 +389,27 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
   }
 
   /**
-   * Responsive grid of BoonPanels. Fixed card size (400×150); breaks from 3 → 2 → 1 columns
+   * Responsive grid of AetherworkPanels. Fixed card size (400×150); breaks from 3 → 2 → 1 columns
    * as the viewport narrows. An optional AetherUpgradeCard occupies its own first row, centred.
    * Implements Scrollable so the enclosing FScrollPane tracks width and enables vertical
    * scrolling only — matching the pattern in VSubmenuRogueHistory.
    */
-  private static class BoonGridPanel extends JPanel implements Scrollable {
+  private static class AetherworkGridPanel extends JPanel implements Scrollable {
     private static final int CARD_W = 400;
     private static final int CARD_H = 150;
     private static final int GAP    = 15;
     private static final int INSET  = 20;
 
-    private final List<BoonPanel> panels;
+    private final List<AetherworkPanel> panels;
     private final JComponent upgradeCard; // null = no first row
 
-    BoonGridPanel(List<BoonPanel> panels, JComponent upgradeCard) {
+    AetherworkGridPanel(List<AetherworkPanel> panels, JComponent upgradeCard) {
       super(null);
       this.panels = panels;
       this.upgradeCard = upgradeCard;
       setOpaque(false);
       if (upgradeCard != null) add(upgradeCard);
-      for (BoonPanel p : panels) add(p);
+      for (AetherworkPanel panel : panels) add(panel);
     }
 
     private int cols() {
@@ -463,13 +468,13 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
   }
 
   /**
-   * Inner class representing a single boon panel in the grid. Click the panel to toggle active
+   * Inner class representing a single Aetherwork panel in the grid. Click it to toggle active
    * state (when unlocked). Shows green border and "ACTIVE" badge when active. Shows yellow/gold
    * border on hover.
    */
-  public static class BoonPanel extends FSkin.SkinnedPanel {
+  public static class AetherworkPanel extends FSkin.SkinnedPanel {
 
-    private final EchoEffect boon;
+    private final AetherEffect aetherEffect;
     private final FLabel lblName;
     private final FLabel lblDescription;
     private final FLabel lblRank;
@@ -484,11 +489,11 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
     private int currentRank = 0;
 
     // Click callback for toggling active state
-    private Consumer<BoonPanel> toggleCallback;
+    private Consumer<AetherworkPanel> toggleCallback;
 
-    public BoonPanel(EchoEffect boon) {
+    public AetherworkPanel(AetherEffect aetherEffect) {
       super(new MigLayout("insets 15 15 15 15, gap 5, wrap, fill"));
-      this.boon = boon;
+      this.aetherEffect = aetherEffect;
 
       // Create and cache own icon instance at construction time
       final javax.swing.Icon rawEchoIcon = FSkin.getImage(FSkinProp.ICO_QUEST_GOLD).resize(20, 20).getIcon();
@@ -504,7 +509,7 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
       setBackground(FSkin.getColor(FSkin.Colors.CLR_THEME2));
 
       lblName = new FLabel.Builder()
-          .text(boon.getDisplayName())
+          .text(aetherEffect.getDisplayName())
           .fontSize(16)
           .fontStyle(Font.BOLD)
           .fontAlign(SwingConstants.CENTER)
@@ -517,12 +522,12 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
           .build();
 
       lblRank = new FLabel.Builder()
-          .text("Rank: 0/" + boon.getMaxRank())
+          .text("Rank: 0/" + aetherEffect.getMaxRank())
           .fontSize(12)
           .fontAlign(SwingConstants.CENTER)
           .build();
 
-      btnUpgrade = new FButton("Unlock");
+      btnUpgrade = new FButton("Build");
       btnUpgrade.setIcon(cachedEchoIcon);
       btnUpgrade.setHorizontalTextPosition(SwingConstants.LEFT);
 
@@ -544,7 +549,7 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
         public void mouseClicked(MouseEvent e) {
           // Only toggle if clicking outside the upgrade button and can toggle
           if (canToggle && toggleCallback != null) {
-            toggleCallback.accept(BoonPanel.this);
+            toggleCallback.accept(AetherworkPanel.this);
           }
         }
 
@@ -569,37 +574,38 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
     /**
      * Set the callback for when the panel is clicked to toggle active state.
      */
-    public void setToggleCallback(Consumer<BoonPanel> callback) {
+    public void setToggleCallback(Consumer<AetherworkPanel> callback) {
       this.toggleCallback = callback;
     }
 
     /**
-     * Update the panel display based on current boon state.
+     * Update the panel display based on the current Aetherwork state.
      */
-    public void update(int rank, boolean active, int echoes, int activeBoonCount, int upgradeLevel) {
+    public void update(int rank, boolean active, int echoes, int activeAetherworkCount,
+        int upgradeLevel) {
       this.currentRank = rank;
       this.isActive = active;
-      int effectiveMax = boon.getEffectiveMaxRank(upgradeLevel);
-      // Compute actual slot count
-      int boonSlots = 3;
+      int effectiveMax = aetherEffect.getEffectiveMaxRank(upgradeLevel);
+      // Compute actual Aether Energy capacity
+      int energyCapacity = 3;
       for (int l = 1; l <= upgradeLevel; l++) {
         AetherUpgrade u = AetherUpgrade.forLevel(l);
-        if (u != null) boonSlots += u.extraBoonSlots;
+        if (u != null) energyCapacity += u.extraEnergy;
       }
-      this.canToggle = rank > 0 && (active || activeBoonCount < boonSlots);
+      this.canToggle = rank > 0 && (active || activeAetherworkCount < energyCapacity);
 
       lblRank.setText("Rank: " + rank + "/" + effectiveMax);
 
       // Update description to show all rank values with current rank highlighted
-      lblDescription.setText(boon.getDescriptionWithAllRanks(rank, upgradeLevel));
+      lblDescription.setText(aetherEffect.getDescriptionWithAllRanks(rank, upgradeLevel));
 
       // Update upgrade button using cached icon instance
       if (rank >= effectiveMax) {
         btnUpgrade.setText("Max Rank");
         btnUpgrade.setEnabled(false);
       } else {
-        int cost = boon.getEchoCostForRank(rank + 1);
-        btnUpgrade.setText(rank == 0 ? "Unlock: " + cost : "Upgrade: " + cost);
+        int cost = aetherEffect.getEchoCostForRank(rank + 1);
+        btnUpgrade.setText(rank == 0 ? "Build: " + cost : "Upgrade: " + cost);
         btnUpgrade.setIcon(cachedEchoIcon);
         btnUpgrade.setEnabled(echoes >= cost);
       }
@@ -670,8 +676,8 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
       }
     }
 
-    public EchoEffect getBoon() {
-      return boon;
+    public AetherEffect getAetherEffect() {
+      return aetherEffect;
     }
 
     public FButton getBtnUpgrade() {

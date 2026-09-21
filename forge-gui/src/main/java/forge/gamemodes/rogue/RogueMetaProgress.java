@@ -5,7 +5,7 @@ import com.thoughtworks.xstream.security.NoTypePermission;
 import com.thoughtworks.xstream.security.NullPermission;
 import com.thoughtworks.xstream.security.PrimitiveTypePermission;
 import forge.gamemodes.rogue.effect.DescensionLevel;
-import forge.gamemodes.rogue.effect.EchoEffect;
+import forge.gamemodes.rogue.effect.AetherEffect;
 import forge.gamemodes.rogue.effect.RogueEffect;
 import forge.gui.FThreads;
 import forge.gui.GuiBase;
@@ -50,12 +50,12 @@ public class RogueMetaProgress {
     // Per-commander descension tracking
     private Map<String, Integer> maxDescensionWonPerCommander = new HashMap<>();
 
-    // Aether system - persistent echoes, sparks, and boons
-    private int totalEchoes;                      // Persistent echo currency
-    private int totalSparks;                      // Earned from Descension wins
-    private int aetherUpgradeLevel = 0;           // XStream defaults int to 0 for old saves
-    private Map<String, Integer> boonRanks;       // Boon ID -> current rank (0 = not unlocked)
-    private Set<String> activeEchoBoons;          // Currently equipped Echo boon IDs (max slots via getActiveBoonSlots())
+    // Aether system - persistent Echoes, Sparks, and Aetherworks
+    private int totalEchoes;                        // Persistent echo currency
+    private int totalSparks;                        // Earned from Descension wins
+    private int aetherUpgradeLevel = 0;             // XStream defaults int to 0 for old saves
+    private Map<String, Integer> aetherEffectRanks; // Aetherwork ID -> current rank (0 = not unlocked)
+    private Set<String> activeAetherEffects;        // Currently active Aetherwork IDs (max slots via getActiveAetherEffectSlots())
 
     // NPC progression levels (npcId -> level)
     private Map<String, Integer> npcLevels;
@@ -82,8 +82,8 @@ public class RogueMetaProgress {
 
         // Initialize Aether system
         totalEchoes = 0;
-        boonRanks = new HashMap<>();
-        activeEchoBoons = new HashSet<>();
+        aetherEffectRanks = new HashMap<>();
+        activeAetherEffects = new HashSet<>();
 
         // Initialize unlock notification tracking
         notifiedCommanderUnlocks = new HashSet<>();
@@ -124,8 +124,8 @@ public class RogueMetaProgress {
         totalEchoes = 0;
         totalSparks = 0;
         aetherUpgradeLevel = 0;
-        boonRanks = new HashMap<>();
-        activeEchoBoons = new HashSet<>();
+        aetherEffectRanks = new HashMap<>();
+        activeAetherEffects = new HashSet<>();
         notifiedCommanderUnlocks = new HashSet<>();
         npcLevels = new HashMap<>();
 
@@ -475,7 +475,7 @@ public class RogueMetaProgress {
     public boolean isDevUnlockAll() { return devUnlockAll; }
     public void setDevUnlockAll(boolean value) { devUnlockAll = value; }
 
-    // ==================== Aether System - Echo Management ====================
+    // ==================== Aether System ====================
 
     public int getTotalEchoes() {
         return totalEchoes;
@@ -517,13 +517,13 @@ public class RogueMetaProgress {
     }
 
     /**
-     * Get the number of active Boon slots from base slots plus purchased Aether Upgrades.
+     * Get the number of active Aetherwork slots from base capacity plus purchased Aether Upgrades.
      */
-    public int getActiveBoonSlots() {
+    public int getActiveAetherEffectSlots() {
         int slots = 3;
         for (int l = 1; l <= aetherUpgradeLevel; l++) {
             AetherUpgrade u = AetherUpgrade.forLevel(l);
-            if (u != null) slots += u.extraBoonSlots;
+            if (u != null) slots += u.extraEnergy;
         }
         return slots;
     }
@@ -542,146 +542,144 @@ public class RogueMetaProgress {
         }
     }
 
-    // ==================== Aether System - Boon Management ====================
-
     /**
-     * Get the current rank of a boon (0 = not unlocked).
+     * Get the current rank of an Aetherwork (0 = not unlocked).
      */
-    public int getBoonRank(EchoEffect type) {
-        if (boonRanks == null) {
-            boonRanks = new HashMap<>();
+    public int getAetherEffectRank(AetherEffect aetherEffect) {
+        if (aetherEffectRanks == null) {
+            aetherEffectRanks = new HashMap<>();
         }
-        return boonRanks.getOrDefault(type.getId(), 0);
+        return aetherEffectRanks.getOrDefault(aetherEffect.getId(), 0);
     }
 
     /**
-     * Attempt to upgrade a boon to the next rank.
+     * Attempt to upgrade an Aetherwork to the next rank.
      * @return true if upgrade was successful, false if not enough echoes or already max rank
      */
-    public boolean upgradeBoon(EchoEffect boon) {
-        if (boonRanks == null) {
-            boonRanks = new HashMap<>();
+    public boolean upgradeAetherEffect(AetherEffect aetherEffect) {
+        if (aetherEffectRanks == null) {
+            aetherEffectRanks = new HashMap<>();
         }
 
-        if (!boon.isAccessibleAt(aetherUpgradeLevel)) {
+        if (!aetherEffect.isAccessibleAt(aetherUpgradeLevel)) {
             return false;
         }
 
-        int currentRank = getBoonRank(boon);
-        if (currentRank >= boon.getEffectiveMaxRank(aetherUpgradeLevel)) {
+        int currentRank = getAetherEffectRank(aetherEffect);
+        if (currentRank >= aetherEffect.getEffectiveMaxRank(aetherUpgradeLevel)) {
             return false; // Already max rank
         }
 
-        int cost = boon.getEchoCostForRank(currentRank + 1);
+        int cost = aetherEffect.getEchoCostForRank(currentRank + 1);
         if (totalEchoes < cost) {
             return false; // Not enough echoes
         }
 
         totalEchoes -= cost;
-        boonRanks.put(boon.getId(), currentRank + 1);
+        aetherEffectRanks.put(aetherEffect.getId(), currentRank + 1);
         save();
         return true;
     }
 
     /**
-     * Get all currently active boons.
+     * Get all currently active Aetherworks.
      */
-    public Set<EchoEffect> getActiveEchoBoons() {
-        Set<EchoEffect> active = new HashSet<>();
-        if (activeEchoBoons == null) {
-            activeEchoBoons = new HashSet<>();
+    public Set<AetherEffect> getActiveAetherEffects() {
+        Set<AetherEffect> active = new HashSet<>();
+        if (activeAetherEffects == null) {
+            activeAetherEffects = new HashSet<>();
             return active;
         }
-        for (String id : activeEchoBoons) {
-            EchoEffect type = EchoEffect.fromId(id);
-            if (type != null) {
-                active.add(type);
+        for (String id : activeAetherEffects) {
+            AetherEffect aetherEffect = AetherEffect.fromId(id);
+            if (aetherEffect != null) {
+                active.add(aetherEffect);
             }
         }
         return active;
     }
 
     /**
-     * Get the count of currently active boons.
+     * Get the count of currently active Aetherworks.
      */
-    public int getActiveBoonCount() {
-        if (activeEchoBoons == null) {
-            activeEchoBoons = new HashSet<>();
+    public int getActiveAetherEffectCount() {
+        if (activeAetherEffects == null) {
+            activeAetherEffects = new HashSet<>();
         }
-        return activeEchoBoons.size();
+        return activeAetherEffects.size();
     }
 
     /**
-     * Activate a boon (max slots determined by getActiveBoonSlots()).
+     * Activate an Aetherwork (maximum determined by getActiveAetherEffectSlots()).
      */
-    public void activateBoon(EchoEffect type) {
-        if (activeEchoBoons == null) {
-            activeEchoBoons = new HashSet<>();
+    public void activateAetherEffect(AetherEffect aetherEffect) {
+        if (activeAetherEffects == null) {
+            activeAetherEffects = new HashSet<>();
         }
 
         // Must be accessible at current upgrade level
-        if (!type.isAccessibleAt(aetherUpgradeLevel)) {
+        if (!aetherEffect.isAccessibleAt(aetherUpgradeLevel)) {
             return;
         }
 
         // Must be unlocked (rank > 0)
-        if (getBoonRank(type) == 0) {
+        if (getAetherEffectRank(aetherEffect) == 0) {
             return;
         }
 
         // If already active, nothing to do
-        if (activeEchoBoons.contains(type.getId())) {
+        if (activeAetherEffects.contains(aetherEffect.getId())) {
             return;
         }
 
-        // Check active boon slot limit
-        if (activeEchoBoons.size() >= getActiveBoonSlots()) {
+        // Check Aether Energy capacity
+        if (activeAetherEffects.size() >= getActiveAetherEffectSlots()) {
             return;
         }
 
-        activeEchoBoons.add(type.getId());
+        activeAetherEffects.add(aetherEffect.getId());
         save();
     }
 
     /**
-     * Deactivate a boon.
+     * Deactivate an Aetherwork.
      */
-    public void deactivateBoon(EchoEffect boon) {
-        if (activeEchoBoons == null) {
-            activeEchoBoons = new HashSet<>();
+    public void deactivateAetherEffect(AetherEffect aetherEffect) {
+        if (activeAetherEffects == null) {
+            activeAetherEffects = new HashSet<>();
         }
-        activeEchoBoons.remove(boon.getId());
+        activeAetherEffects.remove(aetherEffect.getId());
         save();
     }
 
     /**
-     * Reset all boons to rank 0 and refund all spent echoes.
+     * Reset all Aetherworks to rank 0 and refund all spent Echoes.
      * @return The amount of echoes refunded
      */
-    public int resetBoons() {
-        if (boonRanks == null) {
-            boonRanks = new HashMap<>();
+    public int resetAetherEffects() {
+        if (aetherEffectRanks == null) {
+            aetherEffectRanks = new HashMap<>();
         }
-        if (activeEchoBoons == null) {
-            activeEchoBoons = new HashSet<>();
+        if (activeAetherEffects == null) {
+            activeAetherEffects = new HashSet<>();
         }
 
-        // Calculate total echoes spent on all boons
+        // Calculate total Echoes spent on all Aetherworks
         int refund = 0;
-        for (EchoEffect boon : EchoEffect.values()) {
-            int rank = getBoonRank(boon);
+        for (AetherEffect aetherEffect : AetherEffect.values()) {
+            int rank = getAetherEffectRank(aetherEffect);
             // Sum costs for each rank from 1 to current rank
             for (int r = 1; r <= rank; r++) {
-                refund += boon.getEchoCostForRank(r);
+                refund += aetherEffect.getEchoCostForRank(r);
             }
         }
 
         // Refund echoes
         totalEchoes += refund;
 
-        // Clear all boon data
-        boonRanks.clear();
-        activeEchoBoons.clear();
+        // Clear all Aetherwork data
+        aetherEffectRanks.clear();
+        activeAetherEffects.clear();
 
         save();
         return refund;

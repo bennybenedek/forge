@@ -355,8 +355,8 @@ public enum CSubmenuRogueMap implements ICDoc {
     if (defeatCtx.revived) {
       currentRun.setCurrentLife(defeatCtx.reviveLife);
       FOptionPane.showMessageDialog(
-          "Last Spark activated! You survived with " + defeatCtx.reviveLife + " life!",
-          "Last Spark!");
+          "Continuum Engine activated! You survived with " + defeatCtx.reviveLife + " life!",
+          "Continuum Engine!");
       return false;
     }
 

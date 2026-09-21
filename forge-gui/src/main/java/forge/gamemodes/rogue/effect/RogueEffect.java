@@ -16,7 +16,7 @@ import java.util.function.Predicate;
 /**
  * Interface for effects that trigger at specific points during a Rogue Commander run.
  * All methods are no-ops by default - override only the triggers relevant to each effect.
- * All state is read from RogueRun (echo boons, event traits, descension are snapshotted there).
+ * All state is read from RogueRun (Aetherworks, event traits, descension are snapshotted there).
  */
 public interface RogueEffect {
 
@@ -162,7 +162,7 @@ public interface RogueEffect {
 
     private static String getUIDisplayPrefix(RogueEffect effect) {
         if (effect instanceof WoundEffect) return "Wound - ";
-        if (effect instanceof EchoEffect) return "Echo Boon - ";
+        if (effect instanceof AetherEffect) return "Aetherwork - ";
         if (effect instanceof NPCEffect) return "NPC Trait - ";
         if (effect instanceof EventEffect) return "Event Trait - ";
         if (effect instanceof ChestEffect) return "Chest Trait - ";

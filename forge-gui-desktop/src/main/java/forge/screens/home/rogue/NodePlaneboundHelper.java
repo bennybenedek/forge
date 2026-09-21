@@ -44,7 +44,7 @@ class NodePlaneboundHelper {
             return;
         }
 
-        handlePlaneboundBoons(node, currentRun);
+        handlePlaneboundEffects(node, currentRun);
 
         SwingUtilities.invokeLater(() -> {
             SOverlayUtils.startGameOverlay();
@@ -169,7 +169,7 @@ class NodePlaneboundHelper {
         }
     }
 
-    private void handlePlaneboundBoons(NodePlanebound node, RogueRun currentRun) {
+    private void handlePlaneboundEffects(NodePlanebound node, RogueRun currentRun) {
         int wrathfulCount = node.getWrathfulCount();
         int cursedCount = node.getCursedCount();
         if (wrathfulCount == 0 && cursedCount == 0) {
