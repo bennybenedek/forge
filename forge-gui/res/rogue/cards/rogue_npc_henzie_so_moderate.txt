@@ -1,4 +1,4 @@
-Name:Henzie Trait - Moderate
+Name:Henzie Trait - So Moderate
 ManaCost:no cost
 Types:Trait
 S:Mode$ CantBeCast | ValidCard$ Card | Caster$ You | NumLimitEachTurn$ 1 | EffectZone$ Command | Description$ You can't cast more than one spell each turn.

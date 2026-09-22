@@ -264,6 +264,14 @@ public enum ChestEffect implements RogueEffect {
             addEffectCardToCommandZone(human);
         }
     },
+    OMEN_OF_DISSIPATION("omen_of_dissipation", "Omen Of Dissipation",
+        TRAIT_GAIN_DESCRIPTION,
+        EffectType.PERMANENT, "Chest Trait - Omen Of Dissipation") {
+        @Override
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            addEffectCardToCommandZone(human);
+        }
+    },
     OMEN_OF_NIGHTMARES("omen_of_nightmares", "Omen Of Nightmares",
         TRAIT_GAIN_DESCRIPTION,
         EffectType.PERMANENT, "Chest Trait - Omen Of Nightmares") {

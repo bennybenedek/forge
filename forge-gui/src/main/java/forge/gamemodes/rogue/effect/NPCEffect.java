@@ -100,6 +100,20 @@ public enum NPCEffect implements RogueEffect {
             addCardsFromCardRewardPool(run, ctx, 3, PaperCardPredicates.IS_MYTHIC_RARE);
         }
     },
+    HENZIE_CHERISHED("npc_henzie_cherished", "Henzie's Cherished",
+        "Add [[Ugin, the Spirit Dragon|M21|2]] to your deck.", NPC.HENZIE,
+        EffectType.ONESHOT, null) {
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            addCardsToDeck(run, ctx, List.of("Ugin, the Spirit Dragon|M21|2"));
+        }
+
+        @Override
+        public boolean isChoiceAvailable(RogueRun run) {
+            PaperCard ugin = RogueConfig.getCard("Ugin, the Spirit Dragon", "M21", 2);
+            return run.canAddCardToDeck(ugin);
+        }
+    },
     HENZIE_CITY("npc_henzie_city", "Henzie's City",
         TRAIT_GAIN_DESCRIPTION + " ![[City of Brass|2X2|1]]", NPC.HENZIE,
         EffectType.PERMANENT, "Henzie Trait - Henzie's City") {
@@ -142,14 +156,6 @@ public enum NPCEffect implements RogueEffect {
             return List.of("Blast Zone|CMM|1");
         }
     },
-    HENZIE_DISSIPATION("npc_henzie_dissipation", "Dissipation",
-        TRAIT_GAIN_DESCRIPTION, NPC.HENZIE,
-        EffectType.PERMANENT, "Henzie Trait - Dissipation") {
-        @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-        }
-    },
     HENZIE_DRAMATIC_ENTRANCE("npc_henzie_dramatic_entrance", "Dramatic Entrance",
         TRAIT_GAIN_DESCRIPTION, NPC.HENZIE,
         EffectType.PERMANENT, "Henzie Trait - Dramatic Entrance") {
@@ -162,17 +168,17 @@ public enum NPCEffect implements RogueEffect {
                 2, human);
         }
     },
-    HENZIE_LOREMASTER("npc_henzie_loremaster", "Loremaster",
+    HENZIE_STREET_SMART("npc_henzie_street_smart", "Street Smart",
         TRAIT_GAIN_DESCRIPTION, NPC.HENZIE,
-        EffectType.PERMANENT, "Henzie Trait - Loremaster") {
+        EffectType.PERMANENT, "Henzie Trait - Street Smart") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
         }
     },
-    HENZIE_MODERATE("npc_henzie_moderate", "Moderate",
+    HENZIE_SO_MODERATE("npc_henzie_so_moderate", "So Moderate",
         TRAIT_GAIN_DESCRIPTION, NPC.HENZIE,
-        EffectType.PERMANENT, "Henzie Trait - Moderate") {
+        EffectType.PERMANENT, "Henzie Trait - So Moderate") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
@@ -273,6 +279,36 @@ public enum NPCEffect implements RogueEffect {
         @Override
         public boolean isChoiceAvailable(RogueRun run) {
             return canAddAllCarryCards(run, List.of("Fractured Powerstone|MOC|1", "Ichor Elixir|MOC|1"));
+        }
+    },
+    NARSET_ESCORTS("npc_narset_escorts", "Narset's Escorts",
+        "Gain the {{Fellow}}s [[Roaming Throne|LCI|1]] and [[Walking Ballista|2XM|1]].", NPC.NARSET,
+        EffectType.ONESHOT, null) {
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            addCarryCards(run, ctx, List.of("Roaming Throne|LCI|1", "Walking Ballista|2XM|1"),
+                CarryCardType.FELLOW);
+        }
+
+        @Override
+        public boolean isChoiceAvailable(RogueRun run) {
+            return canAddAllCarryCards(run, List.of("Roaming Throne|LCI|1", "Walking Ballista|2XM|1"));
+        }
+    },
+    NARSET_TRAVELOGUE("npc_narset_travelogue", "Narset's Travelogue",
+        "Add [[Horizon of Progress|M3C|1]] and [[Talon Gates of Madara|M3C|1]] to your deck.", NPC.NARSET,
+        EffectType.ONESHOT, null) {
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            addCardsToDeck(run, ctx,
+                List.of("Horizon of Progress|M3C|1", "Talon Gates of Madara|M3C|1"));
+        }
+
+        @Override
+        public boolean isChoiceAvailable(RogueRun run) {
+            PaperCard horizon = RogueConfig.getCard("Horizon of Progress", "M3C", 1);
+            PaperCard talonGates = RogueConfig.getCard("Talon Gates of Madara", "M3C", 1);
+            return run.canAddCardToDeck(horizon) || run.canAddCardToDeck(talonGates);
         }
     },
     NARSET_PASSAGE("npc_narset_passage", "Narset's Passage",
@@ -483,6 +519,20 @@ public enum NPCEffect implements RogueEffect {
         @Override
         public boolean isChoiceAvailable(RogueRun run) {
             return canAddAllCarryCards(run, List.of("Commander's Sphere|CMM|1", "Commander's Plate|CMR|1"));
+        }
+    },
+    TYVAR_LOADOUT("npc_tyvar_loadout", "Tyvar's Loadout",
+        "Gain the {{Item}}s [[Skullclamp|MSC|2]] and [[Swiftfoot Boots|FDN|2]].", NPC.TYVAR,
+        EffectType.ONESHOT, null) {
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            addCarryCards(run, ctx, List.of("Skullclamp|MSC|2", "Swiftfoot Boots|FDN|2"),
+                CarryCardType.ITEM);
+        }
+
+        @Override
+        public boolean isChoiceAvailable(RogueRun run) {
+            return canAddAllCarryCards(run, List.of("Skullclamp|MSC|2", "Swiftfoot Boots|FDN|2"));
         }
     },
     TYVAR_RESPITE("npc_tyvar_respite", "Tyvar's Respite",
