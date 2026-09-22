@@ -41,6 +41,7 @@ public enum CHomeUI implements ICDoc, IMenuProvider {
         }
 
         currentDocID = id0;
+        VHomeUI.SINGLETON_INSTANCE.setSidebarVisible(id0 != EDocID.HOME_ROGUEMAP);
 
         if (previousDoc != null) {
             if (!previousDoc.equals(id0.getDoc().getLayoutControl())) {

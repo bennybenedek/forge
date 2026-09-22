@@ -87,6 +87,7 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
   private final FButton btnEnterNode;
   private final FButton btnEditDeck;
   private final FButton btnRerollPlane;
+  private final FButton btnAbandonRun;
   private final FButton btnDevWinRun = new FButton("[DEV] Win Run");
   private final FButton btnDevNextNode = new FButton("[DEV] Next Node");
   private CardUtil zoomUtil;
@@ -109,6 +110,9 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
     btnRerollPlane = new FButton("Reroll Plane");
     btnRerollPlane.setIcon(FSkin.getImage(FSkinProp.ICO_FLIPCARD).resize(24, 24).getIcon());
     btnRerollPlane.setVisible(false);
+
+    btnAbandonRun = new FButton("Abandon Run");
+    btnAbandonRun.setIcon(FSkin.getImage(FSkinProp.ICO_DELETE).resize(24, 24).getIcon());
 
     pnlEffects = RogueUIHelper.createEffectPanel();
     pnlCarryCards = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
@@ -200,6 +204,7 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
     buttonRow.add(btnEnterNode, "wmin 0, growx, shrinkx, h 40px!");
     buttonRow.add(btnEditDeck, "wmin 0, growx, shrinkx, h 40px!");
     buttonRow.add(btnRerollPlane, "wmin 0, growx, shrinkx, h 40px!, hidemode 3");
+    buttonRow.add(btnAbandonRun, "wmin 0, growx, shrinkx, h 40px!");
     if (ForgePreferences.DEV_MODE) {
       buttonRow.add(btnDevNextNode, "wmin 0, growx, shrinkx, h 40px!");
       buttonRow.add(btnDevWinRun, "wmin 0, growx, shrinkx, h 40px!");
@@ -221,6 +226,10 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
 
   public JButton getBtnRerollPlane() {
     return btnRerollPlane;
+  }
+
+  public JButton getBtnAbandonRun() {
+    return btnAbandonRun;
   }
 
   public JButton getBtnDevWinRun() {

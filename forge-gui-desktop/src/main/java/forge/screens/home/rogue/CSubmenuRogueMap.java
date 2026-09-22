@@ -37,6 +37,7 @@ public enum CSubmenuRogueMap implements ICDoc {
   private final ActionListener actEnterNode = arg0 -> enterNode();
   private final ActionListener actEditDeck = arg0 -> editDeck();
   private final ActionListener actRerollPlane = arg0 -> rerollSelectedPlanebound();
+  private final ActionListener actAbandonRun = arg0 -> abandonRun();
   private final VSubmenuRogueMap view = VSubmenuRogueMap.SINGLETON_INSTANCE;
   private final NodeBazaarHelper nodeBazaarHelper = new NodeBazaarHelper(this);
   private final NodeChestHelper nodeChestHelper = new NodeChestHelper(this);
@@ -111,6 +112,7 @@ public enum CSubmenuRogueMap implements ICDoc {
     view.getBtnEnterNode().addActionListener(actEnterNode);
     view.getBtnEditDeck().addActionListener(actEditDeck);
     view.getBtnRerollPlane().addActionListener(actRerollPlane);
+    view.getBtnAbandonRun().addActionListener(actAbandonRun);
     view.getBtnDevWinRun().addActionListener(e -> devWinRun());
     view.getBtnDevNextNode().addActionListener(e -> devNextNode());
     view.getPathVisualizer().setNodeClickHandler(this::handleNodeClick);
@@ -184,6 +186,9 @@ public enum CSubmenuRogueMap implements ICDoc {
     // Update path visualizer selection
     view.getPathVisualizer().setSelectedNode(currentRun.getCurrentNodeIndex());
 
+    boolean matchInProgress = currentRun.getHostedMatch() != null;
+    view.getBtnAbandonRun().setEnabled(!matchInProgress);
+
     // Update button state based on current node
     RoguePathNode currentNode = currentRun.getCurrentNode();
 
@@ -198,7 +203,6 @@ public enum CSubmenuRogueMap implements ICDoc {
     RogueEffectComposite.INSTANCE.onPathUpdate(pathCtx, currentRun);
 
     // Disable button if match already in progress (prevents duplicate match tabs)
-    boolean matchInProgress = currentRun.getHostedMatch() != null;
     view.getBtnEnterNode().setEnabled(!matchInProgress);
     view.getBtnEditDeck().setEnabled(!matchInProgress);
     view.getBtnEnterNode().setText(getEnterButtonText(currentNode, pathCtx));
@@ -470,6 +474,29 @@ public enum CSubmenuRogueMap implements ICDoc {
     RogueCommanderAchievements.instance.evaluateRunAchievements(currentRun);
     progress.notifyDescensionL1IfFirstWin(commanderName);
     RogueIO.saveRun(currentRun);
+    currentRun = null;
+    CHomeUI.SINGLETON_INSTANCE.itemClick(EDocID.HOME_ROGUESTART);
+  }
+
+  private void abandonRun() {
+    if (currentRun == null || currentRun.getHostedMatch() != null) {
+      return;
+    }
+
+    boolean confirmed = FOptionPane.showConfirmDialog(
+        "Abandon this Run? It will be recorded in History and cannot be continued.",
+        "Abandon Run",
+        "Abandon Run",
+        "Cancel",
+        false);
+    if (!confirmed) {
+      return;
+    }
+
+    currentRun.getRunTimer().stop();
+    RogueMetaProgress.getInstance().addRunHistoryEntry(
+        RogueRunHistoryEntry.fromRun(currentRun, "ABANDONED", ""));
+    RogueIO.deleteRun(currentRun);
     currentRun = null;
     CHomeUI.SINGLETON_INSTANCE.itemClick(EDocID.HOME_ROGUESTART);
   }

@@ -196,6 +196,16 @@ public enum VHomeUI implements IVTopLevelUI {
         return pnlMenu;
     }
 
+    public void setSidebarVisible(final boolean visible) {
+        if (pnlMenu.isVisible() == visible) {
+            return;
+        }
+        pnlMenu.setVisible(visible);
+        final JPanel pnl = FView.SINGLETON_INSTANCE.getPnlInsets();
+        pnl.revalidate();
+        pnl.repaint();
+    }
+
     /** @return {@link javax.swing.JPanel} */
     public PnlDisplay getPnlDisplay() {
         return pnlDisplay;
@@ -229,10 +239,10 @@ public enum VHomeUI implements IVTopLevelUI {
     public void populate() {
         JPanel pnl = FView.SINGLETON_INSTANCE.getPnlInsets();
         pnl.setBorder(null);
-        pnl.setLayout(new MigLayout("insets 0, gap 0"));
+        pnl.setLayout(new MigLayout("insets 0, gap 0, fill, hidemode 3"));
 
         pnl.add(pnlMenu, "w 205px!, h 100%!");
-        pnl.add(pnlDisplay, "w 100% - 205px!, h 100%!");
+        pnl.add(pnlDisplay, "wmin 0, grow, push");
     }
 
     /** */
