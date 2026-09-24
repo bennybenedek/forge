@@ -412,7 +412,13 @@ public class RogueRun {
             return false;
         }
 
-      return !filterCardsByCommanderColorIdentity(List.of(card)).isEmpty();
+        if (filterCardsByCommanderColorIdentity(List.of(card)).isEmpty()) {
+            return false;
+        }
+
+        String normalizedName = card.getRules().getNormalizedName();
+        return !getActiveCarryCardNames().contains(normalizedName)
+            && !getExistingCardCounts().containsKey(normalizedName);
     }
 
     public List<PaperCard> filterDuplicateCards(Collection<PaperCard> cards) {
@@ -421,13 +427,15 @@ public class RogueRun {
         }
 
         Map<String, Integer> existingCardCounts = getExistingCardCounts();
+        Set<String> activeCarryCardNames = getActiveCarryCardNames();
 
         List<PaperCard> filtered = new ArrayList<>();
         for (PaperCard card : cards) {
-            if (canAddCardByCardCountRules(card, existingCardCounts)) {
+            String normalizedName = card.getRules().getNormalizedName();
+            if (!activeCarryCardNames.contains(normalizedName)
+                && canAddCardByCardCountRules(card, existingCardCounts)) {
                 filtered.add(card);
                 if (!DeckFormat.canHaveAnyNumberOf(card)) {
-                    String normalizedName = card.getRules().getNormalizedName();
                     existingCardCounts.put(normalizedName, existingCardCounts.getOrDefault(normalizedName, 0) + 1);
                 }
             }
@@ -436,12 +444,14 @@ public class RogueRun {
     }
 
     public Predicate<PaperCard> getNotAlreadyInDeckPredicate() {
+        Set<String> activeCarryCardNames = getActiveCarryCardNames();
         if (currentDeck == null) {
-            return card -> true;
+            return card -> !activeCarryCardNames.contains(card.getRules().getNormalizedName());
         }
 
         Map<String, Integer> existingCardCounts = getExistingCardCounts();
-        return card -> canAddCardByCardCountRules(card, existingCardCounts);
+        return card -> !activeCarryCardNames.contains(card.getRules().getNormalizedName())
+            && canAddCardByCardCountRules(card, existingCardCounts);
     }
 
     public int getCommanderColorIdentityMask() {
@@ -482,6 +492,17 @@ public class RogueRun {
             commanderNames.add(commander.getName());
         }
         return commanderNames;
+    }
+
+    private Set<String> getActiveCarryCardNames() {
+        Set<String> carryCardNames = new HashSet<>();
+        for (CarryCard carryCard : getCarryCards()) {
+            PaperCard card = carryCard.toPaperCard();
+            if (card != null) {
+                carryCardNames.add(card.getRules().getNormalizedName());
+            }
+        }
+        return carryCardNames;
     }
 
     private Map<String, Integer> getExistingCardCounts() {

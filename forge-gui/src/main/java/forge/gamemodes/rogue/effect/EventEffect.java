@@ -408,6 +408,17 @@ public enum EventEffect implements RogueEffect {
             run.loseLife(5);
             addEffectCardAsCarryCard(run, ctx, RogueRun.CarryCardType.ITEM);
         }
+
+        @Override
+        public boolean isChoiceAvailable(RogueRun run) {
+            return run.canAddCardAsCarryCard(getEffectCard());
+        }
+
+        @Override
+        public String getUnavailableReason(RogueRun run) {
+            return isChoiceAvailable(run) ? null
+                : "You already have The One Ring in your deck or as an active Item.";
+        }
     },
     CROOKED_COUNSEL_NAZGUL("crooked_counsel_nazgul", "Join with the dark lord",
         "Remove 9 random creatures from your deck. When you do, add 9 copies of [[Nazgûl]] to your deck.",
@@ -557,12 +568,19 @@ public enum EventEffect implements RogueEffect {
 
         @Override
         public boolean isChoiceAvailable(RogueRun run) {
-            return run.getSelectableDeckCards(getDeckCardFilter()).size() >= 3;
+            PaperCard goldenThrone = RogueConfig.getCard("The Golden Throne", "40K", 1);
+            return run.getSelectableDeckCards(getDeckCardFilter()).size() >= 3
+                && run.canAddCardAsCarryCard(goldenThrone);
         }
 
         @Override
         public String getUnavailableReason(RogueRun run) {
-            return isChoiceAvailable(run) ? null : "You need at least 3 creatures in your deck.";
+            if (run.getSelectableDeckCards(getDeckCardFilter()).size() < 3) {
+                return "You need at least 3 creatures in your deck.";
+            }
+            PaperCard goldenThrone = RogueConfig.getCard("The Golden Throne", "40K", 1);
+            return run.canAddCardAsCarryCard(goldenThrone) ? null
+                : "You already have The Golden Throne in your deck or as an active Item.";
         }
     },
     FINAL_PREPARATIONS_LEARN_SUMMONING("final_preparations_learn_summoning", "Learn Summoning",
