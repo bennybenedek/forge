@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import forge.game.ability.AbilityKey;
 import forge.game.ability.effects.ChaosEnsuesEffect;
+import forge.game.event.GameEventAddLog;
 import forge.game.player.Player;
 import forge.game.replacement.ReplacementType;
 import forge.game.trigger.TriggerType;
@@ -71,6 +72,9 @@ public enum PlanarDice {
                 break;
             }
         }
+
+        game.fireEvent(new GameEventAddLog(GameLogEntryType.STACK_RESOLVE,
+                roller + " rolled the planar die with result " + res + "."));
 
         String message = Localizer.getInstance().getMessage("lblPlanarDiceResult", res.toString());
         game.getAction().notifyOfValue(null, roller, message, null);

@@ -2,7 +2,12 @@ package forge.ai.ability;
 
 
 import forge.ai.*;
+import forge.card.MagicColor;
+import forge.game.ability.AbilityUtils;
+import forge.game.ability.ApiType;
 import forge.game.card.Card;
+import forge.game.card.CardCollection;
+import forge.game.card.CardLists;
 import forge.game.combat.CombatUtil;
 import forge.game.phase.PhaseType;
 import forge.game.player.Player;
@@ -10,6 +15,8 @@ import forge.game.spellability.SpellAbility;
 import forge.game.zone.ZoneType;
 import forge.util.MyRandom;
 import forge.util.TextUtil;
+
+import java.util.List;
 
 public class RollPlanarDiceAi extends SpellAbilityAi {
     /* (non-Javadoc)
@@ -22,14 +29,14 @@ public class RollPlanarDiceAi extends SpellAbilityAi {
         }
         
         for (Card c : ai.getGame().getActivePlanes()) {
-            if (willRollOnPlane(ai, c)) {
+            if (willRollOnPlane(ai, sa, c)) {
                 return new AiAbilityDecision(100, AiPlayDecision.WillPlay);
             }
         }
         return new AiAbilityDecision(0, AiPlayDecision.CantPlayAi);
     }
 
-    private boolean willRollOnPlane(Player ai, Card plane) {
+    private boolean willRollOnPlane(Player ai, SpellAbility sa, Card plane) {
         boolean decideToRoll = false;
         boolean rollInMain1 = false;
         String modeName = "never";
@@ -39,9 +46,9 @@ public class RollPlanarDiceAi extends SpellAbilityAi {
         int minTurnToRoll = AiProfileUtil.getIntProperty(ai, AiProps.DEFAULT_MIN_TURN_TO_ROLL_PLANAR_DIE);
         
         if (plane.hasSVar("AIRollPlanarDieParams")) {
-            String[] params = plane.getSVar("AIRollPlanarDieParams").toLowerCase().trim().split("\\|");
+            String[] params = plane.getSVar("AIRollPlanarDieParams").trim().split("\\|");
             for (String param : params) {
-                String[] paramData = param.split("\\$");
+                String[] paramData = param.toLowerCase().split("\\$");
                 String paramName = paramData[0].trim();
                 String paramValue = paramData[1].trim();
 
@@ -81,68 +88,39 @@ public class RollPlanarDiceAi extends SpellAbilityAi {
                             return false;
                         }
                         break;
-                    case "cardsingraveyardge":
-                        if (ai.getCardsIn(ZoneType.Graveyard).size() < Integer.parseInt(paramValue)) {
+                    case "hasvalidcardinzone":
+                        String[] zoneAndValidity = param.substring(param.indexOf('$') + 1).trim().split(":", 2);
+                        ZoneType zone = ZoneType.smartValueOf(zoneAndValidity[0].trim());
+                        if ((zone != ZoneType.Battlefield && zone != ZoneType.Graveyard)
+                                || CardLists.getValidCards(ai.getGame().getCardsIn(zone), zoneAndValidity[1].trim(), ai, plane, sa).isEmpty()) {
                             return false;
                         }
                         break;
-                    case "anyplayercardsingraveyardge":
-                        boolean anyPlayerHasCards = false;
-                        int threshold = Integer.parseInt(paramValue);
-                        for (Player p : ai.getGame().getPlayers()) {
-                            if (p.getCardsIn(ZoneType.Graveyard).size() >= threshold) {
-                                anyPlayerHasCards = true;
-                                break;
-                            }
-                        }
-                        if (!anyPlayerHasCards) {
-                            return false;
-                        }
-                        break;
-                    case "anyplayercreaturesingraveyardge":
-                        boolean anyPlayerHasCreatures = false;
-                        for (Player p : ai.getGame().getPlayers()) {
-                            if (detectCreatureInZone(p, ZoneType.Graveyard)) {
-                                anyPlayerHasCreatures = true;
-                                break;
-                            }
-                        }
-                        if (!anyPlayerHasCreatures) {
-                            return false;
-                        }
-                        break;
-                    case "hascreatureinplay": // TODO: All abilities below only test the presence of the option. The value (true/false) is not yet tested.
-                        if (!detectCreatureInZone(ai, ZoneType.Battlefield)) {
+                    case "hasavailableinstantsorcery":
+                        if (paramValue.equals("true") && ComputerUtilAbility.getSpellAbilities(
+                                ComputerUtilAbility.getAvailableCards(ai.getGame(), ai), ai).stream().noneMatch(ability ->
+                                ability.isSpell() && (ability.getCardState().getType().isInstant()
+                                || ability.getCardState().getType().isSorcery())
+                                && !ComputerUtilCard.isCardRemAIDeck(ability.getHostCard())
+                                && ability.canCastTiming(ai) && ComputerUtilAbility.isFullyTargetable(ability))) {
                             return false;
                         }
                         break;
                     case "hasattackablecreature":
-                        if (!detectAttackableCreature(ai)) {
+                        if (paramValue.equals("true") && !CombatUtil.canAttack(ai)) {
                             return false;
                         }
                         break;
-                    case "opphascreatureinplay":
-                        boolean oppHasCreature = false;
-                        for (Player op : ai.getOpponents()) {
-                            oppHasCreature |= detectCreatureInZone(op, ZoneType.Battlefield);
-                        }
-                        if (!oppHasCreature) {
-                            return false;
-                        }
-                        break;
-                    case "hascolorcreatureinplay":
-                        if (!detectColorInZone(ai, paramValue, ZoneType.Battlefield, true)) {
-                            return false;
-                        }
-                        break;
-                    case "hascolorinplay":
-                        if (!detectColorInZone(ai, paramValue, ZoneType.Battlefield, false)) {
-                            return false;
-                        }
-                        break;
-                    case "hascoloringraveyard":
-                        if (!detectColorInZone(ai, paramValue, ZoneType.Graveyard, false)) {
-                            return false;
+                    case "devotionexceedsrollcost":
+                        if (paramValue.equals("true")) {
+                            String color = ComputerUtilCard.getMostProminentColor(
+                                    ai.getCardsIn(ZoneType.Battlefield), MagicColor.Constant.ONLY_COLORS);
+                            int devotion = AbilityUtils.calculateAmount(plane, "Count$Devotion." + color, sa);
+                            int rollCost = ComputerUtilMana.calculateManaCost(sa.getPayCosts(), sa, ai, true, 0, false)
+                                    .getConvertedManaCost();
+                            if (devotion <= rollCost) {
+                                return false;
+                            }
                         }
                         break;
                     case "stopifunlimitedhandsize":
@@ -177,8 +155,13 @@ public class RollPlanarDiceAi extends SpellAbilityAi {
                 decideToRoll = false;
             }
 
-            if (ai.getGame().getPhaseHandler().getPlanarDiceSpecialActionThisTurn() >= maxActivations) {
-                decideToRoll = false;
+            if (decideToRoll && ai.getGame().getPhaseHandler().getPlanarDiceSpecialActionThisTurn() >= maxActivations) {
+                boolean extraRollWindow = sa.hasParam("SpecialAction")
+                        && (ai.getGame().getPhaseHandler().is(PhaseType.MAIN2, ai)
+                        || (rollInMain1 && ai.getGame().getPhaseHandler().is(PhaseType.MAIN1, ai)));
+                if (!extraRollWindow || !canSpendSurplusMana(ai, sa)) {
+                    decideToRoll = false;
+                }
             }
         
             // check if the AI hesitates
@@ -190,6 +173,79 @@ public class RollPlanarDiceAi extends SpellAbilityAi {
         return decideToRoll;
     }
 
+    private boolean canSpendSurplusMana(Player ai, SpellAbility roll) {
+        final int rollMana = ComputerUtilMana.calculateManaCost(roll.getPayCosts(), roll, ai, true, 0, false)
+                .getConvertedManaCost();
+        final boolean main1 = ai.getGame().getPhaseHandler().is(PhaseType.MAIN1, ai);
+        final AiController aic = ((PlayerControllerAi) ai.getController()).getAi();
+        CardCollection cards = ComputerUtilAbility.getAvailableCards(ai.getGame(), ai);
+        cards = ComputerUtilCard.dedupeCards(cards);
+        final List<SpellAbility> possible = ComputerUtilAbility.getSpellAbilities(cards, ai);
+        // Current-play filtering can omit future-phase abilities and counters with no target yet.
+        for (Card card : cards) {
+            if (card.getController() != ai) {
+                continue;
+            }
+            for (SpellAbility ability : card.getSpellAbilities()) {
+                if ((ability.getApi() == ApiType.Counter || ability.getRestrictions().isOpponentTurn()
+                        || ability.getRestrictions().getPhases().contains(PhaseType.MAIN2))
+                        && !possible.contains(ability)) {
+                    possible.add(ability);
+                }
+            }
+        }
+        final List<SpellAbility> abilities = ComputerUtilAbility.getOriginalAndAltCostAbilities(possible, ai);
+
+        for (SpellAbility candidate : abilities) {
+            if (candidate.getApi() == ApiType.RollPlanarDice || candidate.isManaAbility()
+                    || (!candidate.isSpell() && !candidate.isActivatedAbility())
+                    || candidate.getPayCosts() == null || !candidate.getPayCosts().hasManaCost()
+                    || ComputerUtilCard.isCardRemAIDeck(candidate.getHostCard())) {
+                continue;
+            }
+            if (ComputerUtilMana.calculateManaCost(candidate.getPayCosts(), candidate, ai, true, 0, false)
+                    .getConvertedManaCost() == 0 || !ComputerUtilCost.canPayCost(candidate, ai, false)) {
+                continue;
+            }
+
+            boolean main2Only = candidate.getRestrictions().getPhases().contains(PhaseType.MAIN2)
+                    && !candidate.getRestrictions().getPhases().contains(PhaseType.MAIN1);
+            if (!SpellAbilityAi.isSorcerySpeed(candidate, ai) && !main2Only) {
+                if (!candidate.getRestrictions().isPlayerTurn() && candidate.canCastTiming(ai)
+                        && (candidate.getApi() == ApiType.Counter || candidate.getRestrictions().isOpponentTurn()
+                        || (candidate.canPlay() && ComputerUtilAbility.isFullyTargetable(candidate)))
+                        && !ComputerUtilMana.canPayManaCost(candidate, ai, rollMana, false)) {
+                    return false;
+                }
+                continue;
+            }
+            if (!main1 || candidate.getRestrictions().isOpponentTurn()
+                    || (!candidate.getRestrictions().getPhases().isEmpty()
+                    && !candidate.getRestrictions().getPhases().contains(PhaseType.MAIN2))) {
+                continue;
+            }
+
+            if (!main2Only) {
+                SpellAbility preview = candidate.copy(ai);
+                if (candidate.isSpell() && candidate.getHostCard().isPermanent()) {
+                    preview.putParam("AIIgnoreMain2Preference", "True");
+                }
+                AiPlayDecision decision = aic.canPlaySa(preview);
+                if (decision != AiPlayDecision.WillPlay && decision != AiPlayDecision.WaitForMain2
+                        && decision != AiPlayDecision.MissingPhaseRestrictions) {
+                    continue;
+                }
+            }
+
+            // Paying for the future play plus this roll preserves colored mana needs.
+            if ((rollMana > 0 && candidate.getPayCosts().getTotalMana().countX() > 0)
+                    || !ComputerUtilMana.canPayManaCost(candidate, ai, rollMana, false)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     /* (non-Javadoc)
      * @see forge.card.abilityfactory.SpellAiLogic#chkAIDrawback(java.util.Map, forge.card.spellability.SpellAbility, forge.game.player.Player)
      */
@@ -199,50 +255,4 @@ public class RollPlanarDiceAi extends SpellAbilityAi {
         return canPlay(aiPlayer, sa);
     }
 
-    private boolean detectColorInZone(Player p, String paramValue, ZoneType zone, boolean creaturesOnly) {
-        boolean hasColorInPlay = false;
-        for (Card c : p.getCardsIn(zone)) {
-            if (!creaturesOnly || c.isCreature()) {
-                if (paramValue.contains("u") && c.isBlue()) {
-                    hasColorInPlay = true;
-                    break;
-                }
-                if (paramValue.contains("g") && c.isGreen()) {
-                    hasColorInPlay = true;
-                    break;
-                }
-                if (paramValue.contains("r") && c.isRed()) {
-                    hasColorInPlay = true;
-                    break;
-                }
-                if (paramValue.contains("w") && c.isWhite()) {
-                    hasColorInPlay = true;
-                    break;
-                }
-                if (paramValue.contains("b") && c.isBlack()) {
-                    hasColorInPlay = true;
-                    break;
-                }
-            }
-        }
-        return hasColorInPlay;
-    }
-
-    private boolean detectCreatureInZone(Player p, ZoneType zone) {
-        for (Card c : p.getCardsIn(zone)) {
-            if (c.isCreature()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private boolean detectAttackableCreature(Player p) {
-        for (Card c : p.getCreaturesInPlay()) {
-            if (CombatUtil.canAttack(c)) {
-                return true;
-            }
-        }
-        return false;
-    }
 }

@@ -1621,7 +1621,21 @@ public class AiController {
         //update LivingEndPlayer
         useLivingEnd = IterableUtil.any(player.getZone(ZoneType.Library), CardPredicates.nameEquals("Living End"));
 
+        List<SpellAbility> planarRolls = Lists.newArrayList();
+        if (game.getPhaseHandler().is(PhaseType.MAIN1, player) || game.getPhaseHandler().is(PhaseType.MAIN2, player)) {
+            saList.removeIf(sa -> {
+                if (sa.getApi() == ApiType.RollPlanarDice && sa.hasParam("SpecialAction")) {
+                    planarRolls.add(sa);
+                    return true;
+                }
+                return false;
+            });
+        }
+
         SpellAbility chosenSa = chooseSpellAbilityToPlayFromList(saList, true);
+        if (chosenSa == null && !planarRolls.isEmpty()) {
+            chosenSa = chooseSpellAbilityToPlayFromList(planarRolls, true);
+        }
 
         if (topOwnedByAI && !mustRespond && chosenSa != ComputerUtilAbility.getFirstCopySASpell(saList)) {
             return null; // not planning to copy the spell and not marked as something the AI would respond to

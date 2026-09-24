@@ -619,6 +619,19 @@ public class GameState {
         for (int i = 0; i < playerStates.size(); i++) {
             setupPlayerState(game.getPlayers().get(i), playerStates.get(i));
         }
+        if (game.getActivePlanes() != null) {
+            game.getActivePlanes().clear();
+            for (Card card : game.getCardsIn(ZoneType.Command)) {
+                if (card.isPlane()) {
+                    game.getActivePlanes().add(card);
+                }
+            }
+        }
+        if (game.getRules().hasAppliedVariant(GameType.Planechase)) {
+            for (Player player : game.getPlayers()) {
+                player.createPlanechaseEffects(game);
+            }
+        }
         handleCardAttachments();
         handleChosenEntities();
         handleRememberedEntities();
@@ -1274,6 +1287,9 @@ public class GameState {
                 c = CardFactory.getCard(token, player, player.getGame());
             } else {
                 PaperCard pc = StaticData.instance().getCommonCards().getCard(cardinfo[0], setCode, artID);
+                if (pc == null) {
+                    pc = StaticData.instance().getVariantCards().getCard(cardinfo[0], setCode, artID);
+                }
                 if (pc == null) {
                     System.err.println("ERROR: Tried to create a non-existent card named " + cardinfo[0] + " (set: " + (setCode == null ? "any" : setCode) + ") when loading game state!");
                     continue;

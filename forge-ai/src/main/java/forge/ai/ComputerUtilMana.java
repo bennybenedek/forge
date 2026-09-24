@@ -1528,6 +1528,7 @@ public class ComputerUtilMana {
 
                 SpellAbility tail = m;
                 while (tail != null) {
+                    tail.setActivatingPlayer(ai);
                     AbilityManaPart mp = tail.getManaPart();
                     if (mp != null && tail.metConditions()) {
                         // TODO Replacement Check currently doesn't work for reflected colors
