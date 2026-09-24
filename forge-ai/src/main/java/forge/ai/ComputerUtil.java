@@ -54,6 +54,7 @@ import forge.game.staticability.StaticAbilityMode;
 import forge.game.trigger.Trigger;
 import forge.game.trigger.TriggerType;
 import forge.game.trigger.WrappedAbility;
+import forge.game.zone.MagicStack;
 import forge.game.zone.Zone;
 import forge.game.zone.ZoneType;
 import forge.util.Aggregates;
@@ -2033,15 +2034,23 @@ public class ComputerUtil {
      *            only evaluate the top of the stack for threatening effects
      * @return list of threatened objects
      */
-    public static List<GameObject> predictThreatenedObjects(final Player ai, final SpellAbility sa, boolean top) {
-        final Game game = ai.getGame();
+    public static List<GameObject> predictThreatenedObjects(final Player ai, SpellAbility sa, boolean top) {
+        final MagicStack stack = ai.getGame().getStack();
         final List<GameObject> objects = new ArrayList<>();
-        if (game.getStack().isEmpty()) {
+        if (stack.isEmpty()) {
             return objects;
         }
 
+        SpellAbility saviour = sa;
+        // currently confirming optional threat ability:
+        // need to ignore it so AI doesn't think some of its objects are already taken care of
+        if (stack.isResolving() && sa == null) {
+            sa = stack.peekAbility();
+            saviour = null;
+        }
+
         // check stack for something that will kill this
-        for (SpellAbilityStackInstance si : game.getStack()) {
+        for (SpellAbilityStackInstance si : stack) {
             // iterate from top of stack to find SpellAbility, including sub-abilities,
             // that does not match "sa"
             SpellAbility spell = si.getSpellAbility(), sub = spell.getSubAbility();
@@ -2055,14 +2064,14 @@ public class ComputerUtil {
                 sub = sub.getSubAbility();
             }
             if (sa == null || (sa != spell && sa != sub)) {
-                predictThreatenedObjects(ai, sa, spell).forEach(objects::add);
+                predictThreatenedObjects(ai, saviour, spell).forEach(objects::add);
             }
             if (top) {
-                break; // only evaluate top-stack
+                break;
             }
         }
 
-        // align threatened with resolve order
+        // align threatened with resolve order:
         // matters if stack contains multiple activations (e.g. Temur Sabertooth)
         Collections.reverse(objects);
         return objects;
@@ -2150,7 +2159,6 @@ public class ComputerUtil {
             final boolean noRegen = hasNoRegenSubAbility(topStack);
             for (final Object o : objects) {
                 if (o instanceof Card c) {
-                    // indestructible
                     if (c.hasKeyword(Keyword.INDESTRUCTIBLE)) {
                         continue;
                     }
@@ -2297,17 +2305,18 @@ public class ComputerUtil {
                     if (saviourApi == ApiType.ChangeZone && (c.getOwner().isOpponentOf(aiPlayer) || c.isToken())) {
                         continue;
                     }
+
                     threatened.add(c);
                 }
             }
         }
         // Destroy => regeneration/bounce/shroud
         else if ((threatApi == ApiType.Destroy || threatApi == ApiType.DestroyAll)
-                && ((saviourApi == ApiType.Regenerate
-                        && !topStack.hasParam("NoRegen")) || saviourApi == ApiType.ChangeZone
-                        || saviourApi == ApiType.Pump || saviourApi == ApiType.PumpAll
-                        || saviourApi == ApiType.Protection || saviourApi == null
-                        || saviorWithSubsApi == ApiType.Pump || saviorWithSubsApi == ApiType.PumpAll)) {
+                && ((saviourApi == ApiType.Regenerate && !topStack.hasParam("NoRegen"))
+                || saviourApi == ApiType.ChangeZone
+                || saviourApi == ApiType.Pump || saviourApi == ApiType.PumpAll
+                || saviourApi == ApiType.Protection || saviourApi == null
+                || saviorWithSubsApi == ApiType.Pump || saviorWithSubsApi == ApiType.PumpAll)) {
             for (final Object o : objects) {
                 if (o instanceof Card c) {
                     if (c.hasKeyword(Keyword.INDESTRUCTIBLE)) {
@@ -2347,6 +2356,7 @@ public class ComputerUtil {
                     if (saviourApi == ApiType.Regenerate && !c.canBeShielded()) {
                         continue;
                     }
+
                     threatened.add(c);
                 }
             }
@@ -2355,8 +2365,7 @@ public class ComputerUtil {
         else if ((threatApi == ApiType.ChangeZone || threatApi == ApiType.ChangeZoneAll)
                 && (saviourApi == ApiType.ChangeZone || saviourApi == ApiType.Pump || saviourApi == ApiType.PumpAll
                 || saviourApi == ApiType.Protection || saviourApi == null)
-                && topStack.hasParam("Destination")
-                && topStack.getParam("Destination").equals("Exile")) {
+                && "Exile".equals(topStack.getParam("Destination"))) {
             for (final Object o : objects) {
                 if (o instanceof Card c) {
                     // give Shroud to targeted creatures
@@ -2395,6 +2404,7 @@ public class ComputerUtil {
                             continue;
                         }
                     }
+
                     threatened.add(c);
                 }
             }
@@ -2416,6 +2426,7 @@ public class ComputerUtil {
                                 continue;
                             }
                         }
+
                         threatened.add(c);
                     }
                 }
@@ -2447,8 +2458,6 @@ public class ComputerUtil {
     public static boolean predictCreatureWillDieThisTurn(final Player ai, final Card creature, final SpellAbility excludeSa, final boolean nonCombatOnly) {
         final Game game = ai.getGame();
 
-        // a creature will [hopefully] die from a spell on stack
-        boolean willDieFromSpell = false;
         boolean noStackCheck = false;
         if (AiProfileUtil.getBoolProperty(ai, AiProps.DONT_EVAL_KILLSPELLS_ON_STACK_WITH_PERMISSION)) {
             // See if permission is on stack and ignore this check if there is and the relevant AI flag is set
@@ -2461,17 +2470,12 @@ public class ComputerUtil {
                 }
             }
         }
-        willDieFromSpell = !noStackCheck && predictThreatenedObjects(creature.getController(), excludeSa).contains(creature);
 
-        if (nonCombatOnly) {
+        boolean willDieFromSpell = !noStackCheck && predictThreatenedObjects(creature.getController(), excludeSa).contains(creature);
+        if (nonCombatOnly || willDieFromSpell) {
             return willDieFromSpell;
         }
-
-        // a creature will die as a result of combat
-        boolean willDieInCombat = !willDieFromSpell && game.getPhaseHandler().inCombat()
-                && ComputerUtilCombat.combatantWouldBeDestroyed(creature.getController(), creature, game.getCombat());
-
-        return willDieInCombat || willDieFromSpell;
+        return game.getPhaseHandler().inCombat() && ComputerUtilCombat.combatantWouldBeDestroyed(creature.getController(), creature, game.getCombat());
     }
 
     /**
@@ -2485,10 +2489,10 @@ public class ComputerUtil {
      *            The list of cards to work with
      * @return a filtered list with no dying creatures in it
      */
-    public static CardCollection filterCreaturesThatWillDieThisTurn(final Player ai, final CardCollection list, final SpellAbility excludeSa) {
+    public static CardCollection filterCreaturesThatWillDieThisTurn(final Player ai, final CardCollection list) {
         if (AiProfileUtil.getBoolProperty(ai, AiProps.AVOID_TARGETING_CREATS_THAT_WILL_DIE)) {
             // Try to avoid targeting creatures that are dead on board
-            List<Card> willBeKilled = CardLists.filter(list, card -> card.isCreature() && predictCreatureWillDieThisTurn(ai, card, excludeSa));
+            List<Card> willBeKilled = CardLists.filter(list, card -> card.isCreature() && predictCreatureWillDieThisTurn(ai, card, null));
             list.removeAll(willBeKilled);
         }
         return list;
