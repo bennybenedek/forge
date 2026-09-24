@@ -803,6 +803,10 @@ public class ComputerUtilCard {
         }
 
         int eval = evaluateCreature(host, true, false);
+        if (sa.isSpell() && host.isCommander() && host.isInZone(ZoneType.Command)) {
+            final Player activator = sa.getActivatingPlayer() != null ? sa.getActivatingPlayer() : host.getController();
+            eval -= Math.min(70, activator.getCommanderCast(host) * 35);
+        }
 
         if (currentState != null) {
             host.setState(currentState, false);

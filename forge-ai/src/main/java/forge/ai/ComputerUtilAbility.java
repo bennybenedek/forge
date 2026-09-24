@@ -341,7 +341,20 @@ public class ComputerUtilAbility {
                 b1 += Math.round(ComputerUtilCard.evaluateCreature(b) / (10.5f + Math.abs(b1)));
             }
 
+            // Commander tax adds no value to the spell, so apply it after all other scoring.
+            a1 -= getCommanderRecastPenalty(a);
+            b1 -= getCommanderRecastPenalty(b);
+
             return b1 - a1;
+        }
+
+        private static int getCommanderRecastPenalty(final SpellAbility sa) {
+            final Card source = sa.getHostCard();
+            if (source == null || !sa.isSpell() || !source.isCommander() || !source.isInZone(ZoneType.Command)) {
+                return 0;
+            }
+            final Player activator = sa.getActivatingPlayer() != null ? sa.getActivatingPlayer() : source.getController();
+            return activator.getCommanderCast(source) * 2;
         }
 
         private static int getSpellAbilityPriority(SpellAbility sa) {

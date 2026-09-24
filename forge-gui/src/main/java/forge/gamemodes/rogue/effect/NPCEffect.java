@@ -24,17 +24,17 @@ public enum NPCEffect implements RogueEffect {
 
     // Henzie effects
     HENZIE_CONTAINMENT("npc_henzie_containment", "Henzie's Containment",
-        "Gain the {{Item}}s [[Mana Vault|2X2|1]] and [[Emrakul, the Aeons Torn]].", NPC.HENZIE,
+        "Gain the {{Item}} [[Mana Vault|2X2|2]] and the {{Fellow}} [[Emrakul, the Aeons Torn|2X2|2]].", NPC.HENZIE,
         EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            addCarryCards(run, ctx, List.of("Mana Vault|2X2|1", "Emrakul, the Aeons Torn"),
+            addCarryCards(run, ctx, List.of("Mana Vault|2X2|2", "Emrakul, the Aeons Torn|2X2|2"),
                 CarryCardType.ITEM);
         }
 
         @Override
         public boolean isChoiceAvailable(RogueRun run) {
-            return canAddAllCarryCards(run, List.of("Mana Vault|2X2|1", "Emrakul, the Aeons Torn"));
+            return canAddAllCarryCards(run, List.of("Mana Vault", "Emrakul, the Aeons Torn"));
         }
     },
     HENZIE_CONTRABAND("npc_henzie_contraband", "Henzie's Contraband",
@@ -53,17 +53,17 @@ public enum NPCEffect implements RogueEffect {
         }
     },
     HENZIE_PRECIOUS("npc_henzie_precious", "Henzie's Precious",
-        "Gain the {{Item}}s [[Mana Crypt|2XM|1]] and [[The One Ring|LTR|2]].", NPC.HENZIE,
+        "Gain the {{Item}}s [[Mana Crypt|2XM|2]] and [[The One Ring|LTR|3]].", NPC.HENZIE,
         EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            addCarryCards(run, ctx, List.of("Mana Crypt|2XM|1", "The One Ring|LTR|2"),
+            addCarryCards(run, ctx, List.of("Mana Crypt|2XM|2", "The One Ring|LTR|3"),
                 CarryCardType.ITEM);
         }
 
         @Override
         public boolean isChoiceAvailable(RogueRun run) {
-            return canAddAllCarryCards(run, List.of("Mana Crypt|2XM|1", "The One Ring"));
+            return canAddAllCarryCards(run, List.of("Mana Crypt", "The One Ring"));
         }
     },
     HENZIE_EXQUISITE_TRAITS("npc_henzie_exquisite_traits", "Exquisite Traits",
@@ -101,11 +101,11 @@ public enum NPCEffect implements RogueEffect {
         }
     },
     HENZIE_CHERISHED("npc_henzie_cherished", "Henzie's Cherished",
-        "Add [[Ugin, the Spirit Dragon|M21|2]] to your deck.", NPC.HENZIE,
-        EffectType.ONESHOT, null) {
+        "Add %s to your deck.", NPC.HENZIE,
+        EffectType.ONESHOT, "Ugin, the Spirit Dragon|M21|2") {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            addCardsToDeck(run, ctx, List.of("Ugin, the Spirit Dragon|M21|2"));
+            addCardsToDeck(run, ctx, List.of(getEffectCardReference()));
         }
 
         @Override
@@ -278,7 +278,7 @@ public enum NPCEffect implements RogueEffect {
 
         @Override
         public boolean isChoiceAvailable(RogueRun run) {
-            return canAddAllCarryCards(run, List.of("Fractured Powerstone|MOC|1", "Ichor Elixir|MOC|1"));
+            return canAddAllCarryCards(run, List.of("Fractured Powerstone", "Ichor Elixir"));
         }
     },
     NARSET_ESCORTS("npc_narset_escorts", "Narset's Escorts",
@@ -292,7 +292,7 @@ public enum NPCEffect implements RogueEffect {
 
         @Override
         public boolean isChoiceAvailable(RogueRun run) {
-            return canAddAllCarryCards(run, List.of("Roaming Throne|LCI|1", "Walking Ballista|2XM|1"));
+            return canAddAllCarryCards(run, List.of("Roaming Throne", "Walking Ballista"));
         }
     },
     NARSET_TRAVELOGUE("npc_narset_travelogue", "Narset's Travelogue",
@@ -411,17 +411,17 @@ public enum NPCEffect implements RogueEffect {
             addEffectCardToCommandZone(human);
         }
     },
-    NARSET_MINDWALKER("npc_narset_mindwalker", "Mindwalker",
+    NARSET_MATTERWALKER("npc_narset_matterwalker", "Matterwalker",
         TRAIT_GAIN_DESCRIPTION, NPC.NARSET,
-        EffectType.PERMANENT, "Narset Trait - Mindwalker") {
+        EffectType.PERMANENT, "Narset Trait - Matterwalker") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
         }
     },
-    NARSET_MATTERWALKER("npc_narset_matterwalker", "Matterwalker",
+    NARSET_MINDWALKER("npc_narset_mindwalker", "Mindwalker",
         TRAIT_GAIN_DESCRIPTION, NPC.NARSET,
-        EffectType.PERMANENT, "Narset Trait - Matterwalker") {
+        EffectType.PERMANENT, "Narset Trait - Mindwalker") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
@@ -435,17 +435,17 @@ public enum NPCEffect implements RogueEffect {
             addEffectCardToCommandZone(human);
         }
     },
-    NARSET_CHAOTIC_TUTOR("npc_narset_chaotic_tutor", "Chaotic Tutor",
+    NARSET_CHAOTIC_TITHE("npc_narset_chaotic_tithe", "Chaotic Tithe",
         TRAIT_GAIN_DESCRIPTION, NPC.NARSET,
-        EffectType.PERMANENT, "Narset Trait - Chaotic Tutor") {
+        EffectType.PERMANENT, "Narset Trait - Chaotic Tithe") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
         }
     },
-    NARSET_WRATH_OF_CHAOS("npc_narset_wrath_of_chaos", "Wrath of Chaos",
+    NARSET_CHAOTIC_TUTOR("npc_narset_chaotic_tutor", "Chaotic Tutor",
         TRAIT_GAIN_DESCRIPTION, NPC.NARSET,
-        EffectType.PERMANENT, "Narset Trait - Wrath of Chaos") {
+        EffectType.PERMANENT, "Narset Trait - Chaotic Tutor") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
@@ -459,9 +459,9 @@ public enum NPCEffect implements RogueEffect {
             addEffectCardToCommandZone(human);
         }
     },
-    NARSET_CHAOTIC_TITHE("npc_narset_chaotic_tithe", "Chaotic Tithe",
+    NARSET_WRATH_OF_CHAOS("npc_narset_wrath_of_chaos", "Wrath of Chaos",
         TRAIT_GAIN_DESCRIPTION, NPC.NARSET,
-        EffectType.PERMANENT, "Narset Trait - Chaotic Tithe") {
+        EffectType.PERMANENT, "Narset Trait - Wrath of Chaos") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
@@ -479,7 +479,7 @@ public enum NPCEffect implements RogueEffect {
 
         @Override
         public boolean isChoiceAvailable(RogueRun run) {
-            return canAddAllCarryCards(run, List.of("Loyal Apprentice|CMM|1", "Loyal Unicorn|CMM|1"));
+            return canAddAllCarryCards(run, List.of("Loyal Apprentice", "Loyal Unicorn"));
         }
     },
     TYVAR_FOLLOWERS("npc_tyvar_followers", "Tyvar's Followers",
@@ -492,7 +492,7 @@ public enum NPCEffect implements RogueEffect {
 
         @Override
         public boolean isChoiceAvailable(RogueRun run) {
-            return canAddAllCarryCards(run, List.of("Loyal Guardian|CMM|1", "Loyal Subordinate|CMM|1"));
+            return canAddAllCarryCards(run, List.of("Loyal Guardian", "Loyal Subordinate"));
         }
     },
     TYVAR_PETS("npc_tyvar_pets", "Tyvar's Pets",
@@ -505,7 +505,7 @@ public enum NPCEffect implements RogueEffect {
 
         @Override
         public boolean isChoiceAvailable(RogueRun run) {
-            return canAddAllCarryCards(run, List.of("Loyal Drake|CMM|1", "Loyal Unicorn|CMM|1"));
+            return canAddAllCarryCards(run, List.of("Loyal Drake", "Loyal Unicorn"));
         }
     },
     TYVAR_ARMORY("npc_tyvar_armory", "Tyvar's Armory",
@@ -518,7 +518,7 @@ public enum NPCEffect implements RogueEffect {
 
         @Override
         public boolean isChoiceAvailable(RogueRun run) {
-            return canAddAllCarryCards(run, List.of("Commander's Sphere|CMM|1", "Commander's Plate|CMR|1"));
+            return canAddAllCarryCards(run, List.of("Commander's Sphere", "Commander's Plate"));
         }
     },
     TYVAR_LOADOUT("npc_tyvar_loadout", "Tyvar's Loadout",
@@ -532,7 +532,7 @@ public enum NPCEffect implements RogueEffect {
 
         @Override
         public boolean isChoiceAvailable(RogueRun run) {
-            return canAddAllCarryCards(run, List.of("Skullclamp|MSC|2", "Swiftfoot Boots|FDN|2"));
+            return canAddAllCarryCards(run, List.of("Skullclamp", "Swiftfoot Boots"));
         }
     },
     TYVAR_RESPITE("npc_tyvar_respite", "Tyvar's Respite",
