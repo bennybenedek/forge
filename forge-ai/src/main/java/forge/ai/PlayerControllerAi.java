@@ -1239,6 +1239,12 @@ public class PlayerControllerAi extends PlayerController {
 
     @Override
     public boolean payManaCost(ManaCost toPay, CostPartMana costPartMana, SpellAbility sa, String prompt /* ai needs hints as well */, ManaConversionMatrix matrix, boolean effect) {
+        if (costPartMana.getAmountOfX() > 0 && costPartMana.getXMin() > 0) {
+            Integer xPaid = sa.getRootAbility().getXManaCostPaid();
+            if (xPaid == null || xPaid < costPartMana.getXMin()) {
+                return false;
+            }
+        }
         return ComputerUtilMana.payManaCost(new Cost(toPay, effect), player, sa, effect);
     }
 

@@ -74,9 +74,11 @@ public class DigUntilAi extends SpellAbilityAi {
         if (num != null && num.equals("X") && sa.getSVar(num).equals("Count$xPaid")) {
             // Set PayX here to maximum value.
             SpellAbility root = sa.getRootAbility();
-            if (root.getXManaCostPaid() == null) {
+            int minX = root.getPayCosts() != null && root.getPayCosts().hasManaCost()
+                    ? root.getPayCosts().getCostMana().getXMin() : 0;
+            if (root.getXManaCostPaid() == null || root.getXManaCostPaid() < minX) {
                 int numCards = ComputerUtilCost.setMaxXValue(sa, ai, sa.isTrigger());
-                if (numCards <= 0) {
+                if (numCards <= 0 || numCards < minX) {
                     return new AiAbilityDecision(0, AiPlayDecision.CantPlayAi);
                 }
             }
