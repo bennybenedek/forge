@@ -101,7 +101,11 @@ public class HostedMatch {
     }
 
     public void startMatch(final GameType gameType, final Set<GameType> appliedVariants, final List<RegisteredPlayer> players, final RegisteredPlayer human, final IGuiGame gui) {
-        startMatch(getDefaultRules(gameType), appliedVariants, players, human, gui);
+        startMatch(gameType, appliedVariants, players, human, gui, null);
+    }
+    public void startMatch(final GameType gameType, final Set<GameType> appliedVariants, final List<RegisteredPlayer> players, final RegisteredPlayer human, final IGuiGame gui, final MusicPlaylist playlist) {
+        startMatch(getDefaultRules(gameType), appliedVariants, players,
+                human == null || gui == null ? null : ImmutableMap.of(human, gui), playlist);
     }
     public void startMatch(final GameType gameType, final Set<GameType> appliedVariants, final List<RegisteredPlayer> players, final Map<RegisteredPlayer, IGuiGame> guis) {
         startMatch(getDefaultRules(gameType), appliedVariants, players, guis, null);

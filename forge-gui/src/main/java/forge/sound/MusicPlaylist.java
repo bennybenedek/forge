@@ -16,7 +16,8 @@ public enum MusicPlaylist {
     TOWN        ("town/"),
     BOSS        ("boss/"),
     MENUS       ("menus/"),
-    MATCH       ("match/");
+    MATCH       ("match/"),
+    ROGUE_MATCH_BOSS("match/boss/");
 
     private final String subDir;
     private int mostRecentTrackIdx = -1;

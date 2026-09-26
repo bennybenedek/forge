@@ -5,6 +5,8 @@ import forge.gamemodes.rogue.effect.ChoiceRerollContext;
 import forge.gamemodes.rogue.effect.NPCEffect;
 import forge.gamemodes.rogue.npc.NPCContext;
 import forge.gamemodes.rogue.npc.NPCContext.NPCChoice;
+import forge.sound.SoundEffectType;
+import forge.sound.SoundSystem;
 import forge.toolbox.FButton;
 import forge.toolbox.FLabel;
 import forge.toolbox.FOptionPane;
@@ -40,6 +42,7 @@ public class NPCDialog {
 
     private final MainPanel panel;
     private final ChoiceRerollContext rerollCtx;
+    private final SoundEffectType soundEffect;
     private final List<String> flavorTextChunks;
     private final List<FButton> choiceButtons = new ArrayList<>();
     private final List<PreviewTarget> previewTargets = new ArrayList<>();
@@ -52,6 +55,13 @@ public class NPCDialog {
 
     public NPCDialog(NPCContext ctx, ChoiceRerollContext rerollCtx) {
         this.rerollCtx = rerollCtx;
+        soundEffect = switch (ctx.npc()) {
+            case GONTI -> SoundEffectType.RogueNpcGonti;
+            case HENZIE -> SoundEffectType.RogueNpcHenzie;
+            case NARSET -> SoundEffectType.RogueNpcNarset;
+            case TEFERI -> SoundEffectType.RogueNpcTeferi;
+            case TYVAR -> SoundEffectType.RogueNpcTyvar;
+        };
         panel = new MainPanel();
         flavorTextChunks = ctx.flavorTextChunks();
         String firstFlavorText = flavorTextChunks.get(0);
@@ -115,6 +125,7 @@ public class NPCDialog {
     /** Show dialog and return the selected action. */
     public DialogResult show() {
         selectedBoon = null;
+        SoundSystem.instance.play(soundEffect, soundEffect.isSynced());
         currentChunkIndex = 0;
         typewriterText.setFullText(flavorTextChunks.get(currentChunkIndex));
         updateButtonVisibility();

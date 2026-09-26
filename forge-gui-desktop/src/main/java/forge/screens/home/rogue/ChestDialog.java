@@ -6,6 +6,8 @@ import forge.gamemodes.rogue.RogueRun;
 import forge.gamemodes.rogue.effect.ChestEffect;
 import forge.gamemodes.rogue.effect.ChoiceRerollContext;
 import forge.localinstance.skin.FSkinProp;
+import forge.sound.SoundEffectType;
+import forge.sound.SoundSystem;
 import forge.toolbox.FButton;
 import forge.toolbox.FLabel;
 import forge.toolbox.FOptionPane;
@@ -97,6 +99,8 @@ public class ChestDialog {
 
   public DialogResult show() {
     selectedLoot = null;
+    SoundSystem.instance.play(SoundEffectType.RogueChestOpen,
+        SoundEffectType.RogueChestOpen.isSynced());
     boolean hasRerolls = rerollCtx.remainingRerolls > 0;
     previewPopup = new RoguePreviewPopup();
     previewTargets.forEach(target ->

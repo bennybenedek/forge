@@ -3343,6 +3343,9 @@ public class Card extends GameEntity implements Comparable<Card>, IHasSVars, ITr
     public final Set<String> getProducibleColors() {
         Set<String> colors = new HashSet<>();
         for (final SpellAbility ab : getManaAbilities()) {
+            if (ab.getActivatingPlayer() == null) {
+                ab.setActivatingPlayer(ab.getHostCard().getController());
+            }
             if (ab.getApi() == ApiType.ManaReflected) {
                 colors.addAll(CardUtil.getReflectableManaColors(ab));
             } else {

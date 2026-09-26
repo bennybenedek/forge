@@ -21,7 +21,10 @@ public class SoundSystem {
 
     public static final int DELAY = 30;
 
-    public static final FilenameFilter PLAYABLE_AUDIO = (dir, name) -> GuiBase.getInterface().isSupportedAudioFormat(new File(dir, name));
+    public static final FilenameFilter PLAYABLE_AUDIO = (dir, name) -> {
+        File file = new File(dir, name);
+        return file.isFile() && GuiBase.getInterface().isSupportedAudioFormat(file);
+    };
     private static final String[] SOUND_RESOURCE_PATHS = {ForgeConstants.USER_CUSTOM_DIR, ForgeConstants.CACHE_DIR};
 
     private static final IAudioClip emptySound = new NoSoundClip();

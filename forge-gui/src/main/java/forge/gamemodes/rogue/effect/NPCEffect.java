@@ -46,24 +46,23 @@ public enum NPCEffect implements RogueEffect {
             List<PaperCard> banlistCards = run.getBanlistCardsForActiveCommander();
             swapDeckCards(run, ctx, banlistCards);
         }
-
         @Override
         public boolean isChoiceAvailable(RogueRun run) {
             return run.getMaxLife() > 3;
         }
     },
     HENZIE_PRECIOUS("npc_henzie_precious", "Henzie's Precious",
-        "Gain the {{Item}}s [[Mana Crypt|2XM|2]] and [[The One Ring|LTR|3]].", NPC.HENZIE,
-        EffectType.ONESHOT, null) {
+        ITEM_GAIN_DESCRIPTION, NPC.HENZIE,
+        EffectType.ONESHOT, "The One Ring|LTR|3") {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            addCarryCards(run, ctx, List.of("Mana Crypt|2XM|2", "The One Ring|LTR|3"),
+            addCarryCards(run, ctx, List.of(getEffectCardReference()),
                 CarryCardType.ITEM);
         }
 
         @Override
         public boolean isChoiceAvailable(RogueRun run) {
-            return canAddAllCarryCards(run, List.of("Mana Crypt", "The One Ring"));
+            return canAddAllCarryCards(run, List.of(getEffectCardReference()));
         }
     },
     HENZIE_EXQUISITE_TRAITS("npc_henzie_exquisite_traits", "Exquisite Traits",
@@ -101,17 +100,18 @@ public enum NPCEffect implements RogueEffect {
         }
     },
     HENZIE_CHERISHED("npc_henzie_cherished", "Henzie's Cherished",
-        "Add %s to your deck.", NPC.HENZIE,
-        EffectType.ONESHOT, "Ugin, the Spirit Dragon|M21|2") {
+        "Add [[Mana Crypt|2XM|2]] and [[Ugin, the Spirit Dragon|M21|2]] to your deck.", NPC.HENZIE,
+        EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            addCardsToDeck(run, ctx, List.of(getEffectCardReference()));
+            addCardsToDeck(run, ctx, List.of("Mana Crypt|2XM|2", "Ugin, the Spirit Dragon|M21|2"));
         }
 
         @Override
         public boolean isChoiceAvailable(RogueRun run) {
-            PaperCard ugin = RogueConfig.getCard("Ugin, the Spirit Dragon", "M21", 2);
-            return run.canAddCardToDeck(ugin);
+            PaperCard manaCrypt = RogueConfig.getCard("Mana Crypt", null, null);
+            PaperCard ugin = RogueConfig.getCard("Ugin, the Spirit Dragon", null, null);
+            return run.canAddCardToDeck(manaCrypt) || run.canAddCardToDeck(ugin);
         }
     },
     HENZIE_CITY("npc_henzie_city", "Henzie's City",

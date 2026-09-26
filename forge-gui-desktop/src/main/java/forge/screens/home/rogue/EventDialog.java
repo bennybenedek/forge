@@ -7,6 +7,8 @@ import forge.gamemodes.rogue.RogueEvent.EventChoice;
 import forge.gamemodes.rogue.RogueRun;
 import forge.gamemodes.rogue.effect.ChoiceRerollContext;
 import forge.localinstance.skin.FSkinProp;
+import forge.sound.SoundEffectType;
+import forge.sound.SoundSystem;
 import forge.toolbox.FButton;
 import forge.toolbox.FLabel;
 import forge.toolbox.FOptionPane;
@@ -102,6 +104,8 @@ public class EventDialog {
   /** Show dialog and return the selected action. */
   public DialogResult show() {
     selectedChoice = null;
+    SoundSystem.instance.play(SoundEffectType.RogueEventOpen,
+        SoundEffectType.RogueEventOpen.isSynced());
     boolean hasRerolls = rerollCtx.remainingRerolls > 0;
     previewPopup = new RoguePreviewPopup();
     previewTargets.forEach(target -> previewPopup.attachTo(target.component(), target.references()));

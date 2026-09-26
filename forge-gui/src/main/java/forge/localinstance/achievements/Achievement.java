@@ -8,6 +8,8 @@ import forge.item.PaperCard;
 import forge.localinstance.properties.ForgeConstants;
 import forge.localinstance.skin.FSkinProp;
 import forge.localinstance.skin.ISkinImage;
+import forge.sound.SoundEffectType;
+import forge.sound.SoundSystem;
 import forge.util.Lang;
 import forge.util.Localizer;
 import forge.util.XmlUtil;
@@ -185,6 +187,8 @@ public abstract class Achievement {
         if (earnedSpecial()) {
             if (!hadEarnedSpecial) {
                 updateTrophyImage();
+                SoundSystem.instance.play(SoundEffectType.AchievementEarned,
+                        SoundEffectType.AchievementEarned.isSynced());
                 GuiBase.getInterface().showImageDialog(image, displayName + "\n" + sharedDesc + "\n" + mythicDesc, "Achievement Earned");
             }
             return value;
@@ -221,6 +225,8 @@ public abstract class Achievement {
             if (sharedDesc != null) {
                 desc = sharedDesc + " " + desc;
             }
+            SoundSystem.instance.play(SoundEffectType.AchievementEarned,
+                    SoundEffectType.AchievementEarned.isSynced());
             GuiBase.getInterface().showImageDialog(image, displayName + " (" + type + ")\n" + desc, Localizer.getInstance().getMessage("lblAchievementEarned"));
         }
         return value;

@@ -34,6 +34,7 @@ import forge.util.collect.FCollection;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Predicate;
 
 /**
@@ -46,6 +47,8 @@ import java.util.function.Predicate;
  * @since 1.0.15
  */
 public class SpellAbilityCondition extends SpellAbilityVariables {
+    private static final AtomicInteger missingActivatorDiagnostics = new AtomicInteger();
+
     // A class for handling SpellAbility Conditions. These restrictions include:
     // Zone, Phase, OwnTurn, Speed (instant/sorcery), Amount per Turn, Player,
     // Threshold, Metalcraft, LevelRange, etc
@@ -256,8 +259,15 @@ public class SpellAbilityCondition extends SpellAbilityVariables {
         Player activator = sa.getActivatingPlayer();
         if (activator == null) {
             activator = sa.getHostCard().getController();
-            System.out.println(sa.getHostCard().getName()
-                    + " Did not have activator set in SpellAbility_Condition.checkConditions()");
+            if (missingActivatorDiagnostics.getAndIncrement() < 8) {
+                System.out.println("Missing SpellAbility activator: host=" + sa.getHostCard()
+                        + " api=" + sa.getApi() + " ability=" + sa.getClass().getSimpleName()
+                        + " fallback=" + activator);
+                final StackTraceElement[] stack = Thread.currentThread().getStackTrace();
+                for (int i = 2; i < Math.min(stack.length, 12); i++) {
+                    System.out.println("    at " + stack[i]);
+                }
+            }
         }
         final Game game = activator.getGame();
         final PhaseHandler phase = game.getPhaseHandler();

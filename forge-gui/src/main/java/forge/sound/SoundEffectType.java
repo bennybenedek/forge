@@ -36,6 +36,7 @@ package forge.sound;
 public enum SoundEffectType {
     // Sounds must be listed in alphabetic order.
 
+    AchievementEarned("enchant", true),
     AddCounter("add_counter", true),
     Artifact("artifact", false),
     ArtifactCreature("artifact_creature", false),
@@ -84,6 +85,18 @@ public enum SoundEffectType {
     RedLand("red_land", false),
     Regen("regeneration", false),
     RemoveCounter("remove_counter", true),
+    RogueBazaarOpen("coins_drop", false),
+    RogueChestOpen("coins_drop", false),
+    RogueCommanderUnlock("enchant", true),
+    RogueEventOpen("sorcery", false),
+    RogueNpcGonti("artifact", false),
+    RogueNpcHenzie("speedup", false),
+    RogueNpcNarset("instant", false),
+    RogueNpcTeferi("rewind", false),
+    RogueNpcTyvar("creature", false),
+    RoguePlaneReveal("flip_card", true),
+    RogueRunStart("planeswalker", true),
+    RogueSanctumOpen("enchant", false),
     RollDie("roll_die", false),
     Sacrifice("sacrifice", true),
     ScriptedEffect("", false), // Plays the effect defined by SVar:SoundEffect

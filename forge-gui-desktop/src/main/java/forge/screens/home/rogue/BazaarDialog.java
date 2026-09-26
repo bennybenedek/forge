@@ -4,6 +4,8 @@ import forge.deckchooser.FDeckViewer;
 import forge.gamemodes.rogue.RogueRun;
 import forge.gamemodes.rogue.effect.BazaarItem;
 import forge.localinstance.skin.FSkinProp;
+import forge.sound.SoundEffectType;
+import forge.sound.SoundSystem;
 import forge.toolbox.FLabel;
 import forge.toolbox.FOptionPane;
 import forge.toolbox.FSkin;
@@ -228,6 +230,8 @@ public class BazaarDialog {
 
   public Set<BazaarItem> show() {
     final Localizer localizer = Localizer.getInstance();
+    SoundSystem.instance.play(SoundEffectType.RogueBazaarOpen,
+        SoundEffectType.RogueBazaarOpen.isSynced());
 
     final int BUY_OPTION = 0;
     final boolean showReroll = rerollButtonLabel != null;

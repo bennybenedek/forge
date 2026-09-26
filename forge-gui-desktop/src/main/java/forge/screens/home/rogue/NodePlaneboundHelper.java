@@ -11,6 +11,7 @@ import forge.gamemodes.match.HostedMatch;
 import forge.gamemodes.rogue.CodexHelper;
 import forge.gamemodes.rogue.RogueConfig;
 import forge.gamemodes.rogue.RoguePlanebound;
+import forge.gamemodes.rogue.RoguePlaneboundType;
 import forge.gamemodes.rogue.RogueRun;
 import forge.gamemodes.rogue.RogueRun.CarryCard;
 import forge.gamemodes.rogue.RogueTutorial;
@@ -22,6 +23,8 @@ import forge.gui.SOverlayUtils;
 import forge.item.PaperCard;
 import forge.localinstance.properties.ForgePreferences;
 import forge.player.GamePlayerUtil;
+import forge.sound.MusicPlaylist;
+import forge.sound.SoundSystem;
 import forge.toolbox.FOptionPane;
 import forge.toolbox.FSkin;
 import java.util.ArrayList;
@@ -139,12 +142,18 @@ class NodePlaneboundHelper {
             hostedMatch.setEndGameHook(() -> recordPlaneboundPublicCards(planebound, hostedMatch, aiLobbyPlayer));
             currentRun.setHostedMatch(hostedMatch);
 
+            MusicPlaylist matchPlaylist = MusicPlaylist.MATCH;
+            if (node.getPlaneboundType() == RoguePlaneboundType.BOSS
+                    && SoundSystem.findMusicDirectory(MusicPlaylist.ROGUE_MATCH_BOSS) != null) {
+                matchPlaylist = MusicPlaylist.ROGUE_MATCH_BOSS;
+            }
             hostedMatch.startMatch(
                 GameType.RogueCommander,
                 appliedVariants,
                 players,
                 human,
-                GuiBase.getInterface().getNewGuiGame()
+                GuiBase.getInterface().getNewGuiGame(),
+                matchPlaylist
             );
         } catch (Exception e) {
             e.printStackTrace();

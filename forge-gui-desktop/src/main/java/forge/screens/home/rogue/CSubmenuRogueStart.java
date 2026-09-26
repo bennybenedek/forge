@@ -14,6 +14,8 @@ import forge.gui.framework.ICDoc;
 import forge.item.PaperCard;
 import forge.localinstance.properties.ForgePreferences;
 import forge.screens.home.CHomeUI;
+import forge.sound.SoundEffectType;
+import forge.sound.SoundSystem;
 import forge.toolbox.FOptionPane;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -472,6 +474,9 @@ public enum CSubmenuRogueStart implements ICDoc {
 
     // Set as current run in the map controller
     CSubmenuRogueMap.SINGLETON_INSTANCE.setCurrentRun(newRun);
+
+    SoundSystem.instance.play(SoundEffectType.RogueRunStart,
+        SoundEffectType.RogueRunStart.isSynced());
 
     // Navigate to the Rogue Map
     CHomeUI.SINGLETON_INSTANCE.itemClick(EDocID.HOME_ROGUEMAP);

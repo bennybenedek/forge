@@ -3,6 +3,8 @@ package forge.screens.home.rogue;
 import forge.gamemodes.rogue.PreviewReference;
 import forge.gamemodes.rogue.TextHelper;
 import forge.gamemodes.rogue.effect.SanctumContext;
+import forge.sound.SoundEffectType;
+import forge.sound.SoundSystem;
 import forge.toolbox.FButton;
 import forge.toolbox.FLabel;
 import forge.toolbox.FOptionPane;
@@ -155,6 +157,8 @@ public class SanctumDialog {
    * @return The selected choice (HEAL, COOK, REFLECT, or SKIP)
    */
   public SanctumChoice show() {
+    SoundSystem.instance.play(SoundEffectType.RogueSanctumOpen,
+        SoundEffectType.RogueSanctumOpen.isSynced());
     optionPane = new FOptionPane(
         null,
         "Sanctum",

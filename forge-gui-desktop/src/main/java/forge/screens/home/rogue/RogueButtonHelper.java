@@ -6,6 +6,8 @@ import forge.gamemodes.rogue.TextHelper;
 import forge.toolbox.FButton;
 import forge.toolbox.FSkin;
 import forge.localinstance.skin.FSkinProp;
+import forge.sound.SoundEffectType;
+import forge.sound.SoundSystem;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -46,7 +48,10 @@ public final class RogueButtonHelper {
   public static FButton createChoiceButton(String label, String description, List<PreviewReference> references) {
     String highlightedDescription = applyAutomaticKeywordHighlights(
         applyAutomaticCardHighlights(description == null ? "" : description, references), references);
-    return new RogueChoiceButton(label, highlightedDescription);
+    FButton button = new RogueChoiceButton(label, highlightedDescription);
+    button.addActionListener(e -> SoundSystem.instance.play(
+        SoundEffectType.Token, SoundEffectType.Token.isSynced()));
+    return button;
   }
 
   static void setChoiceButtonSizeHint(FButton button, int buttonWidth) {

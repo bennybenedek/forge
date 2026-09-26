@@ -24,6 +24,8 @@ import forge.gui.GuiBase;
 import forge.item.IPaperCard;
 import forge.localinstance.properties.ForgeConstants;
 import forge.model.FModel;
+import forge.sound.SoundEffectType;
+import forge.sound.SoundSystem;
 import forge.util.CardTranslation;
 import forge.util.Localizer;
 import java.util.Date;
@@ -211,6 +213,8 @@ public class RogueCommanderAchievements extends AchievementCollection {
         }
 
         a.updateTrophyImage();
+        SoundSystem.instance.play(SoundEffectType.AchievementEarned,
+            SoundEffectType.AchievementEarned.isSynced());
         GuiBase.getInterface().showImageDialog(a.getImage(),
             a.getDisplayName() + "\n" + a.getSharedDesc() + "\n" + a.getMythicDesc(),
             Localizer.getInstance().getMessage("lblAchievementEarned"));
@@ -236,6 +240,8 @@ public class RogueCommanderAchievements extends AchievementCollection {
 
         if (firstWin) {
             a.updateTrophyImage();
+            SoundSystem.instance.play(SoundEffectType.AchievementEarned,
+                SoundEffectType.AchievementEarned.isSynced());
             GuiBase.getInterface().showImageDialog(a.getImage(),
                 a.getDisplayName() + "\n" + a.getSharedDesc() + "\n" + a.getMythicDesc(),
                 Localizer.getInstance().getMessage("lblAchievementEarned"));

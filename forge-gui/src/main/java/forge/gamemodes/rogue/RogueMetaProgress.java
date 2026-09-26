@@ -15,6 +15,8 @@ import forge.localinstance.properties.ForgeConstants;
 import forge.localinstance.skin.FSkinProp;
 import forge.localinstance.skin.ISkinImage;
 import forge.model.FModel;
+import forge.sound.SoundEffectType;
+import forge.sound.SoundSystem;
 import forge.util.IgnoringXStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -287,6 +289,8 @@ public class RogueMetaProgress {
                         ForgeConstants.CACHE_ACHIEVEMENTS_DIR
                             + "/unlock_" + name.replace(" ", "_") + ".png", 1f);
                 String unlockDesc = deck.getUnlockCondition().getDescription();
+                SoundSystem.instance.play(SoundEffectType.RogueCommanderUnlock,
+                    SoundEffectType.RogueCommanderUnlock.isSynced());
                 GuiBase.getInterface().showImageDialog(image,
                     name + "\n" + unlockDesc,
                     "Commander Unlocked!");

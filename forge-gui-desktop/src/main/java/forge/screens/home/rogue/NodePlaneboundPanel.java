@@ -11,6 +11,8 @@ import forge.gui.CardPicturePanel;
 import forge.gui.GuiBase;
 import forge.item.PaperCard;
 import forge.localinstance.skin.FSkinProp;
+import forge.sound.SoundEffectType;
+import forge.sound.SoundSystem;
 import forge.toolbox.FSkin;
 import forge.toolbox.imaging.FImageUtil;
 import forge.util.ImageFetcher;
@@ -177,6 +179,8 @@ public class NodePlaneboundPanel extends NodePanel implements ImageFetcher.Callb
     if (flipAnimation.isAnimating() || revealImage == null) {
       return;
     }
+    SoundSystem.instance.play(SoundEffectType.RoguePlaneReveal,
+        SoundEffectType.RoguePlaneReveal.isSynced());
     awaitingFlip = false;
     flipAnimation.start(() -> {
       cardImage.setItem(revealImage);
