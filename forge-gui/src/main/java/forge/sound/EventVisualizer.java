@@ -192,6 +192,9 @@ public class EventVisualizer extends IGameEventVisitor.Base<SoundEffectType> imp
             return SoundEffectType.ScriptedEffect;
         }
         CardStateView state = card.getCurrentState();
+        if (!state.isBasicLand()) {
+            return SoundEffectType.OtherLand;
+        }
         SoundEffectType resultSound = switch(state.origProduceMana()) {
             case W -> SoundEffectType.WhiteLand;
             case U -> SoundEffectType.BlueLand;
