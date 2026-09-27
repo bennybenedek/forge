@@ -161,7 +161,12 @@ public class HostedMatch {
 
     public void startGame() {
         nextGameDecisions.clear();
-        SoundSystem.instance.setBackgroundMusic(this.matchPlaylist == null ? MusicPlaylist.MATCH : this.matchPlaylist);
+        final MusicPlaylist playlist = this.matchPlaylist == null ? MusicPlaylist.MATCH : this.matchPlaylist;
+        if (match.getRules().getGameType() == GameType.RogueCommander) {
+            SoundSystem.instance.setBackgroundMusicWithFade(playlist, 600);
+        } else {
+            SoundSystem.instance.setBackgroundMusic(playlist);
+        }
 
         game = match.createGame();
         game.EXPERIMENTAL_RESTORE_SNAPSHOT = FModel.getPreferences().getPrefBoolean(FPref.MATCH_EXPERIMENTAL_RESTORE);

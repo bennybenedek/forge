@@ -72,7 +72,7 @@ public class RogueTutorialHelper {
     NPCContext context = new NPCContext(
         NPC.TEFERI,
         tutorial.getMessageChunks(),
-        List.of(new NPCContext.NPCChoice("Continue", null)),
+        List.of(),
         null,
         null);
     new NPCDialog(context, new ChoiceRerollContext()).show();

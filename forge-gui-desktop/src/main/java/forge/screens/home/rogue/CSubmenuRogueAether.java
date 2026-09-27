@@ -8,6 +8,8 @@ import forge.gui.framework.EDocID;
 import forge.gui.framework.ICDoc;
 import forge.localinstance.properties.ForgePreferences;
 import forge.screens.home.CHomeUI;
+import forge.sound.SoundEffectType;
+import forge.sound.SoundSystem;
 import forge.toolbox.FOptionPane;
 import java.util.EnumMap;
 import java.util.Map;
@@ -94,6 +96,7 @@ public enum CSubmenuRogueAether implements ICDoc {
     RogueMetaProgress progress = RogueMetaProgress.getInstance();
     int nextLevel = progress.getAetherUpgradeLevel() + 1;
     if (progress.purchaseAetherUpgrade(nextLevel)) {
+      SoundSystem.instance.play(SoundEffectType.Artifact, SoundEffectType.Artifact.isSynced());
       // Re-populate to show newly unlocked Aetherworks
       view.populate();
       refreshDisplay();
@@ -108,6 +111,7 @@ public enum CSubmenuRogueAether implements ICDoc {
     RogueMetaProgress progress = RogueMetaProgress.getInstance();
     int rankBefore = progress.getAetherEffectRank(type);
     if (progress.upgradeAetherEffect(type)) {
+      SoundSystem.instance.play(SoundEffectType.Artifact, SoundEffectType.Artifact.isSynced());
       // Auto-activate the Aetherwork when first built (rank goes from 0 to 1)
       if (rankBefore == 0 && progress.getAetherEffectRank(type) == 1) {
         progress.activateAetherEffect(type);

@@ -46,11 +46,22 @@ public final class RogueButtonHelper {
   }
 
   public static FButton createChoiceButton(String label, String description, List<PreviewReference> references) {
+    return createButton(label, description, references, true);
+  }
+
+  public static FButton createNavigationButton(String label) {
+    return createButton(label, "", List.of(), false);
+  }
+
+  private static FButton createButton(String label, String description, List<PreviewReference> references,
+      boolean playSound) {
     String highlightedDescription = applyAutomaticKeywordHighlights(
         applyAutomaticCardHighlights(description == null ? "" : description, references), references);
     FButton button = new RogueChoiceButton(label, highlightedDescription);
-    button.addActionListener(e -> SoundSystem.instance.play(
-        SoundEffectType.Token, SoundEffectType.Token.isSynced()));
+    if (playSound) {
+      button.addActionListener(e -> SoundSystem.instance.play(
+          SoundEffectType.Token, SoundEffectType.Token.isSynced()));
+    }
     return button;
   }
 

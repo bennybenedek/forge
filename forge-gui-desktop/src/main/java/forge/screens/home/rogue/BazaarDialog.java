@@ -387,6 +387,10 @@ public class BazaarDialog {
       revealIndex = 0;
       revealTimer = new Timer(100, e -> {
         if (revealIndex < cardPanels.size()) {
+          if (revealIndex == 0 && cardPanels.get(0).faceDown) {
+            SoundSystem.instance.play(SoundEffectType.RoguePlaneReveal,
+                SoundEffectType.RoguePlaneReveal.isSynced());
+          }
           cardPanels.get(revealIndex).reveal();
           revealIndex++;
         } else {

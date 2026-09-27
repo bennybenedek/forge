@@ -4,6 +4,8 @@ import forge.deckchooser.FDeckViewer;
 import forge.gamemodes.rogue.RogueTutorial;
 import forge.item.PaperCard;
 import forge.localinstance.skin.FSkinProp;
+import forge.sound.SoundEffectType;
+import forge.sound.SoundSystem;
 import forge.toolbox.FLabel;
 import forge.toolbox.FOptionPane;
 import forge.toolbox.FSkin;
@@ -150,6 +152,10 @@ public class CardRewardDialog {
     final int[] revealIndex = {0};
     Timer revealTimer = new Timer(100, e -> {
       if (revealIndex[0] < cardPanels.size()) {
+        if (revealIndex[0] == 0 && cardPanels.get(0).faceDown) {
+          SoundSystem.instance.play(SoundEffectType.RoguePlaneReveal,
+              SoundEffectType.RoguePlaneReveal.isSynced());
+        }
         cardPanels.get(revealIndex[0]).flip();
         revealIndex[0]++;
       } else {

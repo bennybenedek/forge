@@ -8,6 +8,7 @@ import java.util.Map;
 import javax.swing.SwingUtilities;
 
 import forge.Singletons;
+import forge.game.GameType;
 import forge.gui.framework.DragCell;
 import forge.gui.framework.EDocID;
 import forge.gui.framework.FScreen;
@@ -419,16 +420,24 @@ public class VMatchUI implements IVTopLevelUI {
 
         if (bypassConcedeOnClose) {
             bypassConcedeOnClose = false;
-            SoundSystem.instance.setBackgroundMusic(MusicPlaylist.MENUS);
+            switchToMenuMusic();
             return true;
         }
 
         if (control.concede()) {
             //switch back to menus music when closing screen
-            SoundSystem.instance.setBackgroundMusic(MusicPlaylist.MENUS);
+            switchToMenuMusic();
             return true;
         }
 
         return false;
+    }
+
+    private void switchToMenuMusic() {
+        if (control.getGameView() != null && control.getGameView().getGameType() == GameType.RogueCommander) {
+            SoundSystem.instance.setBackgroundMusicWithFade(MusicPlaylist.MENUS, 600);
+        } else {
+            SoundSystem.instance.setBackgroundMusic(MusicPlaylist.MENUS);
+        }
     }
 }

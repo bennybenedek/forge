@@ -90,7 +90,7 @@ public class NPCDialog {
         desiredHeight += txtFlavor.getPreferredSize().height + 10 + 20;
 
         if (flavorTextChunks.size() > 1 || ctx.choices().isEmpty()) {
-            btnContinue = RogueButtonHelper.createChoiceButton("Continue", "");
+            btnContinue = RogueButtonHelper.createNavigationButton("Continue");
             RogueButtonHelper.setChoiceButtonSizeHint(btnContinue, choiceButtonWidth);
             btnContinue.addActionListener(e -> advanceChunkOrClose());
             panel.add(btnContinue, "w 80%!, ax center, gap 0 0 10px 10px, wrap");

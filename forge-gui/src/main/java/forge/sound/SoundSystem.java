@@ -2,6 +2,7 @@ package forge.sound;
 
 import com.google.common.eventbus.Subscribe;
 import forge.game.event.GameEvent;
+import forge.gui.FThreads;
 import forge.gui.GuiBase;
 import forge.gui.events.UiEvent;
 import forge.localinstance.properties.ForgeConstants;
@@ -12,6 +13,7 @@ import forge.player.GamePlayerUtil;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Manages playback of all sounds for the client.
@@ -174,6 +176,7 @@ public class SoundSystem {
     //Background Music
     private IAudioMusic currentTrack;
     private MusicPlaylist currentPlaylist;
+    private final AtomicLong musicTransitionId = new AtomicLong();
 
     //Shelved tracks, for when we want to switch back to a previous track and want to resume playback where we left off.
     private MusicPlaylist shelvedPlaylist;
@@ -183,8 +186,11 @@ public class SoundSystem {
         setBackgroundMusic(playlist, false);
     }
     public void setBackgroundMusic(final MusicPlaylist playlist, boolean shelvePrevious) {
-        if(playlist == currentPlaylist)
+        musicTransitionId.incrementAndGet();
+        if(playlist == currentPlaylist) {
+            refreshVolume();
             return;
+        }
         
         if(playlist == shelvedPlaylist && playlist != null) {
             if(!shelvePrevious) {
@@ -229,6 +235,39 @@ public class SoundSystem {
 
         currentPlaylist = playlist;
         changeBackgroundTrack();
+    }
+
+    public void setBackgroundMusicWithFade(final MusicPlaylist playlist, final int durationMs) {
+        final long transitionId = musicTransitionId.incrementAndGet();
+        if (playlist == currentPlaylist) {
+            refreshVolume();
+            return;
+        }
+        if (currentTrack == null || durationMs <= 0 || isMuted()) {
+            setBackgroundMusic(playlist);
+            return;
+        }
+
+        final IAudioMusic fadingTrack = currentTrack;
+        final int stepCount = 20;
+        final int stepDelay = Math.max(1, durationMs / stepCount);
+        fadeBackgroundMusic(playlist, fadingTrack, transitionId, stepCount, stepDelay, 1);
+    }
+
+    private void fadeBackgroundMusic(final MusicPlaylist playlist, final IAudioMusic fadingTrack,
+                                     final long transitionId, final int stepCount, final int stepDelay,
+                                     final int step) {
+        if (transitionId != musicTransitionId.get()) {
+            return;
+        }
+        if (currentTrack != fadingTrack || step > stepCount) {
+            setBackgroundMusic(playlist);
+            return;
+        }
+
+        fadeModifier(1f - step / (float) stepCount);
+        FThreads.delayInEDT(stepDelay, () -> fadeBackgroundMusic(
+                playlist, fadingTrack, transitionId, stepCount, stepDelay, step + 1));
     }
 
     public MusicPlaylist getCurrentPlaylist() {
@@ -309,6 +348,7 @@ public class SoundSystem {
     }
 
     public void stopBackgroundMusic() {
+        musicTransitionId.incrementAndGet();
         if (currentTrack != null) {
             currentTrack.dispose();
             currentTrack = null;
