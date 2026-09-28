@@ -138,7 +138,9 @@ public class EventVisualizer extends IGameEventVisitor.Base<SoundEffectType> imp
             if (state.isCreature() && state.isArtifact()) {
                 return SoundEffectType.ArtifactCreature;
             } else if (state.isCreature()) {
-                return SoundEffectType.Creature;
+                return state.getType().hasSubtype("Human")
+                        ? SoundEffectType.CreatureHuman
+                        : SoundEffectType.CreatureNonHuman;
             } else if (state.isArtifact()) {
                 return SoundEffectType.Artifact;
             } else if (state.isInstant()) {
