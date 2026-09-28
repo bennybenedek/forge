@@ -77,7 +77,7 @@ public enum SoundEffectType {
     LoseDuel("lose_duel", false),
     ManaBurn("mana_burn", false),
     Nighttime("nighttime", true),
-    OtherLand("other_land", false),
+    OtherLand("other_land", true),
     Phasing("phasing", true),
     Planeswalker("planeswalker", false),
     Poison("poison", true),

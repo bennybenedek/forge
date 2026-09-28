@@ -134,7 +134,7 @@ public class EventVisualizer extends IGameEventVisitor.Base<SoundEffectType> imp
                 return SoundEffectType.ScriptedEffect;
             }
 
-            CardView.CardStateView state = source.getCurrentState();
+            CardStateView state = source.getCurrentState();
             if (state.isCreature() && state.isArtifact()) {
                 return SoundEffectType.ArtifactCreature;
             } else if (state.isCreature()) {
@@ -190,48 +190,7 @@ public class EventVisualizer extends IGameEventVisitor.Base<SoundEffectType> imp
         if (zoneEventMode != EventValueChangeType.Added || zoneTo != ZoneType.Battlefield || !card.getCurrentState().isLand()) {
             return null;
         }
-        if (hasSpecificCardEffect(card)) {
-            return SoundEffectType.ScriptedEffect;
-        }
-        CardStateView state = card.getCurrentState();
-        if (!state.isBasicLand()) {
-            return SoundEffectType.OtherLand;
-        }
-        SoundEffectType resultSound = switch(state.origProduceMana()) {
-            case W -> SoundEffectType.WhiteLand;
-            case U -> SoundEffectType.BlueLand;
-            case B -> SoundEffectType.BlackLand;
-            case R -> SoundEffectType.RedLand;
-            case G -> SoundEffectType.GreenLand;
-
-            case WU -> SoundEffectType.WhiteBlueLand;
-            case GW -> SoundEffectType.WhiteGreenLand;
-            case RW -> SoundEffectType.WhiteRedLand;
-            case WB -> SoundEffectType.BlackWhiteLand;
-            case BR -> SoundEffectType.BlackRedLand;
-            case UB -> SoundEffectType.BlueBlackLand;
-            case GU -> SoundEffectType.GreenBlueLand;
-            case BG -> SoundEffectType.GreenBlackLand;
-            case RG -> SoundEffectType.GreenRedLand;
-            case UR -> SoundEffectType.RedBlueLand;
-
-            case WUB -> SoundEffectType.WhiteBlueBlackLand;
-            case GWU -> SoundEffectType.WhiteGreenBlueLand;
-            case RWB -> SoundEffectType.WhiteRedBlackLand;
-            case WBG -> SoundEffectType.BlackWhiteGreenLand;
-            case BRG -> SoundEffectType.BlackRedGreenLand;
-            case UBR -> SoundEffectType.BlueBlackRedLand;
-            case GUR -> SoundEffectType.GreenBlueRedLand;
-            case BGU -> SoundEffectType.GreenBlackBlueLand;
-            case RGW -> SoundEffectType.GreenRedWhiteLand;
-            case URW -> SoundEffectType.RedBlueWhiteLand;
-
-            default -> null;
-        };
-        if (resultSound == null || state.origProduceAnyMana() || !SoundSystem.instance.hasResource(resultSound)) {
-            resultSound = SoundEffectType.OtherLand;
-        }
-        return resultSound;
+        return SoundEffectType.OtherLand;
     }
 
     /**

@@ -50,6 +50,8 @@ import forge.screens.home.CHomeUI;
 import forge.screens.home.rogue.CSubmenuRogueMap;
 import forge.screens.home.rogue.RogueTutorialHelper;
 import forge.screens.match.controllers.CDetailPicture;
+import forge.sound.SoundEffectType;
+import forge.sound.SoundSystem;
 import forge.toolbox.FButton;
 import forge.util.ItemPool;
 import java.util.ArrayList;
@@ -198,6 +200,7 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
 
         // Add to deck manager
         this.getDeckManager().addItems(itemsToAdd);
+        SoundSystem.instance.play(SoundEffectType.Draw, SoundEffectType.Draw.isSynced());
 
         // Push ADD action onto undo stack (basic lands don't affect removal credits)
         undoStack.push(new UndoAction(UndoAction.Type.ADD, itemsToAdd, 0));
@@ -239,6 +242,7 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
 
         // Remove from deck manager
         this.getDeckManager().removeItems(items);
+        SoundSystem.instance.play(SoundEffectType.Discard, SoundEffectType.Discard.isSynced());
 
         // Deduct removal credits from RogueRun (persisted)
         rogueRun.setRemovalCredits(rogueRun.getRemovalCredits() - nonBasicLandsToRemove);
