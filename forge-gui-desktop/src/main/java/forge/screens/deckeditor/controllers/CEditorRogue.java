@@ -242,7 +242,7 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
 
         // Remove from deck manager
         this.getDeckManager().removeItems(items);
-        SoundSystem.instance.play(SoundEffectType.Discard, SoundEffectType.Discard.isSynced());
+        SoundSystem.instance.play(SoundEffectType.FlipCard, SoundEffectType.FlipCard.isSynced());
 
         // Deduct removal credits from RogueRun (persisted)
         rogueRun.setRemovalCredits(rogueRun.getRemovalCredits() - nonBasicLandsToRemove);
