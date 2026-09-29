@@ -12,6 +12,16 @@ This repository is a Java 17+ multi-module Maven project (Forge / Rogue Commande
 - No Cursor rules were found (`.cursor/rules/` and `.cursorrules` are absent).
 - No Copilot instructions file was found (`.github/copilot-instructions.md` is absent).
 
+## Story and Lore Writing
+
+When asked to write, rewrite, expand, or modify Rogue Commander story,
+dialogue, lore, narrative text, NPC interactions, or flavor text:
+
+1. Read `story/story.md` before writing.
+2. Follow its general narrative and style rules.
+3. If the task involves one or more named NPCs, read the corresponding
+   NPC rubric file referenced by `story.md` before writing their dialogue.
+
 ## High-priority operating rules
 
 - Do not compile or run builds/tests unless the user explicitly asks.
@@ -217,6 +227,7 @@ These are mandatory when touching Rogue Commander code.
 - Main branch: `master`
 - Desktop entry point: `forge.view.Main`
 - Mobile dev entry point: `forge.app.Main`
+
 
 ## Additional local references
 
