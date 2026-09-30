@@ -40,6 +40,8 @@ Technical documentation, structured game data, UI labels, and internal lore note
 ### Runs and Narrative Structure
 
 * A Run is an expedition from the Aether through connected Planes and to their leaders, the Planebounds.
+* A **Trail** is the route a Run follows through a sequence of Omenpaths and Planes, ending at the Run's final Planebound.
+* An **Omenpath** is an individual connection between planes; a Trail may therefore contain multiple Omenpaths.
 * The random Planes, Planebounds, Elites, and Bosses encountered during a Run are not tied to specific main-story milestones.
 * Main-story progression happens after completed Runs, when the Commander returns to the Aether.
 * Story delivery should generally remain brief enough that gameplay can continue quickly. Rogue Commander is not structured around long mandatory conversations after every encounter.
@@ -102,8 +104,8 @@ read that NPC's corresponding guide file.
 
 The NPC file defines character-specific background, personality, knowledge, linguistic habits, speech style, relationships, and characterization constraints.
 
-- Teferi -> `npc/teferi.md`
-- Tyvar -> `npc/tyvar.md`
-- Narset -> `npc/narset.md`
-- Henzie -> `npc/henzie.md`
-- Gonti -> `npc/gonti.md`
+- Teferi -> `npc/teferi.guide.md`
+- Tyvar -> `npc/tyvar.guide.md`
+- Narset -> `npc/narset.guide.md`
+- Henzie -> `npc/henzie.guide.md`
+- Gonti -> `npc/gonti.guide.md`

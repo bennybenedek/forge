@@ -177,6 +177,7 @@ public class SoundSystem {
     private IAudioMusic currentTrack;
     private MusicPlaylist currentPlaylist;
     private final AtomicLong musicTransitionId = new AtomicLong();
+    private volatile long currentTrackTransitionId;
 
     //Shelved tracks, for when we want to switch back to a previous track and want to resume playback where we left off.
     private MusicPlaylist shelvedPlaylist;
@@ -186,8 +187,9 @@ public class SoundSystem {
         setBackgroundMusic(playlist, false);
     }
     public void setBackgroundMusic(final MusicPlaylist playlist, boolean shelvePrevious) {
-        musicTransitionId.incrementAndGet();
+        final long transitionId = musicTransitionId.incrementAndGet();
         if(playlist == currentPlaylist) {
+            currentTrackTransitionId = transitionId;
             refreshVolume();
             return;
         }
@@ -211,6 +213,7 @@ public class SoundSystem {
                 shelvedPlaylist = currentPlaylist;
             }
             currentPlaylist = playlist;
+            currentTrackTransitionId = transitionId;
             refreshVolume();
             if (currentTrack != null) {
                 currentTrack.resume();
@@ -240,6 +243,7 @@ public class SoundSystem {
     public void setBackgroundMusicWithFade(final MusicPlaylist playlist, final int durationMs) {
         final long transitionId = musicTransitionId.incrementAndGet();
         if (playlist == currentPlaylist) {
+            currentTrackTransitionId = transitionId;
             refreshVolume();
             return;
         }
@@ -303,13 +307,19 @@ public class SoundSystem {
         try {
             currentTrack = GuiBase.getInterface().createAudioMusic(filename);
             shouldPlayMusic = true;
-            currentTrack.play(() -> {
+            final IAudioMusic startedTrack = currentTrack;
+            currentTrackTransitionId = musicTransitionId.get();
+            startedTrack.play(() -> {
                 try {
                     Thread.sleep(SoundSystem.DELAY);
                 } catch (final InterruptedException ex) {
                     ex.printStackTrace();
                 }
-                changeBackgroundTrack(); //change track when music completes on its own
+                FThreads.invokeInEdtLater(() -> {
+                    if (currentTrack == startedTrack && currentTrackTransitionId == musicTransitionId.get()) {
+                        changeBackgroundTrack(); //change track when music completes on its own
+                    }
+                });
             });
             refreshVolume();
         } catch (final Exception ex) {

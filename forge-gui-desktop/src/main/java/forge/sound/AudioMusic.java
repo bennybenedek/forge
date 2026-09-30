@@ -10,7 +10,7 @@ import javazoom.jl.player.advanced.PlaybackEvent;
 import javazoom.jl.player.advanced.PlaybackListener;
 
 public class AudioMusic implements IAudioMusic {
-    private AdvancedPlayer musicPlayer;
+    private volatile AdvancedPlayer musicPlayer;
     private FileInputStream fileStream;
     private BufferedInputStream bufferedStream;
     private boolean canResume;
@@ -52,15 +52,18 @@ public class AudioMusic implements IAudioMusic {
                     }
                 }
             });
+            final AdvancedPlayer player = musicPlayer;
             Thread musicThread = new Thread(() -> {
                 try {
                     isPlaying = true;
-                    musicPlayer.play();
+                    player.play();
                 }
                 catch (Exception e){
-                    e.printStackTrace();
-                    valid = false;
-                    isPlaying = false;
+                    if (musicPlayer == player) {
+                        e.printStackTrace();
+                        valid = false;
+                        isPlaying = false;
+                    }
                 }
             }, "Audio Music");
             musicThread.setDaemon(true);
