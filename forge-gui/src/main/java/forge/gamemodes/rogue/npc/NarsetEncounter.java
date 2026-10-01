@@ -28,12 +28,13 @@ public enum NarsetEncounter implements NPCEncounter {
             incrementNpcLevel();
             return buildContext(
                 List.of(
-                    "A woman in travel-worn Jeskai robes steps out of the planar turbulence, calm and composed despite " +
-                        "the chaos still breaking around her.",
-                    "One hand rests near a scroll case at her hip while her " +
-                        "steady gaze studies you for a long moment. \"Listen. The worlds ahead are not scattering at " +
-                        "random. To stop the Phyrexian Invasion, you must understand what moves between them and why.",
-                    "You seem to improve in using Planeswalking and Chaos to your advantage. But you are far from mastering it. Call Me Narset. And let me help you with your task from now on.\""
+                    "Out of nowhere, an Omenpath opens at the edge of the battlefield. A woman in travel-worn Jeskai " +
+                        "robes steps through, braces one hand against the ground, and waits for the passage to close before rising.",
+                    "She studies the distortion still flickering above the battlefield, then opens a scroll filled " +
+                        "with sketches. \"I've seen this before, on another Plane. It behaved almost the same there.\"",
+                    "She looks from the scroll to the Commander. \"It's gone. I arrived too late. I'm Narset. " +
+                        "Tell me what you saw here. After that, bring me what you notice on each Trail. I'll compare " +
+                        "it with my records and help you prepare for the next.\""
                 ),
                 List.of());
         }
@@ -55,11 +56,14 @@ public enum NarsetEncounter implements NPCEncounter {
     @Override
     public List<String> getOfferingBoonMonologues() {
         return List.of(
-            "Narset greets you with a knowing smile. \"Choose a gift from the planes.\"",
-            "\"Every plane leaves a pattern behind,\" Narset says, unrolling a map of impossible angles. " +
-                "\"Take the one that will teach you most.\"",
-            "Narset studies the horizon as the planar wind pulls at her robes. \"The path ahead will shift again. " +
-                "Prepare before it does.\""
+            "Narset has arranged her notes beside a map marked with recent Omenpaths. One route ends in a dense knot " +
+                "of corrections. \"The Plane changed while I was still recording the first change. Afterward, I wrote " +
+                "down how I should have prepared.\"",
+            "Narset weighs down the corners of a map with smooth stones. The same symbol appears beside two distant " +
+                "Planes. \"The distortion looked the same in both places. Each Plane responded differently. " +
+                "But these preparations should help for both of them.\"",
+            "Narset draws a new line across an Omenpath chart, then sets down her charcoal. \"This route breaks the " +
+                "earlier pattern. Good. I'll try to alter your preparations accordingly. Choose one.\""
         );
     }
 }

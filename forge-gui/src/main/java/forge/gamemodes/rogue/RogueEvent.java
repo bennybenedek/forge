@@ -250,7 +250,7 @@ public enum RogueEvent {
         )),
 
     STREET_OF_GREED("Street of Greed",
-        "Coins cover a roulette table in the back room of a New Capenna casino. Not this again... A devil taps the contract beside them. \"Well if it isn't my favourite Teferi puppet.\" they say. \"Only the best contracts for you, my friend.\"",
+        "Coins cover a roulette table in the back room of a New Capenna casino. Not this again... A devil taps the contract beside them. \"Well if it isn't my favourite Teferi puppet.\" they say. \"Only the best deals for you, my friend.\"",
         List.of(
             new EventChoice("Accept", "You put your signature. From then on, every attempt to restore your strength fails.",
                 EventEffect.STREET_OF_GREED_ACCEPT),

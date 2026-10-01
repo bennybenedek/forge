@@ -108,6 +108,9 @@ public abstract class ImageFetcher {
         if (!FModel.getPreferences().getPrefBoolean(ForgePreferences.FPref.UI_ENABLE_ONLINE_IMAGE_FETCHER))
             return;
 
+        if (ImageKeys.HIDDEN_CARD.equals(imageKey))
+            return;
+
         // Fake card (like the ante prompt) trying to be "fetched"
         if (imageKey.length() < 2)
             return;

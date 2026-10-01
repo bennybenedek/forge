@@ -22,10 +22,10 @@ public enum TyvarEncounter implements NPCEncounter {
             ctx.preSanctumDialogs.add(buildContext(
                 "Stranger", STRANGER_AVATAR_INDEX,
                 List.of(
-                    "Near the Sanctum's cold stone floor, a man in ripped clothes drags himself forward, " +
-                        "leaving a thin trail of blood behind him.",
-                    "His face is pale, his breathing ragged, " +
-                        "and one trembling hand reaches toward you. \"Help me... please.\""
+                    "A man in torn clothes drags himself across the Sanctum's stone floor, leaving a thin trail " +
+                        "of blood. He reaches for a pillar, but his arm gives way.",
+                    "He presses a hand against his side and looks up at you. \"Here. Help me keep pressure on it. " +
+                        "I can't stop the bleeding.\""
                 ),
                 List.of()
             ));
@@ -48,10 +48,11 @@ public enum TyvarEncounter implements NPCEncounter {
             incrementNpcLevel();
             return buildContext(
                 List.of(
-                    "The stranger steadies himself, pain still written across every movement, but pride returning to his eyes. " +
-                        "\"I am Tyvar Kell. You did not owe me aid, but you gave it anyway. I won't forget that.\"",
-                    "He grips your forearm with surprising strength. \"Let me repay you properly. From now on, " +
-                        "when your journey begins, I will help train your Commander for the battles ahead.\""
+                    "The stranger eases himself upright against the pillar. \"You needed this rest yourself, " +
+                        "didn't you? And you spent it on me.\" He offers his hand. \"Tyvar Kell. I'm glad you found me.\"",
+                    "He tries to stand, winces, and settles back with a short laugh. \"Give me a little time. " +
+                        "I'll meet you in the Aether. Come find me before you head out, and we'll get you ready " +
+                        "for a proper fight. As often as you need, friend. I owe you more than a thank-you.\""
                 ),
                 List.of()
             );
@@ -89,12 +90,13 @@ public enum TyvarEncounter implements NPCEncounter {
     @Override
     public List<String> getOfferingBoonMonologues() {
         return List.of(
-            "Tyvar Kell steps from the shadows, his elven features lit by the glow of his Planeswalker spark. " +
-                "\"I've watched you fight, and I see potential. Let me train your Commander.\"",
-            "Tyvar cracks his knuckles and grins. \"A commander should lead from the front. Pick a lesson, " +
-                "and I'll make sure yours hits harder than before.\"",
-            "\"Raw strength is useful,\" Tyvar says, pacing beside your camp, \"but knowing where to spend it wins wars. " +
-                "Choose your training.\""
+            "Tyvar waves you over to a bench piled with gear. \"There you are! I've been sorting through this " +
+                "for you. You can thank me by coming back to tell me how the fight went. In detail, mind you.\"",
+            "Tyvar rests a hand on the stone wall. Gray spreads across his knuckles, then fades as he pulls away. " +
+                "\"A good place to fight, stone underfoot. Plenty to work with. Come, let's see what we can put " +
+                "to use for you.\"",
+            "Tyvar grins as you approach. \"Ready? Good. I've a few ideas, and I want to hear yours. " +
+                "If you find a better use for what I give you, I'll want the whole story when you get back.\""
         );
     }
 }

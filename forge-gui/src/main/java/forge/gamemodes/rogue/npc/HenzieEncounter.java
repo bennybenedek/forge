@@ -97,22 +97,23 @@ public enum HenzieEncounter implements NPCEncounter {
     @Override
     public List<String> getOfferingBoonMonologues() {
         return List.of(
-            "Henzie leans back with a contract tucked into his sleeve and a case of stolen tools at his feet. " +
-                "\"You made me richer. I like people who do that. Take one and try not to waste it.\"",
-            "\"Good clients get good options,\" Henzie says, tapping a claw against a sealed case. " +
-                "\"Bad clients get invoices. Lucky for you, today you're the first kind.\"",
-            "Henzie fans out a few suspiciously clean contracts. \"No fine print this time. Well, less fine print. " +
-                "Pick something useful before I reconsider the price.\""
+            "Henzie checks the buckles on your pack. \"Heading out already? Hold on. I've been putting a few things " +
+                "aside for you. Take a look before you go getting yourself killed with somebody else's stuff.\"",
+            "Henzie folds a supplier's letter and pockets it with a grin. \"Took a little asking around, but I've got " +
+                "stuff for you. Take your time. I already did the part where we hurry.\"",
+            "Henzie pulls up a chair. \"What do you need, Commander? Let me guess...Illegal things the whole Multiverse is after? " +
+                "Well, you're in luck. Best offers since a long time.\""
         );
     }
 
     private NPCContext buildAcceptedContractContext() {
         return buildContext(
             List.of(
-                "The signed contract does not vanish with the others. A devil in a tailored coat plucks it from the air, " +
-                    "grins, and gives a shallow bow.",
-                "\"Efficient. Name's Henzie. You seem to know when a good deal presents itself. " +
-                    "I might have a few tools for your next run.\""
+                "The devil folds the signed contract and slips it inside his coat. \"Smarter than I thought. Name's Henzie 'Toolbox' Torre. " +
+                    "You need something acquired, come find me.\"",
+                "He glances over your belongings and outfit. \"Actually, find me before your next trip. I can get you better " +
+                    "than that. First lot's on me. You keep coming back from places most people won't go near, " +
+                    "I reckon we'll have plenty of business.\""
             ),
             List.of()
         );
@@ -125,7 +126,7 @@ public enum HenzieEncounter implements NPCEncounter {
                 "The unsigned contract begins to fade, but the devil catches it between two claws and studies you " +
                     "with theatrical disappointment.",
                 "\"Bad choice. Would've guessed you Commanders were a little smarter than that. All right, I guess " +
-                    "no meta-progression for this one. No unlocked devil at the start " +
+                    "no meta-progression for this one. No unlocked mobster devil at the start " +
                     "of each Run offering crazy starting boons until a contract gets signed. You do you, pal.\""
             ),
             List.of()
@@ -135,11 +136,10 @@ public enum HenzieEncounter implements NPCEncounter {
     private NPCContext buildAutomaticUnlockContext() {
         return buildContext(
             List.of(
-                "Henzie appears with a stack of unsigned contracts tucked beneath one arm and an expression caught " +
-                    "between disbelief and professional admiration.",
-                "\"You really dragged this out all the way to six-six-six without signing a thing. That's almost " +
-                    "impressive. Fine. You win: unlocked devil, crazy starting boons at the start of each Run. " +
-                    "Apparently stubbornness counts as a contract now.\""
+                "The devil spots you and puts away the contract he was reaching for. \"All right. I've spent " +
+                    "enough on ink trying to sell you something. Let's try letting you see what I can do.\"",
+                "He holds out a hand. \"Henzie 'Toolbox' Torre. Come see me before you head out. I'll set you up " +
+                    "with a sample. You like the results, keep coming back. I've got plenty more where that came from.\""
             ),
             List.of()
         );

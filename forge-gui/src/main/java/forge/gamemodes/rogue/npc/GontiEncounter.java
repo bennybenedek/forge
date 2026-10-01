@@ -53,13 +53,12 @@ public enum GontiEncounter implements NPCEncounter {
                 List.of(
                     "A figure steps out from behind the bazaar stall, eyes wide with both disbelief and fascination. " +
                         "\"You... you actually bought it? Ha!! That thing has been sitting there for ages! " +
-                        "Nobody ever even looks at it twice!\"",
-                    "The figure composes itself, extending a hand. " +
-                        "\"I'm Gonti. And anyone willing to pay ten gold for that worthless piece of junk " +
+                        "I had almost stopped thinking of it as stock.\"",
+                    "They turn to you. \"I'm Gonti. And anyone willing to pay that much for that worthless piece of junk " +
                         "deserves my personal attention.",
-                    "How about this...from now on you'll get some special " +
-                        "discounts whenever you set foot in here again. Oh, and feel free to buy other stuff " +
-                        "nobody else wants, I'll promise you won't regret it."
+                        "How about this... I'll have a few discounts for you whenever you set foot in here again.\"",
+                    "Gonti wraps the relic in a square of fine cloth. \"Oh, and feel free to buy other stuff " +
+                    "nobody else wants, I'll promise you won't regret it.\""
                 ),
 
                 List.of(new NPCContext.NPCChoice("Accept", null))
@@ -147,12 +146,11 @@ public enum GontiEncounter implements NPCEncounter {
             incrementNpcLevel();
             return buildContext(
                 List.of(
-                    "Gonti stares at the contraption in your hands as if watching a prophecy come true " +
-                        "in the least dignified way possible. \"No. No, that cannot be right.",
-                    "That device doesn't open, doesn't close, doesn't hum, doesn't glow, and I am almost certain one " +
-                        "of the little wheels is decorative because it is painted on.\"",
-                    "He laughs, breathless and delighted. \"You have gone beyond customer, beyond patron, beyond accomplice. " +
-                        "You are a collector of impossibilities. Very well. From now on, the strangest shelf " +
+                    "Gonti stares at the contraption in your hands, then counts your coins a second time. " +
+                        "\"No. No, that cannot be right.\"",
+                    "\"That device doesn't do anything. I didn't even try to hide the painted wheel!\"",
+                    "They laugh, delighted. \"You are almost as incomprehensible as the contraption, my friend. " +
+                        "Very well. From now on, the strangest shelf " +
                         "gets the same generous treatment as the ordinary wares. Discounts, even there. " +
                         "Do try not to make me regret encouraging this.\""
                 ),
