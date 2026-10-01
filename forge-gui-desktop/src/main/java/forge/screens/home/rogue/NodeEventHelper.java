@@ -141,7 +141,7 @@ class NodeEventHelper {
     }
 
     private void showEventResult(RogueEvent.EventChoice choice, EffectResultContext ctx) {
-        map.showNodeResultDialog("Event Completed",
+        map.showEventResultDialog(
             getEventResultText(choice, ctx), buildNodeResultSections(ctx));
     }
 

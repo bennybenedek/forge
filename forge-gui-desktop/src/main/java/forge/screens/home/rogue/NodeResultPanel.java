@@ -30,6 +30,7 @@ public class NodeResultPanel extends SkinnedPanel {
     private static final int TEXT_RIGHT_PADDING = 8;
 
     private final List<ReadOnlyCardPanel> allCardPanels = new ArrayList<>();
+    private final RogueUIHelper.TypewriterText typewriterText;
     private CardUtil zoomUtil;
 
     public record CardSection(String label, String text, List<PaperCard> cards) {
@@ -54,11 +55,11 @@ public class NodeResultPanel extends SkinnedPanel {
     }
 
     public NodeResultPanel(String message, List<CardSection> sections) {
-        this(message, sections, DEFAULT_MIN_WIDTH, 0, MessageAlignment.LEFT);
+        this(message, sections, DEFAULT_MIN_WIDTH, 0, MessageAlignment.LEFT, false);
     }
 
     public NodeResultPanel(String message, List<CardSection> sections, int minWidth, int minHeight,
-                           MessageAlignment messageAlignment) {
+                           MessageAlignment messageAlignment, boolean typewriterMessage) {
         super(new MigLayout("insets 10, gap 0, wrap", "[grow, center]", ""));
         setOpaque(false);
 
@@ -75,7 +76,16 @@ public class NodeResultPanel extends SkinnedPanel {
         int textWidth = Math.max(1, desiredWidth - (PANEL_INSET * 2) - TEXT_WRAP_SAFETY_MARGIN);
 
         // Result text
-        Component txtMessage = createMessageComponent(message, 14f, textWidth, messageAlignment);
+        Component txtMessage;
+        if (typewriterMessage && messageAlignment == MessageAlignment.LEFT) {
+            FTextArea textArea = createWrappedTextArea(message, 14f, textWidth);
+            typewriterText = RogueUIHelper.prepareTypewriterText(
+                    textArea, this, List.of(message == null ? "" : message), textWidth);
+            txtMessage = textArea;
+        } else {
+            typewriterText = null;
+            txtMessage = createMessageComponent(message, 14f, textWidth, messageAlignment);
+        }
         add(txtMessage, "w 100%!, ax center, gap 0 0 0 10px, wrap");
 
         int desiredHeight = PANEL_INSET * 2 + txtMessage.getPreferredSize().height + 10;
@@ -125,6 +135,18 @@ public class NodeResultPanel extends SkinnedPanel {
         Dimension size = new Dimension(desiredWidth, desiredHeight);
         setPreferredSize(size);
         setMinimumSize(size);
+    }
+
+    public void startTypewriter() {
+        if (typewriterText != null) {
+            typewriterText.start();
+        }
+    }
+
+    public void stopTypewriter() {
+        if (typewriterText != null) {
+            typewriterText.stop();
+        }
     }
 
     private static Component createMessageComponent(String text, float fontSize, int width,

@@ -1,12 +1,12 @@
 # AGENTS.md
 
-Agent guidance for `D:\Projekte\Forge - Rogue Commander`.
+Agent guidance for this repository.
 
 This repository is a Java 17+ multi-module Maven project (Forge / Rogue Commander fork).
 
 ## Sources of truth
 
-- Primary agent rules are in `CLAUDE.md` at repo root.
+- This `AGENTS.md` file contains the primary agent rules for the repository.
 - `checkstyle.xml` defines enforced lint checks.
 - Build and CI behavior is visible in `.github/workflows/test-build.yaml` and related workflow files.
 - No Cursor rules were found (`.cursor/rules/` and `.cursorrules` are absent).
@@ -21,6 +21,9 @@ dialogue, lore, narrative text, NPC interactions, or flavor text:
 2. Follow its general narrative and style rules.
 3. If the task involves one or more named NPCs, read the corresponding
    NPC rubric file referenced by `story.md` before writing their dialogue.
+4. When the current request primarily creates or revises creative text in
+   repository files, use the `rogue-writing-lector` skill and complete its
+   independent review workflow before responding.
 
 ## High-priority operating rules
 
@@ -124,7 +127,18 @@ Run from repository root unless noted.
 
 - Desktop entry point: `forge.view.Main` in `forge-gui-desktop`.
 - Mobile dev entry point: `forge.app.Main` in `forge-gui-mobile-dev`.
-- If manual IDE launches fail because of Java module access, check `CLAUDE.md` for the current recommended VM `--add-opens` set.
+
+Minimum desktop VM options for production-style launches:
+
+```text
+-Xms768m -XX:+UseParallelGC -Dsun.java2d.xrender=false --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.base/java.text=ALL-UNNAMED --add-opens java.desktop/java.awt.font=ALL-UNNAMED --add-opens java.base/jdk.internal.misc=ALL-UNNAMED --add-opens java.base/sun.nio.ch=ALL-UNNAMED --add-opens java.base/java.nio=ALL-UNNAMED --add-opens java.base/java.math=ALL-UNNAMED --add-opens java.base/java.util.concurrent=ALL-UNNAMED --add-opens java.desktop/java.awt=ALL-UNNAMED --add-opens java.base/java.net=ALL-UNNAMED --add-opens java.desktop/javax.swing=ALL-UNNAMED --add-opens java.desktop/java.beans=ALL-UNNAMED --add-opens java.desktop/javax.swing.border=ALL-UNNAMED -Dio.netty.tryReflectionSetAccessible=true
+```
+
+Recommended desktop VM options for development:
+
+```text
+-Xms2g -Xmx4g -XX:+UseG1GC -Dsun.java2d.xrender=false --add-opens java.base/java.util=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens java.base/java.lang.reflect=ALL-UNNAMED --add-opens java.base/java.text=ALL-UNNAMED --add-opens java.desktop/java.awt.font=ALL-UNNAMED --add-opens java.base/jdk.internal.misc=ALL-UNNAMED --add-opens java.base/sun.nio.ch=ALL-UNNAMED --add-opens java.base/java.nio=ALL-UNNAMED --add-opens java.base/java.math=ALL-UNNAMED --add-opens java.base/java.util.concurrent=ALL-UNNAMED --add-opens java.desktop/java.awt=ALL-UNNAMED --add-opens java.base/java.net=ALL-UNNAMED --add-opens java.desktop/javax.swing=ALL-UNNAMED --add-opens java.desktop/java.beans=ALL-UNNAMED --add-opens java.desktop/javax.swing.border=ALL-UNNAMED -Dio.netty.tryReflectionSetAccessible=true
+```
 
 ## Code style and conventions
 
@@ -196,19 +210,40 @@ These are mandatory when touching Rogue Commander code.
 
 ## Card scripting rules (when editing `forge-gui/res/cardsfolder`)
 
-- Plane static abilities must include `EffectZone$ Command`.
+- Card filenames use lowercase letters and underscores for spaces, with special characters omitted.
+- Preserve Unix (LF) line endings in card scripts.
+- Use empty lines only between multiple card faces.
+- Separate multiple card faces with `ALTERNATE` on its own line and use `AlternateMode:{CardStateName}` on the front face.
+- Keep AI-related SVars immediately before the `Oracle:` line.
+- Treat `Oracle:` text as generated content; implement behavior through the script fields rather than the Oracle line.
+- Avoid explicitly writing default parameters; keep scripts concise.
+- Plane static abilities must include `EffectZone$ Command`; other static effects operating from the Command zone need the same qualification.
 - Plane chaos triggers should use `TriggerZones$ Command`.
-- Zone-qualified `Valid...` SVar tokens must use correct compact syntax (e.g., `ValidGraveyard`).
-- For triggered targeting tied to the triggering card's controller, use the established `TargetingPlayer$ TriggeredCardController` pattern when appropriate.
+- Zone-qualified `Valid...` SVar tokens must use compact syntax followed by a space before the card validity expression, for example `TriggeredCardController$ValidGraveyard Spirit.YouCtrl`.
+- For triggered targeting tied to the triggering card's controller, use the established `TargetingPlayer$ TriggeredCardController | TargetsWithDefinedController$ TriggeredCardController` pattern when appropriate.
 - Keep script files concise and aligned with existing card script conventions.
+
+Detailed scripting references are under `docs/Card-scripting-API/`, including:
+
+- `Card-scripting-API.md`
+- `AbilityFactory.md`
+- `Triggers.md`
+- `Statics.md`
+- `Replacements.md`
+- `Costs.md`
+- `Targeting.md`
+- `Restrictions.md`
 
 ## Platform and environment notes
 
 - Java 17+ is required.
 - Maven 3.8.1+ is required.
+- IntelliJ setup guidance is in `docs/Development/IntelliJ-setup/IntelliJ-setup.md`.
 - Android work must respect current SDK/tooling expectations visible in `.github/workflows/test-android-build.yml`.
-- Be careful with Android API compatibility; apparently available JDK methods may still be unsupported on Android targets.
-- Proguard/tooling details in `CONTRIBUTING.md` and CI files are relevant when touching Android packaging.
+- Be careful with Android API compatibility; apparently available JDK methods may still be unsupported on Android targets (for example, `StringBuilder.isEmpty()`).
+- Current Android tooling expects Build Tools 35.0.0, Android 15 / API 35, and ProGuard 7.6.0; verify CI configuration before changing these versions.
+- ProGuard/tooling details in `CONTRIBUTING.md` and CI files are relevant when touching Android packaging.
+- Mobile platforms use LibGDX; check the established mobile patterns before changing rendering or lifecycle behavior.
 - Art assets added to the project should be copyright-free / public domain per repo guidance.
 
 ## Agent workflow recommendations
@@ -218,7 +253,8 @@ These are mandatory when touching Rogue Commander code.
 - Prefer minimal diffs that solve the exact requested problem.
 - After edits, run only the narrowest verification command the user requested.
 - When summarizing results, include touched file paths and any commands executed.
-- For setup or IDE-specific troubleshooting, `CONTRIBUTING.md` and `CLAUDE.md` contain more detail than this summary file.
+- When drafting commits, follow the conventions used by recent repository commits.
+- For setup or IDE-specific troubleshooting, consult `CONTRIBUTING.md` and the documentation under `docs/Development/`.
 
 ## Environment baseline
 

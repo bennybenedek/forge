@@ -920,7 +920,7 @@ public enum EventEffect implements RogueEffect {
             int result = rollD20();
             if (result == 1) {
                 gainWound(run, ctx);
-                ctx.resultTextOverride = "A hidden plate sinks beneath your boot, and the dungeon answers with pain that lingers long after the darts fall silent.";
+                ctx.resultTextOverride = "A floor plate drops under your boot. Darts strike before you can reach cover.";
                 return;
             }
             if (result <= 9) {
@@ -929,7 +929,7 @@ public enum EventEffect implements RogueEffect {
             }
             if (result <= 19) {
                 addEffectCardAsCarryCard(run, ctx, CarryCardType.ITEM);
-                ctx.resultTextOverride = "Behind a false stone you uncover an old prize, still waiting for hands bold enough to claim it.";
+                ctx.resultTextOverride = "You pry a loose stone from the wall and find a sealed coffer behind it.";
                 return;
             }
 
@@ -1097,7 +1097,7 @@ public enum EventEffect implements RogueEffect {
                 exchangeCount, exchangeCount, replacementCards, null);
         }
     },
-    PLANAR_RIFT_ENERGY("planar_rift_energy", "Planar Rift Energy", "Gain 6 {{Gold}}.",
+    PLANAR_RIFT_ENERGY("planar_rift_energy", "Planar Rift Energy", "Gain 5 {{Gold}}.",
             EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {

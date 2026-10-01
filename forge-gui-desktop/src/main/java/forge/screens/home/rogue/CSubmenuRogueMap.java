@@ -385,19 +385,37 @@ public enum CSubmenuRogueMap implements ICDoc {
 
   void showNodeResultDialog(String title, String message,
                                     List<NodeResultPanel.CardSection> sections) {
+    showDefaultNodeResultDialog(title, message, sections, false);
+  }
+
+  void showEventResultDialog(String message, List<NodeResultPanel.CardSection> sections) {
+    showDefaultNodeResultDialog("Event Completed", message, sections, true);
+  }
+
+  private void showDefaultNodeResultDialog(String title, String message,
+                                           List<NodeResultPanel.CardSection> sections,
+                                           boolean typewriterMessage) {
     boolean hasCardSections = sections.stream().anyMatch(
         section -> section.cards() != null && !section.cards().isEmpty());
     int minHeight = hasCardSections ? 700 : 0;
-    showNodeResultDialog(title, message, sections, 650, minHeight,
-        NodeResultPanel.MessageAlignment.LEFT);
+    showResultDialog(title, message, sections, 650, minHeight,
+        NodeResultPanel.MessageAlignment.LEFT, typewriterMessage);
   }
 
   void showNodeResultDialog(String title, String message,
                             List<NodeResultPanel.CardSection> sections,
                             int minWidth, int minHeight,
                             NodeResultPanel.MessageAlignment messageAlignment) {
+    showResultDialog(title, message, sections, minWidth, minHeight, messageAlignment, false);
+  }
+
+  private void showResultDialog(String title, String message,
+                                List<NodeResultPanel.CardSection> sections,
+                                int minWidth, int minHeight,
+                                NodeResultPanel.MessageAlignment messageAlignment,
+                                boolean typewriterMessage) {
     NodeResultPanel resultPanel = new NodeResultPanel(
-        message, sections, minWidth, minHeight, messageAlignment);
+        message, sections, minWidth, minHeight, messageAlignment, typewriterMessage);
     FScrollPane scrollPane = new FScrollPane(resultPanel, false,
         ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
         ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
@@ -420,7 +438,9 @@ public enum CSubmenuRogueMap implements ICDoc {
 
     FOptionPane optionPane = new FOptionPane(null, title, null, wrapper, List.of("OK"), 0);
     resultPanel.initZoom(optionPane);
+    resultPanel.startTypewriter();
     optionPane.setVisible(true);
+    resultPanel.stopTypewriter();
     optionPane.dispose();
   }
 

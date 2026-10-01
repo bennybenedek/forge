@@ -10,296 +10,289 @@ import java.util.List;
 public enum RogueEvent {
 
     AFTER_DUSK("After Dusk",
-        "Past midnight, you find shelter in a sprawling mansion where every corridor creaks, every candle gutters, and something hungry moves behind the walls.",
+        "Rain drives you into an isolated mansion after midnight. Claw marks score the doors along the upper hall, and something heavy paces inside the walls.",
         List.of(
-            new EventChoice("Turn insane", "The house slips into your thoughts and leaves nightmares behind.",
+            new EventChoice("Turn insane", "By dawn, the house has filled your sleep with nightmares that follow you outside.",
                 EventEffect.AFTER_DUSK_INSANE),
-            new EventChoice("Explore mansion", "You brave the shifting halls and claim a few rooms for yourself.",
+            new EventChoice("Explore mansion", "The mansion's traps draw blood before you reach the front door again.",
                 EventEffect.AFTER_DUSK_EXPLORE),
-            new EventChoice("Feed monsters", "The mansion's oldest horrors are sated and follow in your wake.",
+            new EventChoice("Feed monsters", "You cast every scrap of white magic into the walls. Some ancient horrors, now feeling kind of sated, crawl free and follow you.",
                 EventEffect.AFTER_DUSK_FEED)
         )),
 
     AMBUSH("Ambush!",
-        "Hostile forces materialize from a rift! 'Empty your pockets or prepare to die. Your choice.', their leader says.",
+        "An Omenpath tears open across the Trail. Armed raiders pour through, and their leader levels a blade at you. \"Your Gold or your life, Commander. Choose.\"",
         List.of(
-            new EventChoice("Fight", "You fought your way through.",
+            new EventChoice("Fight", "You drive the ambushers back through the Omenpath.",
                 EventEffect.AMBUSH_FIGHT),
-            new EventChoice("Bribe", "'Good choice, maggot.', the leader says and commands his companions back into the rift.",
+            new EventChoice("Bribe", "The leader pockets your payment. \"Good choice, maggot.\" He orders the raiders back through the Omenpath.",
                 EventEffect.AMBUSH_BRIBE)
         )),
 
     AMONG_MURDERERS("Among Murderers",
-        "Behind tall windows and warm candlelight, every polished smile conceals a motive. " +
-            "Servants whisper, goblets tremble, and somewhere in the manor a killer waits to see who will be blamed.",
+        "A noble lies dead beside an overturned goblet in a candlelit manor. The guests lock the doors while servants search the halls, and each accusation points to a different suspect.",
         List.of(
-            new EventChoice("Investigate", "You study the scene in silence and leave with incriminating evidence.",
+            new EventChoice("Investigate", "You find an object that ties one guest to the murder with no doubt and keep it as evidence.",
                 EventEffect.AMONG_MURDERERS_INVESTIGATE),
-            new EventChoice("Confess", "A hush falls across the room as suspicion settles over your commander and refuses to leave.",
+            new EventChoice("Confess", "You give the guests the confession they want. Word of your suspected guilt follows you into every battle.",
                 EventEffect.AMONG_MURDERERS_CONFESS),
-            new EventChoice("Hire", "A few discreet payments bring sharp-eyed detectives into your service.",
+            new EventChoice("Hire", "After a few discreet payments, the sharp-eyed detectives give their answers before you leave the manor.",
                 EventEffect.AMONG_MURDERERS_HIRE)
         )),
 
     BENDING_DESTINY("Bending Destiny",
-        "At a weathered crossroads shrine, a calm traveler offers guidance for the road ahead. " +
-            "Some wisdom walks beside you, they say. Some wisdom waits in the scroll case.",
+        "At a weathered roadside shrine, a traveler unrolls a set of lesson scrolls beside the fire. They offer to share the road or leave the scrolls in your care.",
         List.of(
-            new EventChoice("Walk together", "A steadfast traveler falls into step beside you.",
+            new EventChoice("Walk together", "The traveler shoulders their pack and joins you as an Ally.",
                 EventEffect.BENDING_WALK),
-            new EventChoice("Study", "You leave with lessons worth keeping close at hand.",
+            new EventChoice("Study", "You pack the lesson scrolls for the road ahead.",
                 EventEffect.BENDING_STUDY)
         )),
 
     BREAKING_THE_OLD_LAWS("Breaking the Old Laws",
-        "A horned figure waits beside a cracked monolith, tracing old commandments with one claw before laughing them into dust. \"All these laws, all these rules... for what?\" the demon asks. \"I think it's time for me to break these chains for you. Just for a little price.\"",
+        "A horned demon waits beside a cracked lawstone, its surface scored where binding runes were cut away. \"All these laws, all these rules... for what?\" the demon asks. \"I think it's time for me to break these chains for you. Just for a little price.\"",
         List.of(
-            new EventChoice("Duplicate", "The demon splits the chosen pattern three times over and leaves the copy's hunger in your hands.",
+            new EventChoice("Duplicate", "The demon cuts your palm and presses the chosen card into the blood. Copies peel away from it.",
                 EventEffect.BREAKING_OLD_LAWS_DUPLICATE),
-            new EventChoice("Black Market", "Forbidden wares slide from hidden shelves while the demon names prices with a grin that promises regret.",
+            new EventChoice("Black Market", "The demon seals the hidden market again when your business is done.",
                 EventEffect.BREAKING_OLD_LAWS_BLACK_MARKET),
-            new EventChoice("Partner Up", "The pact scars your life away, but a second legend answers your command and the old rules fall with them.",
+            new EventChoice("Partner Up", "The pact scars you for life. But a legendary partner answers your command.",
                 EventEffect.BREAKING_OLD_LAWS_PARTNER_UP)
         )),
 
     BURROWED_INTO_TROUBLE("Burrowed into Trouble",
-        "A trader's caravan creaks beneath the weight of iron cages. Squirrels, otters, raccoons, and other small woodland creatures peer out with wide, mournful eyes while the trader smiles and asks what price your pity will bear.",
+        "A trader's caravan creaks beneath the weight of iron cages. Squirrels, otters, raccoons, and other small woodland creatures peer out with wide, mournful eyes while the trader smiles and watches you closely.",
         List.of(
-            new EventChoice("Browse", "You linger among the cages and bargain for a few woodland companions.",
+            new EventChoice("Browse", "The trader bolts the cages after your bargaining ends, then sends the caravan rattling down the Trail.",
                 EventEffect.BURROWED_BROWSE),
-            new EventChoice("Free", "You break the cages open and leave the trader cursing, with wounded pride and grateful legends at your side.",
+            new EventChoice("Free", "You smash the cages and scare the trader away, screaming and sobbing. With wounded pride, you let the cute Woodland leaders follow you.",
                 EventEffect.BURROWED_FREE),
-            new EventChoice("Sell", "The trader eagerly buys every suitable beast you part with.",
+            new EventChoice("Sell", "The trader leads away the creatures you surrender eagerly, laughing a little, and presses a purse into your hand.",
                 EventEffect.BURROWED_SELL)
         )),
 
     CROOKED_COUNSEL("Crooked Counsel",
-        "An old wizard, once a cherished friend, greets you with a smile that no longer reaches his eyes. " +
-            "\"The shadow rises,\" he murmurs. \"Stand against it if you must... but it wouldn't be wise, my friend.\"",
+        "An old wizard, once a cherished friend, blocks the road beneath a black stone tower. \"The shadow rises in the east,\" he murmurs. \"Stand against it if you must... but it wouldn't be wise, my friend.\"",
         List.of(
-            new EventChoice("Rally the Free Peoples", "You assemble a fellowship worthy of the long road ahead.",
+            new EventChoice("Rally the Free Peoples", "You reject the wizard's offer and send word to those still willing to resist.",
                 EventEffect.CROOKED_COUNSEL_FELLOWSHIP),
-            new EventChoice("Join with the Dark Lord", "Dark riders answer your choice, and your old allies fall away.",
+            new EventChoice("Join with the Dark Lord", "Dark riders close around you. Allies that once followed your banner abandon the road.",
                 EventEffect.CROOKED_COUNSEL_NAZGUL),
-            new EventChoice("Keep to your own path", "A quiet will settles over you, and the ring answers only to your hand.",
+            new EventChoice("Keep to your own path", "The ring burns cold against your palm, yours, your precious, as you leave the wizard behind without even looking back.",
                 EventEffect.CROOKED_COUNSEL_RING)
         )),
 
     DISTORTION("Distortion",
-        "Time lurches sideways. Space is deformed. ",
+        "The Trail folds back on itself. Loose stones hang in the air while the Omenpath ahead opens sideways across the ground.",
         List.of(
-            new EventChoice("Embrace", "You let the distortion have its way, and the road ahead comes back wrong.",
+            new EventChoice("Embrace", "The distortion races down the Trail. Side paths collapse, leaving chests where their entrances stood, and a curse marks the Planebounds ahead.",
                 EventEffect.DISTORTION_EMBRACE),
-            new EventChoice("Endure", "You salvage only fading fragments from the coming battles.",
+            new EventChoice("Endure", "You force the Trail straight. A trace of the distortion remains, leaving less to claim from the battles ahead.",
                 EventEffect.DISTORTION_ENDURE)
         )),
 
     DRIFTED_AWAY("Drifted Away",
-        "You come across a crash-site. The pilot lies nearby, hurt and unconscious, while the wreck still hums with fading power.",
+        "Smoke rises from a fresh crash site beside the Trail. The pilot lies unconscious near the wreck, blood soaking through a torn flight suit, while the vehicle's engine still hums.",
         List.of(
-            new EventChoice("Rescue", "The pilot stirs and joins your journey.",
+            new EventChoice("Rescue", "Pulling the pilot clear leaves you bleeding. They wake before sunset and choose to follow you.",
                 EventEffect.DRIFTED_RESCUE),
-            new EventChoice("Steal", "You strip the wreck for whatever still works.",
+            new EventChoice("Steal", "You coax the damaged vehicle back to life and take it with you, leaving the pilot helpless on the road.",
                 EventEffect.DRIFTED_STEAL)
         )),
 
     ETERNAL_CRUSADE("Eternal Crusade",
-        "Smoke rolls through the shattered outpost as armored giants march toward the front lines without a word. Beneath the failing lumen lights, prayers echo through the halls while you hear something wounded and hungry clawing in the dark.",
+        "Armored giants march wordless through a shattered outpost beneath failing lumen lights. Something claws from inside a sealed chamber while soldiers kneel before a throne wired into the wall.",
         List.of(
-            new EventChoice("Secure Specimen", "The containment seals groan, then fail on your terms alone. What emerges is obedient enough for now.",
+            new EventChoice("Secure Specimen", "You open the containment chamber. The Tyranid inside is obedient enough (for now) to lower its claws and follows you.",
                 EventEffect.ETERNAL_CRUSADE_SECURE_SPECIMEN),
-            new EventChoice("Join Space Marines", "You kneel with the crusade, and ceramite discipline hardens every battle still ahead.",
+            new EventChoice("Join Space Marines", "You kneel with the crusade. It accepts your oath and drills you in the Codex Astartes.",
                 EventEffect.ETERNAL_CRUSADE_JOIN_SPACE_MARINES),
-            new EventChoice("Offer Sacrifice", "The throne drinks deep, and in the hush that follows, its ancient engines stir to life beside you.",
+            new EventChoice("Offer Sacrifice", "The throne literally consumes the creatures you chose. Its ancient machinery starts with a low, steady hum.",
                 EventEffect.ETERNAL_CRUSADE_OFFER_SACRIFICE)
         )),
 
     FINAL_PREPARATIONS("Final Preparations",
-        "At the edge of the world, crystal light spills across the city, still glowing as if nothing could ever end. Mercenaries laugh over cheap drinks and weary travelers barter for one last advantage. Every smile carries the quiet knowledge that by morning, you and half these faces may be gone.",
+        "At the edge of the world, crystal light spills across the city, still glowing as if nothing could ever end. Mercenaries laugh over cheap drinks and weary travelers barter for one last advantage. Every smile carries the quiet knowledge that by morning, you and half these folks may be gone.",
         List.of(
-            new EventChoice("Visit Smith", "Steel rings on the anvil late into the night, and you leave the market carrying one last heirloom worthy of the road ahead.",
+            new EventChoice("Visit Smith", "When you step away, the smith banks the forge and closes the stall.",
                 EventEffect.FINAL_PREPARATIONS_VISIT_SMITH),
-            new EventChoice("Learn Summoning", "Old rites and half-forgotten names answer your call, and one great presence agrees to walk beside you.",
+            new EventChoice("Learn Summoning", "You complete the summoning circle. A summoned creature steps across its boundary and waits for your order.",
                 EventEffect.FINAL_PREPARATIONS_LEARN_SUMMONING),
-            new EventChoice("Level Up", "A night's rest, a hot meal, and one last round of hard-earned lessons leave you stronger for what comes next.",
+            new EventChoice("Level Up", "The mercenaries drill you until your legs shake. After a full night's rest, you wake stronger.",
                 EventEffect.FINAL_PREPARATIONS_LEVEL_UP)
         )),
 
     GAMECHANGER("Gamechanger",
-        "A suspicious figure eyes your deck with open contempt. \"Worthless,\" they sneer. " +
-            "\"Once you change your game, you won't need half this library anymore.\"",
+        "A suspicious figure in a patched coat spreads your deck across a roadside table. \"Worthless\" they sneer. \"Let me show you the cards that change games.\"",
         List.of(
-            new EventChoice("Trust blindly", "The figure strips away your old tricks and offers you something far stronger.",
+            new EventChoice("Trust blindly", "The cardsharp sweeps your discarded cards from the table and hands over your replacements.",
                 EventEffect.GAMECHANGER_TRUST),
-            new EventChoice("Choose wisely", "The figure grins and disappears into the shadows.",
+            new EventChoice("Choose wisely", "The figure folds the roadside table and slips into the next Omenpath.",
                 EventEffect.GAMECHANGER_CHOOSE)
         )),
 
     GROUND_ZERO("Ground Zero",
-        "You enter a cratered ruin choked with ash and broken steel. Strange relics lie half-buried in the dust, while twisted survivors skulk through the fallout.",
+        "A rusted vault door juts from a crater beside the Trail. Inside, bobbleheads rattle in a cracked display case beside a humming workbench, while fresh tracks lead back into the irradiated wasteland.",
         List.of(
-            new EventChoice("Loot something S.P.E.C.I.A.L.", "A few old-world lessons make your arsenal feel a little more S.P.E.C.I.A.L.",
+            new EventChoice("Loot something S.P.E.C.I.A.L.", "The bobbleheads knock together as you carry them out of the vault.",
                 EventEffect.GROUND_ZERO_SPECIAL),
-            new EventChoice("Use Workbench", "You salvage enough parts to restore a few obedient machines.",
+            new EventChoice("Use Workbench", "The workbench sparks to life. Repaired robots climb down and follow you into the wasteland.",
                 EventEffect.GROUND_ZERO_REPAIR),
-            new EventChoice("Explore Wasteland", "The wasteland's radiation leaves part of your army forever changed.",
+            new EventChoice("Explore Wasteland", "Radioactive dust settles over the tracks behind you. Anything that followed you into the wasteland returns changed.",
                 EventEffect.GROUND_ZERO_MUTATE)
         )),
 
     INFAMOUS_JUNCTION("Once Upon a Time at an Infamous Junction",
-        "A hard little town squats at the edge of the badlands, all splintered porches, swinging saloon doors, and watchful eyes behind dusty windows. " +
-            "The posters are fresh, the sheriff is outnumbered, and every soul in town looks like they've already chosen a side.",
+        "Wanted posters cover the walls of a badlands town. The sheriff watches the bank from an empty street while a rancher offers payment for cattle lost in the scrub.",
         List.of(
             new EventChoice("Raise a Gang", "By sundown your crew prepared for life as outlaws, ready to take what's rightfully theirs.",
                 EventEffect.INFAMOUS_JUNCTION_RAISE_GANG),
-            new EventChoice("Rob the Local Bank", "The alarm comes late, the horses come fast, and by the time the town gives chase you're already riding richer.",
+            new EventChoice("Rob the Local Bank", "You ride out under gunfire with a torn coat and the bank's strongbox strapped behind your saddle.",
                 EventEffect.INFAMOUS_JUNCTION_ROB_BANK),
-            new EventChoice("Rope the Lost Cattle", "Out in the scrub you find more than strays, and one steady mount chooses to follow you back.",
+            new EventChoice("Rope the Lost Cattle", "A sure-footed animal follows your rope back to town, then refuses to leave your side.",
                 EventEffect.INFAMOUS_JUNCTION_ROPE_CATTLE)
         )),
 
     LOST_NOT_FORGOTTEN("Lost, But not Forgotten",
-        "Torchlight gutters in the dungeon's stale air as the corridors close around you, slick with age, moss, and old blood. Somewhere ahead, chains rattle, stones shift, and the dark promises either treasure or a grave no one will remember.",
+        "Fresh boot prints cross the dust ahead of your torch in the dungeon. Voices carry from a side passage, while a narrow stairway descends beyond the edge of the light.",
         List.of(
-            new EventChoice("Stumble Into Party", "Four seasoned adventurers emerge from the gloom as though they had been tracking your steps for miles.",
+            new EventChoice("Stumble Into Party", "An adventuring party steps from the side passage. After a wary exchange, they agree to travel with you.",
                 EventEffect.LOST_NOT_FORGOTTEN_PARTY),
-            new EventChoice("Level Up", "By torchlight and hard-won instinct, you refine a few more tricks fit for the depths below.",
+            new EventChoice("Level Up", "A veteran adventurer drills you beside the dying torch. When the lesson ends, they pocket their fee and leave.",
                 EventEffect.LOST_NOT_FORGOTTEN_LEVEL_UP),
-            new EventChoice("Venture deeper", "You press onward into the dark, where every chamber holds either fortune or ruin.",
+            new EventChoice("Venture deeper", "You descend until the last torchlit step disappears overhead.",
                 EventEffect.LOST_NOT_FORGOTTEN_VENTURE_DEEPER)
         )),
 
     LOST_CONNECTION("Lost",
-        "Your connection to your spark flickers. You reach for your Commander's presence, but the link has gone cold.",
+        "The Omenpath tears at your body. Your hands turn transparent, and each step leaves a fading copy behind you.",
         List.of(
-            new EventChoice("Depart", "Your Commander disappeared into the void.",
+            new EventChoice("Depart", "You let the distortion pull you from the Trail. Your forces continue without you until you return.",
                 EventEffect.LOST_DEPART),
-            new EventChoice("Persist", "Your Commander holds on, but feels diminished.",
+            new EventChoice("Persist", "You force yourself to remain. The distortion leaves a weakness that does not fade.",
                 EventEffect.LOST_PERSIST),
-            new EventChoice("Replace", "A new legend answers your call and takes command of your deck.",
+            new EventChoice("Replace", "A new legend answers the call, to continue what you couldn't.",
                 EventEffect.LOST_REPLACE)
         )),
 
     MERCHANT_CARAVAN("Merchant Caravan",
-        "A caravan of planar merchants sets up shop.",
+        "A line of painted wagons pulls off the Trail and unfolds into a roadside market. Merchants raise canvas awnings over crates from distant planes.",
         List.of(
-            new EventChoice("Browse Their Wares", "The merchant thanks you for the business.",
+            new EventChoice("Browse Their Wares", "The merchants fold their awnings when you step away, and the caravan returns to the Trail.",
                 EventEffect.CARAVAN_BROWSE),
-            new EventChoice("Rob Them", "You take what you want by force.",
+            new EventChoice("Rob Them", "The merchants fight back. When the wagons retreat, their strongbox is in your hands and blood runs down your sleeve.",
                 EventEffect.CARAVAN_ROB)
         )),
 
     NEON_LID("Neon-Lid",
-        "Neon rain hisses across Kamigawa's midnight streets while shrine lights shimmer through the smog. Ancient vows and chrome temptations call you toward three different paths.",
+        "Rain runs down the neon signs of Towashi. Steel rings in an alley below the rooftops, and incense drifts from a shrine wedged between chrome towers.",
         List.of(
-            new EventChoice("Path of the Samurai", "You trade flesh for discipline and rebuild your deck around the blade.",
+            new EventChoice("Path of the Samurai", "At dawn, the dojo master closes the doors and bows you back onto the street.",
                 EventEffect.NEON_LID_SAMURAI),
-            new EventChoice("Path of the Ninja", "You vanish into the alleys and return deadlier than ever before.",
+            new EventChoice("Path of the Ninja", "The rooftop trials leave scars. The clan teaches you how to strike unseen.",
                 EventEffect.NEON_LID_NINJA),
-            new EventChoice("Path of Inner Peace", "You follow the glow of the shrines and let their wisdom settle over you.",
+            new EventChoice("Path of Inner Peace", "You let the shrine's wisdom settle over you as you step back into the rain.",
                 EventEffect.NEON_LID_SHRINE)
         )),
 
     ON_THE_EDGE("On the Edge",
-        "A city-sized spacecraft drifts ahead of you in the black, its hull lit by running lights that still burn despite the silence. " +
-            "Scorched docking rings, torn cargo fins, and a thousand dead windows make it look abandoned, but the ship is still moving just enough to feel dangerous.",
+        "A city-sized spacecraft drifts beyond the Omenpath, its running lights still blinking across a scarred hull. An open docking bay passes close enough to reach before the ship slides back into the dark.",
         List.of(
             new EventChoice("Hijack", "You catch the drifting craft before it shears away and make it your own.",
                 EventEffect.ON_THE_EDGE_HIJACK),
-            new EventChoice("Board", "You invoke the ship's still functioning hyperdrive come back out somewhere else on the route entirely.",
+            new EventChoice("Board", "You invoke the ship's still functioning hyperdrive and come back out somewhere else on the route entirely.",
                 EventEffect.ON_THE_EDGE_BOARD),
-            new EventChoice("Scavenge", "The wreck is full of spent frames and stubborn machine minds, and a few still wake when you pry them loose.",
+            new EventChoice("Scavenge", "Sharp hull plates cut through your gear before you make it back to the airlock.",
                 EventEffect.ON_THE_EDGE_SCAVENGE)
         )),
 
     PLANAR_EXCHANGE("Planar Exchange",
-        "A shimmering portal offers to reshape your arsenal.",
+        "A circular portal opens beside the Trail. Beyond it, unfamiliar relics and sealed scrolls cover a stone counter beside an empty offering tray.",
         List.of(
-            new EventChoice("Step Through", "The planes shift your deck...",
+            new EventChoice("Make the Exchange", "The portal takes the cards you chose and drops unfamiliar replacements at your feet.",
                 EventEffect.PLANAR_EXCHANGE_EXCHANGE),
             new EventChoice("Stay Put", "You decide not to risk it.",
                 EventEffect.NOTHING)
         )),
 
     PLANAR_RIFT("Planar Rift",
-        "A rift in the planes tears open before you.",
+        "A jagged rift splits the air beside the Trail. Heat rolls from its center while glassy residue hardens along the edges.",
         List.of(
-            new EventChoice("Enter the Rift", "The rift's energy empowers your Commander!",
+            new EventChoice("Enter the Rift", "You step through. Rift energy settles into your muscles and remains, even after the tear closes.",
                 EventEffect.PLANAR_RIFT_BOOST),
-            new EventChoice("Harvest the Energy", "You siphon raw mana from the rift.",
+            new EventChoice("Harvest the Energy", "You scrape the hardened residue into a pouch and sell it before it cools.",
                 EventEffect.PLANAR_RIFT_ENERGY)
         )),
 
     PLANAR_TRIBUTE("Planar Tribute",
-        "The planes demand tribute.",
+        "An altar of fused stone blocks the Trail. Its empty slots flare whenever you draw near. It seems to demand something before letting you pass.",
         List.of(
-            new EventChoice("Sacrifice", "The planes took what is yours.",
+            new EventChoice("Sacrifice", "The altar swallows the cards you chose and sinks back into the road.",
                 EventEffect.PLANAR_TRIBUTE_REMOVE),
-            new EventChoice("Give and take", "The planes reshaped your arsenal.",
+            new EventChoice("Give and take", "After the exchange, unfamiliar cards lie where the altar stood.",
                 EventEffect.PLANAR_TRIBUTE_REPLACE)
         )),
 
     SATCHEL("Satchel",
-        "Hidden beneath a crumbled pillar, you find a satchel bound in leather; remnants of a Planeswalker who walked here before you.",
+        "A leather satchel lies beneath a fallen pillar, its clasp stamped with a Planeswalker symbol. Dust covers everything except the handle.",
         List.of(
-            new EventChoice("Open the Satchel", "You find a hidden chest.",
+            new EventChoice("Open the Satchel", "You return to the Trail after opening the hidden chest.",
                 EventEffect.SATCHEL_OPEN)
         )),
 
     STREET_OF_CONCEALMENT("Street of Concealment",
-        "Capenna...again. Neon glows through the rain while brass horns mutter somewhere above the avenue, and you cannot say what dragged you back into this city of polished towers and rotten basements. In a narrow cellar behind a shuttered club, a devil in a sharp coat offers a contract with a smile too patient to trust.",
+        "Rain beads on the brass doors of a shuttered club while brass horns mutter somewhere. Capenna....again... In the cellar of the club, a devil in a tailored coat slides a new contract across the table. \"Missed me?\" he says with a grin.",
         List.of(
-            new EventChoice("Accept", "The ink dries, the devil vanishes, and your commander slips beyond every guard's grasp at the cost of ever standing in anyone's way again.",
+            new EventChoice("Accept", "The devil signs beneath your name. Your forces slip through every battle line and lose the power to hold one.",
                 EventEffect.STREET_OF_CONCEALMENT_ACCEPT),
-            new EventChoice("Decline", "You leave the contract unsigned and climb back into Capenna's wet, watchful streets.",
+            new EventChoice("Decline", "You leave the contract unsigned and climb back to the rain-soaked avenue.",
                 EventEffect.NOTHING)
         )),
 
     STREET_OF_GREED("Street of Greed",
-        "Not this again. Capenna's skyline glitters like a promise while the gutters below swallow rain, blood, and every bad decision the city ever sold. In the back room of a cellar casino, a devil waits beside stacked chips and unsigned paper, already certain you came for the contract.",
+        "Coins cover a roulette table in the back room of a New Capenna casino. Not this again... A devil taps the contract beside them. \"Well if it isn't my favourite Teferi puppet.\" they say. \"Only the best contracts for you, my friend.\"",
         List.of(
-            new EventChoice("Accept", "Wealth floods your hands at once, but from then on every creature you command arrives bent beneath the weight of your bargain.",
+            new EventChoice("Accept", "You put your signature. From then on, every attempt to restore your strength fails.",
                 EventEffect.STREET_OF_GREED_ACCEPT),
-            new EventChoice("Decline", "You leave the contract on the table and step back into Capenna's hungry night.",
+            new EventChoice("Decline", "You push the contract back across the table and leave the casino for good.",
                 EventEffect.NOTHING)
         )),
 
     STREET_OF_FORCEFULNESS("Street of Forcefulness",
-        "How did you get here? Capenna never answers, only ushers you beneath its bright skyline and into another room where the air tastes of ink, smoke, and old debts. In a private office behind the club floor, a devil nudges a contract toward you and calls brute certainty a virtue worth buying.",
+        "How...how do you always end up here?? Behind a New Capenna fight club, a devil lays a contract across a scarred desk. \"Surprise. It's your favourite devil offering your favourite deals.\"",
         List.of(
-            new EventChoice("Accept", "The pact hardens your hand and strips away every softer mercy that might have sustained you later.",
+            new EventChoice("Accept", "The devil stamps the contract, and your spells come more easily.",
                 EventEffect.STREET_OF_FORCEFULNESS_ACCEPT),
-            new EventChoice("Decline", "You leave the contract unsigned and let Capenna keep its promise to someone else.",
+            new EventChoice("Decline", "You leave the contract on the desk and walk back through the club.",
                 EventEffect.NOTHING)
         )),
 
     SHRINE("Shrine",
-        "A crumbling shrine pulses faintly with restorative energy. As you kneel, you immediately feel its soothing powers.",
+        "A crumbling shrine pulses faintly beside the Trail. Near its base, warm light escapes through symbols cut too low to read while standing.",
         List.of(
-            new EventChoice("Kneel", "You discover a hidden Sanctum.",
+            new EventChoice("Kneel", "You leave the hidden Sanctum as the shrine wall seals behind you.",
                 EventEffect.SHRINE_KNEEL)
         )),
 
     TRAPPED_IN_THE_LAIR("Trapped in the Lair",
-        "You stumble through a tunnel of slick black flesh and jagged bone, only to realize the lair is breathing around you. " +
-            "Somewhere deeper inside, something enormous shifts in the dark, and every path forward feels like a step into its hunger.",
+        "You stumble into a dark tunnel as black flesh closes across the passage behind you. Ahead, a massive beast prowls among clusters of living tissue rooted in the floor.",
         List.of(
-            new EventChoice("Slay", "You carve your way out through blood and ruin, carrying what the beast had already devoured.",
+            new EventChoice("Slay", "The beast's claws tear into you before it falls. You butcher the carcass and carry its meat back to the Trail.",
                 EventEffect.TRAPPED_IN_THE_LAIR_SLAY),
-            new EventChoice("Tame", "You lower your guard for a heartbeat, and one ancient terror answers with wary obedience.",
+            new EventChoice("Tame", "The beast wounds you as you approach. You hold your ground until it lets you rest a hand against its muzzle, then it follows you from the lair.",
                 EventEffect.TRAPPED_IN_THE_LAIR_TAME),
-            new EventChoice("Examine", "You study the lair's pulsing growths and leave forever altered by what they reveal.",
+            new EventChoice("Examine", "You press a sample from the tunnel floor against your arm. It burrows beneath your skin, and the creatures you summon can merge with other bodies.",
                 EventEffect.TRAPPED_IN_THE_LAIR_EXAMINE)
         )),
 
     WANDERING_HEALER("Wandering Healer",
-        "A mysterious healer offers their services... for a price.",
+        "A healer has pitched a canvas tent beside the Trail. Bottles clink inside a wooden case as they inspect your injuries and name their price.",
         List.of(
-            new EventChoice("Receive Healing Potion", "You gulp the aweful tasting but strangely empowering potion down.",
+            new EventChoice("Receive Healing Potion", "The potion tastes disgustingly of rust and bitter roots. Warmth returns to your limbs.",
                 EventEffect.HEALER_POTION),
-            new EventChoice("Treat Wounds", "The healer mends your wounds.",
+            new EventChoice("Treat Wounds", "The healer cleans each wound and binds it with silver-threaded cloth.",
                 EventEffect.HEALER_TREAT_WOUNDS),
-            new EventChoice("Strengthen", "The healer nodds confidently after being done with your fortification.",
+            new EventChoice("Strengthen", "The healer traces a ward across your skin. Once the glow fades, you shoulder your gear without its usual strain.",
                 EventEffect.HEALER_STRENGTHEN),
             new EventChoice("Decline", "You wave the healer away.",
                 EventEffect.NOTHING)
