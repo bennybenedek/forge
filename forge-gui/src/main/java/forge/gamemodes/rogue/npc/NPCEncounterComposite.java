@@ -26,7 +26,8 @@ public enum NPCEncounterComposite {
         TyvarEncounter.values(),
         GontiEncounter.values(),
         NarsetEncounter.values(),
-        HenzieEncounter.values()
+        HenzieEncounter.values(),
+        TeferiEncounter.values()
     );
 
     private static NPCEncounter[] concat(NPCEncounter[]... arrays) {
@@ -56,6 +57,15 @@ public enum NPCEncounterComposite {
             }
         }
         return new ArrayList<>(encounterPerNpc.values());
+    }
+
+    public List<NPCContext> onBetweenRuns(RogueMetaProgress progress) {
+        List<NPCContext> results = new ArrayList<>();
+        for (NPCEncounter enc : getEncountersForCurrentLevel(progress)) {
+            NPCContext ctx = enc.onBetweenRuns(progress);
+            if (ctx != null) results.add(ctx);
+        }
+        return results;
     }
 
     public List<NPCContext> onAfterMatch(RogueRun run) {

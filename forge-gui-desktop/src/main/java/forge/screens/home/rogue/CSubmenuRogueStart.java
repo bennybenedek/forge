@@ -98,6 +98,7 @@ public enum CSubmenuRogueStart implements ICDoc {
     SwingUtilities.invokeLater(() -> {
       view.getBtnBeginRun().requestFocusInWindow();
       showTutorials();
+      showBetweenRunNpcDialogs();
     });
   }
 
@@ -126,6 +127,13 @@ public enum CSubmenuRogueStart implements ICDoc {
     }
     if (highestDescensionWon >= 7) {
       RogueTutorialHelper.showIfNotSeen(RogueTutorial.DESCENSION_LEVEL_7_WIN);
+    }
+  }
+
+  private void showBetweenRunNpcDialogs() {
+    RogueMetaProgress progress = RogueMetaProgress.getInstance();
+    for (NPCContext ctx : NPCEncounterComposite.INSTANCE.onBetweenRuns(progress)) {
+      new NPCDialog(ctx, new ChoiceRerollContext()).show();
     }
   }
 

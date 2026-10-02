@@ -6,6 +6,7 @@ import forge.gamemodes.rogue.npc.NPCEncounter;
 import forge.gamemodes.rogue.npc.GontiEncounter;
 import forge.gamemodes.rogue.npc.HenzieEncounter;
 import forge.gamemodes.rogue.npc.NarsetEncounter;
+import forge.gamemodes.rogue.npc.TeferiEncounter;
 import forge.gamemodes.rogue.npc.TyvarEncounter;
 import forge.toolbox.FComboBox;
 import forge.toolbox.FLabel;
@@ -26,7 +27,7 @@ import net.miginfocom.swing.MigLayout;
 public class NPCProgressDialog {
 
   private static final int DIALOG_WIDTH = 820;
-  private static final int DIALOG_HEIGHT = 280;
+  private static final int DIALOG_HEIGHT = 330;
   private static final int SAVE_OPTION = 0;
 
   private final MainPanel panel;
@@ -106,7 +107,7 @@ public class NPCProgressDialog {
       case GONTI -> GontiEncounter.values();
       case NARSET -> NarsetEncounter.values();
       case HENZIE -> HenzieEncounter.values();
-      case TEFERI -> new NPCEncounter[0];
+      case TEFERI -> TeferiEncounter.values();
     };
     if (encounters.length == 0) {
       return List.of();

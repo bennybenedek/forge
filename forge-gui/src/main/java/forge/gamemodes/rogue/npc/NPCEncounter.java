@@ -13,7 +13,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * Interface for NPC encounters that trigger at specific points during a Rogue Commander run.
+ * Interface for NPC encounters that trigger at specific points during or between Rogue Commander runs.
  * Each trigger returns an NPCContext if the NPC wants to interact, or null to skip.
  */
 public interface NPCEncounter {
@@ -72,6 +72,9 @@ public interface NPCEncounter {
         RogueCommanderAchievements.instance.evaluateNpcBoonUnlockAchievements(p);
         RogueCommanderAchievements.instance.evaluateUpgradeAchievements(p);
     }
+
+    /** Fired between runs after meta-progression has been loaded. Return non-null to show NPC dialog. */
+    default NPCContext onBetweenRuns(RogueMetaProgress progress) { return null; }
 
     /** Fired after each match. Return non-null to show NPC dialog. */
     default NPCContext onAfterMatch(RogueRun run) { return null; }
