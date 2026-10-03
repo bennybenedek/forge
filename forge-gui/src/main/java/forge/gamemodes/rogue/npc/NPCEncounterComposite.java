@@ -9,9 +9,11 @@ import forge.gamemodes.rogue.effect.SanctumContext;
 import forge.util.MyRandom;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Dispatcher that resolves active NPC encounters based on progression level.
@@ -27,7 +29,8 @@ public enum NPCEncounterComposite {
         GontiEncounter.values(),
         NarsetEncounter.values(),
         HenzieEncounter.values(),
-        TeferiEncounter.values()
+        TeferiEncounter.values(),
+        TeferiOptionalEncounter.values()
     );
 
     private static NPCEncounter[] concat(NPCEncounter[]... arrays) {
@@ -48,6 +51,7 @@ public enum NPCEncounterComposite {
     public List<NPCEncounter> getEncountersForCurrentLevel(RogueMetaProgress progress) {
         Map<NPC, NPCEncounter> encounterPerNpc = new HashMap<>();
         for (NPCEncounter npcEncounter : ALL_ENCOUNTERS) {
+            if (npcEncounter instanceof NPCOptionalEncounter) continue;
             NPC npc = npcEncounter.getNpc();
             int playerNpcLevel = progress.getNPCLevel(npc.id);
             if (playerNpcLevel < npcEncounter.getRequiredLevel()) continue;
@@ -61,9 +65,21 @@ public enum NPCEncounterComposite {
 
     public List<NPCContext> onBetweenRuns(RogueMetaProgress progress) {
         List<NPCContext> results = new ArrayList<>();
+        Set<NPC> npcsWithContext = EnumSet.noneOf(NPC.class);
         for (NPCEncounter enc : getEncountersForCurrentLevel(progress)) {
             NPCContext ctx = enc.onBetweenRuns(progress);
-            if (ctx != null) results.add(ctx);
+            if (ctx != null) {
+                results.add(ctx);
+                npcsWithContext.add(enc.getNpc());
+            }
+        }
+        for (NPCEncounter enc : ALL_ENCOUNTERS) {
+            if (!(enc instanceof NPCOptionalEncounter) || npcsWithContext.contains(enc.getNpc())) continue;
+            NPCContext ctx = enc.onBetweenRuns(progress);
+            if (ctx != null) {
+                results.add(ctx);
+                npcsWithContext.add(enc.getNpc());
+            }
         }
         return results;
     }

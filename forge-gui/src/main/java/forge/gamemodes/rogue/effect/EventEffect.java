@@ -454,7 +454,7 @@ public enum EventEffect implements RogueEffect {
         }
     },
     DISTORTION_EMBRACE("distortion_embrace", "Distortion - Embrace",
-        "Turn all uncompleted future {{Side Node}}s into {{Chest}} Nodes. All {{Planebound}}s of the next 2 rows gain 2 additional instances of {{Cursed}}.",
+        "Turn all uncompleted future {{Side Node}}s into {{Chest}} Nodes. All {{Planebound}}s of the next 2 rows gain an additional instance of {{Cursed}}.",
         EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
@@ -470,7 +470,7 @@ public enum EventEffect implements RogueEffect {
                     && !(node instanceof NodeChest),
                 NodeChest::new);
             run.getPath().updateNextPlaneboundRows(currentRow, 2,
-                node -> node.setCursedCount(node.getCursedCount() + 2));
+                node -> node.setCursedCount(node.getCursedCount() + 1));
         }
     },
     DISTORTION_ENDURE("distortion_endure", "Distorted Reality",

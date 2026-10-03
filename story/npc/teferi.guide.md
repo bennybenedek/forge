@@ -83,17 +83,11 @@ Subjects involving Phyrexia, Zhalfir, major failure, the safety of others, or ex
 
 Example:
 
-"You're alive.
-
-Good.
-
-That saves me a considerable amount of work."
+"You're alive. Good. That saves me a considerable amount of work."
 
 Another:
 
-"I thought the Aether would be beyond their reach.
-
-Well, I was wrong."
+"I thought the Aether would be beyond their reach. Well, I was wrong."
 
 ---
 

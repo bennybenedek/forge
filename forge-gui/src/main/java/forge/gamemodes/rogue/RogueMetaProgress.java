@@ -62,6 +62,9 @@ public class RogueMetaProgress {
     // NPC progression levels (npcId -> level)
     private Map<String, Integer> npcLevels;
 
+    // Optional NPC encounters that have already been delivered
+    private Set<String> seenNPCEncounters;
+
     // Unlock notification tracking - which unlocks have been shown to the player
     private Set<String> notifiedCommanderUnlocks;
 
@@ -92,6 +95,9 @@ public class RogueMetaProgress {
 
         // Initialize tutorial tracking
         seenTutorials = new HashSet<>();
+
+        // Initialize optional NPC encounter tracking
+        seenNPCEncounters = new HashSet<>();
     }
 
     /**
@@ -130,6 +136,7 @@ public class RogueMetaProgress {
         activeAetherEffects = new HashSet<>();
         notifiedCommanderUnlocks = new HashSet<>();
         npcLevels = new HashMap<>();
+        seenNPCEncounters = new HashSet<>();
 
         // Reset run history
         runHistory = new ArrayList<>();
@@ -929,6 +936,18 @@ public class RogueMetaProgress {
         }
         RogueCommanderAchievements.instance.evaluateUpgradeAchievements(this);
         save();
+    }
+
+    public boolean hasSeenNPCEncounter(String encounterId) {
+        if (seenNPCEncounters == null) seenNPCEncounters = new HashSet<>();
+        return seenNPCEncounters.contains(encounterId);
+    }
+
+    public void markNPCEncounterSeen(String encounterId) {
+        if (seenNPCEncounters == null) seenNPCEncounters = new HashSet<>();
+        if (seenNPCEncounters.add(encounterId)) {
+            save();
+        }
     }
 
     // ==================== Persistence ====================
