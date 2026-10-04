@@ -13,21 +13,20 @@ public enum TeferiEncounter implements NPCEncounter {
         @Override
         protected List<String> getStoryTextChunks() {
             return List.of(
-                "A dark-skinned man in blue robes looks up from a dismantled machine. The tool in his hand hangs forgotten for a moment; " +
-                    "then he sets it down and comes to meet you, smiling. \"Commander. You came.\" He offers his " +
-                    "hand. \"I'm Teferi. Forgive me, I keep forgetting we haven't met.\"",
+                "A dark-skinned man in blue robes looks up from a dismantled machine, slightly surprised. He sets down his tool and comes to meet you, smiling.\n"
+                    + "\"Commander. You came.\" He offers his hand. \"I'm Teferi. Forgive me, I keep forgetting we haven't met.\"",
                 "\"Come in. Welcome to the Aether.\" He leads you past a broken archway, keeping to the cleared " +
                     "side of the passage. \"I built it outside ordinary space and time. Thought I could give people " +
                     "somewhere the phyrexian invasion wouldn't reach them.\" He stops beside a scar in the stone. " +
                     "\"Well, I was wrong. The invasion is over, but the Aether was heavily damaged despite fighting the Phyrexians off from here. Don't worry. I think we can put the place back together.\"",
-                "\"But to be honest, that's not why I asked you here. I'm worried about the Omenpaths, the passages " +
-                    "that let us travel between worlds. The leaders of those worlds are turning on people who " +
-                    "cross their lands, and the paths themselves are behaving...strangely. " +
-                    "I've found the same disturbances along Omenpaths leading to entirely different worlds.. I wanted to see " +
+                "\"But to be honest, that's not why I asked you here. I'm deeply concerned about the Omenpaths, the passages " +
+                    "that let us travel between worlds. The leaders of those worlds are suddenly becoming hostile, turning on anyone who " +
+                    "crosses their lands, and the paths themselves are behaving...strangely. " +
+                    "I've found...disturbances along many Omenpaths leading to entirely different worlds.. I wanted to see " +
                     "where this was leading. So I looked ahead.\"",
                 "Teferi turns to face you. \"I've seen streets full of bodies, Commander. People who survived " +
                     "the invasion, killed outside their own homes. Whole populations of the Multiverse wiped out. I kept looking for a future where they lived. " +
-                    "And I found some. You kept turning up in them.\" He lets you take that in. \"Now you know why " +
+                    "And I found one. You kept turning up in it.\" He lets you take that in. \"Now you know why " +
                     "I'm glad to see you. I don't know what you did to help those people. That's something we'll " +
                     "have to work out together.\"",
                 "\"We can start with the leaders of the Planes, the ones we call Planebounds. Follow the Trail of Omenpaths " +
@@ -247,8 +246,8 @@ public enum TeferiEncounter implements NPCEncounter {
                     "You've given people a chance to live without facing another invasion.\" He releases " +
                     "your hand and looks around the Aether. \"You still have a home here, Commander. " +
                     "I think I'd like to spend tomorrow fixing something.\"",
-                "Oh, and by the way, this concludes the current state of the game. Our story is not finished though. Rogue Commander is still in development, with more updates and content planned, \" +\n"
-                    + "\"including Challenges and a second Trail beyond the final boss. Stay tuned for what comes next. Thank you so much for playing and supporting the game!!\""
+                "\"Oh, and by the way, this concludes the current state of the game. Our story is not finished though. Rogue Commander is still in development, with more updates and content planned, "
+                    + "including Challenges and a second Trail beyond the final boss. Stay tuned for what comes next.\nThank you so much for playing and supporting the game!!\""
             );
         }
     };

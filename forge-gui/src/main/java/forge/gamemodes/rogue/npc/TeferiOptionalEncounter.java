@@ -8,7 +8,7 @@ import java.util.List;
  */
 public enum TeferiOptionalEncounter implements NPCOptionalEncounter {
 
-    FIRST_RUN_LOSS("teferi:first_run_loss") {
+    TEMPORAL_ANCHOR("teferi:temporal_anchor") {
         @Override
         public List<String> getStoryTextChunks() {
             return List.of(
@@ -29,20 +29,41 @@ public enum TeferiOptionalEncounter implements NPCOptionalEncounter {
             return progress.getTotalRunsCompleted() > progress.getTotalRunsWon();
         }
     },
-    SECOND_RUN_LOSS("teferi:second_run_loss") {
+    CODEX_AND_HISTORY("teferi:codex_and_history") {
         @Override
         public List<String> getStoryTextChunks() {
             return List.of(
                 "Back already? I meant...keep it up, Commander. You're getting stronger every second that I am watching you.",
                 "Oh, and did you know that I try to keep track of your memories ad findings during your Runs?\n"
-                + "Open the 'Codex' to view and reset your overall game progress, stats, unlocked cards and tutorials.\n"
-                + "View all your past Runs and Rogue Decks in the 'History'."
+                    + "Open the 'Codex' to view and reset your overall game progress, stats, unlocked cards and tutorials.\n"
+                    + "View all your past Runs and Rogue Decks in the 'History'."
             );
         }
 
         @Override
         public boolean isTriggerConditionMet(RogueMetaProgress progress) {
             return progress.getTotalRunsCompleted() > progress.getTotalRunsWon() + 1;
+        }
+    },
+    AUTO_UPDATE("teferi:auto_update") {
+        @Override
+        public List<String> getStoryTextChunks() {
+            return List.of(
+                "Oh, before you leave again, Commander. Just a quick reminder that you can (and probably should) check 'Content Downloaders' (on the left) and then select 'Check for Updates' from time to time.\n"
+                    + "That way you won't miss any new features, fixes and content.",
+                "Make sure 'Auto updater' in 'Preferences' is set to 'Snapshot.\n'"
+                    + "Then return to 'Content Downloaders' and select 'Check for Updates'. If a new version is " +
+                    "available, choose 'Update Now'. Skip all Proxy settings unless you know what you are doing. Press 'Start'. Once the download finishes, confirm with 'OK'. Forge will " +
+                    "close and launch the installer.",
+                "In the installer, just tell the game where you want to put the game files. You probably just want to choose the folder where your game is located at the moment as well.\n"
+                    + "That's it, the new Game version will install and you can open it as usual.",
+                "That...probably sounded more complicated than it is..."
+            );
+        }
+
+        @Override
+        public boolean isTriggerConditionMet(RogueMetaProgress progress) {
+            return progress.getTotalRunsCompleted() > progress.getTotalRunsWon() + 2;
         }
     };
 
