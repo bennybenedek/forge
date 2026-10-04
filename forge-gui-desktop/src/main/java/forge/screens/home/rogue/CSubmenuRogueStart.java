@@ -97,8 +97,8 @@ public enum CSubmenuRogueStart implements ICDoc {
     loadAvailableCommanders();
     SwingUtilities.invokeLater(() -> {
       view.getBtnBeginRun().requestFocusInWindow();
-      showTutorials();
       showBetweenRunNpcDialogs();
+      showTutorials();
     });
   }
 
@@ -110,10 +110,6 @@ public enum CSubmenuRogueStart implements ICDoc {
     // Show RUN_COMPLETE tutorial after first completed run
     if (progress.getTotalRunsCompleted() > 0) {
       RogueTutorialHelper.showIfNotSeen(RogueTutorial.RUN_COMPLETE);
-    }
-
-    if (progress.getTotalRunsWon() > 0) {
-      RogueTutorialHelper.showIfNotSeen(RogueTutorial.FIRST_RUN_WIN);
     }
 
     // Show Descension tutorial once when it becomes unlocked

@@ -25,74 +25,71 @@ public enum RogueTutorial {
 
   MAP_NAVIGATION(
       "Map Navigation",
-      "Before you lies the Omenpath. The map shows your path through the Run (starting from top to bottom). Each Run will be a different path, with different opponents, encounters and locations.",
-      "Choose your route carefully, some might be harder than others. Each Path is divided into rows, alternating between ones where you will battle an opponent on a Plane-node, and ones that offer healing, bazaars, and other encounters via Side-nodes.",
+      "Before you lies the Trail I found for you. A network of so called 'Omenpaths', letting you travel between Planes. Yes, even without a Spark. Thank you, Phyrexian Invasion.Each Run will be a different Trail, with different opponents, encounters and locations.",
+      "Choose your route through the Trail carefully, some might be harder than others. Each Trail is divided into rows, alternating between ones where you will battle an opponent on a Plane-node, and ones that offer healing, bazaars, and other encounters via Side-nodes.",
       "Whenever you complete a node, you unlock the next row of your path. If there is more than one accessible node in that row, you can select your next destination.\n"
           +
-          "The more Plane rows you complete, the more life your opponents will start with."
+          "Oh, and before I forget: The more Plane rows you complete, the more life your opponents will start with."
   ),
 
   PRE_BATTLE(
       "Planebound Battles",
-      "Battles on Plane-Nodes are played as a match of 'Commander' (you against the Planebound) with added 'Planechase' rules. So don't forget to keep an eye on your command zone for casting your Commander and rolling the Planar Die. Other than in a normal Planechase Match,"
+      "Battles on Plane-Nodes are played as a 1v1 match of 'Commander' (you against the Planebound) with added 'Planechase' rules. Other than in a normal Planechase Match,"
           +
           "you will stay on the current Plane throughout the battle. 'Chaos' and 'When you Planeswalk...' effects will be resolved as normal, but no effect will cause a plane change.",
-      "Good luck, Commander!"
+      "I'm sure you won't disappoint me, Commander."
   ),
 
   MATCH_UI(
       "Your First Match",
-      "Take a moment to look around, Commander. In the default layout, your hand and battlefield are below your opponent's area. " +
+      "Surprise, I'm still here. Don't worry, I'll leave you alone soon.\n"
+          + "Take a moment to look around. In the default layout, your hand and battlefield are below your opponent's area. " +
           "Keep an eye on both life totals as the battle progresses. Double-click a card to cast it when the rules allow and you can pay its costs.",
       "At the bottom right, you will find your Command Zone, Graveyard, and Exile. " +
-          "Your Commander can be cast from the Command Zone. Check there for other available actions too, including rolling the Planar Die by using the card.",
+          "Your Commander (which is you, sure, but that would make it sound slightly awkward) can be cast from the Command Zone. Check there for other available actions too, including rolling the Planar Die by using it's card.",
       "At the bottom left, the action prompts tell you what the game needs from you. Follow them to make choices and select targets.",
       "At the top left, the Stack shows spells and abilities about to resolve. " +
-          "The Match Log beside it lets you review what has happened.",
-      "At the top right, Card Details lets you read the cards you inspect. Take your time to understand their abilities."
+          "The Match Log beside it lets you review what has happened. In case it ever interests you, that is.",
+      "At the top right, Card Details lets you read the cards you inspect. I don't want to play the old wise professor here, but it is always good to read and understand cards before casting them."
   ),
 
   MATCH_CARD_HIGHLIGHTING(
       "Card Highlighting",
-      "Notice the colored outlines, Commander. By default, blue helps identify cards you can play or whose abilities you can activate. " +
+      "Noticed the colored outlines?. By default, blue helps identify cards you can play or whose abilities you can activate. " +
           "This includes land and spell plays, and during blocking it marks possible blockers.",
       "Red marks creatures available to declare as attackers. Magenta marks cards you have chosen or that the current interaction highlights.",
-      "During mana payment, an orange glow shows the mana sources Auto-Pay proposes to use. " +
-          "Check that preview before committing, especially when you want to keep certain sources available.",
-      "A cyan outline is a reminder of Flash or a permission to play a card as though it has Flash. " +
-          "Some highlights can be changed or disabled in the display preferences."
+      "There's other colors as well, but I'm sure you'll find that out by yourself."
   ),
 
   MATCH_PHASES_AND_YIELDS(
       "Phase Stops and Yield Settings",
-      "Finally, let us sort out the game's yield controls, Commander. Click the phase buttons to enable or disable the default priority stops during a turn. " +
-          "You are choosing when the game pauses for your input, not removing phases from the game.",
+      "Before I finally leave you alone, let us sort out the game's yield controls. Sounds fun, doesn't it? Click the phase buttons to enable or disable the default priority stops during a turn. " +
+          "You are choosing when the game pauses for your input, not removing phases from the game. If you want to know my opinion, then leave them as they are for now.",
       "The 'End Turn' button at the bottom left passes automatically through the rest of the current turn, subject to yield interruptions. " +
           "It does not end the turn immediately. When your last action can be undone, that button shows 'Undo' instead.",
       "Auto-Pass is turned on by default. The game currently passes automatically when it detects no available actions. " +
           "To turn it off, uncheck 'Game > Enable auto-pass' or press P. " +
           "Unlike the temporary yield requested by 'End Turn', Auto-Pass stays enabled until you turn it off.",
       "Open 'Game > Yield Settings' to choose which events interrupt a yield and return control to you, such as being targeted or having attackers declared against you. " +
-          "Set these controls to suit your pace.",
-      "Check 'Forge -> Help -> Getting Started -> 'How to Play' and the Forge Wiki for more details on the rules of Magic The Gathering and how to play in Forge.\n" +
-          "You're now on your own, Commander."
+          "Set these controls to suit your pace.\n"
+      + "Oh, and you're now on your own. Good luck, Commander!"
   ),
 
   POST_BATTLE(
       "After a battle",
-      "The gold you earned from the battle can be spent at any Bazaar, but any unspent Gold will be lost at the end of a Run.\n"
+      "Saw that Gold you were awarded after the Battle? You can spend it at any Bazaar, but any unspent Gold at the end of a Run will be lost.\n"
           +
-          "The Echoes you earned are memories of the Aether before the Phyrexian invasion. They persist between Runs and can be used to rebuild its lost Aetherworks.",
-      "The cards you earned were added to your Rogue deck. You can view your deck at any time by clicking 'Edit Rogue Deck'.\n"
+          "The Echoes you earned are memories of the Aether before the Phyrexian invasion. They persist between Runs and can be used to rebuild its lost Aetherworks. Don't worry, I'll show you when you're back here.",
+      "The cards you earned were added to your deck. You can view your deck at any time by clicking 'Edit Rogue Deck'.\n"
           +
           "If you gained life above your Run's Max Life during the battle, it will reset back to your Max Life after the battle."
   ),
 
   ELITE_PLANEBOUND(
       "Elite Panebound",
-      "An Elite awaits in the next row on the path (marked with a star)! Elite Planebounds are tougher than regular opponents but offer greater rewards:\n"
+      "An Elite awaits in the next row on the Trail (marked with a star)! Elite Planebounds are tougher than regular opponents but offer greater rewards:\n"
           +
-          "double Echoes, double Gold, and an additional Mythic card reward."
+          "double Echoes, double Gold, and an additional Mythic card reward. Risk-reward, Commander, and of course your choice to make."
   ),
 
   CARD_REWARDS(
@@ -155,35 +152,25 @@ public enum RogueTutorial {
           "View all your past Runs and Rogue Decks in the 'History'."
   ),
 
-  FIRST_RUN_WIN(
-      "The Journey Has Only Begun",
-      "You have done it, Commander. Your first Run ends in victory! I knew you had the strength to reach this far. " +
-          "But do not mistake this victory for the end of our journey. We have only just begun.",
-      "Win Runs with three different Commanders to unlock Descension. There, the trials grow harder, and each victory takes us deeper. " +
-          "The truth behind all of this is still waiting to be uncovered. When you are ready, we must go further."
-  ),
-
   AETHER(
       "Welcome to the Aether",
       "Welcome to my realm. Before the Phyrexian invasion, the Aether was filled with buildings and machines that have since been lost. " +
           "The Echoes you recover preserve memories of what once stood here. Spend them to rebuild and upgrade these Aetherworks.",
-      "Only so much energy can flow through the Aether at once. Each active Aetherwork uses one unit of Aether Energy, " +
-          "so you can initially operate up to three at the same time. Activate or deactivate an Aetherwork by selecting it.",
-      "Spend Sparks on Aether upgrades to restore more Aetherworks and increase the Aether's Energy capacity."
+      "There is one limitation though. Each active Aetherwork uses one unit of Aether Energy, " +
+          "so you can initially activate up to three at the same time. Activate or deactivate an Aetherwork by selecting it.",
+      "Find Sparks to restore more Aetherworks and increase the Aether's Energy capacity."
   ),
 
   DESCENSION_UNLOCKED(
       "Descension Mode Unlocked",
-      "You have won Runs with 3 different Commanders - Descension Mode is now unlocked!\n" +
-          "Descension Mode adds stacking difficulty modifiers to your Runs. Select a Commander you have already won with to enable it.",
+      "Descension Mode adds stacking difficulty modifiers to your Runs. Select a Commander you have already won with to enable it.",
       "Winning at a Descension Level unlocks the next level for that Commander, and earns you a Spark. " +
           "Sparks can restore more Aetherworks and expand the Aether's Energy capacity."
   ),
 
   DESCENSION_LEVEL_1_WIN(
       "Deeper Into Descension",
-      "Your first Descension victory, Commander. You have faced the deeper trials and prevailed. " +
-          "Descension Level 2 is now unlocked for the Commander who earned this victory.",
+      "Descension Level 2 is now unlocked for the Commander who earned this victory.",
       "Remember: each Descension Level includes the modifiers of every previous level. " +
           "Level 2 adds its own challenge on top of Level 1, and that pattern continues as you descend.",
       "You also earned a Spark. Bring it to the Aether, where Sparks and Echoes can restore Aetherworks and expand the energy that keeps them active. " +

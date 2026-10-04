@@ -14,8 +14,6 @@ public interface NPCOptionalEncounter extends NPCEncounter {
         return List.of();
     }
 
-    boolean isTriggerConditionMet(RogueMetaProgress progress);
-
     @Override
     default int getRequiredLevel() {
         return 0;

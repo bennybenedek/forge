@@ -73,6 +73,9 @@ public interface NPCEncounter {
         RogueCommanderAchievements.instance.evaluateUpgradeAchievements(p);
     }
 
+    /** Returns whether this encounter's trigger condition has been met. */
+    default boolean isTriggerConditionMet(RogueMetaProgress progress) { return true; }
+
     /** Fired between runs after meta-progression has been loaded. Return non-null to show NPC dialog. */
     default NPCContext onBetweenRuns(RogueMetaProgress progress) { return null; }
 

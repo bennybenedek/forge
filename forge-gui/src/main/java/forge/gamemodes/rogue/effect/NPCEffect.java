@@ -142,20 +142,6 @@ public enum NPCEffect implements RogueEffect {
             return List.of("Field of the Dead|M20|1");
         }
     },
-    HENZIE_ZONE("npc_henzie_zone", "Henzie's Zone",
-        TRAIT_GAIN_DESCRIPTION + " ![[Blast Zone|CMM|1]]", NPC.HENZIE,
-        EffectType.PERMANENT, "Henzie Trait - Henzie's Zone") {
-        @Override
-        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
-            addEffectCardToCommandZone(human);
-            RogueEffect.addCardToBattlefield("Blast Zone|CMM|1", human);
-        }
-
-        @Override
-        public List<String> getDuplicateProtectedCardReferences() {
-            return List.of("Blast Zone|CMM|1");
-        }
-    },
     HENZIE_DRAMATIC_ENTRANCE("npc_henzie_dramatic_entrance", "Dramatic Entrance",
         TRAIT_GAIN_DESCRIPTION, NPC.HENZIE,
         EffectType.PERMANENT, "Henzie Trait - Dramatic Entrance") {
