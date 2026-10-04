@@ -491,7 +491,7 @@ public class BazaarDialog {
     private final BazaarItem item;
 
     private SelectableCardPanel(BazaarItem item) {
-      super(item.card(), () -> BazaarDialog.this.zoomUtil, true);
+      super(item.card(), () -> BazaarDialog.this.zoomUtil, true, ZoomActivation.MOUSE_WHEEL);
       this.item = item;
     }
 

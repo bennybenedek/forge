@@ -25,6 +25,11 @@ import org.apache.commons.lang3.tuple.Pair;
 public abstract class SelectableCardPanelBase extends SkinnedPanel implements
     ImageFetcher.Callback {
 
+  protected enum ZoomActivation {
+    MOUSE_WHEEL,
+    MIDDLE_MOUSE_BUTTON
+  }
+
   // Flip icon dimensions (2:3 aspect ratio matching FSkinProp)
   private static final int FLIP_ICON_WIDTH = 44;
   private static final int FLIP_ICON_HEIGHT = 66;
@@ -36,6 +41,7 @@ public abstract class SelectableCardPanelBase extends SkinnedPanel implements
   protected boolean faceDown;
   private final CardUtil.FlipAnimation flipAnimation;
   private final Supplier<CardUtil> zoomUtilSupplier;
+  private final ZoomActivation zoomActivation;
 
   // Double-faced card support
   protected final boolean hasBackFace;
@@ -47,9 +53,10 @@ public abstract class SelectableCardPanelBase extends SkinnedPanel implements
    * @param card             The card to display
    * @param zoomUtilSupplier Supplier for zoom utility (accessed at runtime, can return null)
    * @param faceDown         Whether the card starts face-down (for flip animation reveal)
+   * @param zoomActivation   Mouse action used to zoom the card
    */
   public SelectableCardPanelBase(PaperCard card, Supplier<CardUtil> zoomUtilSupplier,
-      boolean faceDown) {
+      boolean faceDown, ZoomActivation zoomActivation) {
     super(null);
     this.card = card;
     this.selected = false;
@@ -57,6 +64,7 @@ public abstract class SelectableCardPanelBase extends SkinnedPanel implements
     this.flipAnimation = new CardUtil.FlipAnimation(this);
     this.cardPicture = new CardPicturePanel();
     this.zoomUtilSupplier = zoomUtilSupplier;
+    this.zoomActivation = zoomActivation;
 
     // Check if card has a back face (transform, flip, meld, modal)
     this.hasBackFace = card.hasBackFace();
@@ -73,6 +81,10 @@ public abstract class SelectableCardPanelBase extends SkinnedPanel implements
     addMouseListener(new MouseAdapter() {
       @Override
       public void mouseClicked(MouseEvent e) {
+        if (zoomActivation == ZoomActivation.MIDDLE_MOUSE_BUTTON
+            && e.getButton() == MouseEvent.BUTTON2) {
+          return;
+        }
         if (!SelectableCardPanelBase.this.faceDown) {
           // Check if click is on flip icon area
           if (hasBackFace && isClickOnFlipIcon(e)) {
@@ -81,6 +93,29 @@ public abstract class SelectableCardPanelBase extends SkinnedPanel implements
             }
           } else {
             toggleSelection();
+          }
+        }
+      }
+
+      @Override
+      public void mousePressed(MouseEvent e) {
+        if (zoomActivation == ZoomActivation.MIDDLE_MOUSE_BUTTON
+            && e.getButton() == MouseEvent.BUTTON2
+            && !SelectableCardPanelBase.this.faceDown) {
+          CardUtil zoomUtil = zoomUtilSupplier != null ? zoomUtilSupplier.get() : null;
+          if (zoomUtil != null) {
+            zoomUtil.showZoom(card, showingAltFace);
+          }
+        }
+      }
+
+      @Override
+      public void mouseReleased(MouseEvent e) {
+        if (zoomActivation == ZoomActivation.MIDDLE_MOUSE_BUTTON
+            && e.getButton() == MouseEvent.BUTTON2) {
+          CardUtil zoomUtil = zoomUtilSupplier != null ? zoomUtilSupplier.get() : null;
+          if (zoomUtil != null) {
+            zoomUtil.closeZoom();
           }
         }
       }
@@ -100,16 +135,18 @@ public abstract class SelectableCardPanelBase extends SkinnedPanel implements
       }
     });
 
-    // Add mouse wheel listener for card zoom (only when revealed)
-    addMouseWheelListener(e -> {
-      if (!SelectableCardPanelBase.this.faceDown && e.getWheelRotation() < 0) {
-        CardUtil zoomUtil = zoomUtilSupplier != null ? zoomUtilSupplier.get() : null;
-        if (zoomUtil != null) {
-          // Zoom the currently displayed face
-          zoomUtil.showZoom(card, showingAltFace);
+    if (zoomActivation == ZoomActivation.MOUSE_WHEEL) {
+      // Add mouse wheel listener for card zoom (only when revealed)
+      addMouseWheelListener(e -> {
+        if (!SelectableCardPanelBase.this.faceDown && e.getWheelRotation() < 0) {
+          CardUtil zoomUtil = zoomUtilSupplier != null ? zoomUtilSupplier.get() : null;
+          if (zoomUtil != null) {
+            // Zoom the currently displayed face
+            zoomUtil.showZoom(card, showingAltFace);
+          }
         }
-      }
-    });
+      });
+    }
   }
 
   /**

@@ -194,7 +194,7 @@ public class NodeResultPanel extends SkinnedPanel {
     private static class ReadOnlyCardPanel extends SelectableCardPanelBase {
 
         ReadOnlyCardPanel(PaperCard card, Supplier<CardUtil> zoomSupplier) {
-            super(card, zoomSupplier, false);
+            super(card, zoomSupplier, false, ZoomActivation.MOUSE_WHEEL);
         }
 
         @Override

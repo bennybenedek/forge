@@ -368,7 +368,7 @@ public class CardRewardDialog {
   private class SelectableCardPanel extends SelectableCardPanelBase {
 
     private SelectableCardPanel(PaperCard card) {
-      super(card, () -> CardRewardDialog.this.zoomUtil, true);
+      super(card, () -> CardRewardDialog.this.zoomUtil, true, ZoomActivation.MOUSE_WHEEL);
     }
 
     @Override

@@ -216,7 +216,8 @@ public class CardSelectionDialog {
 
   private class SelectableCardPanel extends SelectableCardPanelBase {
     SelectableCardPanel(PaperCard card) {
-      super(card, () -> CardSelectionDialog.this.zoomUtil, false);
+      super(card, () -> CardSelectionDialog.this.zoomUtil, false,
+          ZoomActivation.MIDDLE_MOUSE_BUTTON);
     }
 
     @Override

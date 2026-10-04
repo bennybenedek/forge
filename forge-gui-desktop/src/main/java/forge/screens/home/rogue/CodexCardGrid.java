@@ -144,7 +144,8 @@ class CodexCardGrid extends FSkin.SkinnedPanel implements Scrollable {
         private final CardState state;
 
         private CodexReadonlyCardPanel(PaperCard card, Supplier<CardUtil> zoomUtilSupplier, CardState state) {
-            super(card, zoomUtilSupplier, state == CardState.HIDDEN);
+            super(card, zoomUtilSupplier, state == CardState.HIDDEN,
+                    ZoomActivation.MIDDLE_MOUSE_BUTTON);
             this.state = state;
         }
 
