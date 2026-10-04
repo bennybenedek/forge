@@ -103,14 +103,8 @@ public enum CSubmenuRogueStart implements ICDoc {
   }
 
   private void showTutorials() {
-    RogueTutorialHelper.showIfNotSeen(RogueTutorial.WELCOME, RogueTutorial.COMMANDER_SELECTION);
 
     var progress = RogueMetaProgress.getInstance();
-
-    // Show RUN_COMPLETE tutorial after first completed run
-    if (progress.getTotalRunsCompleted() > 0) {
-      RogueTutorialHelper.showIfNotSeen(RogueTutorial.RUN_COMPLETE);
-    }
 
     // Show Descension tutorial once when it becomes unlocked
     if (progress.isDescensionModeUnlocked()) {
@@ -120,9 +114,6 @@ public enum CSubmenuRogueStart implements ICDoc {
     int highestDescensionWon = progress.getHighestDescensionWon();
     if (highestDescensionWon >= 1) {
       RogueTutorialHelper.showIfNotSeen(RogueTutorial.DESCENSION_LEVEL_1_WIN);
-    }
-    if (highestDescensionWon >= 7) {
-      RogueTutorialHelper.showIfNotSeen(RogueTutorial.DESCENSION_LEVEL_7_WIN);
     }
   }
 

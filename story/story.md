@@ -95,6 +95,7 @@ Preserve uncertainty when the character or narrator genuinely does not know.
 11. Do not explain lore merely because the information exists. Reveal information when the current scene, character, or player needs it.
 12. Prefer character-specific reactions over generic emotional narration. Show personality through what a character notices, says, avoids saying, or chooses to do.
 13. Do not force every scene to end with a dramatic line, revelation, joke, or emotional conclusion. Scenes may end naturally when their purpose is complete.
+14. Vary structure across consecutive encounters, not only within individual passages. Read nearby entries when writing and reviewing; check for repeated openings, action-and-dialogue rhythms, and endings.
 
 
 ## Required NPC Context

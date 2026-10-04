@@ -8,24 +8,12 @@ import java.util.List;
  */
 public enum RogueTutorial {
 
-  WELCOME(
-      "Welcome to Rogue Commander",
-      "Rogue Commander is a roguelite deckbuilding format. Start with a commander and an open-ended deck, "
-          +
-          "then embark on a Run, battling against 'Planebounds' to earn gold and new cards.",
-      "Win matches to progress until the final Boss, but be careful - lost life is not restored after each battle!"
-  ),
-
-  COMMANDER_SELECTION(
-      "Commander Selection",
-      "Choose your Rogue commander wisely! Each commander comes with a unique starting deck " +
-          "built around their strategies and archetypes, as well as a 'Reward Pool' you choose your card rewards from to improve your deck.",
-      "You can unlock new commanders by winning Runs or through other achievements. "
-  ),
-
   MAP_NAVIGATION(
       "Map Navigation",
-      "Before you lies the Trail I found for you. A network of so called 'Omenpaths', letting you travel between Planes. Yes, even without a Spark. Thank you, Phyrexian Invasion.Each Run will be a different Trail, with different opponents, encounters and locations.",
+      "Rogue Commander is a roguelite deckbuilding format. Start with an open-ended start deck, "
+          + "then embark on a Run, battling against the Planebounds to earn new cards, Gold and other rewards as you go.",
+      "Win matches to progress until the final Boss, but I have to warn you: lost life is not restored after each battle!",
+      "Before you lies the Trail I found for you. A network of so called 'Omenpaths', letting you travel between Planes. Yes, even without a Spark. Thank you, Phyrexian Invasion. Each Run will be a different Trail, with different opponents, encounters and locations.",
       "Choose your route through the Trail carefully, some might be harder than others. Each Trail is divided into rows, alternating between ones where you will battle an opponent on a Plane-node, and ones that offer healing, bazaars, and other encounters via Side-nodes.",
       "Whenever you complete a node, you unlock the next row of your path. If there is more than one accessible node in that row, you can select your next destination.\n"
           +
@@ -55,7 +43,7 @@ public enum RogueTutorial {
 
   MATCH_CARD_HIGHLIGHTING(
       "Card Highlighting",
-      "Noticed the colored outlines?. By default, blue helps identify cards you can play or whose abilities you can activate. " +
+      "Noticed the colored outlines of cards?. By default, blue helps identify cards you can play or whose abilities you can activate. " +
           "This includes land and spell plays, and during blocking it marks possible blockers.",
       "Red marks creatures available to declare as attackers. Magenta marks cards you have chosen or that the current interaction highlights.",
       "There's other colors as well, but I'm sure you'll find that out by yourself."
@@ -64,7 +52,7 @@ public enum RogueTutorial {
   MATCH_PHASES_AND_YIELDS(
       "Phase Stops and Yield Settings",
       "Before I finally leave you alone, let us sort out the game's yield controls. Sounds fun, doesn't it? Click the phase buttons to enable or disable the default priority stops during a turn. " +
-          "You are choosing when the game pauses for your input, not removing phases from the game. If you want to know my opinion, then leave them as they are for now.",
+          "You are choosing when the game pauses for your input, not removing phases from the game. If you ask me, then leave them as they are for now.",
       "The 'End Turn' button at the bottom left passes automatically through the rest of the current turn, subject to yield interruptions. " +
           "It does not end the turn immediately. When your last action can be undone, that button shows 'Undo' instead.",
       "Auto-Pass is turned on by default. The game currently passes automatically when it detects no available actions. " +
@@ -72,7 +60,7 @@ public enum RogueTutorial {
           "Unlike the temporary yield requested by 'End Turn', Auto-Pass stays enabled until you turn it off.",
       "Open 'Game > Yield Settings' to choose which events interrupt a yield and return control to you, such as being targeted or having attackers declared against you. " +
           "Set these controls to suit your pace.\n"
-      + "Oh, and you're now on your own. Good luck, Commander!"
+      + "Oh, and you're now on your own, Commander. Good luck!"
   ),
 
   POST_BATTLE(
@@ -175,16 +163,6 @@ public enum RogueTutorial {
           "Level 2 adds its own challenge on top of Level 1, and that pattern continues as you descend.",
       "You also earned a Spark. Bring it to the Aether, where Sparks and Echoes can restore Aetherworks and expand the energy that keeps them active. " +
           "Prepare well. There is more for us to discover."
-  ),
-
-  DESCENSION_LEVEL_7_WIN(
-      "Beyond the Final Trial",
-      "Descension Level 7 lies behind you, Commander. You have overcome the highest challenge currently available in Rogue Commander. " +
-          "Few journeys demand so much. You have every reason to be proud of yours.",
-      "Our story is not finished. Rogue Commander is still in development, with more updates and content planned, " +
-          "including Challenges and a second path beyond the final boss. Stay tuned for what comes next.",
-      "Until then, there are still Achievements to pursue and other Commanders to master. " +
-          "Thank you for playing, Commander. I look forward to meeting you on the path again."
   ),
 
   CARRY_CARDS(
