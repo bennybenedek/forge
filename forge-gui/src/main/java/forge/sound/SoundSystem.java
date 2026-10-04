@@ -2,6 +2,7 @@ package forge.sound;
 
 import com.google.common.eventbus.Subscribe;
 import forge.game.event.GameEvent;
+import forge.game.event.GameEventGameOutcome;
 import forge.gui.FThreads;
 import forge.gui.GuiBase;
 import forge.gui.events.UiEvent;
@@ -38,6 +39,7 @@ public class SoundSystem {
     private boolean shouldPlayMusic = true;
     private boolean hasWindowFocus = true;
     private boolean ignorePlayRequests = false;
+    private volatile boolean runWinSoundEnabled;
 
     private SoundSystem() {
         this.visualizer = new EventVisualizer(GamePlayerUtil.getGuiPlayer());
@@ -149,9 +151,19 @@ public class SoundSystem {
         }
     }
 
+    public void setRunWinSoundEnabled(boolean enabled) {
+        runWinSoundEnabled = enabled;
+    }
+
     @Subscribe
     public void receiveEvent(final GameEvent evt) {
-        final SoundEffectType effect = evt.visit(visualizer);
+        SoundEffectType effect = evt.visit(visualizer);
+        if (evt instanceof GameEventGameOutcome) {
+            if (effect == SoundEffectType.WinDuel && runWinSoundEnabled) {
+                effect = SoundEffectType.WinRun;
+            }
+            runWinSoundEnabled = false;
+        }
         if (null == effect) {
             return;
         }

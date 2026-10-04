@@ -47,6 +47,22 @@ public class RogueWinLose extends ControlWinLose {
         return true;
     }
 
+    @Override
+    public String getOutcomeTitleOverride() {
+        if (controller.hasFailedRun()) {
+            return "Run Lost!";
+        }
+        if (!controller.hasWonMatch()) {
+            return "Battle Lost!";
+        }
+        return controller.hasWonRun() ? "Run Completed!" : "Battle Won!";
+    }
+
+    @Override
+    public boolean shouldShowPlayerScores() {
+        return false;
+    }
+
     /**
      * When "quit" button is pressed, navigate back to Commander selection if run is over
      * (won or lost), otherwise navigate back to the Rogue Map.

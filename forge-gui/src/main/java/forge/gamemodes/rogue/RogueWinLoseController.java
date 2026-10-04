@@ -76,6 +76,19 @@ public class RogueWinLoseController {
         });
     }
 
+    public boolean hasWonMatch() {
+        return wonMatch;
+    }
+
+    public boolean hasWonRun() {
+        return wonMatch && currentRun != null
+            && currentRun.getCurrentNodeIndex() >= currentRun.getPath().getNodeCount() - 1;
+    }
+
+    public boolean hasFailedRun() {
+        return currentRun != null && currentRun.isRunFailed();
+    }
+
     private void handleMatchVictory() {
         if (currentRun == null) {
             System.err.println("ERROR: No current run found in RogueWinLoseController");
@@ -199,7 +212,6 @@ public class RogueWinLoseController {
 
         RogueIO.saveRun(currentRun);
         view.getBtnQuit().setText(BTN_WIN_RUN);
-        view.showMessage("Congratulations! You have completed the run!", "Victory", FSkinProp.ICO_QUEST_CHARM);
     }
 
     private void awardCardRewards(boolean isElite, int goldReward, int echoReward, MatchRewardContext rewardCtx) {
@@ -257,7 +269,6 @@ public class RogueWinLoseController {
     private void handleRunDefeat(String defeatedBy) {
         finalizeRunDefeat(currentRun, defeatedBy);
         view.getBtnQuit().setText(BTN_LOSE_RUN);
-        view.showMessage("You were defeated! Your Run has ended.", "Defeat", FSkinProp.ICO_QUEST_ZEP);
     }
 
     public static void finalizeRunDefeat(RogueRun run, String defeatedBy) {

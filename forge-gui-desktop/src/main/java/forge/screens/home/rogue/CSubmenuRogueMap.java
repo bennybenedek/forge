@@ -11,6 +11,8 @@ import forge.localinstance.achievements.RogueCommanderAchievements;
 import forge.screens.deckeditor.CDeckEditorUI;
 import forge.screens.deckeditor.controllers.CEditorRogue;
 import forge.screens.home.CHomeUI;
+import forge.sound.SoundEffectType;
+import forge.sound.SoundSystem;
 import forge.toolbox.FOptionPane;
 import forge.toolbox.FScrollPane;
 import forge.toolbox.FSkin;
@@ -517,6 +519,7 @@ public enum CSubmenuRogueMap implements ICDoc {
     RogueMetaProgress.getInstance().addRunHistoryEntry(
         RogueRunHistoryEntry.fromRun(currentRun, "ABANDONED", ""));
     RogueIO.deleteRun(currentRun);
+    SoundSystem.instance.play(SoundEffectType.LoseDuel, SoundEffectType.LoseDuel.isSynced());
     currentRun = null;
     CHomeUI.SINGLETON_INSTANCE.itemClick(EDocID.HOME_ROGUESTART);
   }

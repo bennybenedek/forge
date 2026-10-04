@@ -156,7 +156,9 @@ public class ViewWinLose implements IWinLoseView<FButton> {
         pnlOutcomes.setOpaque(false);
         pnlLeft.add(lblTitle, "h 60px!, center");
         pnlLeft.add(pnlOutcomes, "center");
-        pnlLeft.add(lblStats, "h 60px!, center");
+        if (control.shouldShowPlayerScores()) {
+            pnlLeft.add(lblStats, "h 60px!, center");
+        }
 
         // A container must be made to ensure proper centering.
         final JPanel pnlButtons = new JPanel(new MigLayout("insets 0, wrap, ax center"));
@@ -180,7 +182,8 @@ public class ViewWinLose implements IWinLoseView<FButton> {
         pnlLog.add(btnCopyLog, "center, w pref+16, h pref+8");
         pnlLeft.add(pnlLog, "w 100%!");
 
-        lblTitle.setText(composeTitle(game0));
+        final String titleOverride = control.getOutcomeTitleOverride();
+        lblTitle.setText(titleOverride != null ? titleOverride : composeTitle(game0));
     }
 
     public final void show() {
@@ -254,6 +257,9 @@ public class ViewWinLose implements IWinLoseView<FButton> {
     }
 
     private void showPlayerScores() {
+        if (!control.shouldShowPlayerScores()) {
+            return;
+        }
         for (final GameLogEntry o : game.getGameLog().getLogEntriesExact(GameLogEntryType.MATCH_RESULTS)) {
             lblStats.setText(removePlayerTypeFromLogMessage(o.message()));
         }

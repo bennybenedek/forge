@@ -118,7 +118,8 @@ public enum SoundEffectType {
     WhiteLand("white_land", false),
     WhiteRedBlackLand("white_red_black_land", false),
     WhiteRedLand("white_red_land", false),
-    WinDuel("win_duel", false);
+    WinDuel("win_duel", false),
+    WinRun("win_run", false);
 
     private final String resourceFileName;
     private final boolean isSync;

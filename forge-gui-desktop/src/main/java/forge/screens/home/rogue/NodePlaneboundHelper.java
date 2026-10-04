@@ -147,6 +147,8 @@ class NodePlaneboundHelper {
                     && SoundSystem.findMusicDirectory(MusicPlaylist.ROGUE_MATCH_BOSS) != null) {
                 matchPlaylist = MusicPlaylist.ROGUE_MATCH_BOSS;
             }
+            SoundSystem.instance.setRunWinSoundEnabled(
+                currentRun.getCurrentNodeIndex() >= currentRun.getPath().getNodeCount() - 1);
             hostedMatch.startMatch(
                 GameType.RogueCommander,
                 appliedVariants,
@@ -156,6 +158,7 @@ class NodePlaneboundHelper {
                 matchPlaylist
             );
         } catch (Exception e) {
+            SoundSystem.instance.setRunWinSoundEnabled(false);
             e.printStackTrace();
             SwingUtilities.invokeLater(SOverlayUtils::hideOverlay);
         }
