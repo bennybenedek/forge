@@ -28,6 +28,7 @@ import forge.game.GameType;
 import forge.gamemodes.rogue.RogueIO;
 import forge.gamemodes.rogue.RogueRun;
 import forge.gamemodes.rogue.RogueTutorial;
+import forge.gui.GuiBase;
 import forge.gui.UiCommand;
 import forge.gui.framework.DragCell;
 import forge.gui.framework.EDocID;
@@ -53,6 +54,7 @@ import forge.screens.match.controllers.CDetailPicture;
 import forge.sound.SoundEffectType;
 import forge.sound.SoundSystem;
 import forge.toolbox.FButton;
+import forge.util.ImageFetcher;
 import forge.util.ItemPool;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -464,12 +466,49 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
             setEditorMode(ds);
         });
         resetTables();
+        fetchEditorCardImages();
 
         // Set deck name
         if (rogueRun.getCurrentDeck() != null) {
             String deckName = rogueRun.getSelectedRogueDeck().getName() + " - Rogue Run";
             rogueRun.getCurrentDeck().setName(deckName);
             VCurrentDeck.SINGLETON_INSTANCE.getTxfTitle().setText(deckName);
+        }
+    }
+
+    private void fetchEditorCardImages() {
+        Deck deck = rogueRun.getCurrentDeck();
+        if (deck == null) {
+            return;
+        }
+
+        Set<String> imageKeys = new LinkedHashSet<>();
+        for (Entry<PaperCard, Integer> entry : basicLandPool) {
+            addCardImageKeys(imageKeys, entry.getKey());
+        }
+        for (Entry<PaperCard, Integer> entry : deck.getAllCardsInASinglePool()) {
+            addCardImageKeys(imageKeys, entry.getKey());
+        }
+
+        ImageFetcher.Callback repaintCallback = () -> {
+            getCatalogManager().getCurrentView().getComponent().repaint();
+            getDeckManager().getCurrentView().getComponent().repaint();
+        };
+        for (String imageKey : imageKeys) {
+            GuiBase.getInterface().getImageFetcher().fetchImage(imageKey, repaintCallback);
+        }
+    }
+
+    private static void addCardImageKeys(Set<String> imageKeys, PaperCard card) {
+        String frontImageKey = card.getImageKey(false);
+        if (!StringUtil.isBlank(frontImageKey)) {
+            imageKeys.add(frontImageKey);
+        }
+        if (card.hasBackFace()) {
+            String backImageKey = card.getImageKey(true);
+            if (!StringUtil.isBlank(backImageKey)) {
+                imageKeys.add(backImageKey);
+            }
         }
     }
 
