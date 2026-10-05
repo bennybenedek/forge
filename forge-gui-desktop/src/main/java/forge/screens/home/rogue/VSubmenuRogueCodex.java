@@ -277,10 +277,10 @@ public enum VSubmenuRogueCodex implements IVSubmenu<CSubmenuRogueCodex> {
   }
 
   private JPanel createHeaderPanel() {
-    JPanel panel = new SkinnedPanel(new MigLayout("insets 0, gap 8", "[grow][]", "[grow]"));
+    JPanel panel = new SkinnedPanel(new MigLayout("insets 0, gap 8", "[][grow]", "[grow]"));
     panel.setOpaque(false);
-    panel.add(lblTitle, "grow, push, h 30px!");
     panel.add(btnBack, "w 120px!, h 30px!");
+    panel.add(lblTitle, "grow, push, h 30px!");
     return panel;
   }
 
@@ -948,6 +948,23 @@ public enum VSubmenuRogueCodex implements IVSubmenu<CSubmenuRogueCodex> {
         setOpaque(false);
         addMouseListener(new MouseAdapter() {
           @Override
+          public void mousePressed(MouseEvent e) {
+            if (e.getButton() == MouseEvent.BUTTON2) {
+              showZoom();
+            }
+          }
+
+          @Override
+          public void mouseReleased(MouseEvent e) {
+            if (e.getButton() == MouseEvent.BUTTON2) {
+              CardUtil zoomUtil = zoomUtilSupplier == null ? null : zoomUtilSupplier.get();
+              if (zoomUtil != null) {
+                zoomUtil.closeZoom();
+              }
+            }
+          }
+
+          @Override
           public void mouseEntered(MouseEvent e) {
             hovered = true;
             setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -959,11 +976,6 @@ public enum VSubmenuRogueCodex implements IVSubmenu<CSubmenuRogueCodex> {
             hovered = false;
             setCursor(Cursor.getDefaultCursor());
             repaint();
-          }
-        });
-        addMouseWheelListener(e -> {
-          if (e.getWheelRotation() < 0) {
-            showZoom();
           }
         });
       }

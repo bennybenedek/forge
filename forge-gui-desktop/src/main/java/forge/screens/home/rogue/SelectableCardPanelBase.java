@@ -7,6 +7,8 @@ import forge.gui.CardPicturePanel;
 import forge.gui.GuiBase;
 import forge.item.PaperCard;
 import forge.localinstance.skin.FSkinProp;
+import forge.sound.SoundEffectType;
+import forge.sound.SoundSystem;
 import forge.toolbox.FSkin;
 import forge.toolbox.FSkin.SkinnedPanel;
 import forge.util.ImageFetcher;
@@ -89,6 +91,8 @@ public abstract class SelectableCardPanelBase extends SkinnedPanel implements
           // Check if click is on flip icon area
           if (hasBackFace && isClickOnFlipIcon(e)) {
             if (!flipAnimation.isAnimating()) {
+              SoundSystem.instance.play(SoundEffectType.FlipCard,
+                  SoundEffectType.FlipCard.isSynced());
               flipToOtherFace();
             }
           } else {
