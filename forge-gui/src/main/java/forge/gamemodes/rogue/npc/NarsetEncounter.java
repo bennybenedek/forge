@@ -35,7 +35,7 @@ public enum NarsetEncounter implements NPCEncounter {
                         "flicker of strange magic above the ground.",
                     "\"There! On the other Plane, it lasted long enough for me to...\" The distortion " +
                         "vanishes. She lets out a disappointed sigh, then notices you watching her.\n" +
-                        "\"Forgive me. You've just fought a battle, and I'm complaining about missing something. " +
+                        "\"Forgive me. You've just fought a battle, and I'm just complaining about problems that are clearly not yours. " +
                         "Are you hurt? I'm Narset.\"",
                     "She puts away the scroll she was reaching for.\n" +
                         "\"I've been following these disturbances. I want to understand them before too many " +

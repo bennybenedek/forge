@@ -2,6 +2,7 @@ package forge.screens.home.rogue;
 
 import forge.deckchooser.FDeckViewer;
 import forge.gamemodes.rogue.RogueRun;
+import forge.gamemodes.rogue.RogueTutorial;
 import forge.item.PaperCard;
 import forge.itemmanager.GroupDef;
 import forge.toolbox.FLabel;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
 /**
@@ -140,6 +142,7 @@ public class CardSelectionDialog {
       zoomUtil = new CardUtil(optionPane);
       zoomUtil.setupZoomOverlay();
 
+      SwingUtilities.invokeLater(() -> RogueTutorialHelper.showIfNotSeen(RogueTutorial.CARD_SELECTION_ZOOM));
       optionPane.setVisible(true);
       result = optionPane.getResult();
       optionPane.dispose();

@@ -49,7 +49,7 @@ public enum TeferiOptionalEncounter implements NPCOptionalEncounter {
         @Override
         public List<String> getStoryTextChunks() {
             return List.of(
-                "Oh, before you leave again, Commander. Just a quick reminder that you can (and probably should) check 'Content Downloaders' (on the left) and then select 'Check for Updates' from time to time.\n"
+                "Umm...It might be a bad timing but...Just a quick reminder that you can (and probably should) check 'Content Downloaders' (on the left) and then select 'Check for Updates' from time to time.\n"
                     + "That way you won't miss any new features, fixes and content.",
                 "Make sure 'Auto updater' in 'Preferences' is set to 'Snapshot.\n'"
                     + "Then return to 'Content Downloaders' and select 'Check for Updates'. If a new version is " +

@@ -48,7 +48,7 @@ public enum CSubmenuRogueCodex implements ICDoc {
   @Override
   public void update() {
     RogueCommanderAchievements.instance.evaluateCodexAchievements(RogueMetaProgress.getInstance());
-    RogueTutorialHelper.showIfNotSeen(RogueTutorial.CODEX);
+    RogueTutorialHelper.showIfNotSeen(RogueTutorial.CODEX, RogueTutorial.CARD_SELECTION_ZOOM);
     loadStatistics();
   }
 
