@@ -58,6 +58,7 @@ public final class CardPicturePanel extends JPanel implements ImageFetcher.Callb
 
     private final FImagePanel panel;
     private BufferedImage currentImage;
+    private int imageRotation;
 
     public CardPicturePanel() {
         super(new BorderLayout());
@@ -68,13 +69,18 @@ public final class CardPicturePanel extends JPanel implements ImageFetcher.Callb
 
     public Object getDisplayed() { return displayed; }
 
+    public void setImageRotation(final int degrees) {
+        this.imageRotation = degrees;
+        this.panel.setRotation(degrees);
+    }
+
     public void setItem(final InventoryItem item) {
         setImage(item, true, false);
     }
 
     public void setItem(final BufferedImage image) {
         this.currentImage = image;
-        this.panel.setImage(image, getAutoSizeImageMode());
+        setPanelImage(image);
         this.displayed = null;
         this.mayView = false;
     }
@@ -104,7 +110,7 @@ public final class CardPicturePanel extends JPanel implements ImageFetcher.Callb
                 final BufferedImage displayedimage = new BufferedImage(cm, raster, isAlphaPremultiplied, null)
                         .getSubimage(0, 0, image.getWidth(), image.getHeight());
                 this.currentImage = displayedimage;
-                this.panel.setImage(isFlipped ? rotateImage180(displayedimage) : image, getAutoSizeImageMode());
+                setPanelImage(isFlipped ? rotateImage180(displayedimage) : image);
                 PaperCard card = (PaperCard) displayed;
                 if (FModel.getPreferences().getPrefBoolean(FPref.UI_OVERLAY_FOIL_EFFECT)) {
                     if (card.isFoil()) {
@@ -114,9 +120,14 @@ public final class CardPicturePanel extends JPanel implements ImageFetcher.Callb
                 }
             } else {
                 this.currentImage = image;
-                this.panel.setImage(isFlipped ? rotateImage180(image) : image, getAutoSizeImageMode());
+                setPanelImage(isFlipped ? rotateImage180(image) : image);
             }
         }
+    }
+
+    private void setPanelImage(final BufferedImage image) {
+        this.panel.setRotation(imageRotation);
+        this.panel.setImage(image, imageRotation, getAutoSizeImageMode());
     }
 
     private BufferedImage getImage() {

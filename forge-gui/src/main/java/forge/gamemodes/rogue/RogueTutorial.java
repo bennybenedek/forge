@@ -46,14 +46,18 @@ public enum RogueTutorial {
       "At the bottom right, you will find your Command Zone, Graveyard, and Exile. Your Commander (which " +
           "is you, sure, but that would make it sound slightly awkward) can be cast from the Command Zone. " +
           "Check there for other available actions too, including rolling the Planar Die by using its card.",
+      "Click the zone icons below your opponent's avatar to open their respective zones. During their " +
+          "turn, you will find the Plane in their Command Zone instead of yours.",
       "At the bottom left, the action prompts tell you what the game needs from you. Follow them to make " +
-          "choices and select targets.",
-      "At the top left, the Stack shows spells and abilities about to resolve. The Match Log beside it " +
+          "choices and select targets. You can press Enter or Space instead of clicking 'OK'.",
+      "At the top left, the Stack shows spells and abilities about to resolve. Right-click a Stack entry " +
+          "and choose 'Resolve entire stack' to pass automatically until the Stack clears. The Match Log beside it " +
           "lets you review what has happened. In case it ever interests you, that is.",
       "At the top right, Card Details lets you read the cards you inspect. You can also zoom in on each " +
           "card using the mouse wheel.\n" +
           "I don't want to play the old wise professor here, but it is always good to read and understand " +
-          "cards before casting them."
+          "cards before casting them.\n" +
+          "To restore the default layout, choose 'Layout > Reset to Default Match Layout'."
   ),
 
   MATCH_CARD_HIGHLIGHTING(
@@ -96,7 +100,9 @@ public enum RogueTutorial {
       "The cards you earned were added to your deck. You can view your deck at any time by clicking 'Edit " +
           "Rogue Deck'.\n" +
           "If you gained life above your Run's Max Life during the battle, it will reset back to your Max " +
-          "Life after the battle."
+          "Life after the battle.",
+      "Your Run progress is saved automatically after every match. When you need a break, Commander, " +
+          "you can return to your unfinished Run through 'Continue Run' in the main navigation."
   ),
 
   ELITE_PLANEBOUND(

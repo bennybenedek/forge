@@ -90,6 +90,24 @@ public enum RogueStats {
             p.updateStat(this, evaluate(run, p));
         }
     },
+    NONBASIC_LANDS("NonbasicLands", "Have %s+ nonbasic lands in your deck.") {
+        @Override public int evaluate(RogueRun run, RogueMetaProgress p) {
+            if (run.getCurrentDeck() == null || run.getCurrentDeck().getMain() == null) return 0;
+            int count = 0;
+            for (PaperCard card : run.getCurrentDeck().getMain().toFlatList()) {
+                if (card.getRules().getType().isLand() && !card.getRules().getType().isBasicLand()) {
+                    count++;
+                }
+            }
+            return count;
+        }
+        @Override public void onMatchCompleted(RogueRun run, RogueMetaProgress p, boolean won) {
+            p.updateStat(this, evaluate(run, p));
+        }
+        @Override public void onSideNodeCompleted(RogueRun run, RogueMetaProgress p) {
+            p.updateStat(this, evaluate(run, p));
+        }
+    },
 
     // --- Counter stats: fire on specific events only ---
 

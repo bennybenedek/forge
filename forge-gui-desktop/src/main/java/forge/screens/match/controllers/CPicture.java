@@ -76,12 +76,14 @@ public class CPicture implements ICDoc {
             displayFlipped = !displayFlipped;
         }
         flipIndicator.setVisible(toShow != null && mayFlip);
+        picturePanel.setImageRotation(toShow != null && (toShow.isPlane() || toShow.isPhenomenon()) ? 90 : 0);
         picturePanel.setCard(forPicture, mayView, displayFlipped);
         zoomer.setCard(toShow, mayFlip);
     }
 
     void showItem(final InventoryItem item) {
         flipIndicator.setVisible(false);
+        picturePanel.setImageRotation(0);
         picturePanel.setItem(item);
     }
 

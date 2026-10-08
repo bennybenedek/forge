@@ -89,10 +89,12 @@ public class RollPlanarDiceAi extends SpellAbilityAi {
                         }
                         break;
                     case "hasvalidcardinzone":
-                        String[] zoneAndValidity = param.substring(param.indexOf('$') + 1).trim().split(":", 2);
+                        // Format: Zone:Validity[:MinimumCount], defaulting to at least one card.
+                        String[] zoneAndValidity = param.substring(param.indexOf('$') + 1).trim().split(":", 3);
                         ZoneType zone = ZoneType.smartValueOf(zoneAndValidity[0].trim());
+                        int minimumCount = zoneAndValidity.length > 2 ? Integer.parseInt(zoneAndValidity[2].trim()) : 1;
                         if ((zone != ZoneType.Battlefield && zone != ZoneType.Graveyard)
-                                || CardLists.getValidCards(ai.getGame().getCardsIn(zone), zoneAndValidity[1].trim(), ai, plane, sa).isEmpty()) {
+                                || CardLists.getValidCards(ai.getGame().getCardsIn(zone), zoneAndValidity[1].trim(), ai, plane, sa).size() < minimumCount) {
                             return false;
                         }
                         break;

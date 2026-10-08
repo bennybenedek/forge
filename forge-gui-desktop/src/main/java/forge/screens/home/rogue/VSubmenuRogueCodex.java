@@ -113,6 +113,7 @@ public enum VSubmenuRogueCodex implements IVSubmenu<CSubmenuRogueCodex> {
   private final FLabel lblMaxCreatureTypes = new FLabel.Builder().text("Max Creature Types: 0").fontSize(14).build();
   private final FLabel lblMaxSharedCreatureType = new FLabel.Builder().text("Max Shared Creature Type: 0").fontSize(14).build();
   private final FLabel lblMaxLegendaryPermanents = new FLabel.Builder().text("Max Legendary Permanents: 0").fontSize(14).build();
+  private final FLabel lblMaxNonbasicLands = new FLabel.Builder().text("Max Nonbasic Lands: 0").fontSize(14).build();
 
   private final FButton btnBack;
   private final FButton btnStatsBack;
@@ -146,7 +147,7 @@ public enum VSubmenuRogueCodex implements IVSubmenu<CSubmenuRogueCodex> {
   public void updateDisplay(int runsStarted, int runsCompleted, int runsWon,
       int matchesWon, int matchesLost,
       int maxLife, int maxGold, int maxCreatureTypes, int maxSharedCreatureType,
-      int maxLegendaryPermanents) {
+      int maxLegendaryPermanents, int maxNonbasicLands) {
     lblRunsStarted.setText("Runs Started: " + runsStarted);
     lblRunsCompleted.setText("Runs Completed: " + runsCompleted);
     lblRunsWon.setText("Runs Won: " + runsWon);
@@ -158,6 +159,7 @@ public enum VSubmenuRogueCodex implements IVSubmenu<CSubmenuRogueCodex> {
     lblMaxCreatureTypes.setText("Max Creature Types: " + maxCreatureTypes);
     lblMaxSharedCreatureType.setText("Max Shared Creature Type: " + maxSharedCreatureType);
     lblMaxLegendaryPermanents.setText("Max Legendary Permanents: " + maxLegendaryPermanents);
+    lblMaxNonbasicLands.setText("Max Nonbasic Lands: " + maxNonbasicLands);
   }
 
   public void showGlobalStats() {
@@ -303,7 +305,8 @@ public enum VSubmenuRogueCodex implements IVSubmenu<CSubmenuRogueCodex> {
     panel.add(lblMaxGold);
     panel.add(lblMaxCreatureTypes);
     panel.add(lblMaxSharedCreatureType);
-    panel.add(lblMaxLegendaryPermanents, "gapbottom 20");
+    panel.add(lblMaxLegendaryPermanents);
+    panel.add(lblMaxNonbasicLands, "gapbottom 20");
 
     JPanel buttonPanel = new SkinnedPanel(new MigLayout("insets 0, gap 10"));
     buttonPanel.setOpaque(false);

@@ -366,6 +366,10 @@ public class RogueMetaProgress {
         return getStatValue(RogueStats.LEGENDARY_PERMANENTS.getConditionKey());
     }
 
+    public int getMaxNonbasicLandsInDeck() {
+        return getStatValue(RogueStats.NONBASIC_LANDS.getConditionKey());
+    }
+
     public int getMaxLifeInRun() {
         return getStatValue(RogueStats.MAX_LIFE.getConditionKey());
     }

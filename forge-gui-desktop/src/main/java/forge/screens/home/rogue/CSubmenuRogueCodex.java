@@ -65,7 +65,8 @@ public enum CSubmenuRogueCodex implements ICDoc {
         progress.getMaxGoldInRun(),
         progress.getMaxCreatureTypesInDeck(),
         progress.getMaxSharedCreatureTypeInDeck(),
-        progress.getMaxLegendaryPermanentsInDeck()
+        progress.getMaxLegendaryPermanentsInDeck(),
+        progress.getMaxNonbasicLandsInDeck()
     );
 
     refreshActiveTab(progress);
