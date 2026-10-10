@@ -151,7 +151,7 @@ jobs:
             4. Choose an install folder and let the installer unpack all required files for you.
             5. Launch Forge from the installed folder:
                - Windows: `forge.exe`
-               - macOS/Linux: `./forge.sh`
+               - macOS/Linux: Open Terminal, navigate to the installed Forge folder (e.g. `cd ~/Downloads/Forge` if installed there; on macOS, you can also type `cd ` with a trailing space, drag the installed Forge folder from Finder into Terminal, then press Return), and run `./forge.sh` (opening the file directly may display it as text).
             6. In the main menu (left side), select "Rogue Commander" and click "Start New Run" to begin the game mode.
 
             This is a development build for playtesting the new Rogue Commander game mode, which is still a work in progress.
