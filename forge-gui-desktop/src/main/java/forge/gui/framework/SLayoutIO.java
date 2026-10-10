@@ -24,6 +24,10 @@ import com.google.common.collect.MultimapBuilder;
 
 import java.awt.*;
 import java.io.*;
+import java.nio.file.AtomicMoveNotSupportedException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -274,50 +278,71 @@ public final class SLayoutIO {
             fWriteTo = f0.getPath();
         }
 
-        final XMLOutputFactory out = XMLOutputFactory.newInstance();
-        XMLEventWriter writer = null;
-        try(FileOutputStream fos = new FileOutputStream(fWriteTo);) {
-            String layoutSerial = getLayoutSerial(file.defaultLoc);
-            writer = out.createXMLEventWriter(fos);
-            final List<DragCell> cells = FView.SINGLETON_INSTANCE.getDragCells();
+        final Path layoutFile = new File(fWriteTo).toPath().toAbsolutePath();
+        Path temporaryFile = null;
+        try {
+            temporaryFile = Files.createTempFile(layoutFile.getParent(), layoutFile.getFileName().toString(), ".tmp");
+            final XMLOutputFactory out = XMLOutputFactory.newInstance();
+            try (FileOutputStream fos = new FileOutputStream(temporaryFile.toFile())) {
+                String layoutSerial = getLayoutSerial(file.defaultLoc);
+                final XMLEventWriter writer = out.createXMLEventWriter(fos);
+                try {
+                    final List<DragCell> cells = FView.SINGLETON_INSTANCE.getDragCells();
 
-            writer.add(EF.createStartDocument());
-            writer.add(NEWLINE);
-            writer.add(EF.createStartElement("", "", "layout"));
-            writer.add(EF.createAttribute("serial", layoutSerial));
-            writer.add(NEWLINE);
+                    writer.add(EF.createStartDocument());
+                    writer.add(NEWLINE);
+                    writer.add(EF.createStartElement("", "", "layout"));
+                    writer.add(EF.createAttribute("serial", layoutSerial));
+                    writer.add(NEWLINE);
 
-            for (final DragCell cell : cells) {
-                cell.updateRoughBounds();
-                RectangleOfDouble bounds = cell.getRoughBounds();
-                
-                writer.add(TAB);
-                writer.add(EF.createStartElement("", "", "cell"));
-                writer.add(EF.createAttribute(Property.x, String.valueOf(Math.rint(bounds.getX() * 100000) / 100000)));
-                writer.add(EF.createAttribute(Property.y, String.valueOf(Math.rint(bounds.getY() * 100000) / 100000)));
-                writer.add(EF.createAttribute(Property.w, String.valueOf(Math.rint(bounds.getW() * 100000) / 100000)));
-                writer.add(EF.createAttribute(Property.h, String.valueOf(Math.rint(bounds.getH() * 100000) / 100000)));
-                if (cell.getSelected() != null) {
-                    writer.add(EF.createAttribute(Property.sel, cell.getSelected().getDocumentID().toString()));
+                    for (final DragCell cell : cells) {
+                        cell.updateRoughBounds();
+                        RectangleOfDouble bounds = cell.getRoughBounds();
+
+                        writer.add(TAB);
+                        writer.add(EF.createStartElement("", "", "cell"));
+                        writer.add(EF.createAttribute(Property.x, String.valueOf(Math.rint(bounds.getX() * 100000) / 100000)));
+                        writer.add(EF.createAttribute(Property.y, String.valueOf(Math.rint(bounds.getY() * 100000) / 100000)));
+                        writer.add(EF.createAttribute(Property.w, String.valueOf(Math.rint(bounds.getW() * 100000) / 100000)));
+                        writer.add(EF.createAttribute(Property.h, String.valueOf(Math.rint(bounds.getH() * 100000) / 100000)));
+                        if (cell.getSelected() != null) {
+                            writer.add(EF.createAttribute(Property.sel, cell.getSelected().getDocumentID().toString()));
+                        }
+                        writer.add(NEWLINE);
+
+                        for (final IVDoc<? extends ICDoc> vDoc : cell.getDocs()) {
+                            createNode(writer, Property.doc, vDoc.getDocumentID().toString());
+                        }
+
+                        writer.add(TAB);
+                        writer.add(EF.createEndElement("", "", "cell"));
+                        writer.add(NEWLINE);
+                    }
+                    writer.add(EF.createEndElement("", "", "layout"));
+                    writer.add(EF.createEndDocument());
+                    writer.flush();
+                } finally {
+                    writer.close();
                 }
-                writer.add(NEWLINE);
-
-                for (final IVDoc<? extends ICDoc> vDoc : cell.getDocs()) {
-                    createNode(writer, Property.doc, vDoc.getDocumentID().toString());
-                }
-
-                writer.add(TAB);
-                writer.add(EF.createEndElement("", "", "cell"));
-                writer.add(NEWLINE);
             }
-            writer.flush(); 
-            writer.add(EF.createEndDocument());
+
+            try {
+                Files.move(temporaryFile, layoutFile, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+            } catch (AtomicMoveNotSupportedException e) {
+                Files.move(temporaryFile, layoutFile, StandardCopyOption.REPLACE_EXISTING);
+            }
+            temporaryFile = null;
         } catch (XMLStreamException | IOException e) {
             // TODO Auto-generated catch block ignores the exception, but sends it to System.err and probably forge.log.
             e.printStackTrace();
         } finally {
-            if ( writer != null )
-                try { writer.close(); } catch (XMLStreamException e) {}
+            if (temporaryFile != null) {
+                try {
+                    Files.deleteIfExists(temporaryFile);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
     }
 
@@ -541,4 +566,3 @@ public final class SLayoutIO {
         writer0.add(NEWLINE);
     }
 }
- 
