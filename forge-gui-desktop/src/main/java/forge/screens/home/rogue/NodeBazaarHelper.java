@@ -379,10 +379,8 @@ class NodeBazaarHelper {
     }
 
     private void addCarryCardOffers(RogueRun currentRun, List<BazaarItem> inventory, int offerCount) {
-        List<PaperCard> candidates = new ArrayList<>(RogueConfig.getAllCards(
-            NodeBazaarHelper::isCarryCardCandidate).stream()
-            .filter(card -> !card.hasFlavorName())
-            .toList());
+        List<PaperCard> candidates = new ArrayList<>(RogueConfig.getRandomCards(
+            card -> isCarryCardCandidate(card) && !card.hasFlavorName()));
         candidates.removeIf(card -> !currentRun.canAddCardAsCarryCard(card));
 
         // Bucket first so the final offer mix is not dominated by the much larger creature pool.
@@ -400,10 +398,7 @@ class NodeBazaarHelper {
 
         List<PaperCard> selectedCards = selectCarryCardOffers(candidatesByType, offerCount);
         for (PaperCard card : selectedCards) {
-            PaperCard preferredPrint = RogueConfig.getPreferredPrint(card);
-            if (preferredPrint != null) {
-                inventory.add(BazaarItem.forCarryCard(preferredPrint, getCarryCardType(preferredPrint)));
-            }
+            inventory.add(BazaarItem.forCarryCard(card, getCarryCardType(card)));
         }
     }
 

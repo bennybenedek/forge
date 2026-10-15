@@ -101,7 +101,7 @@ public enum HenzieEncounter implements NPCEncounter {
                 "aside for you. Take a look before you go getting yourself killed with somebody else's stuff.\"",
             "Henzie folds a supplier's letter and pockets it with a grin. \"Took a little asking around, but I've got " +
                 "stuff for you. Take your time. I already did the part where we hurry.\"",
-            "Henzie pulls up a chair. \"What do you need, Commander? Let me guess...Illegal things the whole Multiverse is after? " +
+            "Henzie pulls up a chair. \"What do you need, Commander? Let me guess...Illegal stuff the whole goddamn Multiverse is after? " +
                 "Well, you're in luck. Best offers since a long time.\""
         );
     }

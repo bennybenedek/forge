@@ -364,7 +364,8 @@ public final class CodexHelper {
     }
 
     private static void recordCommanderRewardCard(RogueRun run, PaperCard card, boolean acquired) {
-        if (run == null || card == null || run.getSelectedRogueDeck() == null) {
+        if (run == null || card == null || run.getSelectedRogueDeck() == null
+            || !run.recordsCuratedCommanderRewards()) {
             return;
         }
 

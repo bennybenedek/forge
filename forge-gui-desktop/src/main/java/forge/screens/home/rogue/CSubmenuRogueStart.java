@@ -9,13 +9,16 @@ import forge.gamemodes.rogue.npc.NPC;
 import forge.gamemodes.rogue.npc.NPCEncounterComposite;
 import forge.gamemodes.rogue.path.RoguePathGenerator;
 import forge.gui.GuiBase;
+import forge.gui.UiCommand;
 import forge.gui.framework.EDocID;
 import forge.gui.framework.ICDoc;
 import forge.item.PaperCard;
 import forge.localinstance.properties.ForgePreferences;
 import forge.screens.home.CHomeUI;
+import forge.screens.home.sanctioned.AvatarSelector;
 import forge.sound.SoundEffectType;
 import forge.sound.SoundSystem;
+import forge.toolbox.FLabel;
 import forge.toolbox.FOptionPane;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -49,6 +52,9 @@ public enum CSubmenuRogueStart implements ICDoc {
     view.getBtnStats().addActionListener(e -> openStats());
     view.getBtnAether().addActionListener(e -> openAether());
     view.getBtnHistory().addActionListener(e -> openHistory());
+    view.getChkCustomRuns().addItemListener(e -> onCustomRunsToggled());
+    view.getChkRandomRogueCommander().addItemListener(e -> onRandomRogueCommanderToggled());
+    view.getChkChooseRogueCommander().addItemListener(e -> onChooseRogueCommanderToggled());
     view.getChkDescension().addItemListener(e -> onDescensionToggled());
     view.getBtnDescensionDown().addActionListener(e -> changeDescensionLevel(-1));
     view.getBtnDescensionUp().addActionListener(e -> changeDescensionLevel(1));
@@ -125,6 +131,13 @@ public enum CSubmenuRogueStart implements ICDoc {
   }
 
   private void loadAvailableCommanders() {
+    boolean customRunsUnlocked = RogueMetaProgress.getInstance().isCustomRunsUnlocked();
+    if (!customRunsUnlocked) {
+      view.getChkCustomRuns().setSelected(false);
+    }
+    view.getChkCustomRuns().setVisible(customRunsUnlocked);
+    view.getPnlCustomRunLock().setVisible(!customRunsUnlocked);
+
     List<RogueDeck> availableDecks = RogueConfig.loadRogueDecks();
     String previousCommanderName = selectedDeck != null ? selectedDeck.getCommanderCardName() : null;
     int previousDescensionLevel = selectedDescensionLevel;
@@ -169,10 +182,11 @@ public enum CSubmenuRogueStart implements ICDoc {
       selectedDescensionLevel = previousDescensionLevel;
       updateCommanderDetails(panelToSelect);
       updateDescensionVisibility(panelToSelect, previousCommanderPanel != null);
-      view.getBtnBeginRun().setEnabled(true);
     } else {
-      view.getBtnBeginRun().setEnabled(false);
+      selectedDeck = null;
+      updateDescensionVisibility(null, true);
     }
+    updateStartButtonState();
 
     // Update button states - locked until first run completed
     boolean hasCompletedRuns = RogueMetaProgress.getInstance().getTotalRunsCompleted() > 0;
@@ -220,10 +234,9 @@ public enum CSubmenuRogueStart implements ICDoc {
         panel.setHighlighted(panel == clickedPanel);
       }
       selectedDeck = null;
-      view.getBtnBeginRun().setEnabled(false);
       updateCommanderDetails(clickedPanel);
-      view.getChkDescension().setVisible(false);
-      view.getPnlDescensionLevel().setVisible(false);
+      updateDescensionVisibility(null, true);
+      updateStartButtonState();
       return;
     }
 
@@ -242,22 +255,64 @@ public enum CSubmenuRogueStart implements ICDoc {
     // Update selected deck and button state
     if (newState) {
       selectedDeck = clickedPanel.getCommander();
-      view.getBtnBeginRun().setEnabled(true);
       updateCommanderDetails(clickedPanel);
-      updateDescensionVisibility(clickedPanel, false);
+      updateDescensionVisibility(clickedPanel, view.getChkCustomRuns().isSelected());
     } else {
       // If deselecting, clear details
       selectedDeck = null;
-      view.getBtnBeginRun().setEnabled(false);
       view.getLblCommanderName().setText("");
       view.getLblDescriptionLabel().setText("Description:");
       view.getLblDescriptionLock().setVisible(false);
       view.getTxtDescription().setText("");
       view.getTxtTheme().setText("");
-      view.getChkDescension().setVisible(false);
-      view.getPnlDescensionLevel().setVisible(false);
-      view.getPnlDescensionLock().setVisible(false);
+      updateDescensionVisibility(null, true);
     }
+    updateStartButtonState();
+  }
+
+  private void onCustomRunsToggled() {
+    boolean custom = view.getChkCustomRuns().isSelected();
+    view.getPnlCustomModifications().setVisible(custom);
+    if (!custom) {
+      view.getChkRandomRogueCommander().setSelected(false);
+      view.getChkChooseRogueCommander().setSelected(false);
+    }
+    CommanderCardPanel selectedPanel = view.getCommanderPanels().stream()
+        .filter(panel -> panel.getCommander() == selectedDeck && !panel.isLocked())
+        .findFirst().orElse(null);
+    updateDescensionVisibility(selectedPanel, true);
+    updateStartButtonState();
+  }
+
+  private void onRandomRogueCommanderToggled() {
+    if (view.getChkRandomRogueCommander().isSelected()) {
+      view.getChkChooseRogueCommander().setSelected(false);
+    }
+    updateStartButtonState();
+  }
+
+  private void onChooseRogueCommanderToggled() {
+    if (view.getChkChooseRogueCommander().isSelected()) {
+      view.getChkRandomRogueCommander().setSelected(false);
+    }
+    updateStartButtonState();
+  }
+
+  private void updateStartButtonState() {
+    boolean custom = view.getChkCustomRuns().isSelected();
+    boolean ignoresSelectedCommander = custom && (view.getChkRandomRogueCommander().isSelected()
+        || view.getChkChooseRogueCommander().isSelected());
+    for (CommanderCardPanel panel : view.getCommanderPanels()) {
+      panel.setDimmed(ignoresSelectedCommander);
+    }
+    boolean customAllowed = !custom || RogueMetaProgress.getInstance().isCustomRunsUnlocked();
+    boolean hasDeck = custom ? view.getChkRandomRogueCommander().isSelected()
+        || view.getChkChooseRogueCommander().isSelected() : selectedDeck != null;
+    boolean descensionAllowed = selectedDescensionLevel == 0
+        || (RogueMetaProgress.getInstance().isDescensionModeUnlocked()
+        && (custom || (selectedDeck != null && selectedDescensionLevel <= RogueMetaProgress
+            .getInstance().getMaxDescensionUnlocked(selectedDeck.getCommanderCardName()))));
+    view.getBtnBeginRun().setEnabled(customAllowed && hasDeck && descensionAllowed);
   }
 
   private void updateCommanderDetails(CommanderCardPanel panel) {
@@ -306,15 +361,14 @@ public enum CSubmenuRogueStart implements ICDoc {
     updatingDescensionUi = false;
     view.getPnlDescensionLevel().setVisible(false);
 
-    if (panel == null || panel.isLocked()) {
+    boolean custom = view.getChkCustomRuns().isSelected();
+    if (!custom && (panel == null || panel.isLocked())) {
       view.getChkDescension().setVisible(false);
       view.getPnlDescensionLock().setVisible(false);
       return;
     }
 
     RogueMetaProgress progress = RogueMetaProgress.getInstance();
-    String commanderName = panel.getCommander().getCommanderCardName();
-
     if (!progress.isDescensionModeUnlocked()) {
       view.getLblDescensionLockText().setText(
           "Descension Mode - Win a Run with 3 different Commanders to unlock.");
@@ -322,6 +376,22 @@ public enum CSubmenuRogueStart implements ICDoc {
       view.getChkDescension().setVisible(false);
       return;
     }
+
+    if (custom) {
+      view.getPnlDescensionLock().setVisible(false);
+      view.getChkDescension().setVisible(true);
+      if (previousDescensionLevel > 0) {
+        selectedDescensionLevel = Math.min(previousDescensionLevel, DescensionLevel.getMaxLevel());
+        updatingDescensionUi = true;
+        view.getChkDescension().setSelected(true);
+        updatingDescensionUi = false;
+        view.getPnlDescensionLevel().setVisible(true);
+        updateDescensionDisplay();
+      }
+      return;
+    }
+
+    String commanderName = panel.getCommander().getCommanderCardName();
 
     int maxUnlocked = progress.getMaxDescensionUnlocked(commanderName);
     if (maxUnlocked == 0) {
@@ -356,7 +426,7 @@ public enum CSubmenuRogueStart implements ICDoc {
     } else {
       selectedDescensionLevel = 0;
       view.getPnlDescensionLevel().setVisible(false);
-      view.getBtnBeginRun().setEnabled(selectedDeck != null);
+      updateStartButtonState();
     }
   }
 
@@ -368,9 +438,11 @@ public enum CSubmenuRogueStart implements ICDoc {
   }
 
   private void updateDescensionDisplay() {
-    if (selectedDeck == null) return;
-    String commanderName = selectedDeck.getCommanderCardName();
-    int maxUnlocked = RogueMetaProgress.getInstance().getMaxDescensionUnlocked(commanderName);
+    boolean custom = view.getChkCustomRuns().isSelected();
+    if (!custom && selectedDeck == null) return;
+    String commanderName = selectedDeck != null ? selectedDeck.getCommanderCardName() : "";
+    int maxUnlocked = custom ? DescensionLevel.getMaxLevel()
+        : RogueMetaProgress.getInstance().getMaxDescensionUnlocked(commanderName);
     DescensionLevel dl = DescensionLevel.forLevel(selectedDescensionLevel);
     boolean locked = selectedDescensionLevel > maxUnlocked;
 
@@ -384,19 +456,59 @@ public enum CSubmenuRogueStart implements ICDoc {
 
     if (!locked) {
       view.getLblDescensionDesc().setText(dl != null ? dl.description : "");
-      view.getBtnBeginRun().setEnabled(true);
+      updateStartButtonState();
     } else {
       view.getLblDescensionDesc().setText(String.format(
           "Win a Run with %s in Descension Level %d to unlock Level %d.",
           commanderName, selectedDescensionLevel - 1, selectedDescensionLevel));
-      view.getBtnBeginRun().setEnabled(false);
+      updateStartButtonState();
     }
   }
 
   private void beginNewRun() {
-    if (selectedDeck == null) {
-      System.err.println("Error: No commander selected");
+    boolean custom = view.getChkCustomRuns().isSelected();
+    if ((custom && !RogueMetaProgress.getInstance().isCustomRunsUnlocked())
+        || (selectedDescensionLevel > 0
+        && !RogueMetaProgress.getInstance().isDescensionModeUnlocked())
+        || (custom && !view.getChkRandomRogueCommander().isSelected()
+        && !view.getChkChooseRogueCommander().isSelected())
+        || (!custom && selectedDeck == null)) {
       return;
+    }
+
+    CustomRunModification modification = !custom ? null
+        : view.getChkChooseRogueCommander().isSelected()
+            ? CustomRunModification.CHOSEN_ONE : CustomRunModification.MANIA;
+    PaperCard chosenCommander = modification == CustomRunModification.CHOSEN_ONE
+        ? new CommanderSelectionDialog().show() : null;
+    if (modification == CustomRunModification.CHOSEN_ONE && chosenCommander == null) {
+      return;
+    }
+    RogueDeck runDeck;
+    try {
+      runDeck = modification != null
+          ? modification.createRogueDeck(selectedDeck, chosenCommander) : selectedDeck;
+    } catch (RuntimeException e) {
+      System.err.println("Could not generate a custom Rogue Commander deck: " + e);
+      runDeck = null;
+    }
+    if (runDeck == null) {
+      FOptionPane.showMessageDialog("Could not generate a valid Commander deck. Please try again.",
+          "Custom Run");
+      return;
+    }
+    if (modification == CustomRunModification.CHOSEN_ONE) {
+      RogueDeck generatedDeck = runDeck;
+      AvatarSelector avatarSelector = new AvatarSelector(chosenCommander.getName(),
+          runDeck.getAvatarIndex(), List.of());
+      for (FLabel avatar : avatarSelector.getSelectables()) {
+        avatar.setCommand((UiCommand) () -> {
+          generatedDeck.setAvatarIndex(Integer.parseInt(avatar.getName().substring(11)));
+          avatarSelector.setVisible(false);
+        });
+      }
+      avatarSelector.setVisible(true);
+      avatarSelector.dispose();
     }
 
     var progress = RogueMetaProgress.getInstance();
@@ -425,7 +537,10 @@ public enum CSubmenuRogueStart implements ICDoc {
     }
 
     // Create new run and snapshot active Aetherworks
-    RogueRun newRun = new RogueRun(selectedDeck);
+    RogueRun newRun = new RogueRun(runDeck);
+    if (modification != null) {
+      newRun.addCustomRunModification(modification);
+    }
     newRun.getRunTimer().start();
     newRun.setDescensionLevel(selectedDescensionLevel);
     newRun.snapshotAetherEffects(progress);
@@ -458,7 +573,8 @@ public enum CSubmenuRogueStart implements ICDoc {
 
     // Generate unique name for the run (used as filename)
     // Format: DeckName_Timestamp (e.g., "MeriaRogueCommander_12-11-25_143022")
-    String runName = selectedDeck.getName() + "_" + System.currentTimeMillis();
+    String runName = (custom ? runDeck.getName().replaceAll("[^a-zA-Z0-9_-]", "_")
+        : runDeck.getName()) + "_" + System.currentTimeMillis();
     newRun.setName(runName);
 
     // Track meta progress

@@ -162,6 +162,7 @@ public interface RogueEffect {
     }
 
     private static String getUIDisplayPrefix(RogueEffect effect) {
+        if (effect instanceof CustomRunModification) return "Run Mod: ";
         if (effect instanceof WoundEffect) return "Wound - ";
         if (effect instanceof AetherEffect) return "Aetherwork - ";
         if (effect instanceof NPCEffect) return "NPC Trait - ";

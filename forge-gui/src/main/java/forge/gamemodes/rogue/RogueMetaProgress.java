@@ -43,8 +43,9 @@ public class RogueMetaProgress {
     // Per-Planebound match tracking, keyed by deck path
     private Map<String, PlaneboundStats> planeboundStats;
 
-    // Stat tracking (unified map, keyed by RogueStats.conditionKey)
+    // Progression-eligible stats and custom-run stats, keyed by RogueStats.conditionKey
     private Map<String, Integer> statValues;
+    private Map<String, Integer> customStatValues;
 
     // Codex discovery state
     private CodexProgress codexProgress;
@@ -83,6 +84,7 @@ public class RogueMetaProgress {
         runsWonPerCommander = new HashMap<>();
         planeboundStats = new HashMap<>();
         statValues = new HashMap<>();
+        customStatValues = new HashMap<>();
         codexProgress = new CodexProgress();
 
         // Initialize Aether system
@@ -125,6 +127,7 @@ public class RogueMetaProgress {
         runsWonPerCommander = new HashMap<>();
         planeboundStats = new HashMap<>();
         statValues = new HashMap<>();
+        customStatValues = new HashMap<>();
         maxDescensionWonPerCommander = new HashMap<>();
         codexProgress = new CodexProgress();
 
@@ -148,25 +151,54 @@ public class RogueMetaProgress {
     // ==================== Stat System ====================
 
     /**
-     * Get the stored value for a stat key.
+     * Get the displayed total for a stat key across normal and custom runs.
      */
     public int getStatValue(String key) {
+        int normal = getProgressionStatValue(key);
+        int custom = getStatValueForCategory(key, true);
+        RogueStats stat = RogueStats.fromKey(key);
+        return stat != null && stat.isCounterStat() ? normal + custom : Math.max(normal, custom);
+    }
+
+    public int getProgressionStatValue(String key) {
         if (statValues == null) statValues = new HashMap<>();
         return statValues.getOrDefault(key, 0);
+    }
+
+    int getStatValueForRun(String key, RogueRun run) {
+        return getStatValueForCategory(key, run.isCustomRun());
+    }
+
+    private int getStatValueForCategory(String key, boolean customRun) {
+        if (!customRun) {
+            return getProgressionStatValue(key);
+        }
+        if (customStatValues == null) customStatValues = new HashMap<>();
+        return customStatValues.getOrDefault(key, 0);
     }
 
     /**
      * Update a stat value if the new value exceeds the stored value.
      * Works for both counters (pass current + 1) and max-value tracking (pass snapshot).
-     * Checks decks with matching unlock conditions for new unlocks.
+     * Only normal-run values can satisfy unlock conditions.
      */
-    public void updateStat(RogueStats stat, int value) {
-        if (statValues == null) statValues = new HashMap<>();
-        String key = stat.getConditionKey();
-        if (value > statValues.getOrDefault(key, 0)) {
-            statValues.put(key, value);
+    public void updateStat(RogueStats stat, int value, RogueRun run) {
+        boolean customRun = run.isCustomRun();
+        Map<String, Integer> values;
+        if (customRun) {
+            if (customStatValues == null) customStatValues = new HashMap<>();
+            values = customStatValues;
+        } else {
+            if (statValues == null) statValues = new HashMap<>();
+            values = statValues;
         }
-        checkForNewUnlocks(stat);
+        String key = stat.getConditionKey();
+        if (value > values.getOrDefault(key, 0)) {
+            values.put(key, value);
+        }
+        if (!customRun) {
+            checkForNewUnlocks(stat);
+        }
     }
 
     // ==================== Codex Progress ====================
@@ -263,12 +295,16 @@ public class RogueMetaProgress {
     /**
      * Track per-commander run start count.
      */
-    public void trackCommanderStarted(String commanderName) {
-        runsStartedPerCommander.merge(commanderName, 1, Integer::sum);
+    public void trackCommanderStarted(RogueRun run) {
+        if (!run.isCustomRun()) {
+            runsStartedPerCommander.merge(run.getSelectedRogueDeck().getCommanderCardName(), 1, Integer::sum);
+        }
     }
 
-    public void mergeRunsWonPerCommander(String commanderName) {
-        runsWonPerCommander.merge(commanderName, 1, Integer::sum);
+    public void mergeRunsWonPerCommander(RogueRun run) {
+        if (!run.isCustomRun()) {
+            runsWonPerCommander.merge(run.getCurrentCommanderName(), 1, Integer::sum);
+        }
     }
 
     // ==================== Unlock Checking ====================
@@ -306,6 +342,15 @@ public class RogueMetaProgress {
 
         // Check global Descension Mode unlock when runs are won
         if (stat == RogueStats.RUNS_WON) {
+            final String customRunsKey = "CUSTOM_RUNS";
+            if (isCustomRunsUnlocked() && !notifiedCommanderUnlocks.contains(customRunsKey)) {
+                notifiedCommanderUnlocks.add(customRunsKey);
+                changed = true;
+                GuiBase.getInterface().showImageDialog(null,
+                    "You have won 2 Runs!\nCustom Runs are now unlocked.",
+                    "Custom Runs Unlocked!");
+            }
+
             final String descensionKey = "DESCENSION_MODE";
             if (isDescensionModeUnlocked() && !notifiedCommanderUnlocks.contains(descensionKey)) {
                 notifiedCommanderUnlocks.add(descensionKey);
@@ -330,12 +375,28 @@ public class RogueMetaProgress {
         return getStatValue(RogueStats.RUNS_STARTED.getConditionKey());
     }
 
+    public int getProgressionTotalRunsStarted() {
+        return getProgressionStatValue(RogueStats.RUNS_STARTED.getConditionKey());
+    }
+
     public int getTotalRunsCompleted() {
         return getStatValue(RogueStats.RUNS_COMPLETED.getConditionKey());
     }
 
+    public int getProgressionTotalRunsCompleted() {
+        return getProgressionStatValue(RogueStats.RUNS_COMPLETED.getConditionKey());
+    }
+
     public int getTotalRunsWon() {
         return getStatValue(RogueStats.RUNS_WON.getConditionKey());
+    }
+
+    public int getProgressionTotalRunsWon() {
+        return getProgressionStatValue(RogueStats.RUNS_WON.getConditionKey());
+    }
+
+    public boolean isCustomRunsUnlocked() {
+        return getProgressionTotalRunsWon() >= 2;
     }
 
     public int getTotalMatchesWon() {
@@ -442,7 +503,9 @@ public class RogueMetaProgress {
         return 1 + getMaxDescensionWon(commanderName);
     }
 
-    public void notifyDescensionL1IfFirstWin(String commanderName) {
+    public void notifyDescensionL1IfFirstWin(RogueRun run) {
+        if (run.isCustomRun()) return;
+        String commanderName = run.getCurrentCommanderName();
         if (!isDescensionModeUnlocked() || getRunsWonWithCommander(commanderName) != 1) return;
         forge.item.PaperCard card = forge.model.FModel.getMagicDb().getCommonCards().getCard(commanderName);
         forge.localinstance.skin.ISkinImage image = forge.gui.GuiBase.getInterface()
@@ -454,7 +517,10 @@ public class RogueMetaProgress {
             "Descension Level 1 Unlocked!");
     }
 
-    public boolean recordDescensionWin(String commanderName, int level) {
+    public boolean recordDescensionWin(RogueRun run) {
+        if (run.isCustomRun() || run.getDescensionLevel() == 0) return false;
+        String commanderName = run.getCurrentCommanderName();
+        int level = run.getDescensionLevel();
         if (maxDescensionWonPerCommander == null) maxDescensionWonPerCommander = new HashMap<>();
         if (level > getMaxDescensionWon(commanderName)) {
             maxDescensionWonPerCommander.put(commanderName, level);

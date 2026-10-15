@@ -26,7 +26,7 @@ public enum TeferiOptionalEncounter implements NPCOptionalEncounter {
 
         @Override
         public boolean isTriggerConditionMet(RogueMetaProgress progress) {
-            return progress.getTotalRunsCompleted() > progress.getTotalRunsWon();
+            return progress.getProgressionTotalRunsCompleted() > progress.getProgressionTotalRunsWon();
         }
     },
     CODEX_AND_HISTORY("teferi:codex_and_history") {
@@ -42,7 +42,7 @@ public enum TeferiOptionalEncounter implements NPCOptionalEncounter {
 
         @Override
         public boolean isTriggerConditionMet(RogueMetaProgress progress) {
-            return progress.getTotalRunsCompleted() > progress.getTotalRunsWon() + 1;
+            return progress.getProgressionTotalRunsCompleted() > progress.getProgressionTotalRunsWon() + 1;
         }
     },
     AUTO_UPDATE("teferi:auto_update") {
@@ -63,7 +63,7 @@ public enum TeferiOptionalEncounter implements NPCOptionalEncounter {
 
         @Override
         public boolean isTriggerConditionMet(RogueMetaProgress progress) {
-            return progress.getTotalRunsCompleted() > progress.getTotalRunsWon() + 2;
+            return progress.getProgressionTotalRunsCompleted() > progress.getProgressionTotalRunsWon() + 2;
         }
     };
 

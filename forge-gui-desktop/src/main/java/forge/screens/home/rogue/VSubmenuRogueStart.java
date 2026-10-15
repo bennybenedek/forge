@@ -1,5 +1,6 @@
 package forge.screens.home.rogue;
 
+import forge.gamemodes.rogue.effect.CustomRunModification;
 import forge.gui.framework.DragCell;
 import forge.gui.framework.DragTab;
 import forge.gui.framework.EDocID;
@@ -80,6 +81,16 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
   // Dev buttons
   private final FButton btnDevUnlockAll = new FButton("[Dev] Unlock All");
   private final FButton btnDevNPCProgress = new FButton("[Dev] NPC Progress");
+
+  // Run configuration
+  private final FCheckBox chkCustomRuns = new FCheckBox("Custom Run");
+  private final FCheckBox chkRandomRogueCommander = new FCheckBox("Mania");
+  private final FCheckBox chkChooseRogueCommander = new FCheckBox("Chosen One");
+  private final FLabel lblCustomRunHint = new FLabel.Builder()
+      .text("Custom Runs do not unlock Commanders or Descension Levels, and do not award Sparks.")
+      .fontSize(12).build();
+  private FSkin.SkinnedPanel pnlCustomModifications;
+  private JPanel pnlCustomRunLock;
 
   // Descension UI
   private final FCheckBox chkDescension = new FCheckBox("Descension Mode");
@@ -180,7 +191,8 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
     JPanel panel = new JPanel();
     panel.setOpaque(false);
     panel.setLayout(
-        new MigLayout("insets 0, gap 0, wrap 2", "[150px][grow]", "[]10px[]10px[]10px[]10px[]20px[]"));
+        new MigLayout("insets 0, gap 0, wrap 2", "[150px][grow]",
+            "[]10px[]10px[]10px[]5px[]10px[]10px[]20px[]"));
 
     // Row 0: Commander name
     panel.add(new FLabel.Builder().text("Commander:").fontSize(14).build(),
@@ -203,9 +215,39 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
         ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
     panel.add(scrollTheme, "cell 1 2, growx, h 40px!");
 
-    // Row 3: Descension checkbox (unlocked) OR global lock indicator (locked)
+    // Rows 3-4: Custom run modifications
+    chkCustomRuns.setVisible(false);
+    panel.add(chkCustomRuns, "cell 0 3, span 2, alignx left, hidemode 3");
+    pnlCustomRunLock = new JPanel(new MigLayout("insets 0, gap 5"));
+    pnlCustomRunLock.setOpaque(false);
+    pnlCustomRunLock.add(
+        new FLabel.Builder().icon(FSkin.getImage(FSkinProp.ICO_LOCK).resize(20, 20)).build(),
+        "w 20px!, h 20px!");
+    pnlCustomRunLock.add(new FLabel.Builder()
+        .text("Custom Run - Win 2 Runs with any Commander to unlock.").fontSize(12).build(),
+        "growx");
+    pnlCustomRunLock.setVisible(false);
+    panel.add(pnlCustomRunLock, "cell 0 3, span 2, growx, hidemode 3");
+    pnlCustomModifications = new FSkin.SkinnedPanel(
+        new MigLayout("insets 10 12 10 12, gapx 8, gapy 8, wrap 2, fillx", "[130px!][grow,fill]"));
+    pnlCustomModifications.setOpaque(true);
+    pnlCustomModifications.setBackground(FSkin.getColor(FSkin.Colors.CLR_THEME2));
+    pnlCustomModifications.setBorder(new FSkin.LineSkinBorder(FSkin.getColor(FSkin.Colors.CLR_BORDERS)));
+    pnlCustomModifications.add(chkRandomRogueCommander, "aligny top");
+    pnlCustomModifications.add(new FLabel.Builder()
+        .text("<html>" + CustomRunModification.MANIA.getRawDescription() + "</html>")
+        .fontSize(12).fontAlign(SwingConstants.LEFT).build(), "growx, wmin 0");
+    pnlCustomModifications.add(chkChooseRogueCommander, "aligny top");
+    pnlCustomModifications.add(new FLabel.Builder()
+        .text("<html>" + CustomRunModification.CHOSEN_ONE.getRawDescription() + "</html>")
+        .fontSize(12).fontAlign(SwingConstants.LEFT).build(), "growx, wmin 0");
+    pnlCustomModifications.add(lblCustomRunHint, "span 2");
+    pnlCustomModifications.setVisible(chkCustomRuns.isSelected());
+    panel.add(pnlCustomModifications, "cell 0 4, span 2, growx, hidemode 3");
+
+    // Row 5: Descension checkbox (unlocked) OR global lock indicator (locked)
     chkDescension.setVisible(false);
-    panel.add(chkDescension, "cell 0 3, span 2, alignx left, hidemode 3");
+    panel.add(chkDescension, "cell 0 5, span 2, alignx left, hidemode 3");
 
     pnlDescensionLock = new JPanel(new MigLayout("insets 0, gap 5"));
     pnlDescensionLock.setOpaque(false);
@@ -214,9 +256,9 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
         "w 20px!, h 20px!");
     pnlDescensionLock.add(lblDescensionLockText, "growx");
     pnlDescensionLock.setVisible(false);
-    panel.add(pnlDescensionLock, "cell 0 3, span 2, growx, hidemode 3");
+    panel.add(pnlDescensionLock, "cell 0 5, span 2, growx, hidemode 3");
 
-    // Row 4: Descension level selector (hidden by default)
+    // Row 6: Descension level selector (hidden by default)
     pnlDescensionLevel = new JPanel(new MigLayout("insets 0, gap 5, wrap 1"));
     pnlDescensionLevel.setOpaque(false);
     JPanel arrowRow = new JPanel(new MigLayout("insets 0, gap 5"));
@@ -228,9 +270,9 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
     pnlDescensionLevel.add(arrowRow, "growx");
     pnlDescensionLevel.add(lblDescensionDesc, "growx");
     pnlDescensionLevel.setVisible(false);
-    panel.add(pnlDescensionLevel, "cell 0 4, span 2, growx");
+    panel.add(pnlDescensionLevel, "cell 0 6, span 2, growx");
 
-    // Row 5: Buttons
+    // Row 7: Buttons
     JPanel buttonPanel = new JPanel(new MigLayout("insets 0, gap 10"));
     buttonPanel.setOpaque(false);
     buttonPanel.add(btnBeginRun, "w 150px!, h 40px!");
@@ -241,7 +283,7 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
       buttonPanel.add(btnDevUnlockAll, "w 150px!, h 40px!");
       buttonPanel.add(btnDevNPCProgress, "w 150px!, h 40px!");
     }
-    panel.add(buttonPanel, "cell 0 5, span 2, alignx center");
+    panel.add(buttonPanel, "cell 0 7, span 2, alignx center");
 
     return panel;
   }
@@ -311,6 +353,26 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
 
   public JCheckBox getChkDescension() {
     return chkDescension;
+  }
+
+  public JCheckBox getChkCustomRuns() {
+    return chkCustomRuns;
+  }
+
+  public JCheckBox getChkRandomRogueCommander() {
+    return chkRandomRogueCommander;
+  }
+
+  public JCheckBox getChkChooseRogueCommander() {
+    return chkChooseRogueCommander;
+  }
+
+  public JPanel getPnlCustomModifications() {
+    return pnlCustomModifications;
+  }
+
+  public JPanel getPnlCustomRunLock() {
+    return pnlCustomRunLock;
   }
 
   public FButton getBtnDescensionDown() {

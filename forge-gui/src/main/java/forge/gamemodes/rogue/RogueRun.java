@@ -29,6 +29,7 @@ public class RogueRun {
     // Run Configuration
     private RogueDeck selectedRogueDeck;        // Selected Rogue Deck identifier
     private String timestamp;                   // Creation timestamp
+    private List<RogueRunEffect> activeCustomRunModifications;
 
     // Run State
     private Deck currentDeck;                   // Player's evolving deck (starts as Start Deck copy)
@@ -244,7 +245,7 @@ public class RogueRun {
     }
 
     public List<PaperCard> getAllCardsForActiveCommander(Predicate<PaperCard> filter) {
-        List<PaperCard> candidateCards = RogueConfig.getAllCards(filter);
+        List<PaperCard> candidateCards = RogueConfig.getRandomCards(filter);
         List<PaperCard> commanderLegalCards = filterCardsByCommanderColorIdentity(candidateCards);
         return filterDuplicateCards(commanderLegalCards);
     }
@@ -610,6 +611,31 @@ public class RogueRun {
 
     public RogueDeck getSelectedRogueDeck() {
         return selectedRogueDeck;
+    }
+
+    public boolean isCustomRun() {
+        return activeCustomRunModifications != null && !activeCustomRunModifications.isEmpty();
+    }
+
+    private boolean hasCustomRunModification(CustomRunModification modification) {
+        return activeCustomRunModifications != null && activeCustomRunModifications.stream()
+            .anyMatch(effect -> effect.getId().equals(modification.getId()));
+    }
+
+    public boolean recordsCuratedCommanderRewards() {
+        return getActiveCustomRunModifications().stream().allMatch(effect ->
+            effect instanceof CustomRunModification modification
+                && modification.recordsCuratedCommanderRewards());
+    }
+
+    public List<RogueEffect> getActiveCustomRunModifications() {
+        return mapEffects(activeCustomRunModifications, CustomRunModification::fromId);
+    }
+
+    public void addCustomRunModification(CustomRunModification modification) {
+        if (!hasCustomRunModification(modification)) {
+            activeCustomRunModifications = addEffect(activeCustomRunModifications, modification);
+        }
     }
 
     public String getTimestamp() {

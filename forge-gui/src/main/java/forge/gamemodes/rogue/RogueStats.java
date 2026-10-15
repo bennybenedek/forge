@@ -18,16 +18,16 @@ public enum RogueStats {
     MAX_LIFE("MaxLife", "Have %s+ life at the end of any match.") {
         @Override public int evaluate(RogueRun run, RogueMetaProgress p) { return run.getLastMatchRawLife(); }
         @Override public void onMatchCompleted(RogueRun run, RogueMetaProgress p, boolean won) {
-            p.updateStat(this, evaluate(run, p));
+            p.updateStat(this, evaluate(run, p), run);
         }
     },
     MAX_GOLD("MaxGold", "Earn %s gold in a run.") {
         @Override public int evaluate(RogueRun run, RogueMetaProgress p) { return run.getCurrentGold(); }
         @Override public void onMatchCompleted(RogueRun run, RogueMetaProgress p, boolean won) {
-            p.updateStat(this, evaluate(run, p));
+            p.updateStat(this, evaluate(run, p), run);
         }
         @Override public void onSideNodeCompleted(RogueRun run, RogueMetaProgress p) {
-            p.updateStat(this, evaluate(run, p));
+            p.updateStat(this, evaluate(run, p), run);
         }
     },
     CREATURE_TYPES("CreatureTypes", "Have %s+ creature types in your deck.") {
@@ -42,10 +42,10 @@ public enum RogueStats {
             return types.size();
         }
         @Override public void onMatchCompleted(RogueRun run, RogueMetaProgress p, boolean won) {
-            p.updateStat(this, evaluate(run, p));
+            p.updateStat(this, evaluate(run, p), run);
         }
         @Override public void onSideNodeCompleted(RogueRun run, RogueMetaProgress p) {
-            p.updateStat(this, evaluate(run, p));
+            p.updateStat(this, evaluate(run, p), run);
         }
     },
     MAX_SHARED_CREATURE_TYPE("MaxSharedCreatureType", "Have %s+ creatures that share a creature type in your deck.") {
@@ -66,10 +66,10 @@ public enum RogueStats {
             return max;
         }
         @Override public void onMatchCompleted(RogueRun run, RogueMetaProgress p, boolean won) {
-            p.updateStat(this, evaluate(run, p));
+            p.updateStat(this, evaluate(run, p), run);
         }
         @Override public void onSideNodeCompleted(RogueRun run, RogueMetaProgress p) {
-            p.updateStat(this, evaluate(run, p));
+            p.updateStat(this, evaluate(run, p), run);
         }
     },
     LEGENDARY_PERMANENTS("LegendaryPermanents", "Have %s+ legendary permanents in your deck.") {
@@ -84,10 +84,10 @@ public enum RogueStats {
             return count;
         }
         @Override public void onMatchCompleted(RogueRun run, RogueMetaProgress p, boolean won) {
-            p.updateStat(this, evaluate(run, p));
+            p.updateStat(this, evaluate(run, p), run);
         }
         @Override public void onSideNodeCompleted(RogueRun run, RogueMetaProgress p) {
-            p.updateStat(this, evaluate(run, p));
+            p.updateStat(this, evaluate(run, p), run);
         }
     },
     NONBASIC_LANDS("NonbasicLands", "Have %s+ nonbasic lands in your deck.") {
@@ -102,46 +102,56 @@ public enum RogueStats {
             return count;
         }
         @Override public void onMatchCompleted(RogueRun run, RogueMetaProgress p, boolean won) {
-            p.updateStat(this, evaluate(run, p));
+            p.updateStat(this, evaluate(run, p), run);
         }
         @Override public void onSideNodeCompleted(RogueRun run, RogueMetaProgress p) {
-            p.updateStat(this, evaluate(run, p));
+            p.updateStat(this, evaluate(run, p), run);
         }
     },
 
     // --- Counter stats: fire on specific events only ---
 
     RUNS_STARTED("RunsStarted", "Start %s Run(s).") {
-        @Override public int evaluate(RogueRun run, RogueMetaProgress p) { return p.getStatValue(getConditionKey()); }
+        @Override public int evaluate(RogueRun run, RogueMetaProgress p) {
+            return p.getStatValueForRun(getConditionKey(), run);
+        }
         @Override public void onRunStarted(RogueRun run, RogueMetaProgress p) {
-            p.trackCommanderStarted(run.getSelectedRogueDeck().getCommanderCardName());
-            p.updateStat(this, evaluate(run, p) + 1);
+            p.trackCommanderStarted(run);
+            p.updateStat(this, evaluate(run, p) + 1, run);
         }
     },
     MATCHES_WON("MatchesWon", "Win %s matches.") {
-        @Override public int evaluate(RogueRun run, RogueMetaProgress p) { return p.getStatValue(getConditionKey()); }
+        @Override public int evaluate(RogueRun run, RogueMetaProgress p) {
+            return p.getStatValueForRun(getConditionKey(), run);
+        }
         @Override public void onMatchCompleted(RogueRun run, RogueMetaProgress p, boolean won) {
-            if (won) p.updateStat(this, evaluate(run, p) + 1);
+            if (won) p.updateStat(this, evaluate(run, p) + 1, run);
         }
     },
     MATCHES_LOST("MatchesLost", "Lose %s matches.") {
-        @Override public int evaluate(RogueRun run, RogueMetaProgress p) { return p.getStatValue(getConditionKey()); }
+        @Override public int evaluate(RogueRun run, RogueMetaProgress p) {
+            return p.getStatValueForRun(getConditionKey(), run);
+        }
         @Override public void onMatchCompleted(RogueRun run, RogueMetaProgress p, boolean won) {
-            if (!won) p.updateStat(this, evaluate(run, p) + 1);
+            if (!won) p.updateStat(this, evaluate(run, p) + 1, run);
         }
     },
     RUNS_COMPLETED("RunsCompleted", "Complete %s Run(s).") {
-        @Override public int evaluate(RogueRun run, RogueMetaProgress p) { return p.getStatValue(getConditionKey()); }
+        @Override public int evaluate(RogueRun run, RogueMetaProgress p) {
+            return p.getStatValueForRun(getConditionKey(), run);
+        }
         @Override public void onRunCompleted(RogueRun run, RogueMetaProgress p, boolean won) {
-            p.updateStat(this, evaluate(run, p) + 1);
+            p.updateStat(this, evaluate(run, p) + 1, run);
         }
     },
     RUNS_WON("RunsWon", "Win a Run.") {
-        @Override public int evaluate(RogueRun run, RogueMetaProgress p) { return p.getStatValue(getConditionKey()); }
+        @Override public int evaluate(RogueRun run, RogueMetaProgress p) {
+            return p.getStatValueForRun(getConditionKey(), run);
+        }
         @Override public void onRunCompleted(RogueRun run, RogueMetaProgress p, boolean won) {
             if (won) {
-                p.mergeRunsWonPerCommander(run.getCurrentCommanderName());
-                p.updateStat(this, evaluate(run, p) + 1);
+                p.mergeRunsWonPerCommander(run);
+                p.updateStat(this, evaluate(run, p) + 1, run);
             }
         }
     };
@@ -155,6 +165,11 @@ public enum RogueStats {
     }
 
     public String getConditionKey() { return conditionKey; }
+
+    public boolean isCounterStat() {
+        return this == RUNS_STARTED || this == MATCHES_WON || this == MATCHES_LOST
+            || this == RUNS_COMPLETED || this == RUNS_WON;
+    }
 
     /** Returns human-readable unlock description with the threshold value substituted. */
     public String getUnlockDescription(String value) {

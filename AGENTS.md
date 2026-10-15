@@ -12,23 +12,11 @@ This repository is a Java 17+ multi-module Maven project (Forge / Rogue Commande
 - No Cursor rules were found (`.cursor/rules/` and `.cursorrules` are absent).
 - No Copilot instructions file was found (`.github/copilot-instructions.md` is absent).
 
-## Story and Lore Writing
-
-When asked to write, rewrite, expand, or modify Rogue Commander story,
-dialogue, lore, narrative text, NPC interactions, or flavor text:
-
-1. Read `story/story.md` before writing.
-2. Follow its general narrative and style rules.
-3. If the task involves one or more named NPCs, read the corresponding
-   NPC rubric file referenced by `story.md` before writing their dialogue.
-4. When the current request primarily creates or revises creative text in
-   repository files, use the `rogue-writing-lector` skill and complete its
-   independent review workflow before responding.
-
 ## High-priority operating rules
 
 - Do not compile or run builds/tests unless the user explicitly asks.
 - Exception: when resolving merge conflicts in Java source files, run the narrowest compile-only verification needed for the affected module(s) after resolving the conflicts, unless the user explicitly says not to build. Do not stop at textual conflict resolution if compile errors are still possible from surrounding non-conflict changes.
+- Raise the root `pom.xml` `versionCode` once for a batch of feature changes or fixes after the previous batch has been committed and pushed. Do not bump it again for follow-up edits while the current batch remains uncommitted; normally increment the revision component when the next batch begins, unless a larger bump is requested.
 - Do not add unit tests by default. Only add tests when the user explicitly asks for them, or when test additions are part of the agreed implementation plan.
 - Do not implement beyond explicit user requirements; if ambiguous, ask one focused question.
 - If the user asks for a specific change that appears already done, say so and wait for confirmation before substituting a different change.
@@ -269,3 +257,16 @@ Detailed scripting references are under `docs/Card-scripting-API/`, including:
 
 - `C:\Users\BEBENEDE\Documents\Mtg Rogue Contents_v2.0.0.pdf`
 - `C:\Users\BEBENEDE\Documents\Mtg Rogue Rules_v2.0.0.pdf`
+
+## Story and Lore Writing
+
+When asked to write, rewrite, expand, or modify Rogue Commander story,
+dialogue, lore, narrative text, NPC interactions, or flavor text:
+
+1. Read `story/story.md` before writing.
+2. Follow its general narrative and style rules.
+3. If the task involves one or more named NPCs, read the corresponding
+   NPC rubric file referenced by `story.md` before writing their dialogue.
+4. When the current request primarily creates or revises creative text in
+   repository files, use the `rogue-writing-lector` skill and complete its
+   independent review workflow before responding.

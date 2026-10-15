@@ -5,6 +5,7 @@ import forge.StaticData;
 import forge.card.CardEdition;
 import forge.card.CardRarity;
 import forge.card.CardRules;
+import forge.card.ICardFace;
 import forge.deck.CardPool;
 import forge.deck.Deck;
 import forge.deck.DeckFormat;
@@ -345,6 +346,35 @@ public class RogueConfig {
                 .toList();
     }
 
+    /** Database cards for random Rogue selections, excluding multiplayer-dependent text. */
+    public static List<PaperCard> getRandomCards(Predicate<PaperCard> filter) {
+        Predicate<PaperCard> eligible = card -> !hasExcludedMultiplayerText(card);
+        Predicate<PaperCard> randomFilter = filter == null ? eligible : filter.and(eligible);
+        Predicate<PaperCard> effectiveFilter = getAllFilters(randomFilter);
+        return getAllCards(randomFilter).stream()
+                .map(card -> getPreferredPrint(card, effectiveFilter))
+                .toList();
+    }
+
+    private static boolean hasExcludedMultiplayerText(PaperCard card) {
+        for (ICardFace face : card.getRules().getAllFaces()) {
+            String oracleText = face.getOracleText();
+            if (oracleText == null) {
+                continue;
+            }
+            String text = oracleText.toLowerCase(Locale.ROOT);
+            if (face.getName() != null) {
+                text = text.replace(face.getName().toLowerCase(Locale.ROOT), "");
+            }
+            if (text.contains("two or more opponents") || text.contains("myriad")
+                    || text.contains("melee") || text.contains("undaunted")
+                    || text.contains("goad") || text.contains("assist")) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Returns a rules-name print for flavor-name cards while leaving ordinary prints unchanged.
      */
@@ -352,22 +382,19 @@ public class RogueConfig {
         return card != null && card.hasFlavorName() ? getCard(card.getName(), null, null) : card;
     }
 
-    /**
-     * Returns the preferred Rogue display print for a selected card without changing editions.
-     * Prefers non-flavor-name prints with earlier collector numbers in the same edition.
-     */
-    public static PaperCard getPreferredPrint(PaperCard card) {
-        PaperCard rulesNamePrint = getRulesNamePrint(card);
-        if (rulesNamePrint == null) {
-            return null;
-        }
-
+    /** Prefers a qualifying CMM print, then the newest set and lowest art index. */
+    private static PaperCard getPreferredPrint(PaperCard card, Predicate<PaperCard> filter) {
         return FModel.getMagicDb().getCommonCards()
-                .getAllCards(rulesNamePrint).stream()
-                .filter(candidate -> candidate.getEdition().equals(rulesNamePrint.getEdition()))
+                .getAllCards(card).stream()
+                .filter(filter)
                 .filter(candidate -> !candidate.hasFlavorName())
-                .min(Comparator.comparing(PaperCard::getCollectorNumberSortingKey))
-                .orElse(rulesNamePrint);
+                .min(Comparator.comparing((PaperCard candidate) -> !candidate.getEdition().equals("CMM"))
+                        .thenComparing(candidate -> db.getCardEdition(candidate.getEdition()).getDate(),
+                                Comparator.reverseOrder())
+                        .thenComparingInt(PaperCard::getArtIndex)
+                        .thenComparing(PaperCard::getCollectorNumberSortingKey)
+                        .thenComparing(PaperCard::getEdition))
+                .orElse(card);
     }
 
     private static @NonNull Predicate<PaperCard> getAllFilters(Predicate<PaperCard> filter) {

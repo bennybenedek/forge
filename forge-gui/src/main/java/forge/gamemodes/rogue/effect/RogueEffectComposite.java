@@ -17,6 +17,7 @@ public enum RogueEffectComposite implements RogueEffect {
     /** Returns all active effects from all sources */
     public static List<RogueEffect> getAllEffects(RogueRun run) {
       List<RogueEffect> effects = new ArrayList<>(run.getActiveAetherEffects());
+        effects.addAll(run.getActiveCustomRunModifications());
         int descLevel = run.getDescensionLevel();
         for (int l = 1; l <= descLevel; l++) {
             DescensionLevel dl = DescensionLevel.forLevel(l);

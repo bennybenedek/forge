@@ -226,7 +226,7 @@ public enum EventEffect implements RogueEffect {
             run.loseMaxLife(4);
             run.addEventEffect(this);
 
-            List<PaperCard> candidateCards = new ArrayList<>(RogueConfig.getAllCards(getDBCardsFilter()).stream()
+            List<PaperCard> candidateCards = new ArrayList<>(RogueConfig.getRandomCards(getDBCardsFilter()).stream()
                 .map(RogueConfig::getRulesNamePrint)
                 .toList());
             candidateCards = run.filterDuplicateCards(candidateCards);

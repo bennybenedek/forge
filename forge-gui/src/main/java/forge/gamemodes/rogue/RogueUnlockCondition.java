@@ -70,13 +70,13 @@ public class RogueUnlockCondition {
 
     /**
      * Evaluate a single condition key-value pair.
-     * Stat-backed conditions use getStatValue(); special conditions handled explicitly.
+     * Stat-backed conditions use progression-eligible values; special conditions handled explicitly.
      */
     private boolean evaluateSingleCondition(String key, String value, RogueMetaProgress progress) {
         if (KEY_DEFAULT.equals(key)) return Boolean.parseBoolean(value);
         if (KEY_WIN_WITH_COMMANDER.equals(key)) return progress.hasWonWithCommander(value);
         // All other keys are stat-backed (RunsStarted, MatchesWon, MaxLife, etc.)
-        return progress.getStatValue(key) >= parseIntSafe(value);
+        return progress.getProgressionStatValue(key) >= parseIntSafe(value);
     }
 
     /**

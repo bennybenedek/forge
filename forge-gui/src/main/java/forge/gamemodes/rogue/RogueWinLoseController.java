@@ -202,13 +202,11 @@ public class RogueWinLoseController {
         RogueCommanderAchievements.instance.recordRunWon(
             currentRun.getCurrentCommanderName());
 
-        int descLevel = currentRun.getDescensionLevel();
-        if (descLevel > 0 && progress.recordDescensionWin(
-                currentRun.getCurrentCommanderName(), descLevel)) {
+        if (progress.recordDescensionWin(currentRun)) {
             view.showMessage("You won 1 Spark!", "Spark Reward", FSkinProp.ICO_QUEST_ELIXIR);
         }
         RogueCommanderAchievements.instance.evaluateRunAchievements(currentRun);
-        progress.notifyDescensionL1IfFirstWin(currentRun.getCurrentCommanderName());
+        progress.notifyDescensionL1IfFirstWin(currentRun);
 
         RogueIO.saveRun(currentRun);
         view.getBtnQuit().setText(BTN_WIN_RUN);

@@ -307,7 +307,7 @@ public enum TeferiEncounter implements NPCEncounter {
     public NPCContext onBetweenRuns(RogueMetaProgress progress) {
         List<String> storyTextChunks = getStoryTextChunks();
         if (!storyTextChunks.isEmpty()) {
-            if (this == BEFORE_FIRST_RUN && progress.getTotalRunsStarted() > 0) {
+            if (this == BEFORE_FIRST_RUN && progress.getProgressionTotalRunsStarted() > 0) {
                 progress.setNPCLevel(getNpc().id, getFirstFutureStoryLevel(progress));
                 return null;
             }
@@ -332,7 +332,7 @@ public enum TeferiEncounter implements NPCEncounter {
             return false;
         }
         return switch (this) {
-            case BEFORE_FIRST_RUN -> progress.getTotalRunsStarted() == 0;
+            case BEFORE_FIRST_RUN -> progress.getProgressionTotalRunsStarted() == 0;
             case FIRST_EVIDENCE -> progress.getDistinctCommandersWon() >= 1;
             case PATTERN_SPREADS -> progress.getDistinctCommandersWon() >= 2;
             case PHYREXIA -> progress.getDistinctCommandersWon() >= 3;
