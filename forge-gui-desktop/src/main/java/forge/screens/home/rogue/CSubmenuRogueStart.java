@@ -41,6 +41,7 @@ public enum CSubmenuRogueStart implements ICDoc {
   private RogueDeck selectedDeck;
   private int selectedDescensionLevel = 0;
   private boolean updatingDescensionUi;
+  private boolean updatingCustomModUi;
 
   @Override
   public void register() {
@@ -53,8 +54,10 @@ public enum CSubmenuRogueStart implements ICDoc {
     view.getBtnAether().addActionListener(e -> openAether());
     view.getBtnHistory().addActionListener(e -> openHistory());
     view.getChkCustomRuns().addItemListener(e -> onCustomRunsToggled());
-    view.getChkRandomRogueCommander().addItemListener(e -> onRandomRogueCommanderToggled());
-    view.getChkChooseRogueCommander().addItemListener(e -> onChooseRogueCommanderToggled());
+    for (CustomRunModification modification : CustomRunModification.values()) {
+      view.getChkCustomModification(modification).addItemListener(
+          e -> onCustomModificationToggled(modification));
+    }
     view.getChkDescension().addItemListener(e -> onDescensionToggled());
     view.getBtnDescensionDown().addActionListener(e -> changeDescensionLevel(-1));
     view.getBtnDescensionUp().addActionListener(e -> changeDescensionLevel(1));
@@ -137,6 +140,7 @@ public enum CSubmenuRogueStart implements ICDoc {
     }
     view.getChkCustomRuns().setVisible(customRunsUnlocked);
     view.getPnlCustomRunLock().setVisible(!customRunsUnlocked);
+    view.setCustomModificationsVisible(view.getChkCustomRuns().isSelected());
 
     List<RogueDeck> availableDecks = RogueConfig.loadRogueDecks();
     String previousCommanderName = selectedDeck != null ? selectedDeck.getCommanderCardName() : null;
@@ -272,10 +276,18 @@ public enum CSubmenuRogueStart implements ICDoc {
 
   private void onCustomRunsToggled() {
     boolean custom = view.getChkCustomRuns().isSelected();
-    view.getPnlCustomModifications().setVisible(custom);
+    view.setCustomModificationsVisible(custom);
     if (!custom) {
-      view.getChkRandomRogueCommander().setSelected(false);
-      view.getChkChooseRogueCommander().setSelected(false);
+      updatingCustomModUi = true;
+      for (CustomRunModification modification : CustomRunModification.values()) {
+        view.getChkCustomModification(modification).setSelected(false);
+      }
+      for (CustomRunModification modification : CustomRunModification.values()) {
+        if (modification.isIncludedWithGeneratedCommander()) {
+          view.getChkCustomModification(modification).setEnabled(true);
+        }
+      }
+      updatingCustomModUi = false;
     }
     CommanderCardPanel selectedPanel = view.getCommanderPanels().stream()
         .filter(panel -> panel.getCommander() == selectedDeck && !panel.isLocked())
@@ -284,17 +296,30 @@ public enum CSubmenuRogueStart implements ICDoc {
     updateStartButtonState();
   }
 
-  private void onRandomRogueCommanderToggled() {
-    if (view.getChkRandomRogueCommander().isSelected()) {
-      view.getChkChooseRogueCommander().setSelected(false);
+  private void onCustomModificationToggled(CustomRunModification modification) {
+    if (updatingCustomModUi) {
+      return;
     }
-    updateStartButtonState();
-  }
-
-  private void onChooseRogueCommanderToggled() {
-    if (view.getChkChooseRogueCommander().isSelected()) {
-      view.getChkRandomRogueCommander().setSelected(false);
+    updatingCustomModUi = true;
+    if (view.getChkCustomModification(modification).isSelected()) {
+      for (CustomRunModification other : CustomRunModification.values()) {
+        if (modification.conflictsWith(other)) {
+          view.getChkCustomModification(other).setSelected(false);
+        }
+      }
     }
+    boolean generatedCommander = view.getChkRandomRogueCommander().isSelected()
+        || view.getChkChooseRogueCommander().isSelected();
+    for (CustomRunModification deckMod : CustomRunModification.values()) {
+      if (!deckMod.isIncludedWithGeneratedCommander()) {
+        continue;
+      }
+      if (generatedCommander || modification.isGeneratedCommander()) {
+        view.getChkCustomModification(deckMod).setSelected(generatedCommander);
+      }
+      view.getChkCustomModification(deckMod).setEnabled(!generatedCommander);
+    }
+    updatingCustomModUi = false;
     updateStartButtonState();
   }
 
@@ -306,8 +331,12 @@ public enum CSubmenuRogueStart implements ICDoc {
       panel.setDimmed(ignoresSelectedCommander);
     }
     boolean customAllowed = !custom || RogueMetaProgress.getInstance().isCustomRunsUnlocked();
-    boolean hasDeck = custom ? view.getChkRandomRogueCommander().isSelected()
-        || view.getChkChooseRogueCommander().isSelected() : selectedDeck != null;
+    boolean hasAnyMod = false;
+    for (CustomRunModification modification : CustomRunModification.values()) {
+      hasAnyMod |= view.getChkCustomModification(modification).isSelected();
+    }
+    boolean hasDeck = custom ? hasAnyMod && (ignoresSelectedCommander || selectedDeck != null)
+        : selectedDeck != null;
     boolean descensionAllowed = selectedDescensionLevel == 0
         || (RogueMetaProgress.getInstance().isDescensionModeUnlocked()
         && (custom || (selectedDeck != null && selectedDescensionLevel <= RogueMetaProgress
@@ -467,27 +496,39 @@ public enum CSubmenuRogueStart implements ICDoc {
 
   private void beginNewRun() {
     boolean custom = view.getChkCustomRuns().isSelected();
+    boolean generatedCommander = view.getChkRandomRogueCommander().isSelected()
+        || view.getChkChooseRogueCommander().isSelected();
+    List<CustomRunModification> modifications = new ArrayList<>();
+    if (custom) {
+      for (CustomRunModification modification : CustomRunModification.values()) {
+        if (view.getChkCustomModification(modification).isSelected()
+            && (!generatedCommander || !modification.isIncludedWithGeneratedCommander())) {
+          modifications.add(modification);
+        }
+      }
+    }
     if ((custom && !RogueMetaProgress.getInstance().isCustomRunsUnlocked())
         || (selectedDescensionLevel > 0
         && !RogueMetaProgress.getInstance().isDescensionModeUnlocked())
-        || (custom && !view.getChkRandomRogueCommander().isSelected()
-        && !view.getChkChooseRogueCommander().isSelected())
+        || (custom && (modifications.isEmpty() || (!generatedCommander && selectedDeck == null)))
         || (!custom && selectedDeck == null)) {
       return;
     }
 
-    CustomRunModification modification = !custom ? null
-        : view.getChkChooseRogueCommander().isSelected()
-            ? CustomRunModification.CHOSEN_ONE : CustomRunModification.MANIA;
-    PaperCard chosenCommander = modification == CustomRunModification.CHOSEN_ONE
+    boolean chosenOne = modifications.contains(CustomRunModification.CHOSEN_ONE);
+    PaperCard chosenCommander = chosenOne
         ? new CommanderSelectionDialog().show() : null;
-    if (modification == CustomRunModification.CHOSEN_ONE && chosenCommander == null) {
+    if (chosenOne && chosenCommander == null) {
       return;
     }
-    RogueDeck runDeck;
+    RogueDeck runDeck = selectedDeck;
     try {
-      runDeck = modification != null
-          ? modification.createRogueDeck(selectedDeck, chosenCommander) : selectedDeck;
+      for (CustomRunModification modification : modifications) {
+        runDeck = modification.createRogueDeck(runDeck, chosenCommander);
+        if (runDeck == null) {
+          break;
+        }
+      }
     } catch (RuntimeException e) {
       System.err.println("Could not generate a custom Rogue Commander deck: " + e);
       runDeck = null;
@@ -497,7 +538,7 @@ public enum CSubmenuRogueStart implements ICDoc {
           "Custom Run");
       return;
     }
-    if (modification == CustomRunModification.CHOSEN_ONE) {
+    if (chosenOne) {
       RogueDeck generatedDeck = runDeck;
       AvatarSelector avatarSelector = new AvatarSelector(chosenCommander.getName(),
           runDeck.getAvatarIndex(), List.of());
@@ -538,7 +579,7 @@ public enum CSubmenuRogueStart implements ICDoc {
 
     // Create new run and snapshot active Aetherworks
     RogueRun newRun = new RogueRun(runDeck);
-    if (modification != null) {
+    for (CustomRunModification modification : modifications) {
       newRun.addCustomRunModification(modification);
     }
     newRun.getRunTimer().start();

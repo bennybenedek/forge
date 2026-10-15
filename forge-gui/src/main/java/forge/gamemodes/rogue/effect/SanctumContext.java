@@ -11,6 +11,8 @@ public class SanctumContext {
     public record SanctumChoice(String id, String label, String description) {}
 
     public boolean restLifeGainDisabled;
+    public boolean restFullHeal;
+    public int restMaxLifeCost;
     public final List<NPCContext> preSanctumDialogs = new ArrayList<>();
     public final List<SanctumChoice> extraChoices = new ArrayList<>();
 }

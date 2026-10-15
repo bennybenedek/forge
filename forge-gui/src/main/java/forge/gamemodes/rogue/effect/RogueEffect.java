@@ -232,6 +232,9 @@ public interface RogueEffect {
     /** Fired once per match start. Add command zone cards, adjust hand size, etc. */
     default void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {}
 
+    /** Fired before players and variants are created for a match. */
+    default void onBeforeMatchSetup(MatchSetupContext ctx, RogueRun run) {}
+
     /** Fired before explicit Rogue-side life gain is applied. */
     default void onBeforeGainLife(GainLifeContext ctx, RogueRun run) {}
 

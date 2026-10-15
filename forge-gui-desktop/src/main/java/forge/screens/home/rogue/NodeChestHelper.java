@@ -40,31 +40,37 @@ class NodeChestHelper {
     }
 
     NodeFlowOutcome resolveChest(RogueRun currentRun, NodeChest chestNode) {
+        ChoiceRerollContext initialCtx = new ChoiceRerollContext();
+        RogueEffectComposite.INSTANCE.onBeforeChestLoot(initialCtx, currentRun);
         List<ChestEffect> chestEffects = chestNode.getChestEffects();
-        List<ChestEffect> availableEffects = ChestEffect.getAvailableEffects(currentRun, null);
-        if (chestEffects.size() < CHEST_LOOT_CHOICE_COUNT
-            || !availableEffects.containsAll(chestEffects)) {
-            chestEffects = generateChestLootChoices(currentRun, List.of());
-            chestNode.setChestEffects(chestEffects);
+        if (initialCtx.forcedChestChoices != null) {
+            chestEffects = initialCtx.forcedChestChoices;
+        } else {
+            List<ChestEffect> availableEffects = ChestEffect.getAvailableEffects(currentRun, null);
+            if (chestEffects.size() < CHEST_LOOT_CHOICE_COUNT
+                || !availableEffects.containsAll(chestEffects)) {
+                chestEffects = generateChestLootChoices(currentRun, List.of());
+            }
+            chestEffects = maybeOverrideChestChoices(chestEffects);
         }
-
-        chestEffects = maybeOverrideChestChoices(chestEffects);
         chestNode.setChestEffects(chestEffects);
 
         RogueTutorialHelper.showIfNotSeen(RogueTutorial.CHEST);
         ChestDialog.DialogResult result;
         boolean rerollRequested;
         do {
-            ChoiceRerollContext rerollCtx = new ChoiceRerollContext();
-            RogueEffectComposite.INSTANCE.onBeforeChestLoot(rerollCtx, currentRun);
+            ChoiceRerollContext rerollCtx = initialCtx;
             CodexHelper.recordTraitChoices(chestEffects);
             result = new ChestDialog(chestEffects, currentRun, rerollCtx).show();
             rerollRequested = result.rerollRequested();
 
             if (rerollRequested) {
                 RogueEffectComposite.INSTANCE.onChoiceReroll(rerollCtx, currentRun);
-                chestEffects = generateChestLootChoices(currentRun, chestEffects);
-                chestEffects = maybeOverrideChestChoices(chestEffects);
+                initialCtx = new ChoiceRerollContext();
+                RogueEffectComposite.INSTANCE.onBeforeChestLoot(initialCtx, currentRun);
+                chestEffects = initialCtx.forcedChestChoices != null
+                    ? initialCtx.forcedChestChoices
+                    : maybeOverrideChestChoices(generateChestLootChoices(currentRun, chestEffects));
                 chestNode.setChestEffects(chestEffects);
             }
         } while (rerollRequested);

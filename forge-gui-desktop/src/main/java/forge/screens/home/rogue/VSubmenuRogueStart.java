@@ -13,9 +13,12 @@ import forge.toolbox.*;
 import forge.util.Localizer;
 import forge.view.arcane.CardPanel;
 import java.awt.Dimension;
+import java.awt.Rectangle;
 import java.awt.Window;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 import javax.swing.*;
 import net.miginfocom.swing.MigLayout;
 
@@ -90,6 +93,10 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
       .text("Custom Runs do not unlock Commanders or Descension Levels, and do not award Sparks.")
       .fontSize(12).build();
   private FSkin.SkinnedPanel pnlCustomModifications;
+  private FScrollPane scrollCustomModifications;
+  private JPanel pnlDetails;
+  private final Map<CustomRunModification, FCheckBox> customModificationChecks =
+      new EnumMap<>(CustomRunModification.class);
   private JPanel pnlCustomRunLock;
 
   // Descension UI
@@ -138,6 +145,15 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
     txtTheme.setFont(FSkin.getFont(14));
     txtTheme.setForeground(FSkin.getColor(FSkin.Colors.CLR_TEXT));
     txtTheme.setBackground(FSkin.getColor(FSkin.Colors.CLR_THEME2));
+
+    for (CustomRunModification modification : CustomRunModification.values()) {
+      FCheckBox check = switch (modification) {
+        case MANIA -> chkRandomRogueCommander;
+        case CHOSEN_ONE -> chkChooseRogueCommander;
+        default -> new FCheckBox(modification.getDisplayName());
+      };
+      customModificationChecks.put(modification, check);
+    }
   }
 
   @Override
@@ -180,7 +196,7 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(pnlCommanderGrid, "w 98%!, gap 1% 0 15px 15px");
 
     // Commander details panel - right after grid
-    JPanel pnlDetails = createDetailsPanel();
+    pnlDetails = createDetailsPanel();
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(pnlDetails, "w 98%!, gap 1% 0 0 15px");
 
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().repaintSelf();
@@ -190,9 +206,7 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
   private JPanel createDetailsPanel() {
     JPanel panel = new JPanel();
     panel.setOpaque(false);
-    panel.setLayout(
-        new MigLayout("insets 0, gap 0, wrap 2", "[150px][grow]",
-            "[]10px[]10px[]10px[]5px[]10px[]10px[]20px[]"));
+    panel.setLayout(new MigLayout("insets 0, gap 0, wrap 2", "[150px][grow]"));
 
     // Row 0: Commander name
     panel.add(new FLabel.Builder().text("Commander:").fontSize(14).build(),
@@ -202,22 +216,22 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
     // Row 1: Description (label can change to "Unlock:" for locked commanders)
     lblDescriptionLock.setVisible(false);
     panel.add(lblDescriptionLock, "cell 0 1, w 14px!, h 14px!, aligny top, hidemode 3, split 2");
-    panel.add(lblDescriptionLabel, "cell 0 1, alignx left, aligny top");
+    panel.add(lblDescriptionLabel, "cell 0 1, alignx left, aligny top, gaptop 10px");
     panel.add(new FScrollPane(txtDescription, false,
             ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
             ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER),
-        "cell 1 1, growx, h 60px!");
+        "cell 1 1, growx, h 60px!, gaptop 10px");
 
     // Row 2: Theme (hidden for locked commanders)
-    panel.add(lblThemeLabel, "cell 0 2, alignx left, aligny top");
+    panel.add(lblThemeLabel, "cell 0 2, alignx left, aligny top, gaptop 10px");
     scrollTheme = new FScrollPane(txtTheme, false,
         ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
         ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-    panel.add(scrollTheme, "cell 1 2, growx, h 40px!");
+    panel.add(scrollTheme, "cell 1 2, growx, h 40px!, gaptop 10px");
 
     // Rows 3-4: Custom run modifications
     chkCustomRuns.setVisible(false);
-    panel.add(chkCustomRuns, "cell 0 3, span 2, alignx left, hidemode 3");
+    panel.add(chkCustomRuns, "cell 0 3, span 2, alignx left, gaptop 10px, hidemode 3");
     pnlCustomRunLock = new JPanel(new MigLayout("insets 0, gap 5"));
     pnlCustomRunLock.setOpaque(false);
     pnlCustomRunLock.add(
@@ -227,27 +241,28 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
         .text("Custom Run - Win 2 Runs with any Commander to unlock.").fontSize(12).build(),
         "growx");
     pnlCustomRunLock.setVisible(false);
-    panel.add(pnlCustomRunLock, "cell 0 3, span 2, growx, hidemode 3");
-    pnlCustomModifications = new FSkin.SkinnedPanel(
-        new MigLayout("insets 10 12 10 12, gapx 8, gapy 8, wrap 2, fillx", "[130px!][grow,fill]"));
+    panel.add(pnlCustomRunLock, "cell 0 3, span 2, growx, gaptop 10px, hidemode 3");
+    pnlCustomModifications = new ModificationsPanel(
+        new MigLayout("insets 10 12 10 12, gapx 4, gapy 8, wrap 2, fillx", "[pref!][grow,fill]"));
     pnlCustomModifications.setOpaque(true);
     pnlCustomModifications.setBackground(FSkin.getColor(FSkin.Colors.CLR_THEME2));
-    pnlCustomModifications.setBorder(new FSkin.LineSkinBorder(FSkin.getColor(FSkin.Colors.CLR_BORDERS)));
-    pnlCustomModifications.add(chkRandomRogueCommander, "aligny top");
-    pnlCustomModifications.add(new FLabel.Builder()
-        .text("<html>" + CustomRunModification.MANIA.getRawDescription() + "</html>")
-        .fontSize(12).fontAlign(SwingConstants.LEFT).build(), "growx, wmin 0");
-    pnlCustomModifications.add(chkChooseRogueCommander, "aligny top");
-    pnlCustomModifications.add(new FLabel.Builder()
-        .text("<html>" + CustomRunModification.CHOSEN_ONE.getRawDescription() + "</html>")
-        .fontSize(12).fontAlign(SwingConstants.LEFT).build(), "growx, wmin 0");
     pnlCustomModifications.add(lblCustomRunHint, "span 2");
-    pnlCustomModifications.setVisible(chkCustomRuns.isSelected());
-    panel.add(pnlCustomModifications, "cell 0 4, span 2, growx, hidemode 3");
+    for (CustomRunModification modification : CustomRunModification.values()) {
+      pnlCustomModifications.add(customModificationChecks.get(modification), "aligny top");
+      pnlCustomModifications.add(new FLabel.Builder()
+          .text("<html>" + modification.getRawDescription() + "</html>")
+          .fontSize(12).fontAlign(SwingConstants.LEFT).build(), "growx, wmin 0");
+    }
+    scrollCustomModifications = new FScrollPane(pnlCustomModifications, true,
+        ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+        ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+    scrollCustomModifications.getVerticalScrollBar().setUnitIncrement(20);
+    scrollCustomModifications.setVisible(chkCustomRuns.isSelected());
+    panel.add(scrollCustomModifications, "cell 0 4, span 2, growx, h 240px!, gaptop 5px, hidemode 3");
 
     // Row 5: Descension checkbox (unlocked) OR global lock indicator (locked)
     chkDescension.setVisible(false);
-    panel.add(chkDescension, "cell 0 5, span 2, alignx left, hidemode 3");
+    panel.add(chkDescension, "cell 0 5, span 2, alignx left, gaptop 10px, hidemode 3");
 
     pnlDescensionLock = new JPanel(new MigLayout("insets 0, gap 5"));
     pnlDescensionLock.setOpaque(false);
@@ -256,7 +271,7 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
         "w 20px!, h 20px!");
     pnlDescensionLock.add(lblDescensionLockText, "growx");
     pnlDescensionLock.setVisible(false);
-    panel.add(pnlDescensionLock, "cell 0 5, span 2, growx, hidemode 3");
+    panel.add(pnlDescensionLock, "cell 0 5, span 2, growx, gaptop 10px, hidemode 3");
 
     // Row 6: Descension level selector (hidden by default)
     pnlDescensionLevel = new JPanel(new MigLayout("insets 0, gap 5, wrap 1"));
@@ -270,7 +285,7 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
     pnlDescensionLevel.add(arrowRow, "growx");
     pnlDescensionLevel.add(lblDescensionDesc, "growx");
     pnlDescensionLevel.setVisible(false);
-    panel.add(pnlDescensionLevel, "cell 0 6, span 2, growx");
+    panel.add(pnlDescensionLevel, "cell 0 6, span 2, growx, gaptop 10px, hidemode 3");
 
     // Row 7: Buttons
     JPanel buttonPanel = new JPanel(new MigLayout("insets 0, gap 10"));
@@ -283,9 +298,16 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
       buttonPanel.add(btnDevUnlockAll, "w 150px!, h 40px!");
       buttonPanel.add(btnDevNPCProgress, "w 150px!, h 40px!");
     }
-    panel.add(buttonPanel, "cell 0 7, span 2, alignx center");
+    panel.add(buttonPanel, "cell 0 7, span 2, alignx center, gaptop 20px");
 
     return panel;
+  }
+
+  public void setCustomModificationsVisible(boolean visible) {
+    scrollCustomModifications.setVisible(visible);
+    pnlDetails.revalidate();
+    VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().revalidate();
+    VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().repaintSelf();
   }
 
   @Override
@@ -367,8 +389,8 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
     return chkChooseRogueCommander;
   }
 
-  public JPanel getPnlCustomModifications() {
-    return pnlCustomModifications;
+  public FCheckBox getChkCustomModification(CustomRunModification modification) {
+    return customModificationChecks.get(modification);
   }
 
   public JPanel getPnlCustomRunLock() {
@@ -428,6 +450,20 @@ public enum VSubmenuRogueStart implements IVSubmenu<CSubmenuRogueStart> {
       }
     }
     return zoomUtil;
+  }
+
+  private static class ModificationsPanel extends FSkin.SkinnedPanel implements Scrollable {
+    ModificationsPanel(MigLayout layout) {
+      super(layout);
+    }
+
+    @Override public Dimension getPreferredScrollableViewportSize() { return getPreferredSize(); }
+    @Override public int getScrollableUnitIncrement(Rectangle r, int orientation, int direction) { return 20; }
+    @Override public int getScrollableBlockIncrement(Rectangle r, int orientation, int direction) {
+      return Math.max(20, r.height - 20);
+    }
+    @Override public boolean getScrollableTracksViewportWidth() { return true; }
+    @Override public boolean getScrollableTracksViewportHeight() { return false; }
   }
 
   /**

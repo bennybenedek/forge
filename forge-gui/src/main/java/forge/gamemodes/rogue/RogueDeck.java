@@ -32,6 +32,23 @@ public class RogueDeck {
         this.discardedRewardPool = new CardPool();
     }
 
+    public RogueDeck copy() {
+        RogueDeck copy = new RogueDeck();
+        copy.name = name;
+        copy.commanderCardName = commanderCardName;
+        copy.startDeck = startDeck == null ? null : new Deck(startDeck);
+        copy.rewardPool.addAll(rewardPool);
+        copy.discardedRewardPool.addAll(discardedRewardPool);
+        copy.description = description;
+        copy.themeDescription = themeDescription;
+        copy.avatarIndex = avatarIndex;
+        copy.sleeveIndex = sleeveIndex;
+        copy.landEdition = landEdition;
+        copy.includeColorlessBasics = includeColorlessBasics;
+        copy.rogueUnlockCondition = rogueUnlockCondition;
+        return copy;
+    }
+
     /**
      * Draw random cards from the reward pool for post-match rewards.
      * @param count Number of cards to draw

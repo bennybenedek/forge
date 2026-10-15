@@ -45,17 +45,24 @@ class NodeSanctumHelper {
         NPCEncounterComposite.INSTANCE.onBeforeSanctum(sanctumCtx, currentRun, progress);
         showNpcDialogs(sanctumCtx.preSanctumDialogs);
 
-        int baseHealAmount = sanctumCtx.restLifeGainDisabled ? 0 : sanctumNode.getHealAmount();
+        int baseHealAmount = sanctumCtx.restLifeGainDisabled ? 0
+            : sanctumCtx.restFullHeal ? currentRun.getMaxLife() : sanctumNode.getHealAmount();
         int missingLife = Math.max(0, currentRun.getMaxLife() - currentRun.getCurrentLife());
         int effectiveHealAmount = Math.min(baseHealAmount, missingLife);
         boolean hasWounds = !currentRun.getActiveWoundEffects().isEmpty();
-        boolean restEnabled = effectiveHealAmount > 0 || hasWounds;
+        boolean canPayRestCost = sanctumCtx.restLifeGainDisabled
+            || currentRun.getMaxLife() > sanctumCtx.restMaxLifeCost;
+        boolean restEnabled = canPayRestCost && (effectiveHealAmount > 0 || hasWounds);
         String restDescription = sanctumCtx.restLifeGainDisabled
             ? "Cure all {{Wound}}s."
-            : "Gain " + effectiveHealAmount + " Life & Cure all {{Wound}}s.";
+            : sanctumCtx.restFullHeal
+                ? "Heal to full Life. Lose " + sanctumCtx.restMaxLifeCost
+                    + " Max. Life. Cure all {{Wound}}s."
+                : "Gain " + effectiveHealAmount + " Life & Cure all {{Wound}}s.";
         String restDisabledReason = restEnabled
             ? null
-            : sanctumCtx.restLifeGainDisabled
+            : !canPayRestCost ? "You don't have enough Max. Life."
+                : sanctumCtx.restLifeGainDisabled
                 ? "You have no wounds to cure."
                 : "You are already at maximum life and have no wounds to cure.";
 
@@ -65,7 +72,11 @@ class NodeSanctumHelper {
 
         switch (choice) {
             case HEAL:
-                currentRun.gainLifeUpToMax(baseHealAmount);
+                if (!sanctumCtx.restLifeGainDisabled && sanctumCtx.restMaxLifeCost > 0) {
+                    currentRun.loseMaxLife(sanctumCtx.restMaxLifeCost);
+                }
+                currentRun.gainLifeUpToMax(sanctumCtx.restFullHeal && !sanctumCtx.restLifeGainDisabled
+                    ? currentRun.getMaxLife() : baseHealAmount);
                 currentRun.clearWounds();
                 break;
 

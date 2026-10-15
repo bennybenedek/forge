@@ -16,13 +16,13 @@ public enum RogueEffectComposite implements RogueEffect {
 
     /** Returns all active effects from all sources */
     public static List<RogueEffect> getAllEffects(RogueRun run) {
-      List<RogueEffect> effects = new ArrayList<>(run.getActiveAetherEffects());
-        effects.addAll(run.getActiveCustomRunModifications());
+        List<RogueEffect> effects = new ArrayList<>(run.getActiveAetherEffects());
         int descLevel = run.getDescensionLevel();
         for (int l = 1; l <= descLevel; l++) {
             DescensionLevel dl = DescensionLevel.forLevel(l);
             if (dl != null) effects.add(dl);
         }
+        effects.addAll(run.getActiveCustomRunModifications());
         effects.addAll(run.getActiveEventEffects());
         effects.addAll(run.getActiveChestEffects());
         effects.addAll(run.getActiveWoundEffects());
@@ -40,6 +40,11 @@ public enum RogueEffectComposite implements RogueEffect {
     @Override
     public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
         forEachEffect(run, e -> e.onMatchStart(human, opponent, run));
+    }
+
+    @Override
+    public void onBeforeMatchSetup(MatchSetupContext ctx, RogueRun run) {
+        forEachEffect(run, e -> e.onBeforeMatchSetup(ctx, run));
     }
 
     @Override

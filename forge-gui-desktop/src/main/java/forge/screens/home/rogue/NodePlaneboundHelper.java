@@ -65,26 +65,28 @@ class NodePlaneboundHelper {
         }
 
         try {
-            CardPool allPlanes = RogueConfig.getAllPlanes();
+            MatchSetupContext setupCtx = new MatchSetupContext();
+            RogueEffectComposite.INSTANCE.onBeforeMatchSetup(setupCtx, currentRun);
 
             RoguePlanebound planebound = node.getRoguePlanebound();
-            String cardPlaneName = planebound.planeName();
-            PaperCard designatedPlane = null;
-            for (PaperCard card : allPlanes.toFlatList()) {
-                if (cardPlaneName.equalsIgnoreCase(card.getName())) {
-                    designatedPlane = card;
-                    break;
+            List<PaperCard> sharedPlaneDeck = new ArrayList<>();
+            if (setupCtx.includePlanes) {
+                String cardPlaneName = planebound.planeName();
+                CardPool allPlanes = RogueConfig.getAllPlanes();
+                for (PaperCard card : allPlanes.toFlatList()) {
+                    if (cardPlaneName.equalsIgnoreCase(card.getName())) {
+                        sharedPlaneDeck.add(card);
+                        break;
+                    }
+                }
+                if (sharedPlaneDeck.isEmpty()) {
+                    System.err.println("Warning: Could not find plane card: " + cardPlaneName);
                 }
             }
 
-            List<PaperCard> sharedPlaneDeck = new ArrayList<>();
-            if (designatedPlane != null) {
-                sharedPlaneDeck.add(designatedPlane);
-            } else {
-                System.err.println("Warning: Could not find plane card: " + cardPlaneName);
-            }
-
-            Set<GameType> appliedVariants = EnumSet.of(GameType.Commander, GameType.Planechase);
+            Set<GameType> appliedVariants = setupCtx.includePlanes
+                ? EnumSet.of(GameType.Commander, GameType.Planechase)
+                : EnumSet.of(GameType.Commander);
 
             RegisteredPlayer human = RegisteredPlayer.forVariants(
                 2, appliedVariants, currentRun.getCurrentDeck(),
