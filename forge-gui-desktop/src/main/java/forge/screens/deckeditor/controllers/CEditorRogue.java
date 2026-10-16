@@ -25,6 +25,7 @@ import forge.deck.CardPool;
 import forge.deck.Deck;
 import forge.deck.DeckSection;
 import forge.game.GameType;
+import forge.gamemodes.rogue.RogueConfig;
 import forge.gamemodes.rogue.RogueIO;
 import forge.gamemodes.rogue.RogueRun;
 import forge.gamemodes.rogue.RogueTutorial;
@@ -37,7 +38,6 @@ import forge.localinstance.achievements.RogueCommanderAchievements;
 import forge.item.PaperCard;
 import forge.itemmanager.CardManager;
 import forge.itemmanager.ItemManagerConfig;
-import forge.model.FModel;
 import forge.screens.deckeditor.AddBasicLandsDialog;
 import forge.screens.deckeditor.views.VAllDecks;
 import forge.screens.deckeditor.views.VBrawlDecks;
@@ -72,8 +72,6 @@ import org.eclipse.jetty.util.StringUtil;
  */
 public final class CEditorRogue extends CDeckEditor<Deck> {
 
-    private static final String FALLBACK_LAND_SET = "MH3";
-    private static final String WASTES_FALLBACK_LAND_SET = "M3C";
     private static final String WASTES = "Wastes";
     private static final String REMOVAL_CREDITS = "Removal Credits";
     private final DeckController<Deck> controller;
@@ -122,22 +120,11 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
         basicLandPool = new ItemPool<>(PaperCard.class);
 
         // Get commander's edition
-        String commanderName = rogueRun0.getSelectedRogueDeck().getCommanderCardName();
-        PaperCard commanderCard = FModel.getMagicDb().getCommonCards().getCard(commanderName);
+        PaperCard commanderCard = rogueRun0.getSelectedRogueDeck().getStartDeck().getCommanders().get(0);
+        String selectedEdition = RogueConfig.getBasicLandEdition(
+            rogueRun.getSelectedRogueDeck().getLandEdition(), commanderCard);
 
-        // Add basic lands from desired set (deck meta data) or commander's edition if not specified
-        // or no edition found
-        String selectedEdition = FALLBACK_LAND_SET;
-        String deckEdition = rogueRun.getSelectedRogueDeck().getLandEdition();
-        String commanderEdition = (commanderCard != null) ? commanderCard.getEdition() : null;
-
-        if (!StringUtil.isBlank(deckEdition)) {
-            selectedEdition = deckEdition;
-        } else if (!StringUtil.isBlank(commanderEdition)) {
-            selectedEdition = commanderEdition;
-        }
-
-        List<PaperCard> preferredSetBasics = getBasicLandsFromEdition(selectedEdition);
+        List<PaperCard> preferredSetBasics = RogueConfig.getBasicLandsFromEdition(selectedEdition);
         List<PaperCard> filteredCandidates = new ArrayList<>(
             rogueRun.filterCardsByCommanderColorIdentity(preferredSetBasics));
         addBasicLandsToPool(filteredCandidates);
@@ -556,21 +543,6 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
         this.getDeckController().updateCaptions();
     }
 
-    private List<PaperCard> getBasicLandsFromEdition(String edition) {
-        List<PaperCard> candidates = new ArrayList<>();
-        if (StringUtil.isBlank(edition)) {
-            return candidates;
-        }
-
-        for (Entry<PaperCard, Integer> entry : FModel.getAllCards()) {
-            PaperCard card = entry.getKey();
-            if (card.getRules().getType().isBasicLand() && edition.equals(card.getEdition())) {
-                candidates.add(card);
-            }
-        }
-        return candidates;
-    }
-
     private void addBasicLandsToPool(List<PaperCard> cards) {
         for (PaperCard card : cards) {
             basicLandPool.add(card);
@@ -588,7 +560,7 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
                 continue;
             }
 
-            PaperCard fallbackCard = getFallbackBasicLand(requiredBasicLandType);
+            PaperCard fallbackCard = RogueConfig.getFallbackBasicLandPrint(requiredBasicLandType);
             if (fallbackCard != null) {
                 basicLandPool.add(fallbackCard);
                 presentBasicLandTypes.add(requiredBasicLandType);
@@ -613,22 +585,6 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
         if ((colorIdentity & MagicColor.RED) != 0) { coloredBasicLandTypes.add("Mountain"); }
         if ((colorIdentity & MagicColor.GREEN) != 0) { coloredBasicLandTypes.add("Forest"); }
         return coloredBasicLandTypes;
-    }
-
-    private PaperCard getFallbackBasicLand(String basicLandType) {
-        String fallbackEdition = WASTES.equals(basicLandType)
-            ? WASTES_FALLBACK_LAND_SET
-            : FALLBACK_LAND_SET;
-        return getBasicLandFromEdition(basicLandType, fallbackEdition);
-    }
-
-    private PaperCard getBasicLandFromEdition(String basicLandType, String edition) {
-        for (PaperCard card : getBasicLandsFromEdition(edition)) {
-            if (basicLandType.equals(card.getName())) {
-                return card;
-            }
-        }
-        return null;
     }
 
     private boolean shouldRequireWastes() {

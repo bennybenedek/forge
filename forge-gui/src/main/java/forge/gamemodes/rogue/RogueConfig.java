@@ -32,6 +32,9 @@ import org.checkerframework.checker.nullness.qual.NonNull;
  */
 public class RogueConfig {
     private static final Set<String> EXCLUDED_RANDOM_DRAW_SET_CODES = Set.of("UNK", "UNH");
+    private static final Set<String> DEPRIORITIZED_RANDOM_PRINT_SET_CODES = Set.of("SLZ", "MAR", "FCA", "TLE", "PF25", "PF26", "SLD");
+    private static final String FALLBACK_LAND_SET = "MH3";
+    private static final String WASTES_FALLBACK_LAND_SET = "M3C";
 
     private static final StaticData db = StaticData.instance();
 
@@ -348,12 +351,27 @@ public class RogueConfig {
 
     /** Database cards for random Rogue selections, excluding multiplayer-dependent text. */
     public static List<PaperCard> getRandomCards(Predicate<PaperCard> filter) {
+        return getRandomCardsForEdition(filter, null);
+    }
+
+    /** Random Rogue cards preferring the Commander's edition when one is supplied. */
+    public static List<PaperCard> getRandomCardsForEdition(Predicate<PaperCard> filter,
+            String preferredEdition) {
         Predicate<PaperCard> eligible = card -> !hasExcludedMultiplayerText(card);
         Predicate<PaperCard> randomFilter = filter == null ? eligible : filter.and(eligible);
         Predicate<PaperCard> effectiveFilter = getAllFilters(randomFilter);
         return getAllCards(randomFilter).stream()
-                .map(card -> getPreferredPrint(card, effectiveFilter))
+                .map(card -> findPreferredPrint(card, effectiveFilter, preferredEdition).orElse(card))
                 .toList();
+    }
+
+    /** Finds a non-mythic printing for a generated starting deck, if one qualifies. */
+    public static PaperCard getNonMythicRandomPrint(PaperCard card, Predicate<PaperCard> filter,
+            String preferredEdition) {
+        Predicate<PaperCard> eligible = candidate -> candidate.getRarity() != CardRarity.MythicRare
+                && !hasExcludedMultiplayerText(candidate);
+        Predicate<PaperCard> randomFilter = filter == null ? eligible : filter.and(eligible);
+        return findPreferredPrint(card, getAllFilters(randomFilter), preferredEdition).orElse(null);
     }
 
     private static boolean hasExcludedMultiplayerText(PaperCard card) {
@@ -382,19 +400,65 @@ public class RogueConfig {
         return card != null && card.hasFlavorName() ? getCard(card.getName(), null, null) : card;
     }
 
-    /** Prefers a qualifying CMM print, then the newest set and lowest art index. */
-    private static PaperCard getPreferredPrint(PaperCard card, Predicate<PaperCard> filter) {
+    /** Prefers non-deprioritized prints, then the chosen edition, CMM, and newest set. */
+    private static Optional<PaperCard> findPreferredPrint(PaperCard card, Predicate<PaperCard> filter,
+            String preferredEdition) {
         return FModel.getMagicDb().getCommonCards()
                 .getAllCards(card).stream()
                 .filter(filter)
                 .filter(candidate -> !candidate.hasFlavorName())
-                .min(Comparator.comparing((PaperCard candidate) -> !candidate.getEdition().equals("CMM"))
+                .min(Comparator.comparing((PaperCard candidate) ->
+                            DEPRIORITIZED_RANDOM_PRINT_SET_CODES.contains(candidate.getEdition()))
+                        .thenComparing(candidate -> preferredEdition == null
+                                || !candidate.getEdition().equals(preferredEdition))
+                        .thenComparing(candidate -> !candidate.getEdition().equals("CMM"))
                         .thenComparing(candidate -> db.getCardEdition(candidate.getEdition()).getDate(),
                                 Comparator.reverseOrder())
                         .thenComparingInt(PaperCard::getArtIndex)
                         .thenComparing(PaperCard::getCollectorNumberSortingKey)
-                        .thenComparing(PaperCard::getEdition))
-                .orElse(card);
+                        .thenComparing(PaperCard::getEdition));
+    }
+
+    /** Deck setting first, then the actual Commander printing, then the standard land set. */
+    public static String getBasicLandEdition(String landEdition, PaperCard commander) {
+        if (landEdition != null && !landEdition.isBlank()) {
+            return landEdition;
+        }
+        return commander != null && commander.getEdition() != null && !commander.getEdition().isBlank()
+                ? commander.getEdition() : FALLBACK_LAND_SET;
+    }
+
+    /** All basic-land arts in an edition for the Rogue Deck Editor. */
+    public static List<PaperCard> getBasicLandsFromEdition(String edition) {
+        if (edition == null || edition.isBlank()) {
+            return List.of();
+        }
+        List<PaperCard> basics = new ArrayList<>();
+        for (Map.Entry<PaperCard, Integer> entry : FModel.getAllCards()) {
+            PaperCard card = entry.getKey();
+            if (card.getRules().getType().isBasicLand() && edition.equals(card.getEdition())) {
+                basics.add(card);
+            }
+        }
+        return basics;
+    }
+
+    /** Lowest-index basic-land art from the preferred edition, or its standard fallback. */
+    public static PaperCard getBasicLandPrint(String name, String preferredEdition) {
+        String fallbackEdition = "Wastes".equals(name) ? WASTES_FALLBACK_LAND_SET : FALLBACK_LAND_SET;
+        return db.getCommonCards().getAllCards(name).stream()
+                .filter(card -> card.getRules().getType().isBasicLand()
+                        && (preferredEdition.equals(card.getEdition())
+                            || fallbackEdition.equals(card.getEdition())))
+                .min(Comparator.comparing((PaperCard card) -> !preferredEdition.equals(card.getEdition()))
+                        .thenComparingInt(PaperCard::getArtIndex)
+                        .thenComparing(PaperCard::getCollectorNumberSortingKey))
+                .orElse(null);
+    }
+
+    public static PaperCard getFallbackBasicLandPrint(String name) {
+        String fallbackEdition = "Wastes".equals(name) ? WASTES_FALLBACK_LAND_SET : FALLBACK_LAND_SET;
+        return getBasicLandPrint(name, fallbackEdition);
     }
 
     private static @NonNull Predicate<PaperCard> getAllFilters(Predicate<PaperCard> filter) {

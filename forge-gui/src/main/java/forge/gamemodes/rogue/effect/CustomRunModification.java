@@ -13,18 +13,18 @@ import java.util.List;
 
 /** Optional run modifiers, including generated decks and persistent Rogue effects. */
 public enum CustomRunModification implements RogueEffect {
-    MANIA("custom:random_rogue_commander", "Mania",
-        "A random legendary creature will be chosen as your Commander.", false) {
-        @Override
-        public RogueDeck createRogueDeck(RogueDeck selectedDeck, PaperCard commander) {
-            return RogueCustomDeckGenerator.generate();
-        }
-    },
     CHOSEN_ONE("custom:choose_rogue_commander", "Chosen One",
         "Choose any legendary creature as your Commander.", false) {
         @Override
         public RogueDeck createRogueDeck(RogueDeck selectedDeck, PaperCard commander) {
             return RogueCustomDeckGenerator.generateForChosenCommander(commander);
+        }
+    },
+    MANIA("custom:random_rogue_commander", "Mania",
+        "A random legendary creature will be chosen as your Commander.", false) {
+        @Override
+        public RogueDeck createRogueDeck(RogueDeck selectedDeck, PaperCard commander) {
+            return RogueCustomDeckGenerator.generate();
         }
     },
     RANDOM_START("custom:random_start", "Random Start",

@@ -83,14 +83,15 @@ public final class RogueCustomDeckGenerator {
     }
 
     public static RogueDeck generateStartingDeck(RogueDeck selectedDeck) {
-        return generateCuratedPart(selectedDeck, true);
+        return generateModifiedDeck(selectedDeck, true);
     }
 
     public static RogueDeck generateRewardPool(RogueDeck selectedDeck) {
-        return generateCuratedPart(selectedDeck, false);
+        return generateModifiedDeck(selectedDeck, false);
     }
 
-    private static RogueDeck generateCuratedPart(RogueDeck selectedDeck, boolean replaceStartingDeck) {
+    private static RogueDeck generateModifiedDeck(RogueDeck selectedDeck,
+            boolean replaceStartingDeck) {
         if (selectedDeck == null || selectedDeck.getStartDeck() == null
             || selectedDeck.getStartDeck().getCommanders().size() != 1) {
             return null;
@@ -98,28 +99,39 @@ public final class RogueCustomDeckGenerator {
         PaperCard commander = selectedDeck.getStartDeck().getCommanders().get(0);
         List<Map.Entry<PaperCard, Integer>> synergy = getCommanderSynergy(commander);
         for (int i = 0; i < 8; i++) {
-            try {
-                CandidatePool candidates = prepareCandidates(commander, synergy);
-                RogueDeck deck = selectedDeck.copy();
-                if (replaceStartingDeck) {
-                    Deck start = buildStartingDeck(candidates, selectedDeck.getName());
-                    if (start == null || !isValidStartingDeck(candidates, start)) {
-                        continue;
-                    }
-                    deck.setStartDeck(start);
-                } else {
-                    CardPool rewards = buildRewardPool(candidates, deck.getStartDeck());
-                    if (!isValidRewardPool(rewards)) {
-                        continue;
-                    }
-                    deck.setRewardPool(rewards);
-                }
+            RogueDeck deck = tryGenerateModifiedDeck(selectedDeck, commander, synergy,
+                replaceStartingDeck);
+            if (deck != null) {
                 return deck;
-            } catch (RuntimeException e) {
-                Logger.warn(e, "Could not generate custom deck part for {}", commander.getName());
             }
         }
         return null;
+    }
+
+    private static RogueDeck tryGenerateModifiedDeck(RogueDeck selectedDeck, PaperCard commander,
+            List<Map.Entry<PaperCard, Integer>> synergy, boolean replaceStartingDeck) {
+        try {
+            DeckGenerationContext context = prepareDeckGenerationContext(commander, synergy);
+            RogueDeck deck = selectedDeck.copy();
+            if (replaceStartingDeck) {
+                Deck start = buildStartingDeck(context, selectedDeck.getName(),
+                    selectedDeck.getLandEdition());
+                if (start == null || isStartingDeckInvalid(context, start)) {
+                    return null;
+                }
+                deck.setStartDeck(start);
+            } else {
+                CardPool rewards = buildRewardPool(context, deck.getStartDeck());
+                if (isRewardPoolInvalid(rewards)) {
+                    return null;
+                }
+                deck.setRewardPool(rewards);
+            }
+            return deck;
+        } catch (RuntimeException e) {
+            Logger.warn(e, "Could not generate custom deck part for {}", commander.getName());
+            return null;
+        }
     }
 
     private static Map<String, List<Map.Entry<PaperCard, Integer>>> getSynergyMatrix() {
@@ -152,14 +164,14 @@ public final class RogueCustomDeckGenerator {
 
     private static RogueDeck generateForCommander(PaperCard commander,
             List<Map.Entry<PaperCard, Integer>> synergy, boolean randomlyChosen) {
-        CandidatePool candidates = prepareCandidates(commander, synergy);
-        Deck start = buildStartingDeck(candidates,
-            (randomlyChosen ? "Random " : "Chosen ") + commander.getName());
-        if (start == null || !isValidStartingDeck(candidates, start)) {
+        DeckGenerationContext context = prepareDeckGenerationContext(commander, synergy);
+        Deck start = buildStartingDeck(context,
+            (randomlyChosen ? "Random " : "Chosen ") + commander.getName(), null);
+        if (start == null || isStartingDeckInvalid(context, start)) {
             return null;
         }
-        CardPool rewardPool = buildRewardPool(candidates, start);
-        if (!isValidRewardPool(rewardPool)) {
+        CardPool rewardPool = buildRewardPool(context, start);
+        if (isRewardPoolInvalid(rewardPool)) {
             return null;
         }
 
@@ -178,26 +190,74 @@ public final class RogueCustomDeckGenerator {
         return rogueDeck;
     }
 
-    private record CandidatePool(PaperCard commander, List<PaperCard> legalCards,
-            Map<String, PaperCard> legalByName, LinkedHashMap<String, PaperCard> generatedSpells,
+    private record DeckGenerationContext(PaperCard commander, List<PaperCard> startingCards,
+            Map<String, PaperCard> startingByName, List<PaperCard> eligibleCards,
+            Map<String, PaperCard> eligibleByName, LinkedHashMap<String, PaperCard> generatedSpells,
+            LinkedHashMap<String, PaperCard> generatedRewardSpells,
             LinkedHashMap<String, PaperCard> generatedLands,
             List<Map.Entry<PaperCard, Integer>> rankedSynergy, int maxBracket) {}
 
-    private static CandidatePool prepareCandidates(PaperCard commander,
+    private static DeckGenerationContext prepareDeckGenerationContext(PaperCard commander,
             List<Map.Entry<PaperCard, Integer>> synergy) {
         Predicate<PaperCard> colorIdentity = card -> card.getRules().getColorIdentity()
             .hasNoColorsExcept(commander.getRules().getColorIdentity());
-        List<PaperCard> legalCards = new ArrayList<>(RogueConfig.getRandomCards(card ->
+        Predicate<PaperCard> eligible = card ->
             DeckFormat.Commander.isLegalCard(card) && colorIdentity.test(card)
-                && !card.getName().equals(commander.getName())));
-        Map<String, PaperCard> legalByName = new HashMap<>();
-        for (PaperCard card : legalCards) {
-            legalByName.putIfAbsent(card.getName(), card);
-        }
+                && !card.getName().equals(commander.getName());
+        String preferredEdition = commander.getEdition();
+        List<PaperCard> eligibleCards = new ArrayList<>(
+            RogueConfig.getRandomCardsForEdition(eligible, preferredEdition));
+        List<PaperCard> startingCards = getStartingPrints(eligibleCards, eligible, preferredEdition);
+        Set<String> excludedStartingCardNames = Set.of("Sol Ring", "Arcane Signet");
+        startingCards.removeIf(card -> excludedStartingCardNames.contains(card.getName()));
+        Map<String, PaperCard> eligibleByName = indexByName(eligibleCards);
+        Map<String, PaperCard> startingByName = indexByName(startingCards);
 
         int commanderBracket = CommanderBracketCalculator.calculate(
             CommanderBracketCalculator.getCardNames(commander)).getBracket();
         int maxBracket = Math.max(2, commanderBracket);
+        Deck generated = generateCommanderDeck(commander, synergy, maxBracket);
+
+        LinkedHashMap<String, PaperCard> generatedSpells = new LinkedHashMap<>();
+        LinkedHashMap<String, PaperCard> generatedRewardSpells = new LinkedHashMap<>();
+        LinkedHashMap<String, PaperCard> generatedLands = new LinkedHashMap<>();
+        for (PaperCard card : generated.getMain().toFlatList()) {
+            addGeneratedCard(card, startingByName, eligibleByName, generatedSpells,
+                generatedRewardSpells, generatedLands);
+        }
+
+        List<Map.Entry<PaperCard, Integer>> rankedSynergy = new ArrayList<>(synergy);
+        Collections.shuffle(rankedSynergy, MyRandom.getRandom());
+        rankedSynergy.sort((a, b) -> Integer.compare(b.getValue(), a.getValue()));
+
+        return new DeckGenerationContext(commander, startingCards, startingByName, eligibleCards,
+            eligibleByName, generatedSpells, generatedRewardSpells, generatedLands,
+            rankedSynergy, maxBracket);
+    }
+
+    private static List<PaperCard> getStartingPrints(List<PaperCard> eligibleCards,
+            Predicate<PaperCard> eligible, String preferredEdition) {
+        List<PaperCard> startingCards = new ArrayList<>();
+        for (PaperCard card : eligibleCards) {
+            PaperCard startingCard = card.getRarity() == CardRarity.MythicRare
+                ? RogueConfig.getNonMythicRandomPrint(card, eligible, preferredEdition) : card;
+            if (startingCard != null) {
+                startingCards.add(startingCard);
+            }
+        }
+        return startingCards;
+    }
+
+    private static Map<String, PaperCard> indexByName(List<PaperCard> cards) {
+        Map<String, PaperCard> byName = new HashMap<>();
+        for (PaperCard card : cards) {
+            byName.putIfAbsent(card.getName(), card);
+        }
+        return byName;
+    }
+
+    private static Deck generateCommanderDeck(PaperCard commander,
+            List<Map.Entry<PaperCard, Integer>> synergy, int maxBracket) {
         Deck generated = null;
         if (!synergy.isEmpty()) {
             try {
@@ -212,80 +272,109 @@ public final class RogueCustomDeckGenerator {
             generated = DeckgenUtil.generateRandomCommanderDeck(commander,
                 DeckFormat.Commander, false, false, maxBracket);
         }
-
-        LinkedHashMap<String, PaperCard> generatedSpells = new LinkedHashMap<>();
-        LinkedHashMap<String, PaperCard> generatedLands = new LinkedHashMap<>();
-        for (PaperCard card : generated.getMain().toFlatList()) {
-            PaperCard legal = legalByName.get(card.getName());
-            if (legal == null) {
-                continue;
-            }
-            if (legal.getRules().getType().isLand()) {
-                if (!legal.getRules().getType().isBasicLand()) {
-                    generatedLands.putIfAbsent(legal.getName(), legal);
-                }
-            } else {
-                generatedSpells.putIfAbsent(legal.getName(), legal);
-            }
-        }
-
-        List<Map.Entry<PaperCard, Integer>> rankedSynergy = new ArrayList<>(synergy);
-        Collections.shuffle(rankedSynergy, MyRandom.getRandom());
-        rankedSynergy.sort((a, b) -> Integer.compare(b.getValue(), a.getValue()));
-
-        return new CandidatePool(commander, legalCards, legalByName, generatedSpells,
-            generatedLands, rankedSynergy, maxBracket);
+        return generated;
     }
 
-    private static Deck buildStartingDeck(CandidatePool candidates, String name) {
-        PaperCard commander = candidates.commander();
-        List<PaperCard> legalCards = new ArrayList<>(candidates.legalCards());
-        Map<String, PaperCard> legalByName = candidates.legalByName();
-        LinkedHashMap<String, PaperCard> generatedSpells = candidates.generatedSpells();
-        LinkedHashMap<String, PaperCard> generatedLands = candidates.generatedLands();
-        List<Map.Entry<PaperCard, Integer>> rankedSynergy = candidates.rankedSynergy();
-        int maxBracket = candidates.maxBracket();
+    private static void addGeneratedCard(PaperCard card, Map<String, PaperCard> startingByName,
+            Map<String, PaperCard> eligibleByName, Map<String, PaperCard> generatedSpells,
+            Map<String, PaperCard> generatedRewardSpells, Map<String, PaperCard> generatedLands) {
+        PaperCard eligibleCard = eligibleByName.get(card.getName());
+        if (eligibleCard != null && !eligibleCard.getRules().getType().isLand()) {
+            generatedRewardSpells.putIfAbsent(eligibleCard.getName(), eligibleCard);
+        }
+        PaperCard startingCard = startingByName.get(card.getName());
+        if (startingCard == null) {
+            return;
+        }
+        if (startingCard.getRules().getType().isLand()) {
+            if (!startingCard.getRules().getType().isBasicLand()) {
+                generatedLands.putIfAbsent(startingCard.getName(), startingCard);
+            }
+        } else {
+            generatedSpells.putIfAbsent(startingCard.getName(), startingCard);
+        }
+    }
 
-        LinkedHashMap<String, PaperCard> spells = new LinkedHashMap<>();
+    private static Deck buildStartingDeck(DeckGenerationContext context, String name,
+            String landEdition) {
         Set<String> supportingNames = new HashSet<>();
-        Set<String> completeNames = new HashSet<>(CommanderBracketCalculator.getCardNames(commander));
-        for (Map.Entry<PaperCard, Integer> entry : rankedSynergy) {
-            PaperCard card = generatedSpells.get(entry.getKey().getName());
+        Set<String> completeNames = new HashSet<>(
+            CommanderBracketCalculator.getCardNames(context.commander()));
+        Map<String, PaperCard> spells = selectStartingSpells(context, supportingNames, completeNames);
+        if (spells.size() != 19) {
+            return null;
+        }
+        List<PaperCard> lands = selectStartingLands(context, supportingNames, completeNames,
+            landEdition);
+        if (lands.isEmpty()) {
+            return null;
+        }
+
+        Deck start = new Deck(name);
+        start.getOrCreate(DeckSection.Commander).add(context.commander());
+        for (PaperCard card : spells.values()) {
+            start.getMain().add(card);
+        }
+        for (PaperCard card : lands) {
+            start.getMain().add(card);
+        }
+        return start;
+    }
+
+    private static Map<String, PaperCard> selectStartingSpells(DeckGenerationContext context,
+            Set<String> supportingNames, Set<String> completeNames) {
+        LinkedHashMap<String, PaperCard> spells = new LinkedHashMap<>();
+        addHighCurveSynergySpells(spells, supportingNames, completeNames, context);
+
+        List<PaperCard> spellCandidates = new ArrayList<>(context.generatedSpells().values());
+        Collections.shuffle(spellCandidates, MyRandom.getRandom());
+        spellCandidates.sort(Comparator.comparingInt(card -> card.getRules().getManaCost().getCMC()));
+        addSpells(spells, spellCandidates, supportingNames, completeNames, context.maxBracket());
+        if (spells.size() < 19) {
+            List<PaperCard> fallback = getSynergyFallbackSpells(context);
+            Collections.shuffle(fallback, MyRandom.getRandom());
+            addSpells(spells, fallback, supportingNames, completeNames, context.maxBracket());
+        }
+        if (spells.size() < 19) {
+            List<PaperCard> startingCards = new ArrayList<>(context.startingCards());
+            Collections.shuffle(startingCards, MyRandom.getRandom());
+            addSpells(spells, startingCards, supportingNames, completeNames,
+                context.maxBracket());
+        }
+        return spells;
+    }
+
+    private static void addHighCurveSynergySpells(Map<String, PaperCard> spells,
+            Set<String> supportingNames, Set<String> completeNames, DeckGenerationContext context) {
+        for (Map.Entry<PaperCard, Integer> entry : context.rankedSynergy()) {
+            PaperCard card = context.generatedSpells().get(entry.getKey().getName());
             if (card != null && card.getRules().getManaCost().getCMC() >= 4
                 && card.getRules().getManaCost().getCMC() <= 6) {
-                addSupportingCard(spells, card, supportingNames, completeNames, maxBracket);
+                addSupportingCard(spells, card, supportingNames, completeNames,
+                    context.maxBracket());
                 if (spells.size() == 4) {
                     break;
                 }
             }
         }
+    }
 
-        List<PaperCard> spellCandidates = new ArrayList<>(generatedSpells.values());
-        Collections.shuffle(spellCandidates, MyRandom.getRandom());
-        spellCandidates.sort(Comparator.comparingInt(card -> card.getRules().getManaCost().getCMC()));
-        addSpells(spells, spellCandidates, supportingNames, completeNames, maxBracket);
-        if (spells.size() < 19) {
-            List<PaperCard> fallback = new ArrayList<>();
-            for (Map.Entry<PaperCard, Integer> entry : rankedSynergy) {
-                PaperCard card = legalByName.get(entry.getKey().getName());
-                if (card != null) {
-                    fallback.add(card);
-                }
+    private static List<PaperCard> getSynergyFallbackSpells(DeckGenerationContext context) {
+        List<PaperCard> fallback = new ArrayList<>();
+        for (Map.Entry<PaperCard, Integer> entry : context.rankedSynergy()) {
+            PaperCard card = context.startingByName().get(entry.getKey().getName());
+            if (card != null) {
+                fallback.add(card);
             }
-            Collections.shuffle(fallback, MyRandom.getRandom());
-            addSpells(spells, fallback, supportingNames, completeNames, maxBracket);
         }
-        if (spells.size() < 19) {
-            Collections.shuffle(legalCards, MyRandom.getRandom());
-            addSpells(spells, legalCards, supportingNames, completeNames, maxBracket);
-        }
-        if (spells.size() != 19) {
-            return null;
-        }
+        return fallback;
+    }
 
-        List<PaperCard> nonbasicLands = new ArrayList<>(generatedLands.values());
+    private static List<PaperCard> selectStartingLands(DeckGenerationContext context,
+            Set<String> supportingNames, Set<String> completeNames, String landEdition) {
+        List<PaperCard> nonbasicLands = new ArrayList<>(context.generatedLands().values());
         Collections.shuffle(nonbasicLands, MyRandom.getRandom());
-        ColorSet commanderColors = commander.getRules().getColorIdentity();
+        ColorSet commanderColors = context.commander().getRules().getColorIdentity();
         nonbasicLands.sort(Comparator.comparingInt(
             (PaperCard card) -> fixingColors(card, commanderColors)).reversed());
         int nonbasicLimit = switch (commanderColors.countColors()) {
@@ -296,7 +385,7 @@ public final class RogueCustomDeckGenerator {
         };
         List<PaperCard> lands = new ArrayList<>();
         for (PaperCard card : nonbasicLands) {
-            if (canAddSupportingCard(card, supportingNames, completeNames, maxBracket)) {
+            if (canAddSupportingCard(card, supportingNames, completeNames, context.maxBracket())) {
                 lands.add(card);
                 supportingNames.addAll(CommanderBracketCalculator.getCardNames(card));
                 completeNames.addAll(CommanderBracketCalculator.getCardNames(card));
@@ -305,36 +394,34 @@ public final class RogueCustomDeckGenerator {
                 break;
             }
         }
-        if (!addBasicLands(lands, commanderColors)) {
-            return null;
+        if (!addBasicLands(lands, commanderColors,
+            RogueConfig.getBasicLandEdition(landEdition, context.commander()))) {
+            return Collections.emptyList();
         }
-
-        Deck start = new Deck(name);
-        start.getOrCreate(DeckSection.Commander).add(commander);
-        for (PaperCard card : spells.values()) {
-            start.getMain().add(card);
-        }
-        for (PaperCard card : lands) {
-            start.getMain().add(card);
-        }
-
-        return start;
+        return lands;
     }
 
-    private static CardPool buildRewardPool(CandidatePool candidates, Deck start) {
-        List<PaperCard> legalCards = new ArrayList<>(candidates.legalCards());
-        Map<String, PaperCard> legalByName = candidates.legalByName();
-        LinkedHashMap<String, PaperCard> generatedSpells = candidates.generatedSpells();
-        List<Map.Entry<PaperCard, Integer>> rankedSynergy = candidates.rankedSynergy();
-
+    private static CardPool buildRewardPool(DeckGenerationContext context, Deck start) {
+        List<PaperCard> eligibleCards = new ArrayList<>(context.eligibleCards());
         Set<String> used = new HashSet<>();
         for (PaperCard card : start.getMain().toFlatList()) {
             used.add(card.getName());
         }
         CardPool rewardPool = new CardPool();
+        addSynergyRewards(rewardPool, used, context);
+        Collections.shuffle(eligibleCards, MyRandom.getRandom());
+        addMythicRewards(rewardPool, used, eligibleCards);
+        addRewardsUpToLimit(rewardPool, used, context.generatedRewardSpells().values());
+        Collections.shuffle(eligibleCards, MyRandom.getRandom());
+        addRewardsUpToLimit(rewardPool, used, eligibleCards);
+        return rewardPool;
+    }
+
+    private static void addSynergyRewards(CardPool rewardPool, Set<String> used,
+            DeckGenerationContext context) {
         int synergyCount = 0;
-        for (Map.Entry<PaperCard, Integer> entry : rankedSynergy) {
-            PaperCard card = legalByName.get(entry.getKey().getName());
+        for (Map.Entry<PaperCard, Integer> entry : context.rankedSynergy()) {
+            PaperCard card = context.eligibleByName().get(entry.getKey().getName());
             if (addReward(rewardPool, used, card)) {
                 synergyCount++;
             }
@@ -342,10 +429,13 @@ public final class RogueCustomDeckGenerator {
                 break;
             }
         }
-        Collections.shuffle(legalCards, MyRandom.getRandom());
+    }
+
+    private static void addMythicRewards(CardPool rewardPool, Set<String> used,
+            List<PaperCard> eligibleCards) {
         int mythics = (int) rewardPool.toFlatList().stream()
             .filter(card -> card.getRarity() == CardRarity.MythicRare).count();
-        for (PaperCard card : legalCards) {
+        for (PaperCard card : eligibleCards) {
             if (mythics >= 12) {
                 break;
             }
@@ -353,24 +443,20 @@ public final class RogueCustomDeckGenerator {
                 mythics++;
             }
         }
-        for (PaperCard card : generatedSpells.values()) {
-            addReward(rewardPool, used, card);
-            if (rewardPool.countAll() >= 180) {
-                break;
-            }
-        }
-        Collections.shuffle(legalCards, MyRandom.getRandom());
-        for (PaperCard card : legalCards) {
-            addReward(rewardPool, used, card);
-            if (rewardPool.countAll() >= 180) {
-                break;
-            }
-        }
-        return rewardPool;
     }
 
-    private static boolean isValidStartingDeck(CandidatePool candidates, Deck start) {
-        PaperCard commander = candidates.commander();
+    private static void addRewardsUpToLimit(CardPool rewardPool, Set<String> used,
+            Iterable<PaperCard> cards) {
+        for (PaperCard card : cards) {
+            addReward(rewardPool, used, card);
+            if (rewardPool.countAll() >= 180) {
+                break;
+            }
+        }
+    }
+
+    private static boolean isStartingDeckInvalid(DeckGenerationContext context, Deck start) {
+        PaperCard commander = context.commander();
         Predicate<PaperCard> colorIdentity = card -> card.getRules().getColorIdentity()
             .hasNoColorsExcept(commander.getRules().getColorIdentity());
         List<PaperCard> mainCards = start.getMain().toFlatList();
@@ -378,18 +464,18 @@ public final class RogueCustomDeckGenerator {
         for (PaperCard card : mainCards) {
             supportingDeck.getMain().add(card);
         }
-        return start.getCommanders().size() == 1 && start.getMain().countAll() == 33
-            && mainCards.stream().filter(card -> card.getRules().getType().isLand()).count() == 14
-            && mainCards.stream().noneMatch(card -> !DeckFormat.Commander.isLegalCard(card)
+        return start.getCommanders().size() != 1 || start.getMain().countAll() != 33
+            || mainCards.stream().filter(card -> card.getRules().getType().isLand()).count() != 14
+            || mainCards.stream().anyMatch(card -> !DeckFormat.Commander.isLegalCard(card)
                 || !colorIdentity.test(card))
-            && CommanderBracketCalculator.getBracket(supportingDeck) <= 2
-            && CommanderBracketCalculator.getBracket(start) <= candidates.maxBracket();
+            || CommanderBracketCalculator.getBracket(supportingDeck) > 2
+            || CommanderBracketCalculator.getBracket(start) > context.maxBracket();
     }
 
-    private static boolean isValidRewardPool(CardPool rewardPool) {
-        return rewardPool.countAll() == 180
-            && rewardPool.toFlatList().stream()
-                .filter(card -> card.getRarity() == CardRarity.MythicRare).count() >= 3;
+    private static boolean isRewardPoolInvalid(CardPool rewardPool) {
+        return rewardPool.countAll() != 180
+            || rewardPool.toFlatList().stream()
+                .filter(card -> card.getRarity() == CardRarity.MythicRare).count() < 3;
     }
 
     private static void addSpells(Map<String, PaperCard> spells, List<PaperCard> candidates,
@@ -440,14 +526,14 @@ public final class RogueCustomDeckGenerator {
             & commanderColors.getColor());
     }
 
-    private static boolean addBasicLands(List<PaperCard> lands, ColorSet colors) {
+    private static boolean addBasicLands(List<PaperCard> lands, ColorSet colors, String landEdition) {
         String[] basicNames = {"Plains", "Island", "Swamp", "Mountain", "Forest"};
         byte[] basicColors = {MagicColor.WHITE, MagicColor.BLUE, MagicColor.BLACK,
             MagicColor.RED, MagicColor.GREEN};
         List<PaperCard> basics = new ArrayList<>();
         for (int i = 0; i < basicNames.length; i++) {
             if (colors.hasAnyColor(basicColors[i])) {
-                PaperCard basic = FModel.getMagicDb().getCommonCards().getUniqueByName(basicNames[i]);
+                PaperCard basic = RogueConfig.getBasicLandPrint(basicNames[i], landEdition);
                 if (basic == null) {
                     return false;
                 }
@@ -455,7 +541,7 @@ public final class RogueCustomDeckGenerator {
             }
         }
         if (basics.isEmpty()) {
-            PaperCard wastes = FModel.getMagicDb().getCommonCards().getUniqueByName("Wastes");
+            PaperCard wastes = RogueConfig.getBasicLandPrint("Wastes", landEdition);
             if (wastes == null) {
                 return false;
             }
