@@ -29,7 +29,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.WeakHashMap;
 
-import javax.swing.BorderFactory;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
@@ -157,8 +156,7 @@ public class VField implements IVDoc<CField> {
 
     private final Border borderAvatarSimple = new LineBorder(new Color(0, 0, 0, 0), 1);
     private final Border borderAvatarHighlighted = new LineBorder(Color.red, 2);
-    // dashed while the player can be picked as a target, solid red once picked
-    private final Border borderAvatarSelectable = BorderFactory.createDashedBorder(new Color(255, 215, 0), 2f, 5f, 3f, false);
+    private final Border borderAvatarSelectable = new LineBorder(Color.white, 2);
 
     private final TabDiffTracker tabDiff = new TabDiffTracker();
 
@@ -285,12 +283,13 @@ public class VField implements IVDoc<CField> {
         return control.getMatchUI().isSelectablePlayer(player);
     }
 
-    /** Solid red frame once the player is picked, dashed frame while the player can be picked, none otherwise. */
+    /** Solid red frame once the player is picked, white frame while the player can be picked, none otherwise. */
     public void updateAvatarBorder() {
         final boolean highlighted = isHighlighted();
+        final boolean selectable = isSelectable();
         avatarArea.setBorder(highlighted ? borderAvatarHighlighted
-                : control.getMatchUI().isSelectable(player) ? borderAvatarSelectable : borderAvatarSimple);
-        avatarArea.setOpaque(highlighted);
+                : selectable ? borderAvatarSelectable : borderAvatarSimple);
+        avatarArea.setOpaque(highlighted || selectable);
     }
 
     public void setAvatar(final SkinImage avatar) {

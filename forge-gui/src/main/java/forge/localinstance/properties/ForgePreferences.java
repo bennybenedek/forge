@@ -99,7 +99,7 @@ public class ForgePreferences extends AbstractPreferences<ForgePreferences.FPref
         UI_SHOW_TARGET_BOX ("false"),
         UI_SHOW_ACTIONABLE_HIGHLIGHTS ("true"),
         UI_SHOW_AUTOTAP_PREVIEW ("true"),
-        UI_RECORD_REPLAYS ("true"),
+        UI_RECORD_REPLAYS ("false"),
         UI_ACTIONABLE_HIGHLIGHT_COLOR ("66CCFF"),
         UI_SHOW_LINKED_EXILE_CARDS ("true"),
         UI_LARGE_CARD_VIEWERS ("false"),
