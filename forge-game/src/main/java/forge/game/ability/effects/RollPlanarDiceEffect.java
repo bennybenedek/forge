@@ -32,9 +32,8 @@ public class RollPlanarDiceEffect extends SpellAbilityEffect {
         if (sa.hasParam("SpecialAction")) {
             game.getPhaseHandler().incPlanarDiceSpecialActionThisTurn();
         }
-        // Play the die roll sound
-        game.fireEvent(new GameEventRollDie());
-        PlanarDice.roll(activator, null);
+        final PlanarDice result = PlanarDice.roll(activator, null);
+        game.fireEvent(new GameEventRollDie(result));
 
         if (sa.hasParam("QueueAdditionalRolls")) {
             queueAdditionalRoll(sa, activator);
