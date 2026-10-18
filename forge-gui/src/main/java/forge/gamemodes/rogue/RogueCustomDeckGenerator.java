@@ -193,9 +193,10 @@ public final class RogueCustomDeckGenerator {
     private record DeckGenerationContext(PaperCard commander, List<PaperCard> startingCards,
             Map<String, PaperCard> startingByName, List<PaperCard> eligibleCards,
             Map<String, PaperCard> eligibleByName, LinkedHashMap<String, PaperCard> generatedSpells,
-            LinkedHashMap<String, PaperCard> generatedRewardSpells,
+            LinkedHashMap<String, PaperCard> generatedRewardCards,
             LinkedHashMap<String, PaperCard> generatedLands,
-            List<Map.Entry<PaperCard, Integer>> rankedSynergy, int maxBracket) {}
+            List<Map.Entry<PaperCard, Integer>> rankedSynergy, int maxBracket,
+            int targetStartingCreatures) {}
 
     private static DeckGenerationContext prepareDeckGenerationContext(PaperCard commander,
             List<Map.Entry<PaperCard, Integer>> synergy) {
@@ -219,11 +220,19 @@ public final class RogueCustomDeckGenerator {
         Deck generated = generateCommanderDeck(commander, synergy, maxBracket);
 
         LinkedHashMap<String, PaperCard> generatedSpells = new LinkedHashMap<>();
-        LinkedHashMap<String, PaperCard> generatedRewardSpells = new LinkedHashMap<>();
+        LinkedHashMap<String, PaperCard> generatedRewardCards = new LinkedHashMap<>();
         LinkedHashMap<String, PaperCard> generatedLands = new LinkedHashMap<>();
-        for (PaperCard card : generated.getMain().toFlatList()) {
+        List<PaperCard> generatedCards = generated.getMain().toFlatList();
+        long generatedNonlands = generatedCards.stream()
+            .filter(card -> !card.getRules().getType().isLand()).count();
+        long generatedCreatures = generatedCards.stream()
+            .filter(card -> !card.getRules().getType().isLand()
+                && card.getRules().getType().isCreature()).count();
+        int targetStartingCreatures = generatedNonlands == 0 ? 0
+            : (int) Math.round(19.0 * generatedCreatures / generatedNonlands);
+        for (PaperCard card : generatedCards) {
             addGeneratedCard(card, startingByName, eligibleByName, generatedSpells,
-                generatedRewardSpells, generatedLands);
+                generatedRewardCards, generatedLands);
         }
 
         List<Map.Entry<PaperCard, Integer>> rankedSynergy = new ArrayList<>(synergy);
@@ -231,8 +240,8 @@ public final class RogueCustomDeckGenerator {
         rankedSynergy.sort((a, b) -> Integer.compare(b.getValue(), a.getValue()));
 
         return new DeckGenerationContext(commander, startingCards, startingByName, eligibleCards,
-            eligibleByName, generatedSpells, generatedRewardSpells, generatedLands,
-            rankedSynergy, maxBracket);
+            eligibleByName, generatedSpells, generatedRewardCards, generatedLands,
+            rankedSynergy, maxBracket, targetStartingCreatures);
     }
 
     private static List<PaperCard> getStartingPrints(List<PaperCard> eligibleCards,
@@ -277,10 +286,10 @@ public final class RogueCustomDeckGenerator {
 
     private static void addGeneratedCard(PaperCard card, Map<String, PaperCard> startingByName,
             Map<String, PaperCard> eligibleByName, Map<String, PaperCard> generatedSpells,
-            Map<String, PaperCard> generatedRewardSpells, Map<String, PaperCard> generatedLands) {
+            Map<String, PaperCard> generatedRewardCards, Map<String, PaperCard> generatedLands) {
         PaperCard eligibleCard = eligibleByName.get(card.getName());
-        if (eligibleCard != null && !eligibleCard.getRules().getType().isLand()) {
-            generatedRewardSpells.putIfAbsent(eligibleCard.getName(), eligibleCard);
+        if (eligibleCard != null && !eligibleCard.getRules().getType().isBasicLand()) {
+            generatedRewardCards.putIfAbsent(eligibleCard.getName(), eligibleCard);
         }
         PaperCard startingCard = startingByName.get(card.getName());
         if (startingCard == null) {
@@ -329,17 +338,19 @@ public final class RogueCustomDeckGenerator {
         List<PaperCard> spellCandidates = new ArrayList<>(context.generatedSpells().values());
         Collections.shuffle(spellCandidates, MyRandom.getRandom());
         spellCandidates.sort(Comparator.comparingInt(card -> card.getRules().getManaCost().getCMC()));
-        addSpells(spells, spellCandidates, supportingNames, completeNames, context.maxBracket());
-        if (spells.size() < 19) {
-            List<PaperCard> fallback = getSynergyFallbackSpells(context);
-            Collections.shuffle(fallback, MyRandom.getRandom());
-            addSpells(spells, fallback, supportingNames, completeNames, context.maxBracket());
+        List<PaperCard> synergyCandidates = getSynergyFallbackSpells(context);
+        Collections.shuffle(synergyCandidates, MyRandom.getRandom());
+        List<PaperCard> broadCandidates = new ArrayList<>(context.startingCards());
+        Collections.shuffle(broadCandidates, MyRandom.getRandom());
+        List<List<PaperCard>> sources = List.of(spellCandidates, synergyCandidates, broadCandidates);
+        for (List<PaperCard> source : sources) {
+            addSpells(spells, source, supportingNames, completeNames, context.maxBracket(),
+                context.targetStartingCreatures());
         }
         if (spells.size() < 19) {
-            List<PaperCard> startingCards = new ArrayList<>(context.startingCards());
-            Collections.shuffle(startingCards, MyRandom.getRandom());
-            addSpells(spells, startingCards, supportingNames, completeNames,
-                context.maxBracket());
+            for (List<PaperCard> source : sources) {
+                addSpells(spells, source, supportingNames, completeNames, context.maxBracket(), -1);
+            }
         }
         return spells;
     }
@@ -349,7 +360,8 @@ public final class RogueCustomDeckGenerator {
         for (Map.Entry<PaperCard, Integer> entry : context.rankedSynergy()) {
             PaperCard card = context.generatedSpells().get(entry.getKey().getName());
             if (card != null && card.getRules().getManaCost().getCMC() >= 4
-                && card.getRules().getManaCost().getCMC() <= 6) {
+                && card.getRules().getManaCost().getCMC() <= 6
+                && isWithinStartingRatio(spells, card, context.targetStartingCreatures())) {
                 addSupportingCard(spells, card, supportingNames, completeNames,
                     context.maxBracket());
                 if (spells.size() == 4) {
@@ -402,55 +414,82 @@ public final class RogueCustomDeckGenerator {
     }
 
     private static CardPool buildRewardPool(DeckGenerationContext context, Deck start) {
+        List<PaperCard> generatedCards = new ArrayList<>(context.generatedRewardCards().values());
+        Collections.shuffle(generatedCards, MyRandom.getRandom());
+        List<PaperCard> synergyCards = new ArrayList<>();
+        for (Map.Entry<PaperCard, Integer> entry : context.rankedSynergy()) {
+            PaperCard card = context.eligibleByName().get(entry.getKey().getName());
+            if (card != null) {
+                synergyCards.add(card);
+            }
+        }
         List<PaperCard> eligibleCards = new ArrayList<>(context.eligibleCards());
+        Collections.shuffle(eligibleCards, MyRandom.getRandom());
+        List<List<PaperCard>> sources = List.of(generatedCards, synergyCards, eligibleCards);
         Set<String> used = new HashSet<>();
         for (PaperCard card : start.getMain().toFlatList()) {
             used.add(card.getName());
         }
         CardPool rewardPool = new CardPool();
-        addSynergyRewards(rewardPool, used, context);
-        Collections.shuffle(eligibleCards, MyRandom.getRandom());
-        addMythicRewards(rewardPool, used, eligibleCards);
-        addRewardsUpToLimit(rewardPool, used, context.generatedRewardSpells().values());
-        Collections.shuffle(eligibleCards, MyRandom.getRandom());
-        addRewardsUpToLimit(rewardPool, used, eligibleCards);
+        // Reserve each required category from the same priority-ordered sources.
+        addRewards(rewardPool, used, sources, 40,
+            card -> card.getRarity() == CardRarity.MythicRare);
+        int mythics = rewardPool.countAll();
+        int nonMythics = 180 - mythics;
+        int targetLands = (int) Math.round(nonMythics * 0.10);
+        addRewards(rewardPool, used, sources, rewardPool.countAll() + targetLands,
+            card -> card.getRarity() != CardRarity.MythicRare
+                && card.getRules().getType().isLand());
+        int lands = rewardPool.countAll() - mythics;
+        int nonlandNonMythics = nonMythics - lands;
+        int minCreatures = (int) Math.ceil(nonlandNonMythics * 0.30);
+        int maxCreatures = (int) Math.floor(nonlandNonMythics * 0.55);
+        addRewards(rewardPool, used, sources, rewardPool.countAll() + minCreatures,
+            card -> card.getRarity() != CardRarity.MythicRare
+                && !card.getRules().getType().isLand()
+                && card.getRules().getType().isCreature());
+        addRemainingNonlandRewards(rewardPool, used, sources, maxCreatures);
         return rewardPool;
     }
 
-    private static void addSynergyRewards(CardPool rewardPool, Set<String> used,
-            DeckGenerationContext context) {
-        int synergyCount = 0;
-        for (Map.Entry<PaperCard, Integer> entry : context.rankedSynergy()) {
-            PaperCard card = context.eligibleByName().get(entry.getKey().getName());
-            if (addReward(rewardPool, used, card)) {
-                synergyCount++;
-            }
-            if (synergyCount == 120) {
-                break;
-            }
-        }
-    }
-
-    private static void addMythicRewards(CardPool rewardPool, Set<String> used,
-            List<PaperCard> eligibleCards) {
-        int mythics = (int) rewardPool.toFlatList().stream()
-            .filter(card -> card.getRarity() == CardRarity.MythicRare).count();
-        for (PaperCard card : eligibleCards) {
-            if (mythics >= 12) {
-                break;
-            }
-            if (card.getRarity() == CardRarity.MythicRare && addReward(rewardPool, used, card)) {
-                mythics++;
+    private static void addRewards(CardPool rewardPool, Set<String> used,
+            List<List<PaperCard>> sources, int targetSize, Predicate<PaperCard> filter) {
+        int remaining = targetSize - rewardPool.countAll();
+        for (List<PaperCard> source : sources) {
+            for (PaperCard card : source) {
+                if (remaining == 0) {
+                    return;
+                }
+                if (filter.test(card) && addReward(rewardPool, used, card)) {
+                    remaining--;
+                }
             }
         }
     }
 
-    private static void addRewardsUpToLimit(CardPool rewardPool, Set<String> used,
-            Iterable<PaperCard> cards) {
-        for (PaperCard card : cards) {
-            addReward(rewardPool, used, card);
-            if (rewardPool.countAll() >= 180) {
-                break;
+    private static void addRemainingNonlandRewards(CardPool rewardPool, Set<String> used,
+            List<List<PaperCard>> sources, int maxCreatures) {
+        int creatures = (int) rewardPool.toFlatList().stream()
+            .filter(card -> card.getRarity() != CardRarity.MythicRare
+                && !card.getRules().getType().isLand()
+                && card.getRules().getType().isCreature()).count();
+        int remaining = 180 - rewardPool.countAll();
+        for (List<PaperCard> source : sources) {
+            for (PaperCard card : source) {
+                if (remaining == 0) {
+                    return;
+                }
+                boolean creature = card.getRules().getType().isCreature();
+                if (card.getRarity() == CardRarity.MythicRare
+                    || card.getRules().getType().isLand()
+                    || (creature && creatures >= maxCreatures)
+                    || !addReward(rewardPool, used, card)) {
+                    continue;
+                }
+                remaining--;
+                if (creature) {
+                    creatures++;
+                }
             }
         }
     }
@@ -473,22 +512,48 @@ public final class RogueCustomDeckGenerator {
     }
 
     private static boolean isRewardPoolInvalid(CardPool rewardPool) {
-        return rewardPool.countAll() != 180
-            || rewardPool.toFlatList().stream()
-                .filter(card -> card.getRarity() == CardRarity.MythicRare).count() < 3;
+        List<PaperCard> cards = rewardPool.toFlatList();
+        int mythics = (int) cards.stream()
+            .filter(card -> card.getRarity() == CardRarity.MythicRare).count();
+        int nonMythics = cards.size() - mythics;
+        int lands = (int) cards.stream()
+            .filter(card -> card.getRarity() != CardRarity.MythicRare
+                && card.getRules().getType().isLand()).count();
+        int nonlandNonMythics = nonMythics - lands;
+        int creatures = (int) cards.stream()
+            .filter(card -> card.getRarity() != CardRarity.MythicRare
+                && !card.getRules().getType().isLand()
+                && card.getRules().getType().isCreature()).count();
+        return cards.size() != 180 || mythics < 30 || mythics > 45
+            || lands * 100 < nonMythics * 8 || lands * 100 > nonMythics * 12
+            || creatures * 100 < nonlandNonMythics * 30
+            || creatures * 100 > nonlandNonMythics * 55;
     }
 
     private static void addSpells(Map<String, PaperCard> spells, List<PaperCard> candidates,
-            Set<String> supportingNames, Set<String> completeNames, int maxBracket) {
+            Set<String> supportingNames, Set<String> completeNames, int maxBracket,
+            int targetCreatures) {
         for (PaperCard card : candidates) {
-            if (!card.getRules().getType().isLand()
-                && card.getRules().getManaCost().getCMC() <= 6) {
-                addSupportingCard(spells, card, supportingNames, completeNames, maxBracket);
-            }
-            if (spells.size() == 19) {
+            if (spells.size() >= 19) {
                 return;
             }
+            if (!card.getRules().getType().isLand()
+                && card.getRules().getManaCost().getCMC() <= 6
+                && isWithinStartingRatio(spells, card, targetCreatures)) {
+                addSupportingCard(spells, card, supportingNames, completeNames, maxBracket);
+            }
         }
+    }
+
+    private static boolean isWithinStartingRatio(Map<String, PaperCard> spells, PaperCard card,
+            int targetCreatures) {
+        if (targetCreatures < 0) {
+            return true;
+        }
+        long creatures = spells.values().stream()
+            .filter(selected -> selected.getRules().getType().isCreature()).count();
+        return card.getRules().getType().isCreature()
+            ? creatures < targetCreatures : spells.size() - creatures < 19 - targetCreatures;
     }
 
     private static void addSupportingCard(Map<String, PaperCard> spells, PaperCard card,
