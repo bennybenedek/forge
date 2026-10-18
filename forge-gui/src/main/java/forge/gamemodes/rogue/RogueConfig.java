@@ -33,7 +33,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 public class RogueConfig {
     private static final Set<String> EXCLUDED_RANDOM_DRAW_SET_CODES = Set.of("UNK", "UNH");
     private static final Set<String> DEPRIORITIZED_RANDOM_PRINT_SET_CODES =
-        Set.of("SLZ", "MAR", "FCA", "TLE", "PF25", "PF26", "SLD", "PSPL");
+        Set.of("SLZ", "MAR", "FCA", "TLE", "PF25", "PF26", "SLD", "PSPL", "MBC");
     private static final String FALLBACK_LAND_SET = "MH3";
     private static final String WASTES_FALLBACK_LAND_SET = "M3C";
 
@@ -401,7 +401,7 @@ public class RogueConfig {
         return card != null && card.hasFlavorName() ? getCard(card.getName(), null, null) : card;
     }
 
-    /** Prefers non-deprioritized prints, then the chosen edition, CMM, and newest set. */
+    /** Prefers non-deprioritized prints, then the chosen edition, CMM, FDC, FDN, and newest set. */
     private static Optional<PaperCard> findPreferredPrint(PaperCard card, Predicate<PaperCard> filter,
             String preferredEdition) {
         return FModel.getMagicDb().getCommonCards()
@@ -413,6 +413,8 @@ public class RogueConfig {
                         .thenComparing(candidate -> preferredEdition == null
                                 || !candidate.getEdition().equals(preferredEdition))
                         .thenComparing(candidate -> !candidate.getEdition().equals("CMM"))
+                        .thenComparing(candidate -> !candidate.getEdition().equals("FDC"))
+                        .thenComparing(candidate -> !candidate.getEdition().equals("FDN"))
                         .thenComparing(candidate -> db.getCardEdition(candidate.getEdition()).getDate(),
                                 Comparator.reverseOrder())
                         .thenComparingInt(PaperCard::getArtIndex)

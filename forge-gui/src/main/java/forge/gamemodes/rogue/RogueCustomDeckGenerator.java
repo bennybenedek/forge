@@ -28,6 +28,15 @@ import java.util.function.Predicate;
 
 /** Builds a small, playable Rogue deck from Forge's Commander deck generator. */
 public final class RogueCustomDeckGenerator {
+    private static final int MAX_GENERATION_ATTEMPTS = 8;
+    private static final int STARTING_SPELL_COUNT = 19;
+    private static final int STARTING_LAND_COUNT = 14;
+    private static final int MAX_STARTING_CMC = 6;
+    private static final int MAX_STARTING_SUPPORT_BRACKET = 2;
+    private static final int REWARD_POOL_SIZE = 180;
+    private static final int MIN_REWARD_CREATURE_PERCENT = 30;
+    private static final int MAX_REWARD_CREATURE_PERCENT = 55;
+
     private RogueCustomDeckGenerator() {
     }
 
@@ -52,7 +61,7 @@ public final class RogueCustomDeckGenerator {
         Collections.shuffle(commanders, MyRandom.getRandom());
 
         Map<String, List<Map.Entry<PaperCard, Integer>>> matrix = getSynergyMatrix();
-        for (int i = 0; i < Math.min(8, commanders.size()); i++) {
+        for (int i = 0; i < Math.min(MAX_GENERATION_ATTEMPTS, commanders.size()); i++) {
             RogueDeck deck = tryGenerate(commanders.get(i), matrix, true);
             if (deck != null) {
                 return deck;
@@ -73,7 +82,7 @@ public final class RogueCustomDeckGenerator {
         }
 
         Map<String, List<Map.Entry<PaperCard, Integer>>> matrix = getSynergyMatrix();
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < MAX_GENERATION_ATTEMPTS; i++) {
             RogueDeck deck = tryGenerate(commander, matrix, false);
             if (deck != null) {
                 return deck;
@@ -98,7 +107,7 @@ public final class RogueCustomDeckGenerator {
         }
         PaperCard commander = selectedDeck.getStartDeck().getCommanders().get(0);
         List<Map.Entry<PaperCard, Integer>> synergy = getCommanderSynergy(commander);
-        for (int i = 0; i < 8; i++) {
+        for (int i = 0; i < MAX_GENERATION_ATTEMPTS; i++) {
             RogueDeck deck = tryGenerateModifiedDeck(selectedDeck, commander, synergy,
                 replaceStartingDeck);
             if (deck != null) {
@@ -216,7 +225,7 @@ public final class RogueCustomDeckGenerator {
 
         int commanderBracket = CommanderBracketCalculator.calculate(
             CommanderBracketCalculator.getCardNames(commander)).getBracket();
-        int maxBracket = Math.max(2, commanderBracket);
+        int maxBracket = Math.max(MAX_STARTING_SUPPORT_BRACKET, commanderBracket);
         Deck generated = generateCommanderDeck(commander, synergy, maxBracket);
 
         LinkedHashMap<String, PaperCard> generatedSpells = new LinkedHashMap<>();
@@ -228,8 +237,9 @@ public final class RogueCustomDeckGenerator {
         long generatedCreatures = generatedCards.stream()
             .filter(card -> !card.getRules().getType().isLand()
                 && card.getRules().getType().isCreature()).count();
+        // Scale Forge's full-deck creature mix to the smaller Rogue starting deck.
         int targetStartingCreatures = generatedNonlands == 0 ? 0
-            : (int) Math.round(19.0 * generatedCreatures / generatedNonlands);
+            : (int) Math.round((double) STARTING_SPELL_COUNT * generatedCreatures / generatedNonlands);
         for (PaperCard card : generatedCards) {
             addGeneratedCard(card, startingByName, eligibleByName, generatedSpells,
                 generatedRewardCards, generatedLands);
@@ -310,7 +320,7 @@ public final class RogueCustomDeckGenerator {
         Set<String> completeNames = new HashSet<>(
             CommanderBracketCalculator.getCardNames(context.commander()));
         Map<String, PaperCard> spells = selectStartingSpells(context, supportingNames, completeNames);
-        if (spells.size() != 19) {
+        if (spells.size() != STARTING_SPELL_COUNT) {
             return null;
         }
         List<PaperCard> lands = selectStartingLands(context, supportingNames, completeNames,
@@ -342,12 +352,14 @@ public final class RogueCustomDeckGenerator {
         Collections.shuffle(synergyCandidates, MyRandom.getRandom());
         List<PaperCard> broadCandidates = new ArrayList<>(context.startingCards());
         Collections.shuffle(broadCandidates, MyRandom.getRandom());
+        // Prefer Forge's generated deck, then other synergy cards, then the legal pool.
         List<List<PaperCard>> sources = List.of(spellCandidates, synergyCandidates, broadCandidates);
         for (List<PaperCard> source : sources) {
             addSpells(spells, source, supportingNames, completeNames, context.maxBracket(),
                 context.targetStartingCreatures());
         }
-        if (spells.size() < 19) {
+        if (spells.size() < STARTING_SPELL_COUNT) {
+            // Relax only the creature target if the preferred mix cannot fill every slot.
             for (List<PaperCard> source : sources) {
                 addSpells(spells, source, supportingNames, completeNames, context.maxBracket(), -1);
             }
@@ -357,10 +369,11 @@ public final class RogueCustomDeckGenerator {
 
     private static void addHighCurveSynergySpells(Map<String, PaperCard> spells,
             Set<String> supportingNames, Set<String> completeNames, DeckGenerationContext context) {
+        // Reserve a few signature cards before the remaining Forge cards are sorted by cost.
         for (Map.Entry<PaperCard, Integer> entry : context.rankedSynergy()) {
             PaperCard card = context.generatedSpells().get(entry.getKey().getName());
             if (card != null && card.getRules().getManaCost().getCMC() >= 4
-                && card.getRules().getManaCost().getCMC() <= 6
+                && card.getRules().getManaCost().getCMC() <= MAX_STARTING_CMC
                 && isWithinStartingRatio(spells, card, context.targetStartingCreatures())) {
                 addSupportingCard(spells, card, supportingNames, completeNames,
                     context.maxBracket());
@@ -425,6 +438,7 @@ public final class RogueCustomDeckGenerator {
         }
         List<PaperCard> eligibleCards = new ArrayList<>(context.eligibleCards());
         Collections.shuffle(eligibleCards, MyRandom.getRandom());
+        // The full synergy list remains available even if Forge's one generated deck omitted a card.
         List<List<PaperCard>> sources = List.of(generatedCards, synergyCards, eligibleCards);
         Set<String> used = new HashSet<>();
         for (PaperCard card : start.getMain().toFlatList()) {
@@ -435,15 +449,15 @@ public final class RogueCustomDeckGenerator {
         addRewards(rewardPool, used, sources, 40,
             card -> card.getRarity() == CardRarity.MythicRare);
         int mythics = rewardPool.countAll();
-        int nonMythics = 180 - mythics;
+        int nonMythics = REWARD_POOL_SIZE - mythics;
         int targetLands = (int) Math.round(nonMythics * 0.10);
         addRewards(rewardPool, used, sources, rewardPool.countAll() + targetLands,
             card -> card.getRarity() != CardRarity.MythicRare
                 && card.getRules().getType().isLand());
         int lands = rewardPool.countAll() - mythics;
         int nonlandNonMythics = nonMythics - lands;
-        int minCreatures = (int) Math.ceil(nonlandNonMythics * 0.30);
-        int maxCreatures = (int) Math.floor(nonlandNonMythics * 0.55);
+        int minCreatures = (int) Math.ceil(nonlandNonMythics * MIN_REWARD_CREATURE_PERCENT / 100.0);
+        int maxCreatures = (int) Math.floor(nonlandNonMythics * MAX_REWARD_CREATURE_PERCENT / 100.0);
         addRewards(rewardPool, used, sources, rewardPool.countAll() + minCreatures,
             card -> card.getRarity() != CardRarity.MythicRare
                 && !card.getRules().getType().isLand()
@@ -473,7 +487,7 @@ public final class RogueCustomDeckGenerator {
             .filter(card -> card.getRarity() != CardRarity.MythicRare
                 && !card.getRules().getType().isLand()
                 && card.getRules().getType().isCreature()).count();
-        int remaining = 180 - rewardPool.countAll();
+        int remaining = REWARD_POOL_SIZE - rewardPool.countAll();
         for (List<PaperCard> source : sources) {
             for (PaperCard card : source) {
                 if (remaining == 0) {
@@ -503,11 +517,12 @@ public final class RogueCustomDeckGenerator {
         for (PaperCard card : mainCards) {
             supportingDeck.getMain().add(card);
         }
-        return start.getCommanders().size() != 1 || start.getMain().countAll() != 33
-            || mainCards.stream().filter(card -> card.getRules().getType().isLand()).count() != 14
+        return start.getCommanders().size() != 1
+            || start.getMain().countAll() != STARTING_SPELL_COUNT + STARTING_LAND_COUNT
+            || mainCards.stream().filter(card -> card.getRules().getType().isLand()).count() != STARTING_LAND_COUNT
             || mainCards.stream().anyMatch(card -> !DeckFormat.Commander.isLegalCard(card)
                 || !colorIdentity.test(card))
-            || CommanderBracketCalculator.getBracket(supportingDeck) > 2
+            || CommanderBracketCalculator.getBracket(supportingDeck) > MAX_STARTING_SUPPORT_BRACKET
             || CommanderBracketCalculator.getBracket(start) > context.maxBracket();
     }
 
@@ -524,21 +539,21 @@ public final class RogueCustomDeckGenerator {
             .filter(card -> card.getRarity() != CardRarity.MythicRare
                 && !card.getRules().getType().isLand()
                 && card.getRules().getType().isCreature()).count();
-        return cards.size() != 180 || mythics < 30 || mythics > 45
+        return cards.size() != REWARD_POOL_SIZE || mythics < 30 || mythics > 45
             || lands * 100 < nonMythics * 8 || lands * 100 > nonMythics * 12
-            || creatures * 100 < nonlandNonMythics * 30
-            || creatures * 100 > nonlandNonMythics * 55;
+            || creatures * 100 < nonlandNonMythics * MIN_REWARD_CREATURE_PERCENT
+            || creatures * 100 > nonlandNonMythics * MAX_REWARD_CREATURE_PERCENT;
     }
 
     private static void addSpells(Map<String, PaperCard> spells, List<PaperCard> candidates,
             Set<String> supportingNames, Set<String> completeNames, int maxBracket,
             int targetCreatures) {
         for (PaperCard card : candidates) {
-            if (spells.size() >= 19) {
+            if (spells.size() >= STARTING_SPELL_COUNT) {
                 return;
             }
             if (!card.getRules().getType().isLand()
-                && card.getRules().getManaCost().getCMC() <= 6
+                && card.getRules().getManaCost().getCMC() <= MAX_STARTING_CMC
                 && isWithinStartingRatio(spells, card, targetCreatures)) {
                 addSupportingCard(spells, card, supportingNames, completeNames, maxBracket);
             }
@@ -553,7 +568,7 @@ public final class RogueCustomDeckGenerator {
         long creatures = spells.values().stream()
             .filter(selected -> selected.getRules().getType().isCreature()).count();
         return card.getRules().getType().isCreature()
-            ? creatures < targetCreatures : spells.size() - creatures < 19 - targetCreatures;
+            ? creatures < targetCreatures : spells.size() - creatures < STARTING_SPELL_COUNT - targetCreatures;
     }
 
     private static void addSupportingCard(Map<String, PaperCard> spells, PaperCard card,
@@ -575,7 +590,8 @@ public final class RogueCustomDeckGenerator {
         Set<String> cardNames = CommanderBracketCalculator.getCardNames(card);
         Set<String> nextSupporting = new HashSet<>(supportingNames);
         nextSupporting.addAll(cardNames);
-        if (CommanderBracketCalculator.calculate(nextSupporting).getBracket() > 2) {
+        // Supporting cards stay at bracket 2; the Commander may make the complete deck higher.
+        if (CommanderBracketCalculator.calculate(nextSupporting).getBracket() > MAX_STARTING_SUPPORT_BRACKET) {
             return false;
         }
         Set<String> nextComplete = new HashSet<>(completeNames);
@@ -612,7 +628,7 @@ public final class RogueCustomDeckGenerator {
             }
             basics.add(wastes);
         }
-        for (int i = 0; lands.size() < 14; i++) {
+        for (int i = 0; lands.size() < STARTING_LAND_COUNT; i++) {
             lands.add(basics.get(i % basics.size()));
         }
         return true;
