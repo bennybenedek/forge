@@ -341,6 +341,7 @@ public final class SRearrangingUtil {
         final int srcY2 = cellSrc.getAbsY2();
         final int srcW = cellSrc.getW();
         final int srcH = cellSrc.getH();
+        final int contentH = FView.SINGLETON_INSTANCE.getPnlContent().getHeight();
 
         // Border check flags
         boolean foundT = false;
@@ -421,7 +422,9 @@ public final class SRearrangingUtil {
 
         if (foundL && foundR && (!preferField || containsField(cellsToResize))) {
             for (final DragCell cell : cellsToResize) {
-                cell.setBounds(cell.getX(), cellSrc.getY(), cell.getW(), cell.getH() + srcH);
+                final int y = cellSrc.getY();
+                final int availableH = Math.max(0, contentH - Math.max(0, y));
+                cell.setBounds(cell.getX(), y, cell.getW(), Math.min(cell.getH() + srcH, availableH));
 
                 cell.updateRoughBounds();
             }
@@ -448,7 +451,9 @@ public final class SRearrangingUtil {
 
         if (foundL && foundR && (!preferField || containsField(cellsToResize))) {
             for (final DragCell cell : cellsToResize) {
-                cell.setBounds(cell.getX(), cell.getY(), cell.getW(), cell.getH() + srcH);
+                final int y = cell.getY();
+                final int availableH = Math.max(0, contentH - Math.max(0, y));
+                cell.setBounds(cell.getX(), y, cell.getW(), Math.min(cell.getH() + srcH, availableH));
 
                 cell.updateRoughBounds();
             }

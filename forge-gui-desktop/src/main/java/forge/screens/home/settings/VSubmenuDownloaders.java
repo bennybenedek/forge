@@ -61,7 +61,6 @@ public enum VSubmenuDownloaders implements IVSubmenu<CSubmenuDownloaders> {
     private final FLabel btnDownloadPicsHQ            = _makeButton(localizer.getMessage("btnDownloadPicsHQ"));
     private final FLabel btnDownloadQuestImages       = _makeButton(localizer.getMessage("btnDownloadQuestImages"));
     private final FLabel btnDownloadAchievementImages = _makeButton(localizer.getMessage("btnDownloadAchievementImages"));
-    private final FLabel btnReportBug                 = _makeButton(localizer.getMessage("btnReportBug"));
     private final FLabel btnListImageData             = _makeButton(localizer.getMessage("btnListImageData"));
     private final FLabel btnImportPictures            = _makeButton(localizer.getMessage("btnImportPictures"));
     private final FLabel btnHowToPlay                 = _makeButton(localizer.getMessage("btnHowToPlay"));
@@ -116,9 +115,6 @@ public enum VSubmenuDownloaders implements IVSubmenu<CSubmenuDownloaders> {
         pnlContent.add(btnImportPictures, constraintsBTN);
         pnlContent.add(_makeLabel(localizer.getMessage("lblImportPictures")), constraintsLBL);
 
-        pnlContent.add(btnReportBug, constraintsBTN);
-        pnlContent.add(_makeLabel(localizer.getMessage("lblReportBug")), constraintsLBL);
-
         pnlContent.add(btnHowToPlay, constraintsBTN);
         pnlContent.add(_makeLabel(localizer.getMessage("lblHowToPlay")), constraintsLBL);
 
@@ -155,7 +151,6 @@ public enum VSubmenuDownloaders implements IVSubmenu<CSubmenuDownloaders> {
     public void setDownloadSetPicsCommand(UiCommand command)           { btnDownloadSetPics.setCommand(command);     }
     public void setDownloadQuestImagesCommand(UiCommand command)       { btnDownloadQuestImages.setCommand(command); }
     public void setDownloadAchievementImagesCommand(UiCommand command) { btnDownloadAchievementImages.setCommand(command); }
-    public void setReportBugCommand(UiCommand command)                 { btnReportBug.setCommand(command);           }
     public void setListImageDataCommand(UiCommand command)             { btnListImageData.setCommand(command);       }
     public void setImportPicturesCommand(UiCommand command)            { btnImportPictures.setCommand(command);      }
     public void setHowToPlayCommand(UiCommand command)                 { btnHowToPlay.setCommand(command);           }

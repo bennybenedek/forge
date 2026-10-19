@@ -14,7 +14,6 @@ import forge.gui.download.GuiDownloadPrices;
 import forge.gui.download.GuiDownloadQuestImages;
 import forge.gui.download.GuiDownloadSetPicturesLQ;
 import forge.gui.download.GuiDownloadSkins;
-import forge.gui.error.BugReporter;
 import forge.gui.framework.ICDoc;
 import forge.util.BuildInfo;
 import forge.util.RSSReader;
@@ -47,7 +46,6 @@ public enum CSubmenuDownloaders implements ICDoc {
     private final UiCommand cmdHowToPlay = VSubmenuDownloaders.SINGLETON_INSTANCE::showHowToPlay;
     private final UiCommand cmdListImageData = VSubmenuDownloaders.SINGLETON_INSTANCE::showCardandImageAuditData;
     private final UiCommand cmdImportPictures = () -> new ImportDialog(null, null).show();
-    private final UiCommand cmdReportBug = () -> BugReporter.reportBug(null);
 
     @Override
     public void register() {
@@ -67,7 +65,6 @@ public enum CSubmenuDownloaders implements ICDoc {
         view.setDownloadQuestImagesCommand(cmdQuestImages);
         view.setDownloadAchievementImagesCommand(cmdAchievementImages);
         view.setListImageDataCommand(cmdListImageData);
-        view.setReportBugCommand(cmdReportBug);
         view.setImportPicturesCommand(cmdImportPictures);
         view.setHowToPlayCommand(cmdHowToPlay);
         view.setDownloadPricesCommand(cmdDownloadPrices);

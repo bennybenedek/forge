@@ -87,11 +87,10 @@ public class BugReportDialog {
         // Button is not modified, String gets the automatic listener to hide
         // the dialog
         List<Object> options = new ArrayList<>();
-        options.add(new JButton(new _Report()));
+        options.add(new JButton(new _SaveAction(area)));
         // option to enable automatic Sentry submission
         options.add(new JCheckBox(new _ActivateSentry()));
         options.add(new JLabel(Localizer.getInstance().getMessage("lblAutoSubmitBugReports")));
-        options.add(new JButton(new _SaveAction(area)));
         options.add(Localizer.getInstance().getMessage("lblDiscardError"));
         if (showExitAppBtn) {
             options.add(new JButton(new _ExitAction()));
@@ -117,21 +116,6 @@ public class BugReportDialog {
             // enable Sentry use in the future through preference setting
             FModel.getPreferences().setPref(ForgePreferences.FPref.USE_SENTRY, checkBox.isSelected());
             FModel.getPreferences().save();
-        }
-    }
-
-    @SuppressWarnings("serial")
-    private static class _Report extends AbstractAction {
-
-        public _Report() {
-            super(Localizer.getInstance().getMessage("lblReport"));
-            this.putValue(Action.ACCELERATOR_KEY, KeyStroke.getKeyStroke(KeyEvent.VK_R, Toolkit.getDefaultToolkit().getMenuShortcutKeyMask()));
-        }
-
-        @Override
-        public void actionPerformed(final ActionEvent e) {
-            BugReporter.sendSentry();
-            JOptionPane.getRootFrame().dispose();
         }
     }
 
