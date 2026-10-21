@@ -86,13 +86,11 @@ class NodeChestHelper {
             chestEffect.applyEffect(currentRun, ctx);
             if (effectResultHelper == null) {
                 CodexHelper.recordAcquiredCards(currentRun, ctx.addedCards);
-                CodexHelper.recordTraitAcquired(ctx.gainedWoundEffect);
                 return NodeFlowOutcome.COMPLETE_NODE;
             }
             NodeFlowOutcome outcome = effectResultHelper.handleEffectTrigger(chestNode, ctx, currentRun);
             if (outcome == NodeFlowOutcome.COMPLETE_NODE) {
                 CodexHelper.recordAcquiredCards(currentRun, ctx.addedCards);
-                CodexHelper.recordTraitAcquired(ctx.gainedWoundEffect);
             }
             return outcome;
         } else {

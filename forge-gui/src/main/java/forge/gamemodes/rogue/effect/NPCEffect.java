@@ -115,8 +115,13 @@ public enum NPCEffect implements RogueEffect {
         }
     },
     HENZIE_CITY("npc_henzie_city", "Henzie's City",
-        TRAIT_GAIN_DESCRIPTION + " ![[City of Brass|2X2|1]]", NPC.HENZIE,
+        TRAIT_GAIN_DESCRIPTION + " Gain a random {{Wound}}. ![[City of Brass|2X2|1]]", NPC.HENZIE,
         EffectType.PERMANENT, "Henzie Trait - Henzie's City") {
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            gainWound(run, ctx);
+        }
+
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
@@ -129,8 +134,13 @@ public enum NPCEffect implements RogueEffect {
         }
     },
     HENZIE_FIELD("npc_henzie_field", "Henzie's Field",
-        TRAIT_GAIN_DESCRIPTION + " ![[Field of the Dead|M20|1]]", NPC.HENZIE,
+        TRAIT_GAIN_DESCRIPTION + " Gain a random {{Wound}}. ![[Field of the Dead|M20|1]]", NPC.HENZIE,
         EffectType.PERMANENT, "Henzie Trait - Henzie's Field") {
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            gainWound(run, ctx);
+        }
+
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
@@ -171,8 +181,13 @@ public enum NPCEffect implements RogueEffect {
         }
     },
     HENZIE_TOMB("npc_henzie_tomb", "Henzie's Tomb",
-        TRAIT_GAIN_DESCRIPTION + " ![[Ancient Tomb|UMA|1]]", NPC.HENZIE,
+        TRAIT_GAIN_DESCRIPTION + " Gain a random {{Wound}}. ![[Ancient Tomb|UMA|1]]", NPC.HENZIE,
         EffectType.PERMANENT, "Henzie Trait - Henzie's Tomb") {
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            gainWound(run, ctx);
+        }
+
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
@@ -298,8 +313,13 @@ public enum NPCEffect implements RogueEffect {
         }
     },
     NARSET_PASSAGE("npc_narset_passage", "Narset's Passage",
-        TRAIT_GAIN_DESCRIPTION + " ![[Rogue's Passage|FDN|1]]", NPC.NARSET,
+        TRAIT_GAIN_DESCRIPTION + " Gain a random {{Wound}}. ![[Rogue's Passage|FDN|1]]", NPC.NARSET,
         EffectType.PERMANENT, "Narset Trait - Narset's Passage") {
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            gainWound(run, ctx);
+        }
+
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
@@ -317,8 +337,13 @@ public enum NPCEffect implements RogueEffect {
         }
     },
     NARSET_TOWER("npc_narset_tower", "Narset's Tower",
-        TRAIT_GAIN_DESCRIPTION + " ![[Reliquary Tower|TDC|1]]", NPC.NARSET,
+        TRAIT_GAIN_DESCRIPTION + " Gain a random {{Wound}}. ![[Reliquary Tower|TDC|1]]", NPC.NARSET,
         EffectType.PERMANENT, "Narset Trait - Narset's Tower") {
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            gainWound(run, ctx);
+        }
+
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
@@ -336,8 +361,13 @@ public enum NPCEffect implements RogueEffect {
         }
     },
     NARSET_VAULT("npc_narset_vault", "Narset's Vault",
-        TRAIT_GAIN_DESCRIPTION + " ![[Vault of the Archangel|TDC|1]]", NPC.NARSET,
+        TRAIT_GAIN_DESCRIPTION + " Gain a random {{Wound}}. ![[Vault of the Archangel|TDC|1]]", NPC.NARSET,
         EffectType.PERMANENT, "Narset Trait - Narset's Vault") {
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            gainWound(run, ctx);
+        }
+
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
@@ -355,8 +385,13 @@ public enum NPCEffect implements RogueEffect {
         }
     },
     NARSET_WOLF_RUN("npc_narset_wolf_run", "Narset's Wolf Run",
-        TRAIT_GAIN_DESCRIPTION + " ![[Kessig Wolf Run|TDC|1]]", NPC.NARSET,
+        TRAIT_GAIN_DESCRIPTION + " Gain a random {{Wound}}. ![[Kessig Wolf Run|TDC|1]]", NPC.NARSET,
         EffectType.PERMANENT, "Narset Trait - Narset's Wolf Run") {
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            gainWound(run, ctx);
+        }
+
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
@@ -630,8 +665,13 @@ public enum NPCEffect implements RogueEffect {
         }
     },
     TYVAR_BEACON("npc_tyvar_beacon", "Tyvar's Beacon",
-        TRAIT_GAIN_DESCRIPTION + " ![[Command Beacon]]", NPC.TYVAR,
+        TRAIT_GAIN_DESCRIPTION + " Gain a random {{Wound}}. ![[Command Beacon]]", NPC.TYVAR,
         EffectType.PERMANENT, "Tyvar Trait - Tyvar's Beacon") {
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            gainWound(run, ctx);
+        }
+
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
@@ -644,8 +684,13 @@ public enum NPCEffect implements RogueEffect {
         }
     },
     TYVAR_PALACE("npc_tyvar_palace", "Tyvar's Palace",
-        TRAIT_GAIN_DESCRIPTION + " ![[Opal Palace]]", NPC.TYVAR,
+        TRAIT_GAIN_DESCRIPTION + " Gain a random {{Wound}}. ![[Opal Palace]]", NPC.TYVAR,
         EffectType.PERMANENT, "Tyvar Trait - Tyvar's Palace") {
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            gainWound(run, ctx);
+        }
+
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
@@ -658,8 +703,13 @@ public enum NPCEffect implements RogueEffect {
         }
     },
     TYVAR_SANCTUM("npc_tyvar_sanctum", "Tyvar's Sanctum",
-        TRAIT_GAIN_DESCRIPTION + " ![[Sanctum of Eternity]]", NPC.TYVAR,
+        TRAIT_GAIN_DESCRIPTION + " Gain a random {{Wound}}. ![[Sanctum of Eternity]]", NPC.TYVAR,
         EffectType.PERMANENT, "Tyvar Trait - Tyvar's Sanctum") {
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            gainWound(run, ctx);
+        }
+
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
@@ -672,8 +722,13 @@ public enum NPCEffect implements RogueEffect {
         }
     },
     TYVAR_WAR_ROOM("npc_tyvar_war_room", "Tyvar's War Room",
-        TRAIT_GAIN_DESCRIPTION + " ![[War Room]]", NPC.TYVAR,
+        TRAIT_GAIN_DESCRIPTION + " Gain a random {{Wound}}. ![[War Room]]", NPC.TYVAR,
         EffectType.PERMANENT, "Tyvar Trait - Tyvar's War Room") {
+        @Override
+        public void applyEffect(RogueRun run, EffectResultContext ctx) {
+            gainWound(run, ctx);
+        }
+
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);

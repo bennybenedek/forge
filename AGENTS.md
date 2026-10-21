@@ -34,6 +34,7 @@ This repository is a Java 17+ multi-module Maven project (Forge / Rogue Commande
 - For bug/AI behavior fixes, investigate the actual failure mechanism before proposing an implementation plan; if root cause is not confirmed, propose diagnostics or clearly label the plan as exploratory rather than presenting it as the fix.
 - Do not add one-time migrations by default. Ask the user for permission before adding any migration, especially if it was not part of the original plan.
 - Do not add backward-compatibility, legacy-save compatibility, fallback migration behavior, or similar compatibility code unless the user explicitly asks for it.
+- Before releasing a Rogue Commander change that alters saved fields, IDs, ranks, charges, or their interpretation, check how older saves load and behave, and state whether a migration is needed. Add a migration when saved state becomes invalid, loses its effect, or the user requests a change to existing player state; balance changes alone do not require one.
 - Do not introduce non-ASCII, mojibake, or typographic symbol replacements into source code, comments, tooltips, or user-facing strings unless the user explicitly asks for them. Preserve existing plain ASCII text by default.
 - Preserve each file's existing encoding and BOM state. Do not add, remove, or change BOM/encoding unless the user explicitly asks for it.
 - In plans, explicitly name the classes/files expected to change whenever that set is knowable, and during implementation do not expand beyond that set unless the need is explained to the user first.

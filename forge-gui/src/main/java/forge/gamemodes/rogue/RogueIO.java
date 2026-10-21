@@ -22,6 +22,8 @@ import forge.model.FModel;
 import forge.util.IgnoringXStream;
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.zip.GZIPInputStream;
@@ -176,31 +178,44 @@ public class RogueIO {
     }
 
     public static RogueRun loadRun(final File xmlSaveFile) {
-        boolean isCorrupt = false;
+        final RogueRun data;
         try (GZIPInputStream zin = new GZIPInputStream(Files.newInputStream(xmlSaveFile.toPath()));
              InputStreamReader reader = new InputStreamReader(zin)) {
-            final RogueRun data = (RogueRun) RogueIO.getSerializer(true).fromXML(reader);
+            data = (RogueRun) RogueIO.getSerializer(true).fromXML(reader);
 
             final String filename = xmlSaveFile.getName();
             data.setName(filename.substring(0, filename.length() - SUFFIX_DATA.length()));
-            return data;
         } catch (final IOException e) {
             e.printStackTrace();
+            return null;
         } catch (final ConversionException e) {
             BugReporter.reportException(e);
+            return null;
         } catch (final Exception e) { // If there's a non-IO exception, delete the corrupt file
             e.printStackTrace();
-            isCorrupt = true;
-        }
-
-        if (isCorrupt) {
             try {
                 xmlSaveFile.delete();
-            } catch (final Exception e) {
-                System.out.println("Error deleting corrupt rogue run file: " + e);
+            } catch (final Exception deleteError) {
+                System.out.println("Error deleting corrupt rogue run file: " + deleteError);
+            }
+            return null;
+        }
+
+        if (data.getSaveVersion() > RogueSaveMigration.currentVersion()) {
+            System.err.println("Rogue run save is from a newer version: " + xmlSaveFile);
+            return null;
+        }
+        if (data.getSaveVersion() < RogueSaveMigration.currentVersion()) {
+            try {
+                RogueSaveMigration.applyToRun(data);
+                saveMigratedRun(data, xmlSaveFile);
+            } catch (Exception e) {
+                System.err.println("Error migrating rogue run save: " + xmlSaveFile);
+                e.printStackTrace();
+                return null;
             }
         }
-        return null;
+        return data;
     }
 
     public static RogueRun loadRun(final String filename) {
@@ -211,15 +226,30 @@ public class RogueIO {
         try {
             rd.getRunTimer().checkpoint();
             final XStream xStream = RogueIO.getSerializer(false);
-            RogueIO.savePacked(xStream, rd);
+            RogueIO.savePacked(xStream, rd, getRogueFile(rd));
         } catch (final Exception ex) {
             throw new RuntimeException(ex);
         }
     }
 
-    private static void savePacked(final XStream xStream0, final RogueRun rd) throws IOException {
+    private static void saveMigratedRun(final RogueRun run, final File file) throws IOException {
+        Path original = file.toPath();
+        Path backup = original.resolveSibling(file.getName() + ".pre-v" + RogueSaveMigration.currentVersion() + ".bak");
+        if (!Files.exists(backup)) {
+            Files.copy(original, backup);
+        }
+        Path temporary = Files.createTempFile(original.getParent(), file.getName(), ".tmp");
+        try {
+            savePacked(getSerializer(false), run, temporary.toFile());
+            Files.move(temporary, original, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+        } finally {
+            Files.deleteIfExists(temporary);
+        }
+    }
+
+    private static void savePacked(final XStream xStream0, final RogueRun rd, final File file) throws IOException {
         ensureRogueDirectoryExists();
-        try (final BufferedOutputStream bout = new BufferedOutputStream(Files.newOutputStream(getRogueFile(rd).toPath()));
+        try (final BufferedOutputStream bout = new BufferedOutputStream(Files.newOutputStream(file.toPath()));
              final GZIPOutputStream zout = new GZIPOutputStream(bout)) {
             xStream0.toXML(rd, zout);
             zout.flush();

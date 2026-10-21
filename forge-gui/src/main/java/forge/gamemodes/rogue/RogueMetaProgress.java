@@ -20,8 +20,11 @@ import forge.sound.SoundSystem;
 import forge.util.IgnoringXStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.function.Function;
 import java.util.zip.GZIPInputStream;
@@ -35,6 +38,8 @@ public class RogueMetaProgress {
 
     private static final String META_PROGRESS_FILE = "meta_progress.dat";
     private static RogueMetaProgress instance;
+
+    private int saveVersion = RogueSaveMigration.currentVersion();
 
     // Per-commander tracking
     private Map<String, Integer> runsStartedPerCommander;
@@ -633,6 +638,14 @@ public class RogueMetaProgress {
         return aetherEffectRanks.getOrDefault(aetherEffect.getId(), 0);
     }
 
+    void capAetherEffectRank(AetherEffect aetherEffect, int maxRank) {
+        if (aetherEffectRanks == null) return;
+        Integer rank = aetherEffectRanks.get(aetherEffect.getId());
+        if (rank != null && rank > maxRank) {
+            aetherEffectRanks.put(aetherEffect.getId(), maxRank);
+        }
+    }
+
     /**
      * Attempt to upgrade an Aetherwork to the next rank.
      * @return true if upgrade was successful, false if not enough echoes or already max rank
@@ -1022,6 +1035,14 @@ public class RogueMetaProgress {
 
     // ==================== Persistence ====================
 
+    int getSaveVersion() {
+        return saveVersion;
+    }
+
+    void setSaveVersion(int version) {
+        saveVersion = version;
+    }
+
     private static File getMetaProgressFile() {
         return new File(RogueIO.ROGUE_SAVE_DIR, META_PROGRESS_FILE);
     }
@@ -1061,28 +1082,71 @@ public class RogueMetaProgress {
             return new RogueMetaProgress();
         }
 
+        RogueMetaProgress progress;
         try (GZIPInputStream zin = new GZIPInputStream(Files.newInputStream(file.toPath()));
              InputStreamReader reader = new InputStreamReader(zin)) {
-            return (RogueMetaProgress) getSerializer().fromXML(reader);
+            progress = (RogueMetaProgress) getSerializer().fromXML(reader);
         } catch (Exception e) {
             System.err.println("Error loading meta progress, starting fresh: " + e.getMessage());
             return new RogueMetaProgress();
         }
+
+        int savedVersion = progress.getSaveVersion();
+        if (savedVersion > RogueSaveMigration.currentVersion()) {
+            System.err.println("Rogue meta progress is from a newer version: " + file);
+            return progress;
+        }
+        if (savedVersion < RogueSaveMigration.currentVersion()) {
+            try {
+                RogueSaveMigration.applyToMetaProgress(progress);
+                progress.saveMigrated(file);
+            } catch (Exception e) {
+                progress.setSaveVersion(savedVersion);
+                System.err.println("Error migrating rogue meta progress: " + file);
+                e.printStackTrace();
+            }
+        }
+        return progress;
     }
 
     public void save() {
+        if (saveVersion != RogueSaveMigration.currentVersion()) {
+            System.err.println("Rogue meta progress was not saved because its save version is unsupported: " + saveVersion);
+            return;
+        }
         File dir = new File(RogueIO.ROGUE_SAVE_DIR);
         if (!dir.exists()) {
             dir.mkdirs();
         }
 
-        try (BufferedOutputStream bout = new BufferedOutputStream(Files.newOutputStream(getMetaProgressFile().toPath()));
-             GZIPOutputStream zout = new GZIPOutputStream(bout)) {
-            getSerializer().toXML(this, zout);
-            zout.flush();
+        try {
+            savePacked(getMetaProgressFile());
         } catch (Exception e) {
             System.err.println("Error saving meta progress: " + e.getMessage());
             e.printStackTrace();
+        }
+    }
+
+    private void saveMigrated(File file) throws IOException {
+        Path original = file.toPath();
+        Path backup = original.resolveSibling(file.getName() + ".pre-v" + RogueSaveMigration.currentVersion() + ".bak");
+        if (!Files.exists(backup)) {
+            Files.copy(original, backup);
+        }
+        Path temporary = Files.createTempFile(original.getParent(), file.getName(), ".tmp");
+        try {
+            savePacked(temporary.toFile());
+            Files.move(temporary, original, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+        } finally {
+            Files.deleteIfExists(temporary);
+        }
+    }
+
+    private void savePacked(File file) throws IOException {
+        try (BufferedOutputStream bout = new BufferedOutputStream(Files.newOutputStream(file.toPath()));
+             GZIPOutputStream zout = new GZIPOutputStream(bout)) {
+            getSerializer().toXML(this, zout);
+            zout.flush();
         }
     }
 }

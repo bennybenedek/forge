@@ -1,6 +1,9 @@
 Name:Narset Trait - Mindwalker
 ManaCost:no cost
 Types:Trait
-T:Mode$ Planeswalk | TriggerZones$ Command | ValidPlayer$ You | ValidCause$ PlanarDie | Execute$ TrigDraw | TriggerDescription$ Whenever you planeswalk as a result of rolling the planar die, you may draw a card.
+T:Mode$ PlanarDice | Result$ Blank | TriggerZones$ Command | ValidPlayer$ You | Execute$ TrigScry | TriggerDescription$ Whenever you roll a blank on the planar die, scry 1.
+T:Mode$ PlanarDice | Result$ Chaos | TriggerZones$ Command | ValidPlayer$ You | Execute$ TrigScry | TriggerDescription$ Whenever you roll Chaos on the planar die, scry 1.
+T:Mode$ PlanarDice | Result$ Planeswalk | TriggerZones$ Command | ValidPlayer$ You | Execute$ TrigDraw | TriggerDescription$ Whenever you roll Planeswalk on the planar die, you may draw a card.
+SVar:TrigScry:DB$ Scry | Defined$ You | ScryNum$ 1
 SVar:TrigDraw:DB$ Draw | Defined$ You | NumCards$ 1 | OptionalDecider$ You
-Oracle:Whenever you planeswalk as a result of rolling the planar die, you may draw a card.
+Oracle:Whenever you roll the planar die, scry 1. If you rolled Planeswalk, instead you may draw a card.

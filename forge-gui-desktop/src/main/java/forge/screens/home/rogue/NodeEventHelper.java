@@ -128,7 +128,6 @@ class NodeEventHelper {
                 return nodeFlowOutcome;
             }
             CodexHelper.recordAcquiredCards(currentRun, ctx.addedCards);
-            CodexHelper.recordTraitAcquired(ctx.gainedWoundEffect);
         }
 
         if (map.checkSideNodeDefeat(event.getDisplayName())) {

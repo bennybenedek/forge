@@ -539,6 +539,7 @@ public interface RogueEffect {
         if (available.isEmpty()) return;
         WoundEffect woundEffect = available.get(MyRandom.getRandom().nextInt(available.size()));
         run.addWound(woundEffect);
+        CodexHelper.recordTraitAcquired(woundEffect);
         ctx.gainedWoundEffect = woundEffect;
     }
 

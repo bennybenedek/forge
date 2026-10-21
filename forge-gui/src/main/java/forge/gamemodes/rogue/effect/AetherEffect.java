@@ -81,9 +81,9 @@ public enum AetherEffect implements RogueEffect {
     TOLARIAN_ARCHIVE("tolarian_archive", "Tolarian Archive",
         "See +%s more mythic cards in Rewards and Bazaar.",
         new EffectRankContext(
-            new int[]{3, 6, 9, 12}, // Echo costs per rank
-            new int[]{1, 2, 3, 4},  // Effect values: +1/+2/+3/+4 extra mythics
-            3, 0),
+            new int[]{3, 6, 9}, // Echo costs per rank
+            new int[]{1, 2, 3},  // Effect values: +1/+2/+3 extra mythics
+            2, 0),
         EffectType.PERMANENT, null) {
         @Override
         public void onCardSelection(CardSelectionContext ctx, RogueRun run) {

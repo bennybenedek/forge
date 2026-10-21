@@ -597,20 +597,18 @@ public enum CSubmenuRogueStart implements ICDoc {
         continue;
       }
 
+      EffectResultContext effectCtx = new EffectResultContext();
+      chosen.applyEffect(newRun, effectCtx);
       if (chosen.getEffectType() == RogueEffect.EffectType.ONESHOT) {
-        EffectResultContext effectCtx = new EffectResultContext();
-        chosen.applyEffect(newRun, effectCtx);
         if (!EffectResultHelper.handleTrigger(effectCtx, newRun)) {
           continue;
         }
         CodexHelper.recordAcquiredCards(newRun, effectCtx.addedCards);
-        CodexHelper.recordTraitAcquired(effectCtx.gainedWoundEffect);
         showNpcResultIfNeeded(chosen, effectCtx);
       } else {
         newRun.addNPCEffect(chosen);
       }
     }
-    CodexHelper.recordTraitsAcquired(newRun.getActiveWoundEffects());
 
     // Generate unique name for the run (used as filename)
     // Format: DeckName_Timestamp (e.g., "MeriaRogueCommander_12-11-25_143022")

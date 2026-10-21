@@ -26,6 +26,8 @@ public class RogueRun {
     @XStreamOmitField
     private String name;  // Set based on filename on load
 
+    private int saveVersion = RogueSaveMigration.currentVersion();
+
     // Run Configuration
     private RogueDeck selectedRogueDeck;        // Selected Rogue Deck identifier
     private String timestamp;                   // Creation timestamp
@@ -761,6 +763,24 @@ public class RogueRun {
             int charges = aetherEffect.getChargesForRank(rank);
             activeAetherEffects.add(new RogueRunEffect(aetherEffect.getId(), rank, charges));
         }
+    }
+
+    void capAetherEffectRank(AetherEffect aetherEffect, int maxRank) {
+        if (activeAetherEffects == null) return;
+        for (int i = 0; i < activeAetherEffects.size(); i++) {
+            RogueRunEffect effect = activeAetherEffects.get(i);
+            if (aetherEffect.getId().equals(effect.getId()) && effect.getRank() > maxRank) {
+                activeAetherEffects.set(i, new RogueRunEffect(effect.getId(), maxRank, effect.getCharges()));
+            }
+        }
+    }
+
+    int getSaveVersion() {
+        return saveVersion;
+    }
+
+    void setSaveVersion(int version) {
+        saveVersion = version;
     }
 
     // Generic effect list helpers
