@@ -79,6 +79,9 @@ public enum CSubmenuRogueMap implements ICDoc {
 
   private void showTutorials() {
     RogueTutorialHelper.showIfNotSeen(RogueTutorial.MAP_NAVIGATION);
+    if (currentRun != null && currentRun.getEndlessLevel() > 0) {
+      RogueTutorialHelper.showIfNotSeen(RogueTutorial.ENDLESS_MODE);
+    }
 
     if (currentRun == null || currentRun.getCurrentNode() == null) {
       return;
@@ -367,11 +370,28 @@ public enum CSubmenuRogueMap implements ICDoc {
       return false;
     }
 
-    RogueWinLoseController.finalizeRunDefeat(currentRun, defeatedBy);
+    if (RogueWinLoseController.finalizeRunDefeat(currentRun, defeatedBy)) {
+      FOptionPane.showMessageDialog("You won 1 Spark!", "Spark Reward");
+    }
     showSideNodeDefeatDialog(defeatedBy);
     currentRun = null;
     CHomeUI.SINGLETON_INSTANCE.itemClick(EDocID.HOME_ROGUESTART);
     return true;
+  }
+
+  public void continueEndlessly() {
+    if (currentRun == null || !currentRun.isRunComplete() || currentRun.isRunFailed()
+        || currentRun.isRunWon()
+        || !RogueMetaProgress.getInstance().isEndlessModeUnlocked()) {
+      return;
+    }
+
+    RogueMetaProgress progress = RogueMetaProgress.getInstance();
+    currentRun.setEndlessLevel(currentRun.getEndlessLevel() + 1);
+    currentRun.setCurrentNodeIndex(0);
+    RoguePathGenerator.generateRandomPath(currentRun);
+    CSubmenuRogueStart.SINGLETON_INSTANCE.applyRunStartEffectsAndNpcBoon(currentRun, progress);
+    RogueIO.saveRun(currentRun);
   }
 
   private void showSideNodeDefeatDialog(String defeatedBy) {

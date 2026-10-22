@@ -45,6 +45,9 @@ public class RogueRun {
     // Descension
     private int descensionLevel;                // 0 = no descension; XStream defaults int to 0 for old saves
 
+    // Endless Mode (0 = original Trail and default for old saves)
+    private int endlessLevel;
+
     // Aether effects (Aetherworks) (snapshotted from RogueMetaProgress at run creation)
     private List<RogueRunEffect> activeAetherEffects;
 
@@ -753,6 +756,14 @@ public class RogueRun {
 
     public void setDescensionLevel(int level) {
         this.descensionLevel = level;
+    }
+
+    public int getEndlessLevel() {
+        return endlessLevel;
+    }
+
+    public void setEndlessLevel(int level) {
+        this.endlessLevel = level;
     }
 
     // Aetherwork management

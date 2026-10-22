@@ -68,6 +68,7 @@ public class RogueCommanderAchievements extends AchievementCollection {
         add(new BazaarFullyUpgraded());
         add(new CodexComplete());
         add(new PlaneboundSlayer());
+        add(new EndlessModeWin());
     }
 
     @Override
@@ -247,6 +248,69 @@ public class RogueCommanderAchievements extends AchievementCollection {
                 Localizer.getInstance().getMessage("lblAchievementEarned"));
         }
         save();
+    }
+
+    public void recordEndlessLevelWon(int level) {
+        Achievement a = achievements.get("EndlessMode");
+        if (a == null || level < 1 || level > 4 || level <= a.getBest()) {
+            return;
+        }
+
+        try {
+            Element el = DocumentBuilderFactory.newInstance().newDocumentBuilder()
+                .newDocument().createElement("a");
+            el.setAttribute("best", String.valueOf(level));
+            el.setAttribute("time", String.valueOf(new Date().getTime()));
+            a.loadFromXml(el);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return;
+        }
+
+        String tier = switch (level) {
+            case 1 -> Localizer.getInstance().getMessage("lblCommon");
+            case 2 -> Localizer.getInstance().getMessage("lblUncommon");
+            case 3 -> Localizer.getInstance().getMessage("lblRare");
+            default -> Localizer.getInstance().getMessage("lblMythic");
+        };
+        String description = switch (level) {
+            case 1 -> a.getCommonDesc();
+            case 2 -> a.getUncommonDesc();
+            case 3 -> a.getRareDesc();
+            default -> a.getMythicDesc();
+        };
+        a.updateTrophyImage();
+        SoundSystem.instance.play(SoundEffectType.AchievementEarned,
+            SoundEffectType.AchievementEarned.isSynced());
+        GuiBase.getInterface().showImageDialog(a.getImage(),
+            a.getDisplayName() + " (" + tier + ")\n" + a.getSharedDesc() + " " + description,
+            Localizer.getInstance().getMessage("lblAchievementEarned"));
+        save();
+    }
+
+    private static class EndlessModeWin extends Achievement {
+        private EndlessModeWin() {
+            super("EndlessMode", "Endless Mode", "Complete an Endless Trail at", 0,
+                "Level 1.", 1,
+                "Level 2.", 2,
+                "Level 3.", 3,
+                "Level 4.", 4);
+        }
+
+        @Override
+        protected int evaluate(Player player, Game game) {
+            return 0;
+        }
+
+        @Override
+        protected String getNoun() {
+            return "Endless Level";
+        }
+
+        @Override
+        protected boolean displayNounBefore() {
+            return true;
+        }
     }
 
     private class RogueCommanderRunWin extends ProgressiveAchievement {

@@ -2,6 +2,7 @@ package forge.screens.home.rogue;
 
 import forge.gamemodes.rogue.RogueRunHistoryEntry;
 import forge.gamemodes.rogue.effect.DescensionLevel;
+import forge.gamemodes.rogue.effect.EndlessMode;
 import forge.gui.framework.DragCell;
 import forge.gui.framework.DragTab;
 import forge.gui.framework.EDocID;
@@ -159,6 +160,7 @@ public enum VSubmenuRogueHistory implements IVSubmenu<CSubmenuRogueHistory> {
     private final FLabel lblTimestamp;
     private final FTextArea txtPath;
     private final FLabel lblDescension; // null if descensionLevel == 0
+    private final FLabel lblEndless;    // null if endlessLevel == 0
     private final JPanel pnlEffects;    // null if no active permanent effects
     private final FButton btnViewDeck;
 
@@ -191,14 +193,16 @@ public enum VSubmenuRogueHistory implements IVSubmenu<CSubmenuRogueHistory> {
           .build();
       add(lblName);
 
+      String displayedOutcome = entry.getEndlessLevel() > 0 && "DEFEAT".equals(entry.getOutcome())
+          ? "VICTORY" : entry.getOutcome();
       Color outcomeColor;
-      switch (entry.getOutcome()) {
+      switch (displayedOutcome) {
         case "VICTORY": outcomeColor = new Color(0, 200, 0); break;
         case "DEFEAT": outcomeColor = new Color(220, 50, 50); break;
         default: outcomeColor = Color.GRAY; break;
       }
       lblOutcome = new FLabel.Builder()
-          .text(entry.getOutcome())
+          .text(displayedOutcome)
           .fontSize(13)
           .fontStyle(Font.BOLD)
           .fontAlign(SwingConstants.RIGHT)
@@ -247,6 +251,16 @@ public enum VSubmenuRogueHistory implements IVSubmenu<CSubmenuRogueHistory> {
            add(lblDescension);
       } else {
            lblDescension = null;
+      }
+
+      if (entry.getEndlessLevel() > 0) {
+        lblEndless = new FLabel.Builder()
+            .text("Endless Level " + entry.getEndlessLevel())
+            .fontSize(12).fontAlign(SwingConstants.LEFT).build();
+        lblEndless.setToolTipText(EndlessMode.getModifiersDescription(entry.getEndlessLevel()));
+        add(lblEndless);
+      } else {
+        lblEndless = null;
       }
 
       List<RogueRunHistoryEntry.EffectSnapshot> effects = entry.getActiveEffects();
@@ -302,12 +316,21 @@ public enum VSubmenuRogueHistory implements IVSubmenu<CSubmenuRogueHistory> {
         y += Math.max(pathH, buttonH) + ROW_GAP;
       }
 
+      if (!metrics.hasInfoCol() && lblEndless != null) {
+        lblEndless.setBounds(metrics.contentX(), y, metrics.leftW(), metrics.rowH());
+        y += metrics.rowH() + ROW_GAP;
+      }
+
       int totalHeight = y + INSET;
 
       if (metrics.hasInfoCol()) {
         int infoY = INSET + metrics.rowH() + ROW_GAP;
         if (lblDescension != null) {
           lblDescension.setBounds(metrics.infoColX(), infoY, metrics.infoColW(), metrics.rowH());
+          infoY += metrics.rowH() + ROW_GAP;
+        }
+        if (lblEndless != null) {
+          lblEndless.setBounds(metrics.infoColX(), infoY, metrics.infoColW(), metrics.rowH());
           infoY += metrics.rowH() + ROW_GAP;
         }
         if (pnlEffects != null) {
@@ -338,11 +361,17 @@ public enum VSubmenuRogueHistory implements IVSubmenu<CSubmenuRogueHistory> {
         int buttonH = metrics.viewDeckSize() != null ? metrics.viewDeckSize().height : 0;
         y += Math.max(pathH, buttonH) + ROW_GAP;
       }
+      if (!metrics.hasInfoCol() && lblEndless != null) {
+        y += 20 + ROW_GAP;
+      }
       int totalHeight = y + INSET;
       if (metrics.hasInfoCol()) {
         int infoY = INSET + 20 + ROW_GAP;
         infoY += metrics.metadataH() + ROW_GAP;
         if (lblDescension != null) {
+          infoY += 20 + ROW_GAP;
+        }
+        if (lblEndless != null) {
           infoY += 20 + ROW_GAP;
         }
         if (pnlEffects != null) {
@@ -366,7 +395,7 @@ public enum VSubmenuRogueHistory implements IVSubmenu<CSubmenuRogueHistory> {
       int rightSideW = Math.min(contentW, Math.max(buttonW, metadataW));
       int rightSideX = contentX + contentW - rightSideW;
 
-      boolean hasInfoCol = (lblDescension != null || pnlEffects != null);
+      boolean hasInfoCol = (lblDescension != null || lblEndless != null || pnlEffects != null);
       int avail = contentW - rightSideW - INFO_COL_W - INFO_COL_GAP;
       if (hasInfoCol && avail < 100) {
         hasInfoCol = false;

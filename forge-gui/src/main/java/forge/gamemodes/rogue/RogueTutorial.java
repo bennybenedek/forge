@@ -215,6 +215,19 @@ public enum RogueTutorial {
           "and expand the energy that keeps them active. Prepare well. There is more for us to discover."
   ),
 
+  ENDLESS_MODE(
+      "Endless Mode",
+      "An endless Run? Well, I suppose you assumed it but I know one or another thing about endless timeloops.\n"
+          + "It looks this is still the same Run, but a new Trail: your deck, Gold, Traits and Carry Cards are still with you. " +
+          "After each Trail victory, you can complete the Run or go on to the next Trail.",
+      "Each Endless Level makes the next Trail harder. Opponents start with more life and cards, " +
+          "cast spells for less Mana, and deal more damage or cause more life loss. Bazaar offers cost " +
+          "more Gold, too. You can check the current modifiers in the map header and on the Endless Mode " +
+          "card in the match.",
+      "Defeat the final Planebound to complete a level. Then you may end the Run or continue. I suppose " +
+          "we will see how far you can go."
+  ),
+
   CARRY_CARDS(
       "Carry Cards",
       "You have acquired a carry card! Carry cards persist across matches and can be cast from your command " +

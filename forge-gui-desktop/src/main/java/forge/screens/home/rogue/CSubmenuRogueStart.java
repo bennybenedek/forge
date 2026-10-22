@@ -106,6 +106,7 @@ public enum CSubmenuRogueStart implements ICDoc {
     loadAvailableCommanders();
     SwingUtilities.invokeLater(() -> {
       view.getBtnBeginRun().requestFocusInWindow();
+      RogueMetaProgress.getInstance().notifyEndlessModeUnlocked();
       showBetweenRunNpcDialogs();
       showTutorials();
     });
@@ -588,27 +589,7 @@ public enum CSubmenuRogueStart implements ICDoc {
 
     // Generate path and apply run start effects
     RoguePathGenerator.generateRandomPath(newRun);
-    RogueEffectComposite.INSTANCE.onRunStart(newRun);
-
-    // Show NPC encounter dialogs (e.g. Tyvar offering npcEffect choices)
-    for (NPCContext ctx : NPCEncounterComposite.INSTANCE.onRunStart(progress, newRun)) {
-      NPCEffect chosen = showRunStartNpcDialog(progress, newRun, ctx);
-      if (chosen == null) {
-        continue;
-      }
-
-      EffectResultContext effectCtx = new EffectResultContext();
-      chosen.applyEffect(newRun, effectCtx);
-      if (chosen.getEffectType() == RogueEffect.EffectType.ONESHOT) {
-        if (!EffectResultHelper.handleTrigger(effectCtx, newRun)) {
-          continue;
-        }
-        CodexHelper.recordAcquiredCards(newRun, effectCtx.addedCards);
-        showNpcResultIfNeeded(chosen, effectCtx);
-      } else {
-        newRun.addNPCEffect(chosen);
-      }
-    }
+    applyRunStartEffectsAndNpcBoon(newRun, progress);
 
     // Generate unique name for the run (used as filename)
     // Format: DeckName_Timestamp (e.g., "MeriaRogueCommander_12-11-25_143022")
@@ -630,6 +611,30 @@ public enum CSubmenuRogueStart implements ICDoc {
 
     // Navigate to the Rogue Map
     CHomeUI.SINGLETON_INSTANCE.itemClick(EDocID.HOME_ROGUEMAP);
+  }
+
+  void applyRunStartEffectsAndNpcBoon(RogueRun newRun, RogueMetaProgress progress) {
+    RogueEffectComposite.INSTANCE.onRunStart(newRun);
+
+    // Show NPC encounter dialogs (e.g. Tyvar offering npcEffect choices)
+    for (NPCContext ctx : NPCEncounterComposite.INSTANCE.onRunStart(progress, newRun)) {
+      NPCEffect chosen = showRunStartNpcDialog(progress, newRun, ctx);
+      if (chosen == null) {
+        continue;
+      }
+
+      EffectResultContext effectCtx = new EffectResultContext();
+      chosen.applyEffect(newRun, effectCtx);
+      if (chosen.getEffectType() == RogueEffect.EffectType.ONESHOT) {
+        if (!EffectResultHelper.handleTrigger(effectCtx, newRun)) {
+          continue;
+        }
+        CodexHelper.recordAcquiredCards(newRun, effectCtx.addedCards);
+        showNpcResultIfNeeded(chosen, effectCtx);
+      } else {
+        newRun.addNPCEffect(chosen);
+      }
+    }
   }
 
   private List<RogueRun> getContinuableRunsToAbandon() {

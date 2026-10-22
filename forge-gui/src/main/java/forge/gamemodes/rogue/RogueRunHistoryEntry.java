@@ -2,6 +2,7 @@ package forge.gamemodes.rogue;
 
 import forge.deck.Deck;
 import forge.gamemodes.rogue.effect.DescensionLevel;
+import forge.gamemodes.rogue.effect.EndlessMode;
 import forge.gamemodes.rogue.effect.RogueEffect;
 import forge.gamemodes.rogue.effect.RogueEffectComposite;
 import forge.gamemodes.rogue.path.*;
@@ -26,6 +27,7 @@ public class RogueRunHistoryEntry {
     private String timestamp;
     private Deck deckSnapshot;
     private int descensionLevel;                   // 0 = not used; XStream defaults to 0 for old saves
+    private int endlessLevel;
     private List<EffectSnapshot> activeEffects;    // null for old saves
     private long runTimeMillis;                    // XStream defaults to 0 for old saves
 
@@ -45,11 +47,12 @@ public class RogueRunHistoryEntry {
         entry.runTimeMillis = run.getRunTimeMillis();
 
         entry.descensionLevel = run.getDescensionLevel();
+        entry.endlessLevel = run.getEndlessLevel();
 
         // Capture active permanent effects from run snapshot using the same display style as the map header
         entry.activeEffects = new ArrayList<>();
         for (RogueEffect effect : RogueEffectComposite.getAllEffects(run)) {
-            if (effect instanceof DescensionLevel) {
+            if (effect instanceof DescensionLevel || effect instanceof EndlessMode) {
                 continue;
             }
             entry.activeEffects.add(new EffectSnapshot(effect.getUIDisplayText(), effect.getActiveDescription(run)));
@@ -95,6 +98,7 @@ public class RogueRunHistoryEntry {
     public String getTimestamp() { return timestamp; }
     public Deck getDeckSnapshot() { return deckSnapshot; }
     public int getDescensionLevel() { return descensionLevel; }
+    public int getEndlessLevel() { return endlessLevel; }
     public long getRunTimeMillis() { return runTimeMillis; }
     public String getFormattedRunTime() { return TextHelper.formatHoursMinutesSeconds(runTimeMillis); }
     public List<EffectSnapshot> getActiveEffects() {

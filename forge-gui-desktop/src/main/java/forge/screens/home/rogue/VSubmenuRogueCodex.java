@@ -464,7 +464,7 @@ public enum VSubmenuRogueCodex implements IVSubmenu<CSubmenuRogueCodex> {
   private JPanel createCommanderStatsHeader(RogueDeck selectedCommander, RogueMetaProgress progress,
                                             List<CodexCardGrid.Entry> nonMythicEntries,
                                             List<CodexCardGrid.Entry> mythicEntries) {
-    JPanel panel = new SkinnedPanel(new MigLayout("insets 8, gap 12", "[][][][][][]", ""));
+    JPanel panel = new SkinnedPanel(new MigLayout("insets 8, gap 12", "[][][][][][][]", ""));
     panel.setOpaque(false);
     String commanderName = selectedCommander.getCommanderCardName();
     List<CodexCardGrid.Entry> rewardEntries = new ArrayList<>(nonMythicEntries);
@@ -473,6 +473,7 @@ public enum VSubmenuRogueCodex implements IVSubmenu<CSubmenuRogueCodex> {
     panel.add(new FLabel.Builder().text("Runs: " + progress.getRunsStartedWithCommander(commanderName)).fontSize(13).build());
     panel.add(new FLabel.Builder().text("Wins: " + progress.getRunsWonWithCommander(commanderName)).fontSize(13).build());
     panel.add(new FLabel.Builder().text("Max Descension: " + progress.getMaxDescensionWon(commanderName)).fontSize(13).build());
+    panel.add(new FLabel.Builder().text("Max Endless: " + progress.getMaxEndlessCompleted(commanderName)).fontSize(13).build());
     panel.add(new FLabel.Builder().text("Seen: " + countSeenCards(rewardEntries) + " of "
         + rewardEntries.size() + " Cards").fontSize(13).build());
     panel.add(new FLabel.Builder().text("Acquired: " + countAcquiredCards(rewardEntries) + " of "

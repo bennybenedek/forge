@@ -1,14 +1,18 @@
 package forge.screens.match;
 
 import forge.game.GameView;
+import forge.gamemodes.rogue.RogueMetaProgress;
 import forge.gamemodes.rogue.RogueWinLoseController;
 import forge.gamemodes.rogue.effect.ChoiceRerollContext;
 import forge.gamemodes.rogue.npc.NPCContext;
 import forge.gamemodes.rogue.npc.NPCEncounterComposite;
 import forge.gui.framework.EDocID;
+import forge.localinstance.skin.FSkinProp;
 import forge.screens.home.CHomeUI;
 import forge.screens.home.rogue.CSubmenuRogueMap;
 import forge.screens.home.rogue.NPCDialog;
+import forge.toolbox.FOptionPane;
+import forge.toolbox.FSkin;
 
 /**
  * Win/Lose handler for Rogue Commander mode.
@@ -44,6 +48,21 @@ public class RogueWinLose extends ControlWinLose {
             return false;
         }
         controller.showRewards();
+        var currentRun = CSubmenuRogueMap.SINGLETON_INSTANCE.getCurrentRun();
+        if (controller.hasWonRun() && currentRun != null && !currentRun.isRunFailed()) {
+            boolean unlocked = RogueMetaProgress.getInstance().isEndlessModeUnlocked();
+            getView().getBtnContinue().setText("Complete Run");
+            getView().getBtnContinue().setVisible(true);
+            getView().getBtnContinue().setEnabled(true);
+            getView().getBtnQuit().setText("Go Endless");
+            getView().getBtnQuit().setEnabled(unlocked);
+            if (!unlocked) {
+                getView().getBtnQuit().setIcon(FSkin.getIcon(FSkinProp.ICO_LOCK).scale(0.5));
+                getView().getBtnQuit().setToolTipText("Win a Custom Run to unlock Endless Mode.");
+                getView().showMessage("Win a Custom Run to unlock Go Endless.",
+                    "Endless Mode Locked", FSkinProp.ICO_LOCK);
+            }
+        }
         return true;
     }
 
@@ -63,12 +82,32 @@ public class RogueWinLose extends ControlWinLose {
         return false;
     }
 
-    /**
-     * When "quit" button is pressed, navigate back to Commander selection if run is over
-     * (won or lost), otherwise navigate back to the Rogue Map.
-     */
     @Override
     public final void actionOnQuit() {
+        var currentRun = CSubmenuRogueMap.SINGLETON_INSTANCE.getCurrentRun();
+        if (controller.hasWonRun() && currentRun != null && !currentRun.isRunFailed()) {
+            if (currentRun.isRunWon() || !RogueMetaProgress.getInstance().isEndlessModeUnlocked()) {
+                return;
+            }
+            getView().getBtnQuit().setEnabled(false);
+            leaveWinLose(true);
+            return;
+        }
+        leaveWinLose(false);
+    }
+
+    @Override
+    public final void actionOnContinue() {
+        var currentRun = CSubmenuRogueMap.SINGLETON_INSTANCE.getCurrentRun();
+        if (currentRun == null || !controller.hasWonRun() || currentRun.isRunFailed()
+                || currentRun.isRunWon()) {
+            return;
+        }
+        getView().getBtnContinue().setEnabled(false);
+        leaveWinLose(false);
+    }
+
+    private void leaveWinLose(boolean goEndless) {
         controller.actionOnQuit();
 
         var currentRun = CSubmenuRogueMap.SINGLETON_INSTANCE.getCurrentRun();
@@ -82,6 +121,14 @@ public class RogueWinLose extends ControlWinLose {
         if (currentRun != null) {
             for (NPCContext ctx : NPCEncounterComposite.INSTANCE.onAfterMatch(currentRun)) {
                 new NPCDialog(ctx, new ChoiceRerollContext()).show();
+            }
+        }
+
+        if (controller.hasWonRun() && currentRun != null && !currentRun.isRunFailed()) {
+            if (goEndless) {
+                CSubmenuRogueMap.SINGLETON_INSTANCE.continueEndlessly();
+            } else if (RogueWinLoseController.finalizeRunVictory(currentRun, null)) {
+                FOptionPane.showMessageDialog("You won 1 Spark!", "Spark Reward");
             }
         }
 

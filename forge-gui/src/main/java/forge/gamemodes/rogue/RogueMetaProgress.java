@@ -58,6 +58,10 @@ public class RogueMetaProgress {
     // Per-commander descension tracking
     private Map<String, Integer> maxDescensionWonPerCommander = new HashMap<>();
 
+    // Endless Mode is unlocked by a Custom Run victory. Old saves can also use customStatValues.
+    private boolean endlessModeUnlocked;
+    private Map<String, Integer> maxEndlessCompletedPerCommander = new HashMap<>();
+
     // Aether system - persistent Echoes, Sparks, and Aetherworks
     private int totalEchoes;                        // Persistent echo currency
     private int totalSparks;                        // Earned from Descension wins
@@ -134,6 +138,8 @@ public class RogueMetaProgress {
         statValues = new HashMap<>();
         customStatValues = new HashMap<>();
         maxDescensionWonPerCommander = new HashMap<>();
+        endlessModeUnlocked = false;
+        maxEndlessCompletedPerCommander = new HashMap<>();
         codexProgress = new CodexProgress();
 
         // Reset Aether system
@@ -402,6 +408,42 @@ public class RogueMetaProgress {
 
     public boolean isCustomRunsUnlocked() {
         return getProgressionTotalRunsWon() >= 2;
+    }
+
+    public boolean isEndlessModeUnlocked() {
+        return endlessModeUnlocked || getStatValueForCategory(RogueStats.RUNS_WON.getConditionKey(), true) > 0;
+    }
+
+    public void unlockEndlessMode() {
+        if (!isEndlessModeUnlocked()) {
+            endlessModeUnlocked = true;
+            save();
+        }
+        notifyEndlessModeUnlocked();
+    }
+
+    public void notifyEndlessModeUnlocked() {
+        if (!isEndlessModeUnlocked()) return;
+        if (notifiedCommanderUnlocks == null) notifiedCommanderUnlocks = new HashSet<>();
+        if (!notifiedCommanderUnlocks.add("ENDLESS_MODE")) return;
+        save();
+        SoundSystem.instance.play(SoundEffectType.RogueCommanderUnlock,
+            SoundEffectType.RogueCommanderUnlock.isSynced());
+        GuiBase.getInterface().showImageDialog(null,
+            "You have won a Custom Run!\nEndless Mode is now unlocked.",
+            "Endless Mode Unlocked!");
+    }
+
+    public int getMaxEndlessCompleted(String commanderName) {
+        if (maxEndlessCompletedPerCommander == null) maxEndlessCompletedPerCommander = new HashMap<>();
+        return maxEndlessCompletedPerCommander.getOrDefault(commanderName, 0);
+    }
+
+    public void recordEndlessLevelCompleted(RogueRun run) {
+        int level = run.getEndlessLevel();
+        if (level <= getMaxEndlessCompleted(run.getCurrentCommanderName())) return;
+        maxEndlessCompletedPerCommander.put(run.getCurrentCommanderName(), level);
+        save();
     }
 
     public int getTotalMatchesWon() {

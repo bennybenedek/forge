@@ -4,6 +4,7 @@ import forge.gamemodes.rogue.RogueMetaProgress;
 import forge.gamemodes.rogue.RogueRun;
 import forge.gamemodes.rogue.RogueRun.CarryCard;
 import forge.gamemodes.rogue.effect.DescensionLevel;
+import forge.gamemodes.rogue.effect.EndlessMode;
 import forge.gamemodes.rogue.effect.RogueEffect;
 import forge.gamemodes.rogue.effect.RogueEffectComposite;
 import forge.gui.CardPicturePanel;
@@ -81,6 +82,12 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
       .fontStyle(Font.BOLD)
       .build();
 
+  private final FLabel lblEndless = new FLabel.Builder()
+      .text("")
+      .fontSize(14)
+      .fontStyle(Font.BOLD)
+      .build();
+
   private final JPanel pnlEffects;
   private final JPanel pnlCarryCards;
   private final RogueMapPanel mapPanel;
@@ -99,6 +106,8 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
     lblRemovalCredits.setIcon(FSkin.getIcon(FSkinProp.ICO_CARD_IMAGE));
     lblDescension.setIcon(FSkin.getIcon(FSkinProp.ICO_QUEST_ZEP));
     lblDescension.setVisible(false);
+    lblEndless.setIcon(FSkin.getIcon(FSkinProp.ICO_QUEST_CHARM));
+    lblEndless.setVisible(false);
 
     // Setup buttons with icons
     btnEditDeck = new FButton("Edit Rogue Deck");
@@ -154,10 +163,15 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
       } else {
         lblDescension.setToolTipText(null);
       }
+      int endlessLevel = run.getEndlessLevel();
+      lblEndless.setVisible(endlessLevel > 0);
+      lblEndless.setText(endlessLevel > 0 ? "Endless Level " + endlessLevel : "");
+      lblEndless.setToolTipText(endlessLevel > 0
+          ? EndlessMode.getModifiersDescription(endlessLevel) : null);
 
       // Populate active effects (Aetherworks, descension, event traits, chest traits, wounds...)
       List<RogueEffect> allEffects = RogueEffectComposite.getAllEffects(run);
-      allEffects.removeIf(effect -> effect instanceof DescensionLevel);
+      allEffects.removeIf(effect -> effect instanceof DescensionLevel || effect instanceof EndlessMode);
       RogueUIHelper.populateEffectPanel(pnlEffects, allEffects, run);
       populateCarryCardPanel(run.getCarryCards());
 
@@ -170,6 +184,8 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
       lblRemovalCredits.setText("Removal Credits: 0");
       lblDescension.setVisible(false);
       lblDescension.setToolTipText(null);
+      lblEndless.setVisible(false);
+      lblEndless.setToolTipText(null);
       btnRerollPlane.setVisible(false);
       populateCarryCardPanel(List.of());
       mapPanel.clearPath();
@@ -337,6 +353,7 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
     infoRow.add(lblDescension);
     infoRow.add(pnlEffects);
     infoRow.add(pnlCarryCards);
+    infoRow.add(lblEndless);
     return infoRow;
   }
 

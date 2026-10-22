@@ -28,7 +28,7 @@ import java.util.List;
  */
 public class RogueWinLoseController {
     private static final String BTN_CONTINUE_RUN = "Continue Run";
-    private static final String BTN_WIN_RUN = "Finish Run";
+    private static final String BTN_WIN_RUN = "Complete Run";
     private static final String BTN_LOSE_RUN = "End Run";
     private static final String YOU_WON = "You won ";
 
@@ -81,8 +81,7 @@ public class RogueWinLoseController {
     }
 
     public boolean hasWonRun() {
-        return wonMatch && currentRun != null
-            && currentRun.getCurrentNodeIndex() >= currentRun.getPath().getNodeCount() - 1;
+        return wonMatch && currentRun != null && currentRun.isRunComplete();
     }
 
     public boolean hasFailedRun() {
@@ -150,8 +149,8 @@ public class RogueWinLoseController {
             }
         }
 
-        if (isLastNode) {
-            handleRunVictory(echoReward);
+        if (currentRun.isRunComplete()) {
+            handleTrailVictory(echoReward);
             return;
         }
 
@@ -177,39 +176,55 @@ public class RogueWinLoseController {
         RogueIO.saveRun(currentRun);
     }
 
-    private void handleRunVictory(int echoReward) {
+    private void handleTrailVictory(int echoReward) {
         if (echoReward > 0) {
             view.showMessage(YOU_WON + echoReward + " Echoes.", "Echo Reward", FSkinProp.ICO_QUEST_GOLD);
         }
 
-        currentRun.setRunWon(true);
-        currentRun.getRunTimer().stop();
+        RogueMetaProgress progress = RogueMetaProgress.getInstance();
+        recordMatchStats(progress, true);
+        if (currentRun.getCurrentLife() <= 0) {
+            handleRunDefeat("being unable to continue the run at 0 or less life");
+            return;
+        }
+        progress.recordEndlessLevelCompleted(currentRun);
+        RogueCommanderAchievements.instance.recordEndlessLevelWon(currentRun.getEndlessLevel());
+        if (currentRun.isCustomRun() && currentRun.getEndlessLevel() == 0) {
+            progress.unlockEndlessMode();
+        }
+        view.getBtnContinue().setText(BTN_WIN_RUN);
+    }
+
+    public static boolean finalizeRunVictory(RogueRun run, String defeatedBy) {
+        if (run == null || run.isRunWon()) {
+            return false;
+        }
+        run.setRunWon(true);
+        run.getRunTimer().stop();
 
         // Record run history - find boss name from last NodePlanebound (BOSS type)
         String bossName = "";
-        for (RoguePathNode node : currentRun.getPath().getNodes()) {
+        for (RoguePathNode node : run.getPath().getNodes()) {
             if (node instanceof NodePlanebound pb && pb.getPlaneboundType() == RoguePlaneboundType.BOSS) {
                 bossName = pb.getRoguePlanebound().planeboundName();
             }
         }
 
         var progress = RogueMetaProgress.getInstance();
-        progress.addRunHistoryEntry(RogueRunHistoryEntry.fromRun(currentRun, "VICTORY", bossName));
+        progress.addRunHistoryEntry(RogueRunHistoryEntry.fromRun(run,
+            defeatedBy == null ? "VICTORY" : "DEFEAT", defeatedBy == null ? bossName : defeatedBy));
 
-        recordMatchStats(progress, true);
-        RogueStats.fireOnRunCompleted(currentRun, progress, true);
+        RogueStats.fireOnRunCompleted(run, progress, true);
 
         RogueCommanderAchievements.instance.recordRunWon(
-            currentRun.getCurrentCommanderName());
+            run.getCurrentCommanderName());
 
-        if (progress.recordDescensionWin(currentRun)) {
-            view.showMessage("You won 1 Spark!", "Spark Reward", FSkinProp.ICO_QUEST_ELIXIR);
-        }
-        RogueCommanderAchievements.instance.evaluateRunAchievements(currentRun);
-        progress.notifyDescensionL1IfFirstWin(currentRun);
+        boolean sparkAwarded = progress.recordDescensionWin(run);
+        RogueCommanderAchievements.instance.evaluateRunAchievements(run);
+        progress.notifyDescensionL1IfFirstWin(run);
 
-        RogueIO.saveRun(currentRun);
-        view.getBtnQuit().setText(BTN_WIN_RUN);
+        RogueIO.saveRun(run);
+        return sparkAwarded;
     }
 
     private void awardCardRewards(boolean isElite, int goldReward, int echoReward, MatchRewardContext rewardCtx) {
@@ -265,13 +280,18 @@ public class RogueWinLoseController {
     }
 
     private void handleRunDefeat(String defeatedBy) {
-        finalizeRunDefeat(currentRun, defeatedBy);
+        if (finalizeRunDefeat(currentRun, defeatedBy)) {
+            view.showMessage("You won 1 Spark!", "Spark Reward", FSkinProp.ICO_QUEST_ELIXIR);
+        }
         view.getBtnQuit().setText(BTN_LOSE_RUN);
     }
 
-    public static void finalizeRunDefeat(RogueRun run, String defeatedBy) {
+    public static boolean finalizeRunDefeat(RogueRun run, String defeatedBy) {
         if (run == null) {
-            return;
+            return false;
+        }
+        if (run.getEndlessLevel() > 0) {
+            return finalizeRunVictory(run, defeatedBy != null ? defeatedBy : "");
         }
         run.setRunFailed(true);
         run.getRunTimer().stop();
@@ -284,6 +304,7 @@ public class RogueWinLoseController {
         RogueCommanderAchievements.instance.evaluateRunAchievements(run);
 
         RogueIO.saveRun(run);
+        return false;
     }
 
     private static String getDefeatedByCurrentNode(RogueRun run) {

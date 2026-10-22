@@ -22,6 +22,7 @@ public enum RogueEffectComposite implements RogueEffect {
             DescensionLevel dl = DescensionLevel.forLevel(l);
             if (dl != null) effects.add(dl);
         }
+        if (run.getEndlessLevel() > 0) effects.add(EndlessMode.INSTANCE);
         effects.addAll(run.getActiveCustomRunModifications());
         effects.addAll(run.getActiveEventEffects());
         effects.addAll(run.getActiveChestEffects());
