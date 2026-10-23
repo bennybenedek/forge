@@ -33,14 +33,14 @@ import org.testng.annotations.Test;
 public class EndlessModeTest extends SimulationTest {
 
     @Test
-    public void testModifiersScaleAndCappedModifiersStopAtThree() {
+    public void testModifiersScaleWithEndlessLevel() {
         assertEquals(new RogueRun().getEndlessLevel(), 0);
         assertEquals(EndlessMode.getLifeBonus(1), 5);
         assertEquals(EndlessMode.getLifeBonus(5), 25);
         assertEquals(EndlessMode.getHandBonus(1), 1);
         assertEquals(EndlessMode.getHandBonus(3), 3);
-        assertEquals(EndlessMode.getHandBonus(5), 3);
-        assertEquals(EndlessMode.getCostReduction(5), 3);
+        assertEquals(EndlessMode.getHandBonus(5), 5);
+        assertEquals(EndlessMode.getCostReduction(5), 5);
         assertEquals(EndlessMode.getDamageBonus(5), 10);
         assertEquals(EndlessMode.getBazaarPriceBonus(5), 5);
     }
@@ -54,7 +54,7 @@ public class EndlessModeTest extends SimulationTest {
         String replacement = card.getRules().getMainPart().getReplacements().iterator().next();
         String trigger = card.getRules().getMainPart().getTriggers().iterator().next();
 
-        assertTrue(staticAbility.contains("Amount$ 3"));
+        assertTrue(staticAbility.contains("Amount$ 5"));
         assertTrue(staticAbility.contains("Activator$ Player.Opponent"));
         assertTrue(replacement.contains("ValidTarget$ You"));
         assertTrue(replacement.contains("ValidSource$ Card.OppCtrl,Emblem.OppCtrl"));
@@ -64,9 +64,10 @@ public class EndlessModeTest extends SimulationTest {
         Card gameCard = Card.fromPaperCard(card, game.getPlayers().get(0));
         assertTrue(gameCard.getSVar("TrigLifeLoss").contains("LifeAmount$ 10"));
         String displayedText = gameCard.getAbilityText();
-        assertTrue(displayedText.contains("Opponents start with 25 additional life and 3 additional cards"));
-        assertTrue(displayedText.contains("Their maximum hand size is increased by 3."));
-        assertTrue(displayedText.contains("Spells your opponents cast cost {3} less to cast."));
+        assertTrue(displayedText.contains("Opponents start with 25 additional life and up to 5 additional cards"));
+        assertTrue(displayedText.contains("Their maximum hand size is increased by the same amount."));
+        assertTrue(displayedText.contains("The Endless bonus cannot exceed 30% of their main deck size."));
+        assertTrue(displayedText.contains("Spells your opponents cast cost {5} less to cast."));
         assertTrue(displayedText.contains("it deals that much damage plus 10 instead; whenever a spell or ability"));
         assertTrue(displayedText.contains("you lose 10 additional life."));
         assertFalse(displayedText.contains("Bazaar"));
@@ -84,7 +85,9 @@ public class EndlessModeTest extends SimulationTest {
         assertEquals(node.getStartingLifeModification(), 32);
 
         RegisteredPlayer human = new RegisteredPlayer(new Deck());
-        RegisteredPlayer opponent = new RegisteredPlayer(new Deck());
+        Deck opponentDeck = new Deck();
+        opponentDeck.getMain().add("Hedron Archive", 10);
+        RegisteredPlayer opponent = new RegisteredPlayer(opponentDeck);
         opponent.setStartingHand(7);
         EndlessMode.INSTANCE.onMatchStart(human, opponent, run);
         assertEquals(opponent.getStartingHand(), 10);
