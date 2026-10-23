@@ -60,7 +60,8 @@ public class EndlessModeTest extends SimulationTest {
         assertTrue(replacement.contains("ValidSource$ Card.OppCtrl,Emblem.OppCtrl"));
         assertTrue(trigger.contains("ValidCause$ SpellAbility.OppCtrl"));
         assertTrue(trigger.contains("LifeAmount$ GE1"));
-        Card gameCard = Card.fromPaperCard(card, null);
+        Game game = initAndCreateGame();
+        Card gameCard = Card.fromPaperCard(card, game.getPlayers().get(0));
         assertTrue(gameCard.getSVar("TrigLifeLoss").contains("LifeAmount$ 10"));
         String displayedText = gameCard.getAbilityText();
         assertTrue(displayedText.contains("Opponents start with 25 additional life and 3 additional cards"));
