@@ -20,11 +20,11 @@ public enum EndlessMode implements RogueEffect {
     }
 
     public static int getHandBonus(int level) {
-        return Math.min(level, 3);
+        return level;
     }
 
     public static int getCostReduction(int level) {
-        return Math.min(level, 3);
+        return level;
     }
 
     public static int getDamageBonus(int level) {
@@ -37,7 +37,8 @@ public enum EndlessMode implements RogueEffect {
 
     public static String getModifiersDescription(int level) {
         return "<html>Opponents start with +" + getLifeBonus(level) + " Life.<br>"
-            + "They get +" + getHandBonus(level) + " opening cards and maximum hand size.<br>"
+            + "They get up to +" + getHandBonus(level) + " opening cards and maximum hand size"
+            + " (Endless bonus capped at 30% of their main deck size).<br>"
             + "Their spells cost {" + getCostReduction(level) + "} less.<br>"
             + "Their sources deal +" + getDamageBonus(level) + " damage to you.<br>"
             + "Whenever their spells or abilities make you lose life, you lose "
@@ -79,7 +80,8 @@ public enum EndlessMode implements RogueEffect {
     @Override
     public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
         int level = run.getEndlessLevel();
-        opponent.setStartingHand(opponent.getStartingHand() + getHandBonus(level));
+        int handBonus = Math.min(getHandBonus(level), opponent.getDeck().getMain().countAll() * 30 / 100);
+        opponent.setStartingHand(opponent.getStartingHand() + handBonus);
         PaperCard card = createMatchCard(level);
         PaperCard registeredCard = StaticData.instance().getCommonCards().getCard(
             card.getName(), CardEdition.UNKNOWN_CODE);
@@ -100,9 +102,10 @@ public enum EndlessMode implements RogueEffect {
         int handBonus = getHandBonus(level);
         int costReduction = getCostReduction(level);
         int damageBonus = getDamageBonus(level);
-        String startingText = "Opponents start with " + getLifeBonus(level) + " additional life and "
+        String startingText = "Opponents start with " + getLifeBonus(level) + " additional life and up to "
             + handBonus + " additional " + (handBonus == 1 ? "card" : "cards")
-            + " in their opening hand. Their maximum hand size is increased by " + handBonus + ".";
+            + " in their opening hand. Their maximum hand size is increased by the same amount."
+            + " The Endless bonus cannot exceed 30% of their main deck size.";
         String costText = "Spells your opponents cast cost {" + costReduction + "} less to cast.";
         String damageAndLifeLossText = "If a source an opponent controls would deal damage to you, "
             + "it deals that much damage plus " + damageBonus + " instead; whenever a spell or ability "
