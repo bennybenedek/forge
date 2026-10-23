@@ -12,7 +12,6 @@ import forge.screens.home.CHomeUI;
 import forge.screens.home.rogue.CSubmenuRogueMap;
 import forge.screens.home.rogue.NPCDialog;
 import forge.toolbox.FOptionPane;
-import forge.toolbox.FSkin;
 
 /**
  * Win/Lose handler for Rogue Commander mode.
@@ -57,10 +56,8 @@ public class RogueWinLose extends ControlWinLose {
             getView().getBtnQuit().setText("Go Endless");
             getView().getBtnQuit().setEnabled(unlocked);
             if (!unlocked) {
-                getView().getBtnQuit().setIcon(FSkin.getIcon(FSkinProp.ICO_LOCK).scale(0.5));
-                getView().getBtnQuit().setToolTipText("Win a Custom Run to unlock Endless Mode.");
-                getView().showMessage("Win a Custom Run to unlock Go Endless.",
-                    "Endless Mode Locked", FSkinProp.ICO_LOCK);
+                getView().showQuitButtonHint("<html><center>Win a Custom Run<br>to unlock Endless Mode.</center></html>",
+                    FSkinProp.ICO_LOCK);
             }
         }
         return true;

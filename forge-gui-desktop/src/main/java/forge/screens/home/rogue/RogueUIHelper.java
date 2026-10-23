@@ -35,7 +35,9 @@ public final class RogueUIHelper {
     panel.removeAll();
     for (int i = 0; i < effects.size(); i++) {
       RogueEffect effect = effects.get(i);
-      addEffectLabel(panel, effect.getUIDisplayText(), effect.getActiveDescription(run), i);
+      int col = (i / 3) % 2;
+      int row = (i / 6) * 3 + i % 3;
+      addEffectLabel(panel, effect.getUIDisplayText(), effect.getActiveDescription(run), col, row);
     }
     panel.revalidate();
     panel.repaint();
@@ -46,15 +48,15 @@ public final class RogueUIHelper {
     panel.removeAll();
     for (int i = 0; i < effects.size(); i++) {
       RogueRunHistoryEntry.EffectSnapshot effect = effects.get(i);
-      addEffectLabel(panel, effect.getDisplayText(), effect.getTooltipText(), i);
+      int col = (i / 3) % 2;
+      int row = (i / 6) * 3 + i % 3;
+      addEffectLabel(panel, effect.getDisplayText(), effect.getTooltipText(), col, row);
     }
     panel.revalidate();
     panel.repaint();
   }
 
-  private static void addEffectLabel(JPanel panel, String displayText, String tooltipText, int index) {
-    int col = index / 3;
-    int row = index % 3;
+  private static void addEffectLabel(JPanel panel, String displayText, String tooltipText, int col, int row) {
     FLabel effectLabel = new FLabel.Builder()
         .text(displayText)
         .fontSize(11)

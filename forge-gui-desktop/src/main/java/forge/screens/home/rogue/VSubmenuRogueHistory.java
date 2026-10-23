@@ -161,7 +161,7 @@ public enum VSubmenuRogueHistory implements IVSubmenu<CSubmenuRogueHistory> {
     private final FTextArea txtPath;
     private final FLabel lblDescension; // null if descensionLevel == 0
     private final FLabel lblEndless;    // null if endlessLevel == 0
-    private final JPanel pnlEffects;    // null if no active permanent effects
+    private final FScrollPane scrollEffects; // null if no active permanent effects
     private final FButton btnViewDeck;
 
     RunHistoryCard(RogueRunHistoryEntry entry, Consumer<RogueRunHistoryEntry> onViewDeck) {
@@ -265,11 +265,25 @@ public enum VSubmenuRogueHistory implements IVSubmenu<CSubmenuRogueHistory> {
 
       List<RogueRunHistoryEntry.EffectSnapshot> effects = entry.getActiveEffects();
       if (!effects.isEmpty()) {
-        pnlEffects = RogueUIHelper.createEffectPanel();
+        JPanel pnlEffects = RogueUIHelper.createEffectPanel();
         RogueUIHelper.populateEffectPanelFromSnapshots(pnlEffects, effects);
-        add(pnlEffects);
+        scrollEffects = new FScrollPane(pnlEffects, false,
+            ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+            ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+        Dimension effectSize = pnlEffects.getPreferredSize();
+        int visibleRows = Math.min(3, effects.size());
+        int rowHeight = pnlEffects.getComponent(0).getPreferredSize().height;
+        int viewportHeight = Math.min(effectSize.height, visibleRows * rowHeight + visibleRows - 1);
+        boolean needsScrollbar = effects.size() > 6;
+        scrollEffects.setVerticalScrollBarPolicy(needsScrollbar
+            ? ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS : ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+        int rightGap = 16;
+        scrollEffects.getViewport().setPreferredSize(new Dimension(effectSize.width + rightGap, viewportHeight));
+        int scrollbarWidth = needsScrollbar ? scrollEffects.getVerticalScrollBar().getPreferredSize().width : 0;
+        scrollEffects.setPreferredSize(new Dimension(effectSize.width + rightGap + scrollbarWidth, viewportHeight));
+        add(scrollEffects);
       } else {
-        pnlEffects = null;
+        scrollEffects = null;
       }
 
       if (entry.getDeckSnapshot() != null) {
@@ -320,6 +334,12 @@ public enum VSubmenuRogueHistory implements IVSubmenu<CSubmenuRogueHistory> {
         lblEndless.setBounds(metrics.contentX(), y, metrics.leftW(), metrics.rowH());
         y += metrics.rowH() + ROW_GAP;
       }
+      if (!metrics.hasInfoCol() && scrollEffects != null) {
+        Dimension effectsSize = scrollEffects.getPreferredSize();
+        scrollEffects.setBounds(metrics.contentX(), y,
+            Math.max(0, Math.min(w - metrics.contentX() - INSET, effectsSize.width)), effectsSize.height);
+        y += effectsSize.height;
+      }
 
       int totalHeight = y + INSET;
 
@@ -333,11 +353,11 @@ public enum VSubmenuRogueHistory implements IVSubmenu<CSubmenuRogueHistory> {
           lblEndless.setBounds(metrics.infoColX(), infoY, metrics.infoColW(), metrics.rowH());
           infoY += metrics.rowH() + ROW_GAP;
         }
-        if (pnlEffects != null) {
-          pnlEffects.setSize(Math.max(metrics.infoColW(), 100), Short.MAX_VALUE);
-          int effectsH = pnlEffects.getPreferredSize().height;
-          pnlEffects.setBounds(metrics.infoColX(), infoY, metrics.infoColW(), effectsH);
-          infoY += effectsH;
+        if (scrollEffects != null) {
+          Dimension effectsSize = scrollEffects.getPreferredSize();
+          scrollEffects.setBounds(metrics.infoColX(), infoY,
+              Math.min(metrics.infoColW(), effectsSize.width), effectsSize.height);
+          infoY += effectsSize.height;
         }
         totalHeight = Math.max(totalHeight, infoY + INSET);
       }
@@ -364,6 +384,9 @@ public enum VSubmenuRogueHistory implements IVSubmenu<CSubmenuRogueHistory> {
       if (!metrics.hasInfoCol() && lblEndless != null) {
         y += 20 + ROW_GAP;
       }
+      if (!metrics.hasInfoCol() && scrollEffects != null) {
+        y += scrollEffects.getPreferredSize().height;
+      }
       int totalHeight = y + INSET;
       if (metrics.hasInfoCol()) {
         int infoY = INSET + 20 + ROW_GAP;
@@ -374,9 +397,8 @@ public enum VSubmenuRogueHistory implements IVSubmenu<CSubmenuRogueHistory> {
         if (lblEndless != null) {
           infoY += 20 + ROW_GAP;
         }
-        if (pnlEffects != null) {
-          pnlEffects.setSize(Math.max(metrics.infoColW(), 100), Short.MAX_VALUE);
-          infoY += pnlEffects.getPreferredSize().height;
+        if (scrollEffects != null) {
+          infoY += scrollEffects.getPreferredSize().height;
         }
         totalHeight = Math.max(totalHeight, infoY + INSET);
       }
@@ -395,8 +417,10 @@ public enum VSubmenuRogueHistory implements IVSubmenu<CSubmenuRogueHistory> {
       int rightSideW = Math.min(contentW, Math.max(buttonW, metadataW));
       int rightSideX = contentX + contentW - rightSideW;
 
-      boolean hasInfoCol = (lblDescension != null || lblEndless != null || pnlEffects != null);
-      int avail = contentW - rightSideW - INFO_COL_W - INFO_COL_GAP;
+      boolean hasInfoCol = (lblDescension != null || lblEndless != null || scrollEffects != null);
+      int infoColWidth = scrollEffects == null ? INFO_COL_W
+          : Math.max(INFO_COL_W, scrollEffects.getPreferredSize().width);
+      int avail = contentW - rightSideW - infoColWidth - INFO_COL_GAP;
       if (hasInfoCol && avail < 100) {
         hasInfoCol = false;
       }

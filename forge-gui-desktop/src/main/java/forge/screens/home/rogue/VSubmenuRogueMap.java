@@ -18,6 +18,7 @@ import forge.screens.home.IVSubmenu;
 import forge.screens.home.VHomeUI;
 import forge.toolbox.FButton;
 import forge.toolbox.FLabel;
+import forge.toolbox.FScrollPane;
 import forge.toolbox.FSkin;
 import forge.item.PaperCard;
 import forge.util.Localizer;
@@ -28,6 +29,7 @@ import java.awt.Window;
 import java.util.List;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import net.miginfocom.swing.MigLayout;
 
@@ -89,6 +91,7 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
       .build();
 
   private final JPanel pnlEffects;
+  private final FScrollPane scrollEffects;
   private final JPanel pnlCarryCards;
   private final RogueMapPanel mapPanel;
   private final FButton btnEnterNode;
@@ -124,6 +127,9 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
     btnAbandonRun.setIcon(FSkin.getImage(FSkinProp.ICO_DELETE).resize(24, 24).getIcon());
 
     pnlEffects = RogueUIHelper.createEffectPanel();
+    scrollEffects = new FScrollPane(pnlEffects, false,
+        ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
+        ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
     pnlCarryCards = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
     pnlCarryCards.setOpaque(false);
     mapPanel = new RogueMapPanel(createInfoRow());
@@ -173,6 +179,19 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
       List<RogueEffect> allEffects = RogueEffectComposite.getAllEffects(run);
       allEffects.removeIf(effect -> effect instanceof DescensionLevel || effect instanceof EndlessMode);
       RogueUIHelper.populateEffectPanel(pnlEffects, allEffects, run);
+      Dimension effectSize = pnlEffects.getPreferredSize();
+      int visibleRows = Math.min(3, allEffects.size());
+      int rowHeight = visibleRows == 0 ? 0 : pnlEffects.getComponent(0).getPreferredSize().height;
+      int viewportHeight = Math.min(effectSize.height,
+          visibleRows * rowHeight + Math.max(0, visibleRows - 1));
+      boolean needsScrollbar = allEffects.size() > 6;
+      scrollEffects.setVerticalScrollBarPolicy(needsScrollbar
+          ? ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS : ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+      int rightGap = 16;
+      scrollEffects.getViewport().setPreferredSize(new Dimension(effectSize.width + rightGap, viewportHeight));
+      int scrollbarWidth = needsScrollbar ? scrollEffects.getVerticalScrollBar().getPreferredSize().width : 0;
+      scrollEffects.setPreferredSize(new Dimension(effectSize.width + rightGap + scrollbarWidth, viewportHeight));
+      scrollEffects.revalidate();
       populateCarryCardPanel(run.getCarryCards());
 
       mapPanel.updatePath(run);
@@ -351,7 +370,7 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
     infoRow.add(lblEchoes);
     infoRow.add(lblRemovalCredits);
     infoRow.add(lblDescension);
-    infoRow.add(pnlEffects);
+    infoRow.add(scrollEffects);
     infoRow.add(pnlCarryCards);
     infoRow.add(lblEndless);
     return infoRow;

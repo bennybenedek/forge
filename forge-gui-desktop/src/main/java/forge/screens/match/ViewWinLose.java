@@ -32,6 +32,7 @@ public class ViewWinLose implements IWinLoseView<FButton> {
 
     private final FScrollPane scrLog;
     private final FButton btnContinue, btnRestart, btnQuit;
+    private final SkinnedLabel lblQuitHint = new SkinnedLabel();
     private final SkinnedPanel pnlCustom;
 
     private final SkinnedLabel lblTitle = new SkinnedLabel("WinLoseFrame > lblTitle needs updating.");
@@ -124,6 +125,11 @@ public class ViewWinLose implements IWinLoseView<FButton> {
         btnRestart.setFont(FSkin.getRelativeFont(22));
         btnQuit.setText(replay ? "Close replay" : localizer.getMessage("btnQuitMatch"));
         btnQuit.setFont(FSkin.getRelativeFont(22));
+        lblQuitHint.setFont(FSkin.getRelativeFont(14));
+        lblQuitHint.setForeground(FORE_COLOR);
+        lblQuitHint.setHorizontalAlignment(SwingConstants.CENTER);
+        lblQuitHint.setIconTextGap(8);
+        lblQuitHint.setVisible(false);
         btnContinue.setEnabled(!game0.isMatchOver());
 
         // Assemble game log scroller.
@@ -173,6 +179,9 @@ public class ViewWinLose implements IWinLoseView<FButton> {
             pnlButtons.add(btnRestart, constraints);
         }
         pnlButtons.add(btnQuit, constraints);
+        if (lblQuitHint.isVisible()) {
+            pnlButtons.add(lblQuitHint, "w 300px!, h 46px!, center");
+        }
         pnlLeft.add(pnlButtons, "w 100%!");
 
         final JPanel pnlLog = new JPanel(new MigLayout("insets 0, wrap, ax center"));
@@ -247,6 +256,12 @@ public class ViewWinLose implements IWinLoseView<FButton> {
     @Override
     public FButton getBtnQuit() {
         return this.btnQuit;
+    }
+
+    public void showQuitButtonHint(String message, FSkinProp icon) {
+        lblQuitHint.setText(message);
+        lblQuitHint.setIcon(FSkin.getIcon(icon).scale(0.35));
+        lblQuitHint.setVisible(true);
     }
 
     /**
