@@ -65,6 +65,10 @@ public class RogueWinLose extends ControlWinLose {
 
     @Override
     public String getOutcomeTitleOverride() {
+        var currentRun = CSubmenuRogueMap.SINGLETON_INSTANCE.getCurrentRun();
+        if (currentRun != null && currentRun.getEndlessLevel() > 0 && currentRun.isRunWon()) {
+            return "Run Won!";
+        }
         if (controller.hasFailedRun()) {
             return "Run Lost!";
         }
