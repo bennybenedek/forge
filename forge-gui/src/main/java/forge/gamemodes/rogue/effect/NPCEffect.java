@@ -778,9 +778,14 @@ public enum NPCEffect implements RogueEffect {
     public boolean isChoiceAvailable(RogueRun run) { return true; }
 
     public static List<NPCEffect> getEffectsForNpc(NPC npc, RogueRun run) {
+        List<String> activeNpcEffectIds = run == null ? List.of() : run.getActiveNPCEffects().stream()
+            .map(RogueEffect::getId)
+            .toList();
         List<NPCEffect> effects = new ArrayList<>();
         for (NPCEffect effect : values()) {
-            if (effect.ownerNpc == npc && (run == null || effect.isChoiceAvailable(run))) {
+            if (effect.ownerNpc == npc
+                && (effect.effectType != EffectType.PERMANENT || !activeNpcEffectIds.contains(effect.id))
+                && (run == null || effect.isChoiceAvailable(run))) {
                 effects.add(effect);
             }
         }
