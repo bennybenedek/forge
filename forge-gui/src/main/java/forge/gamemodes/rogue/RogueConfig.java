@@ -33,7 +33,7 @@ import org.checkerframework.checker.nullness.qual.NonNull;
 public class RogueConfig {
     private static final Set<String> EXCLUDED_RANDOM_DRAW_SET_CODES = Set.of("UNK", "UNH");
     private static final Set<String> DEPRIORITIZED_RANDOM_PRINT_SET_CODES =
-        Set.of("SLZ", "MAR", "FCA", "TLE", "PF25", "PF26", "SLD", "PSPL", "MBC");
+        Set.of("SLZ", "MAR", "FCA", "TLE", "PF25", "PF26", "SLD", "PSPL", "MBC", "SCH", "HOC", "PZA");
     private static final String FALLBACK_LAND_SET = "MH3";
     private static final String WASTES_FALLBACK_LAND_SET = "M3C";
 
