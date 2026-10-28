@@ -81,8 +81,8 @@ public class FlatMonteCarloScenarioTest extends AITest {
     // ------------------------------------------------------------------ the setting
 
     @Test
-    public void testSettingDefaultsToTrue() {
-        AssertJUnit.assertEquals("true", FPref.MATCH_AI_FLAT_MONTE_CARLO.getDefault());
+    public void testSettingDefaultsToFalse() {
+        AssertJUnit.assertEquals("false", FPref.MATCH_AI_FLAT_MONTE_CARLO.getDefault());
     }
 
     @Test

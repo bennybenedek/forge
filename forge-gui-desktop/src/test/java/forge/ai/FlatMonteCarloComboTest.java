@@ -211,10 +211,9 @@ public class FlatMonteCarloComboTest extends AITest {
         final Game game = initAndCreateGame();
         final Player p = reanimatorPlayer(game);
         final DeckPlan plan = DeckPlan.forSetting("auto", p);
-        final Card looting = addCardToZone("Faithless Looting", p, ZoneType.Hand);
-        if (looting.getRules().getAiHints().getRemAIDecks()) { // true while the script says AI:RemoveDeck:All
-            AssertJUnit.assertTrue(plan.combos.overridesRemAi(looting));
-        }
+        final Card therapy = addCardToZone("Cabal Therapy", p, ZoneType.Hand);
+        AssertJUnit.assertTrue(therapy.getRules().getAiHints().getRemAIDecks());
+        AssertJUnit.assertTrue(plan.combos.overridesRemAi(therapy));
         // a card that is not a piece is never let through
         final Card swamp = addCardToZone("Swamp", p, ZoneType.Hand);
         AssertJUnit.assertFalse(plan.combos.overridesRemAi(swamp));
@@ -277,13 +276,13 @@ public class FlatMonteCarloComboTest extends AITest {
     }
 
     @Test
-    public void removeAiLootingIsAKeyCardOfTheReanimatorDeck() {
+    public void removeAiDiscardIsAKeyCardOfTheReanimatorDeck() {
         final Game game = initAndCreateGame();
         final Player p = reanimatorPlayer(game);
         final DeckPlan plan = DeckPlan.forSetting("auto", p);
-        final Card looting = addCardToZone("Faithless Looting", p, ZoneType.Hand);
-        AssertJUnit.assertTrue(ComputerUtilCard.isCardRemAIDeck(looting)); // the premise of the bypass
-        AssertJUnit.assertTrue(plan.combos.isKeyCard(looting));
+        final Card therapy = addCardToZone("Cabal Therapy", p, ZoneType.Hand);
+        AssertJUnit.assertTrue(ComputerUtilCard.isCardRemAIDeck(therapy)); // the premise of the bypass
+        AssertJUnit.assertTrue(plan.combos.isKeyCard(therapy));
         AssertJUnit.assertFalse(plan.combos.isKeyCard(addCardToZone("Swamp", p, ZoneType.Hand)));
     }
 
@@ -294,19 +293,19 @@ public class FlatMonteCarloComboTest extends AITest {
         final PlayerControllerAi pc = (PlayerControllerAi) p.getController();
         final Deck deck = new Deck();
         for (final PaperCard c : papers("Reanimate", 4, "Animate Dead", 4, "Exhume", 2, "Entomb", 4, "Griselbrand", 4,
-                "Archon of Cruelty", 3, "Faithless Looting", 4, "Careful Study", 2, "Thoughtseize", 4, "Swamp", 12)) {
+                "Archon of Cruelty", 3, "Faithless Looting", 4, "Careful Study", 2, "Cabal Therapy", 4, "Swamp", 12)) {
             deck.getMain().add(c, 1);
         }
         AssertJUnit.assertTrue(deck.getUnplayableAICards().unplayable.values().stream()
-                .anyMatch(l -> l.stream().anyMatch(c -> c.getName().equals("Faithless Looting")))); // premise
+                .anyMatch(l -> l.stream().anyMatch(c -> c.getName().equals("Cabal Therapy")))); // premise
 
         pc.getAi().setFlatMonteCarloOverride(false);
         AssertJUnit.assertTrue(pc.complainCardsCantPlayWell(deck).values().stream()
-                .anyMatch(l -> l.stream().anyMatch(c -> c.getName().equals("Faithless Looting"))));
+                .anyMatch(l -> l.stream().anyMatch(c -> c.getName().equals("Cabal Therapy"))));
 
         pc.getAi().setFlatMonteCarloOverride(true);
         AssertJUnit.assertTrue(pc.complainCardsCantPlayWell(deck).values().stream()
-                .noneMatch(l -> l.stream().anyMatch(c -> c.getName().equals("Faithless Looting"))));
+                .noneMatch(l -> l.stream().anyMatch(c -> c.getName().equals("Cabal Therapy"))));
     }
 
     // ---------------------------------------------------------------------------------------- ComboGuard
