@@ -251,7 +251,7 @@ public class CardUtil {
   }
 
   /**
-   * Reusable flip animation state manager. Handles the Timer and frame counting for a horizontal
+   * Reusable flip animation state manager. Handles the Timer and elapsed time for a horizontal
    * card flip (scale 1->0->1). Panels query {@link #isAnimating()} and {@link #getScaleX()} in
    * their own paint() method to apply the transform directly — no lambda indirection.
    */
@@ -280,19 +280,19 @@ public class CardUtil {
         return;
       }
       animating = true;
-      final int totalFrames = ANIMATION_DURATION / FRAME_DELAY;
-      final int[] currentFrame = {0};
+      final long startNanos = System.nanoTime();
+      final long durationNanos = ANIMATION_DURATION * 1_000_000L;
       final boolean[] actionExecuted = {false};
 
       animationTimer = new Timer(FRAME_DELAY, e -> {
-        currentFrame[0]++;
+        double progress = Math.min(1.0, (System.nanoTime() - startNanos) / (double) durationNanos);
 
         // Cosine easing: smooth ease-in-out (1.0 -> 0.0 -> 1.0)
-        double progress = (double) currentFrame[0] / totalFrames;
         scaleX = Math.abs(Math.cos(progress * Math.PI));
 
         // Execute midpoint action and update display
-        if (!actionExecuted[0] && currentFrame[0] >= totalFrames / 2) {
+        if (!actionExecuted[0] && progress >= 0.5) {
+          scaleX = 0.0;
           midpointAction.run();
           actionExecuted[0] = true;
         }
@@ -300,7 +300,7 @@ public class CardUtil {
         target.repaint();
 
         // End animation
-        if (currentFrame[0] >= totalFrames) {
+        if (progress >= 1.0) {
           animationTimer.stop();
           animating = false;
           scaleX = 1.0;
