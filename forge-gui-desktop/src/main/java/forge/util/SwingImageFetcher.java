@@ -32,6 +32,18 @@ public class SwingImageFetcher extends ImageFetcher {
         }
 
         private boolean doFetch(String urlToDownload) throws IOException {
+            boolean isScryfallUrl = urlToDownload.startsWith(ForgeConstants.URL_PIC_SCRYFALL_DOWNLOAD)
+                    || urlToDownload.startsWith(ForgeConstants.URL_SCRYFALL_CDN);
+            String newdespath = urlToDownload.contains(".fullborder.jpg") || isScryfallUrl ?
+                    TextUtil.fastReplace(destPath, ".full.jpg", ".fullborder.jpg") : destPath;
+            if (!newdespath.contains(".full") && !newdespath.contains(".artcrop") && isScryfallUrl && !destPath.startsWith(ForgeConstants.CACHE_TOKEN_PICS_DIR))
+                newdespath = newdespath.replace(".jpg", ".fullborder.jpg"); //fix planes/phenomenon for round border options
+            File outputFile = new File(newdespath);
+            if (outputFile.isFile()) {
+                SwingUtilities.invokeLater(notifyObservers);
+                return true;
+            }
+
             if (disableHostedDownload && urlToDownload.startsWith(ForgeConstants.URL_CARDFORGE)) {
                 // Don't try to download card images from cardforge servers
                 return false;
@@ -41,12 +53,6 @@ public class SwingImageFetcher extends ImageFetcher {
                 return false;
             }
 
-            boolean isScryfallUrl = urlToDownload.startsWith(ForgeConstants.URL_PIC_SCRYFALL_DOWNLOAD)
-                    || urlToDownload.startsWith(ForgeConstants.URL_SCRYFALL_CDN);
-            String newdespath = urlToDownload.contains(".fullborder.jpg") || isScryfallUrl ?
-                    TextUtil.fastReplace(destPath, ".full.jpg", ".fullborder.jpg") : destPath;
-            if (!newdespath.contains(".full") && !newdespath.contains(".artcrop") && isScryfallUrl && !destPath.startsWith(ForgeConstants.CACHE_TOKEN_PICS_DIR))
-                newdespath = newdespath.replace(".jpg", ".fullborder.jpg"); //fix planes/phenomenon for round border options
             URL url = new URL(urlToDownload);
             System.out.println("Attempting to fetch: " + url);
             ScryfallRateLimiter.acquire(urlToDownload);
@@ -78,7 +84,7 @@ public class SwingImageFetcher extends ImageFetcher {
             destFile.getParentFile().mkdirs();
             if (ImageIO.write(image, "jpg", destFile)) {
                 // Now, rename it to the correct name.
-                if (destFile.renameTo(new File(newdespath))) {
+                if (destFile.renameTo(outputFile)) {
                     System.out.println("Saved image to " + newdespath);
                     SwingUtilities.invokeLater(notifyObservers);
                 } else {
