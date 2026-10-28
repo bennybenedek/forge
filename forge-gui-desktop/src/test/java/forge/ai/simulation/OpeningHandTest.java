@@ -4,10 +4,12 @@ import org.testng.AssertJUnit;
 import org.testng.annotations.Test;
 
 import forge.ai.AITest;
+import forge.card.MagicColor;
 import forge.game.Game;
 import forge.game.card.Card;
 import forge.game.card.CardCollection;
 import forge.game.player.Player;
+import forge.game.spellability.SpellAbility;
 import forge.game.zone.ZoneType;
 
 /** Keeping and mulliganing opening hands by the deck's plan. */
@@ -47,6 +49,21 @@ public class OpeningHandTest extends AITest {
         System.arraycopy(b, 0, r, 0, b.length);
         System.arraycopy(a, 0, r, b.length, a.length);
         return r;
+    }
+
+    @Test
+    public void godlessShrineColorProbeSetsActivator() {
+        setUp(0, 0);
+        final Card shrine = addCardToZone("Godless Shrine", ai, ZoneType.Hand);
+        AssertJUnit.assertFalse(shrine.getManaAbilities().isEmpty());
+        for (final SpellAbility sa : shrine.getManaAbilities()) {
+            sa.setActivatingPlayer(null);
+        }
+
+        AssertJUnit.assertEquals(MagicColor.WHITE | MagicColor.BLACK, OpeningHand.producedColors(shrine));
+        for (final SpellAbility sa : shrine.getManaAbilities()) {
+            AssertJUnit.assertSame(ai, sa.getActivatingPlayer());
+        }
     }
 
     @Test

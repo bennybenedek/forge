@@ -189,8 +189,11 @@ public final class OpeningHand {
     static byte producedColors(final Card land) {
         byte colors = 0;
         for (final SpellAbility sa : land.getManaAbilities()) {
+            if (sa.getActivatingPlayer() == null) {
+                sa.setActivatingPlayer(land.getController());
+            }
             for (final byte col : MagicColor.WUBRG) {
-                if (sa.canProduce(MagicColor.toLongString(col))) {
+                if (sa.canProduce(MagicColor.toShortString(col))) {
                     colors |= col;
                 }
             }
