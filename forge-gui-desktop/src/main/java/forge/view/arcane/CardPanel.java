@@ -322,10 +322,10 @@ public class CardPanel extends SkinnedPanel implements CardContainer, IDisposabl
         final int cornerSize = noBorderPref && !cardImgHasAlpha ? 0 : Math.max(4, Math.round(cardWidth * CardPanel.ROUNDED_CORNER_SIZE));
         final int offset = isTapped() && (!noBorderPref || cardImgHasAlpha) ? 1 : 0;
 
-        final int weakSelectableStrength = matchUI.getWeakSelectableStrength(getCard());
+        final int actionableStrength = matchUI.getActionableStrength(getCard());
 
         // Orange glow for cards that Auto would tap to pay.
-        if (isPreferenceEnabled(FPref.UI_SHOW_AUTOTAP_PREVIEW) && weakSelectableStrength == 2) {
+        if (isPreferenceEnabled(FPref.UI_SHOW_AUTOTAP_PREVIEW) && actionableStrength == 2) {
             for (int layer = 2; layer >= 1; layer--) {
                 g2d.setColor(new Color(1f, 0.72f, 0f, 0.31f * layer));
                 final int n = Math.max(1, Math.round(layer * cardWidth * CardPanel.SELECTED_BORDER_SIZE));
@@ -391,14 +391,14 @@ public class CardPanel extends SkinnedPanel implements CardContainer, IDisposabl
         }
 
         // Inner highlight: white for fully selectable cards, the configured colour for
-        // actionable (weakly selectable) ones. With black borders enabled this sits in the
+        // actionable ones. With black borders enabled this sits in the
         // border gap as a 1px inset; with borders disabled the card image fills the whole
         // panel and would cover an inset, so draw it as an outset (like the frames above).
         Color innerBorder = null;
         if (matchUI.isSelectable(getCard())) {
             innerBorder = Color.WHITE;
-        } else if (isPreferenceEnabled(FPref.UI_SHOW_ACTIONABLE_HIGHLIGHTS) && matchUI.isWeaklySelectable(getCard())) {
-            innerBorder = weakSelectableStrength >= 3 ? Color.RED : parseActionableHighlightColor();
+        } else if (isPreferenceEnabled(FPref.UI_SHOW_ACTIONABLE_HIGHLIGHTS) && matchUI.isActionable(getCard())) {
+            innerBorder = actionableStrength >= 3 ? Color.RED : parseActionableHighlightColor();
         }
         if (innerBorder != null) {
             g2d.setColor(innerBorder);

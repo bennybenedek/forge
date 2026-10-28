@@ -150,7 +150,7 @@ public class DeckgenUtil {
         for(Pair<String, Double> pair:preSelectedCardNames){
             String name = pair.getLeft();
             //remove any cards not valid in format
-            PaperCard cardToAdd = Aggregates.random(StaticData.instance().getCommonCards().getAllCardsNoAlt(name, format.getFilterPrinted()));
+            PaperCard cardToAdd = StaticData.instance().getCommonCards().getCardFromEditions(name, format.getFilterPrinted());
             if (cardToAdd == null)
                 continue;
             if(!cardToAdd.getName().equals(card.getName())) {
@@ -206,9 +206,13 @@ public class DeckgenUtil {
             System.out.println("Too many lands "+deck.getMain().countAll(PaperCardPredicates.IS_LAND));
             deck=buildLDACArchetypeDeck(format,isForAI);
         }
+        // spells of a colour the lands cannot make are dead cards (and a fetch land with nothing to find is a tapped land)
+        DeckManaBase.fix(deck);
         while(deck.get(DeckSection.Sideboard).countAll()>15){
             deck.get(DeckSection.Sideboard).remove(deck.get(DeckSection.Sideboard).get(0));
         }
+        // keep the era / card border of the generated deck coherent, following the Card Art Preference
+        deck.optimiseCardArt(format.getAllowedSetCodes());
         return deck;
     }
 
@@ -242,7 +246,7 @@ public class DeckgenUtil {
         for(Pair<String, Double> pair:preSelectedCardNames){
             String name = pair.getLeft();
             //remove any cards not valid in format
-            PaperCard cardToAdd = Aggregates.random(StaticData.instance().getCommonCards().getAllCardsNoAlt(name, format.getFilterPrinted()));
+            PaperCard cardToAdd = StaticData.instance().getCommonCards().getCardFromEditions(name, format.getFilterPrinted());
             if(cardToAdd != null && !cardToAdd.getName().equals(card.getName())) {
                 selectedCards.add(cardToAdd);
                 cardCount++;
@@ -306,9 +310,13 @@ public class DeckgenUtil {
             System.out.println("Too many lands "+deck.getMain().countAll(PaperCardPredicates.IS_LAND));
             deck=buildLDACArchetypeDeck(format,isForAI);
         }
+        // spells of a colour the lands cannot make are dead cards (and a fetch land with nothing to find is a tapped land)
+        DeckManaBase.fix(deck);
         while(deck.get(DeckSection.Sideboard).countAll()>15){
             deck.get(DeckSection.Sideboard).remove(deck.get(DeckSection.Sideboard).get(0));
         }
+        // keep the era / card border of the generated deck coherent, following the Card Art Preference
+        deck.optimiseCardArt(format.getAllowedSetCodes());
         return deck;
     }
 
@@ -361,6 +369,7 @@ public class DeckgenUtil {
             deck = new Deck("Random deck : " + deckName);
             deck.setDirectory("generated/color");
             deck.getMain().addAll(cards);
+            deck.optimiseCardArt(null);  // follow the Card Art Preference, coherent era and border
             return deck;
         }
         catch (Exception e) {
@@ -769,6 +778,7 @@ public class DeckgenUtil {
             deck.get(DeckSection.Commander).add(selectedPartner);
         }
 
+        deck.optimiseCardArt(null);  // follow the Card Art Preference, coherent era and border
         return deck;
     }
 

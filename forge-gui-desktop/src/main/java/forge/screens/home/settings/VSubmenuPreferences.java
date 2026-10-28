@@ -74,6 +74,7 @@ public enum VSubmenuPreferences implements IVSubmenu<CSubmenuPreferences> {
     private final JCheckBox cbAnteMatchRarity = new OptionsCheckBox(localizer.getMessage("cbAnteMatchRarity"));
     private final JCheckBox cbAnteIncludeBasicLands = new OptionsCheckBox(localizer.getMessage("cbAnteIncludeBasicLands"));
     private final JCheckBox cbEnableAICheats = new OptionsCheckBox(localizer.getMessage("cbEnableAICheats"));
+    private final JCheckBox cbAiFlatMonteCarlo = new OptionsCheckBox(localizer.getMessage("cbAiFlatMonteCarlo"));
     private final JCheckBox cbManaBurn = new OptionsCheckBox(localizer.getMessage("cbManaBurn"));
     private final JCheckBox cbOrderCombatants = new OptionsCheckBox(localizer.getMessage("cbOrderCombatants"));
     private final JCheckBox cbManaLostPrompt = new OptionsCheckBox(localizer.getMessage("cbManaLostPrompt"));
@@ -232,6 +233,9 @@ public enum VSubmenuPreferences implements IVSubmenu<CSubmenuPreferences> {
 
         pnlPrefs.add(cbpAiTimeout, titleConstraints);
         pnlPrefs.add(new NoteLabel(localizer.getMessage("nlAITimeout")), descriptionConstraints);
+
+        pnlPrefs.add(cbAiFlatMonteCarlo, titleConstraints);
+        pnlPrefs.add(new NoteLabel(localizer.getMessage("nlAiFlatMonteCarlo")), descriptionConstraints);
 
         pnlPrefs.add(cbOrderHand, titleConstraints);
         pnlPrefs.add(new NoteLabel(localizer.getMessage("nlOrderHand")), descriptionConstraints);
@@ -418,6 +422,8 @@ public enum VSubmenuPreferences implements IVSubmenu<CSubmenuPreferences> {
         // Initialize search functionality
         buildSearchIndex();
         setupSearchListener();
+        cbDevMode.addItemListener(e -> applySearch());
+        applySearch();
     }
 
     public void reloadShortcuts() {
@@ -662,6 +668,11 @@ public enum VSubmenuPreferences implements IVSubmenu<CSubmenuPreferences> {
     /** @return {@link javax.swing.JCheckBox} */
     public JCheckBox getCbEnableAICheats() {
         return cbEnableAICheats;
+    }
+
+    /** @return {@link javax.swing.JCheckBox} */
+    public JCheckBox getCbAiFlatMonteCarlo() {
+        return cbAiFlatMonteCarlo;
     }
 
     /** @return {@link javax.swing.JCheckBox} */
@@ -1265,7 +1276,8 @@ public enum VSubmenuPreferences implements IVSubmenu<CSubmenuPreferences> {
             boolean hasVisibleItem = false;
 
             for (PreferenceItem item : section.items) {
-                boolean visible = query.isEmpty() || item.searchText.contains(query);
+                boolean visible = (query.isEmpty() || item.searchText.contains(query))
+                        && (!item.components.contains(cbAiFlatMonteCarlo) || cbDevMode.isSelected());
 
                 for (Component comp : item.components) {
                     comp.setVisible(visible);

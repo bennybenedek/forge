@@ -457,7 +457,7 @@ public class SpellAbilityCondition extends SpellAbilityVariables {
                     }
                 }
 
-                abSub = sa.getSubAbility();
+                abSub = abSub.getSubAbility();
             }
 
             if (!result) {
@@ -472,7 +472,7 @@ public class SpellAbilityCondition extends SpellAbilityVariables {
             }
 
             Set<GameObject> targets = new HashSet<>();
-            for (TargetChoices tc : sa.getAllTargetChoices()) {
+            for (TargetChoices tc : matchTgt.getFirstTargetedSpell().getAllTargetChoices()) {
                 targets.addAll(tc);
                 if (targets.size() > 1) {
                     return false;

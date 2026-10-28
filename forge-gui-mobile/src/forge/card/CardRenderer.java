@@ -823,14 +823,14 @@ public class CardRenderer {
         if (MatchController.instance.isHighlighted(card)) {
             FSelectionBox.drawChosen(g, BORDER_THICKNESS, cx, cy, cw, ch);
         } else {
-            final int weakSelectableStrength = MatchController.instance.getWeakSelectableStrength(card);
+            final int actionableStrength = MatchController.instance.getActionableStrength(card);
             if (!unselectable && FModel.getPreferences().getPrefBoolean(FPref.UI_SHOW_ACTIONABLE_HIGHLIGHTS)
-                    && MatchController.instance.isWeaklySelectable(card)) {
-                g.drawRect(BORDER_THICKNESS, weakSelectableStrength >= 3 ? Color.RED
+                    && MatchController.instance.isActionable(card)) {
+                g.drawRect(BORDER_THICKNESS, actionableStrength >= 3 ? Color.RED
                         : parseActionableHighlightColor(), cx, cy, cw, ch);
             }
             if (FModel.getPreferences().getPrefBoolean(FPref.UI_SHOW_AUTOTAP_PREVIEW)
-                    && weakSelectableStrength == 2) {
+                    && actionableStrength == 2) {
                 drawAutoTapGlow(g, cx, cy, cw, ch);
             }
             if (MatchController.instance.isSelectable(card)) {
@@ -1043,7 +1043,9 @@ public class CardRenderer {
             }
 
             font.setColor(color);
-            font.draw(g.getBatch(), text, g.adjustX(x), g.adjustY(y, 0), w, horizontalAlignment, true);
+            // no wrapping: counter names and values are short and already sized to their box, and
+            // GlyphLayout.wrap throws IndexOutOfBoundsException on runs it cannot break
+            font.draw(g.getBatch(), text, g.adjustX(x), g.adjustY(y, 0), w, horizontalAlignment, false);
 
             if (color.a < 1) {
                 Gdx.gl.glDisable(GL_BLEND);
