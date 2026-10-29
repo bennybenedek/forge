@@ -13,6 +13,9 @@ import java.util.List;
  * Creates randomized encounters from available Planebound configurations.
  */
 public class RoguePathGenerator {
+    private RoguePathGenerator() {
+    }
+
 
     private static int normalPlaneboundIndex;
     private static int currentRowIndex;
@@ -43,11 +46,11 @@ public class RoguePathGenerator {
             availablePlanebounds, RoguePlaneboundType.BOSS);
 
         // Validate we have enough unique planebounds of each type
-        validateSize(13, normalPlanebounds.size());
-        validateSize(2, elitePlanebounds.size());
+        validateSize(16, normalPlanebounds.size());
+        validateSize(3, elitePlanebounds.size());
         validateSize(1, bossPlanebounds.size());
-        validateSize(4, events.size());
-        validateSize(8, chestEffect.size());
+        validateSize(7, events.size());
+        validateSize(10, chestEffect.size());
 
         // Shuffle lists for randomization
         shufflePlanebounds(normalPlanebounds);
@@ -96,7 +99,7 @@ public class RoguePathGenerator {
         planeboundNodes.add(normalPlanebounds.get(normalPlaneboundIndex++));
 
         if (MyRandom.getRandom().nextBoolean()) {
-            planeboundNodes.add(elitePlanebounds.get(elitePlaneboundIndex));
+            planeboundNodes.add(elitePlanebounds.get(elitePlaneboundIndex++));
         }
         addMixedPlanebundRow(nodes, planeboundNodes);
 
@@ -112,21 +115,46 @@ public class RoguePathGenerator {
 
         addSpecialNodesRow(nodes, specialNodes, createRandomNodeCount(2, 4));
 
-        // Row 6: NORMAL planes
+        // Row 6: NORMAL / ELITE planes
+        planeboundNodes = new ArrayList<>();
+
+        int randomPlanecount  = createRandomNodeCount(2, 3);
+        for  (int i = 0; i < randomPlanecount; i++) {
+            planeboundNodes.add(normalPlanebounds.get(normalPlaneboundIndex++));
+        }
+
+        if (MyRandom.getRandom().nextBoolean()) {
+            planeboundNodes.add(elitePlanebounds.get(elitePlaneboundIndex));
+        }
+        addMixedPlanebundRow(nodes, planeboundNodes);
+
+        // Row 7: Special Nodes (with higher chance for Event)
+        specialNodes = new ArrayList<>();
+        specialNodes.add(new NodeSanctum());
+        specialNodes.add(new NodeBazaar());
+        specialNodes.add(new NodeEvent(events.get(eventIndex++)));
+        specialNodes.add(new NodeEvent(events.get(eventIndex++)));
+        specialNodes.add(new NodeChest(List.of(
+            chestEffect.get(lootIndex++),
+            chestEffect.get(lootIndex++))));
+
+        addSpecialNodesRow(nodes, specialNodes, createRandomNodeCount(2, 4));
+
+        // Row 8: NORMAL planes
         addNormalPlanebundRow(nodes, normalPlanebounds, createRandomNodeCount(2, 3));
 
-        // Row 7: Special Nodes (no higher chance for any type)
+        // Row 9: Special Nodes (no higher chance for any type)
         specialNodes = new ArrayList<>();
         specialNodes.add(new NodeSanctum());
         specialNodes.add(new NodeBazaar());
         specialNodes.add(new NodeEvent(events.get(eventIndex)));
         specialNodes.add(new NodeChest(List.of(
             chestEffect.get(lootIndex++),
-            chestEffect.get(lootIndex++))));
+            chestEffect.get(lootIndex))));
 
         addSpecialNodesRow(nodes, specialNodes, createRandomNodeCount(2, 3));
 
-        // Row 8: BOSS plane
+        // Row 10: BOSS plane
         addPlaneboundNode(nodes, bossPlanebounds.get(0), 0);
 
         // Create path and set on run
