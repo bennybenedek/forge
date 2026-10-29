@@ -41,7 +41,7 @@ public class EndlessModeTest extends SimulationTest {
         assertEquals(EndlessMode.getHandBonus(3), 3);
         assertEquals(EndlessMode.getHandBonus(5), 5);
         assertEquals(EndlessMode.getCostReduction(5), 5);
-        assertEquals(EndlessMode.getDamageBonus(5), 10);
+        assertEquals(EndlessMode.getDamageBonus(5), 5);
         assertEquals(EndlessMode.getBazaarPriceBonus(5), 5);
     }
 
@@ -62,14 +62,14 @@ public class EndlessModeTest extends SimulationTest {
         assertTrue(trigger.contains("LifeAmount$ GE1"));
         Game game = initAndCreateGame();
         Card gameCard = Card.fromPaperCard(card, game.getPlayers().get(0));
-        assertTrue(gameCard.getSVar("TrigLifeLoss").contains("LifeAmount$ 10"));
+        assertTrue(gameCard.getSVar("TrigLifeLoss").contains("LifeAmount$ 5"));
         String displayedText = gameCard.getAbilityText();
         assertTrue(displayedText.contains("Opponents start with 25 additional life and up to 5 additional cards"));
         assertTrue(displayedText.contains("Their maximum hand size is increased by the same amount."));
         assertTrue(displayedText.contains("The Endless bonus cannot exceed 30% of their main deck size."));
         assertTrue(displayedText.contains("Spells your opponents cast cost {5} less to cast."));
-        assertTrue(displayedText.contains("it deals that much damage plus 10 instead; whenever a spell or ability"));
-        assertTrue(displayedText.contains("you lose 10 additional life."));
+        assertTrue(displayedText.contains("it deals that much damage plus 5 instead; whenever a spell or ability"));
+        assertTrue(displayedText.contains("you lose 5 additional life."));
         assertFalse(displayedText.contains("Bazaar"));
         assertFalse(displayedText.contains("<span"));
     }
@@ -172,7 +172,7 @@ public class EndlessModeTest extends SimulationTest {
             game.getReplacementHandler().runReplaceDamage(combat, damageMap,
                 new CardDamageTable(), new GameEntityCounterTable(), null);
 
-            assertEquals(damageMap.get(opponentSource, human).intValue(), 5);
+            assertEquals(damageMap.get(opponentSource, human).intValue(), 3);
             assertEquals(damageMap.get(opponentSource, opponent).intValue(), 1);
             assertEquals(damageMap.get(humanSource, human).intValue(), 1);
         }

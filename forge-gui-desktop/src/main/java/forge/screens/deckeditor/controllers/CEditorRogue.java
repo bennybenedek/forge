@@ -333,7 +333,7 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
             btnUndo.setCommand(this::undoLastRemoval);
         }
         if (btnUndo.getParent() != buttonPanel) {
-            buttonPanel.add(btnUndo, "w 12%!, h 30px!, gapx 60");
+            buttonPanel.add(btnUndo, "w 12%!, h 26px!, ay bottom, gapx 60");
         }
 
         if (btnBackToPath == null) {
@@ -342,7 +342,7 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
             btnBackToPath.setCommand(this::navigateBackToPath);
         }
         if (btnBackToPath.getParent() != buttonPanel) {
-            buttonPanel.add(btnBackToPath, "w 18%!, h 30px!, gapx 5");
+            buttonPanel.add(btnBackToPath, "w 18%!, h 26px!, ay bottom, gapx 5");
         }
 
         // Update label text and button state

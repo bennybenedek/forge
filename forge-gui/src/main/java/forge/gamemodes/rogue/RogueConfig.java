@@ -1,6 +1,5 @@
 package forge.gamemodes.rogue;
 
-import forge.CardStorageReader;
 import forge.StaticData;
 import forge.card.CardEdition;
 import forge.card.CardRarity;
@@ -20,10 +19,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Predicate;
 import org.checkerframework.checker.nullness.qual.NonNull;
+import org.tinylog.Logger;
 
 /**
  * Configuration for Rogue Commander mode.
@@ -31,6 +31,9 @@ import org.checkerframework.checker.nullness.qual.NonNull;
  * Paths are generated for each run.
  */
 public class RogueConfig {
+    private RogueConfig() {
+    }
+
     private static final Set<String> EXCLUDED_RANDOM_DRAW_SET_CODES = Set.of("UNK", "UNH");
     private static final Set<String> DEPRIORITIZED_RANDOM_PRINT_SET_CODES =
         Set.of("SLZ", "MAR", "FCA", "TLE", "PF25", "PF26", "SLD", "PSPL", "MBC", "SCH", "HOC", "PZA");
@@ -63,7 +66,7 @@ public class RogueConfig {
         CardRules.Reader rulesReader = new CardRules.Reader();
         for (File cardFile : cardFiles) {
             try (FileInputStream fis = new FileInputStream(cardFile);
-                 InputStreamReader isr = new InputStreamReader(fis, Charset.forName(CardStorageReader.DEFAULT_CHARSET_NAME))) {
+                 InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8)) {
                 rulesReader.reset();
                 List<String> lines = FileUtil.readAllLines(isr, true);
                 String name = cardFile.getName();
@@ -73,7 +76,7 @@ public class RogueConfig {
                 PaperCard card = new PaperCard(rules, CardEdition.UNKNOWN_CODE, CardRarity.Special);
                 (rules.isVariant() ? db.getVariantCards() : db.getCommonCards()).addCard(card);
             } catch (Exception e) {
-                System.err.println("Error loading rogue card " + cardFile.getName() + ": " + e.getMessage());
+                Logger.error(e, "Error loading Rogue card {}", cardFile.getName());
             }
         }
     }
@@ -87,7 +90,7 @@ public class RogueConfig {
         File commanderDir = new File(ForgeConstants.RES_DIR, "rogue/commanders");
 
         if (!commanderDir.exists() || !commanderDir.isDirectory()) {
-            System.err.println("Warning: Rogue commanders directory not found: " + commanderDir.getAbsolutePath());
+            Logger.warn("Rogue commanders directory not found: {}", commanderDir.getAbsolutePath());
             return decks;
         }
 
@@ -95,7 +98,7 @@ public class RogueConfig {
                 name.endsWith(".dck") && !name.endsWith("_rewards.dck"));
 
         if (files == null || files.length == 0) {
-            System.err.println("Warning: No commander deck files found in " + commanderDir.getAbsolutePath());
+            Logger.warn("No commander deck files found in {}", commanderDir.getAbsolutePath());
             return decks;
         }
 
@@ -106,8 +109,7 @@ public class RogueConfig {
                     decks.add(rogueDeck);
                 }
             } catch (Exception e) {
-                System.err.println("Error loading rogue deck from " + deckFile.getName() + ": " + e.getMessage());
-                e.printStackTrace();
+                Logger.error(e, "Error loading Rogue deck from {}", deckFile.getName());
             }
         }
 
@@ -125,7 +127,7 @@ public class RogueConfig {
         // Load start deck
         Deck startDeck = DeckSerializer.fromFile(deckFile);
         if (startDeck == null) {
-            System.err.println("Warning: Failed to load deck from " + deckFile.getName());
+            Logger.warn("Failed to load deck from {}", deckFile.getName());
             return null;
         }
 
@@ -212,14 +214,12 @@ public class RogueConfig {
         if (cachedGamechangerCards == null) {
             File deckFile = new File(ForgeConstants.RES_DIR, "rogue/util/gamechangers.dck");
             if (!deckFile.exists()) {
-                System.err.println("Warning: Gamechanger deck not found: "
-                    + deckFile.getAbsolutePath());
+                Logger.warn("Gamechanger deck not found: {}", deckFile.getAbsolutePath());
                 cachedGamechangerCards = List.of();
             } else {
                 Deck deck = DeckSerializer.fromFile(deckFile);
                 if (deck == null) {
-                    System.err.println("Warning: Failed to load Gamechanger deck from "
-                        + deckFile.getAbsolutePath());
+                    Logger.warn("Failed to load Gamechanger deck from {}", deckFile.getAbsolutePath());
                     cachedGamechangerCards = List.of();
                 } else {
                     cachedGamechangerCards = new ArrayList<>(deck.getMain().toFlatList());
@@ -237,14 +237,12 @@ public class RogueConfig {
         if (cachedCommanderBanlistCards == null) {
             File deckFile = new File(ForgeConstants.RES_DIR, "rogue/util/commander_banlist.dck");
             if (!deckFile.exists()) {
-                System.err.println("Warning: Commander banlist deck not found: "
-                    + deckFile.getAbsolutePath());
+                Logger.warn("Commander banlist deck not found: {}", deckFile.getAbsolutePath());
                 cachedCommanderBanlistCards = List.of();
             } else {
                 Deck deck = DeckSerializer.fromFile(deckFile);
                 if (deck == null) {
-                    System.err.println("Warning: Failed to load Commander banlist deck from "
-                        + deckFile.getAbsolutePath());
+                    Logger.warn("Failed to load Commander banlist deck from {}", deckFile.getAbsolutePath());
                     cachedCommanderBanlistCards = List.of();
                 } else {
                     cachedCommanderBanlistCards = new ArrayList<>(deck.getMain().toFlatList());
@@ -263,14 +261,14 @@ public class RogueConfig {
         File planeboundsDir = new File(ForgeConstants.RES_DIR, "rogue/planebounds");
 
         if (!planeboundsDir.exists() || !planeboundsDir.isDirectory()) {
-            System.err.println("Warning: Rogue planebounds directory not found: " + planeboundsDir.getAbsolutePath());
+            Logger.warn("Rogue planebounds directory not found: {}", planeboundsDir.getAbsolutePath());
             return planebounds;
         }
 
         File[] files = planeboundsDir.listFiles((dir, name) -> name.endsWith(".dck"));
 
         if (files == null || files.length == 0) {
-            System.err.println("Warning: No planebound deck files found in " + planeboundsDir.getAbsolutePath());
+            Logger.warn("No planebound deck files found in {}", planeboundsDir.getAbsolutePath());
             return planebounds;
         }
 
@@ -281,8 +279,7 @@ public class RogueConfig {
                     planebounds.add(planebound);
                 }
             } catch (Exception e) {
-                System.err.println("Error loading planebound from " + deckFile.getName() + ": " + e.getMessage());
-                e.printStackTrace();
+                Logger.error(e, "Error loading Planebound from {}", deckFile.getName());
             }
         }
 
@@ -297,14 +294,14 @@ public class RogueConfig {
         // Parse deck file sections
         Map<String, List<String>> sections = FileSection.parseSections(FileUtil.readFile(deckFile));
         if (sections.isEmpty()) {
-            System.err.println("Warning: Failed to parse deck file " + deckFile.getName());
+            Logger.warn("Failed to parse deck file {}", deckFile.getName());
             return null;
         }
 
         // Extract metadata section
         List<String> metadataLines = sections.get("metadata");
         if (metadataLines == null || metadataLines.isEmpty()) {
-            System.err.println("Warning: No metadata section found in " + deckFile.getName());
+            Logger.warn("No metadata section found in {}", deckFile.getName());
             return null;
         }
 
@@ -331,7 +328,7 @@ public class RogueConfig {
 
         File deckFile = new File(ForgeConstants.RES_DIR, planebound.deckPath());
         if (!deckFile.exists()) {
-            System.err.println("Warning: Planebound deck not found: " + deckFile.getAbsolutePath());
+            Logger.warn("Planebound deck not found: {}", deckFile.getAbsolutePath());
             return null;
         }
         return DeckSerializer.fromFile(deckFile);
@@ -358,7 +355,7 @@ public class RogueConfig {
     /** Random Rogue cards preferring the Commander's edition when one is supplied. */
     public static List<PaperCard> getRandomCardsForEdition(Predicate<PaperCard> filter,
             String preferredEdition) {
-        Predicate<PaperCard> eligible = card -> !hasExcludedMultiplayerText(card);
+        Predicate<PaperCard> eligible = RogueConfig::isEligibleForSingleOpponentDraw;
         Predicate<PaperCard> randomFilter = filter == null ? eligible : filter.and(eligible);
         Predicate<PaperCard> effectiveFilter = getAllFilters(randomFilter);
         return getAllCards(randomFilter).stream()
@@ -370,12 +367,12 @@ public class RogueConfig {
     public static PaperCard getNonMythicRandomPrint(PaperCard card, Predicate<PaperCard> filter,
             String preferredEdition) {
         Predicate<PaperCard> eligible = candidate -> candidate.getRarity() != CardRarity.MythicRare
-                && !hasExcludedMultiplayerText(candidate);
+                && isEligibleForSingleOpponentDraw(candidate);
         Predicate<PaperCard> randomFilter = filter == null ? eligible : filter.and(eligible);
         return findPreferredPrint(card, getAllFilters(randomFilter), preferredEdition).orElse(null);
     }
 
-    private static boolean hasExcludedMultiplayerText(PaperCard card) {
+    private static boolean isEligibleForSingleOpponentDraw(PaperCard card) {
         for (ICardFace face : card.getRules().getAllFaces()) {
             String oracleText = face.getOracleText();
             if (oracleText == null) {
@@ -388,10 +385,10 @@ public class RogueConfig {
             if (text.contains("two or more opponents") || text.contains("myriad")
                     || text.contains("melee") || text.contains("undaunted")
                     || text.contains("goad") || text.contains("assist")) {
-                return true;
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
     /**
@@ -410,8 +407,7 @@ public class RogueConfig {
                 .filter(candidate -> !candidate.hasFlavorName())
                 .min(Comparator.comparing((PaperCard candidate) ->
                             DEPRIORITIZED_RANDOM_PRINT_SET_CODES.contains(candidate.getEdition()))
-                        .thenComparing(candidate -> preferredEdition == null
-                                || !candidate.getEdition().equals(preferredEdition))
+                        .thenComparing(candidate -> !candidate.getEdition().equals(preferredEdition))
                         .thenComparing(candidate -> !candidate.getEdition().equals("CMM"))
                         .thenComparing(candidate -> !candidate.getEdition().equals("FDC"))
                         .thenComparing(candidate -> !candidate.getEdition().equals("FDN"))
@@ -497,7 +493,7 @@ public class RogueConfig {
             card = db.getCommonCards().getCard(cardName, setCode, artIndex);
         }
         if (card == null) {
-            System.err.println("Warning: Card not found: " + cardName);
+            Logger.warn("Card not found: {}", cardName);
             // Return a basic land as fallback
             return db.getCommonCards().getCard("Plain");
         }

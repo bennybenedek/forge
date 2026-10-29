@@ -28,7 +28,7 @@ public enum EndlessMode implements RogueEffect {
     }
 
     public static int getDamageBonus(int level) {
-        return 2 * level;
+        return level;
     }
 
     public static int getBazaarPriceBonus(int level) {
@@ -38,7 +38,7 @@ public enum EndlessMode implements RogueEffect {
     public static String getModifiersDescription(int level) {
         return "<html>Opponents start with +" + getLifeBonus(level) + " Life.<br>"
             + "They get up to +" + getHandBonus(level) + " opening cards and maximum hand size"
-            + " (Endless bonus capped at 30% of their main deck size).<br>"
+            + " (capped at 30% of their main deck size).<br>"
             + "Their spells cost {" + getCostReduction(level) + "} less.<br>"
             + "Their sources deal +" + getDamageBonus(level) + " damage to you.<br>"
             + "Whenever their spells or abilities make you lose life, you lose "
