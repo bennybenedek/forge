@@ -348,15 +348,6 @@ class NodeBazaarHelper {
             addTraitOffer(offers, effect, price);
         }
 
-        Set<String> activeNpcEffectIds = getActiveEffectIds(currentRun.getActiveNPCEffects());
-        for (NPCEffect effect : NPCEffect.values()) {
-            if (effect.getEffectType() != RogueEffect.EffectType.PERMANENT
-                || activeNpcEffectIds.contains(effect.getId())) {
-                continue;
-            }
-            addTraitOffer(offers, effect, price);
-        }
-
         Collections.shuffle(offers, MyRandom.getRandom());
         for (int i = 0; i < Math.min(offerCount, offers.size()); i++) {
             inventory.add(offers.get(i));

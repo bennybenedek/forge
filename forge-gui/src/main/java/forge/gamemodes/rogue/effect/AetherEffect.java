@@ -25,6 +25,11 @@ public enum AetherEffect implements RogueEffect {
             int bonus = getEffectValueAtRank(run.getRunEffectRank(getId()));
             if (bonus > 0) run.addMaxLife(bonus);
         }
+
+        @Override
+        public boolean appliesOnRunStart(RogueRun run) {
+            return run.getEndlessLevel() == 0;
+        }
     },
 
     AETHER_EXCHANGE("aether_exchange", "Aether Exchange",

@@ -50,7 +50,11 @@ public enum RogueEffectComposite implements RogueEffect {
 
     @Override
     public void onRunStart(RogueRun run) {
-        forEachEffect(run, e -> e.onRunStart(run));
+        forEachEffect(run, e -> {
+            if (e.appliesOnRunStart(run)) {
+                e.onRunStart(run);
+            }
+        });
     }
 
     @Override

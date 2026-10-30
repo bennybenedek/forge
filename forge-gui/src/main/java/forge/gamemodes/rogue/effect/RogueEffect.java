@@ -208,7 +208,10 @@ public interface RogueEffect {
     /** Fired once immediately for ONESHOT effects. May also grant or mutate run state. */
     default void applyEffect(RogueRun run, EffectResultContext ctx) {}
 
-    /** Fired once when a new run is created. Adjust starting life, gold, etc. */
+    /** Whether this effect applies at the current run-start trigger. */
+    default boolean appliesOnRunStart(RogueRun run) { return true; }
+
+    /** Fired when a new run or Endless Trail starts. Adjust starting life, gold, etc. */
     default void onRunStart(RogueRun run) {}
 
     /** Fired after path generation. Modify nodes via run.getPath().getNodes(). */
