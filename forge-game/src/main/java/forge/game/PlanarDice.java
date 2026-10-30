@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import forge.game.ability.AbilityKey;
 import forge.game.ability.effects.ChaosEnsuesEffect;
 import forge.game.event.GameEventAddLog;
+import forge.game.event.GameEventRollDie;
 import forge.game.player.Player;
 import forge.game.replacement.ReplacementType;
 import forge.game.trigger.TriggerType;
@@ -73,6 +74,7 @@ public enum PlanarDice {
             }
         }
 
+        game.fireEvent(new GameEventRollDie(res));
         game.fireEvent(new GameEventAddLog(GameLogEntryType.STACK_RESOLVE,
                 roller + " rolled the planar die with result " + res + "."));
 

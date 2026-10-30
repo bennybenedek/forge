@@ -5,7 +5,6 @@ import forge.game.PlanarDice;
 import forge.game.ability.AbilityUtils;
 import forge.game.ability.SpellAbilityEffect;
 import forge.game.cost.Cost;
-import forge.game.event.GameEventRollDie;
 import forge.game.player.Player;
 import forge.game.spellability.SpellAbility;
 import forge.game.trigger.Trigger;
@@ -32,8 +31,7 @@ public class RollPlanarDiceEffect extends SpellAbilityEffect {
         if (sa.hasParam("SpecialAction")) {
             game.getPhaseHandler().incPlanarDiceSpecialActionThisTurn();
         }
-        final PlanarDice result = PlanarDice.roll(activator, null);
-        game.fireEvent(new GameEventRollDie(result));
+        PlanarDice.roll(activator, null);
 
         if (sa.hasParam("QueueAdditionalRolls")) {
             queueAdditionalRoll(sa, activator);

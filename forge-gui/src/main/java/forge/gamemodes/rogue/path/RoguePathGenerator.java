@@ -159,9 +159,60 @@ public class RoguePathGenerator {
 
         // Create path and set on run
         run.setPath(new RoguePath(nodes));
+        ensureSideNodeTypes(run.getPath(), events, chestEffect);
 
         // Apply post-generation effects (e.g. swap Normal nodes to Elite)
         RogueEffectComposite.INSTANCE.afterPathGeneration(run);
+    }
+
+    static void ensureSideNodeTypes(RoguePath path, List<RogueEvent> events,
+                                    List<ChestEffect> chestEffects) {
+        List<Class<? extends RoguePathNode>> sideTypes = List.of(
+            NodeBazaar.class, NodeSanctum.class, NodeEvent.class, NodeChest.class);
+
+        for (Class<? extends RoguePathNode> missingType : sideTypes) {
+            if (path.getNodes().stream().anyMatch(missingType::isInstance)) {
+                continue;
+            }
+
+            RoguePathNode donor = chooseMostCommonSideNode(path, sideTypes);
+            path.replaceNodes(node -> node == donor,
+                () -> createSideNode(missingType, events, chestEffects));
+        }
+    }
+
+    private static RoguePathNode chooseMostCommonSideNode(RoguePath path,
+            List<Class<? extends RoguePathNode>> sideTypes) {
+        List<List<RoguePathNode>> groups = sideTypes.stream()
+            .map(type -> path.getNodes().stream().filter(type::isInstance).toList())
+            .toList();
+        int highestCount = groups.stream().mapToInt(List::size).max().orElse(0);
+        if (highestCount < 2) {
+            throw new IllegalStateException("Not enough side nodes to include every type.");
+        }
+
+        List<RoguePathNode> donors = groups.stream()
+            .filter(group -> group.size() == highestCount)
+            .flatMap(List::stream)
+            .toList();
+        return donors.get(MyRandom.getRandom().nextInt(donors.size()));
+    }
+
+    private static RoguePathNode createSideNode(Class<? extends RoguePathNode> type,
+            List<RogueEvent> events, List<ChestEffect> chestEffects) {
+        if (type == NodeBazaar.class) {
+            return new NodeBazaar();
+        }
+        if (type == NodeSanctum.class) {
+            return new NodeSanctum();
+        }
+        if (type == NodeEvent.class) {
+            return new NodeEvent(events.get(0));
+        }
+        if (type == NodeChest.class) {
+            return new NodeChest(List.of(chestEffects.get(0), chestEffects.get(1)));
+        }
+        throw new IllegalArgumentException("Unsupported side node type: " + type);
     }
 
     private static void validateSize(int required, int size) {
