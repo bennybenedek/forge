@@ -111,6 +111,7 @@ public enum VSubmenuRogueCodex implements IVSubmenu<CSubmenuRogueCodex> {
   private final FLabel lblMaxLife = new FLabel.Builder().text("Max Life Reached: 0").fontSize(14).build();
   private final FLabel lblMaxGold = new FLabel.Builder().text("Max Gold Earned: 0").fontSize(14).build();
   private final FLabel lblMaxCreatureTypes = new FLabel.Builder().text("Max Creature Types: 0").fontSize(14).build();
+  private final FLabel lblMaxArtifacts = new FLabel.Builder().text("Max Artifacts: 0").fontSize(14).build();
   private final FLabel lblMaxSharedCreatureType = new FLabel.Builder().text("Max Shared Creature Type: 0").fontSize(14).build();
   private final FLabel lblMaxLegendaryPermanents = new FLabel.Builder().text("Max Legendary Permanents: 0").fontSize(14).build();
   private final FLabel lblMaxNonbasicLands = new FLabel.Builder().text("Max Nonbasic Lands: 0").fontSize(14).build();
@@ -146,7 +147,7 @@ public enum VSubmenuRogueCodex implements IVSubmenu<CSubmenuRogueCodex> {
 
   public void updateDisplay(int runsStarted, int runsCompleted, int runsWon,
       int matchesWon, int matchesLost,
-      int maxLife, int maxGold, int maxCreatureTypes, int maxSharedCreatureType,
+      int maxLife, int maxGold, int maxCreatureTypes, int maxArtifacts, int maxSharedCreatureType,
       int maxLegendaryPermanents, int maxNonbasicLands) {
     lblRunsStarted.setText("Runs Started: " + runsStarted);
     lblRunsCompleted.setText("Runs Completed: " + runsCompleted);
@@ -157,6 +158,7 @@ public enum VSubmenuRogueCodex implements IVSubmenu<CSubmenuRogueCodex> {
     lblMaxLife.setText("Max Life Reached: " + maxLife);
     lblMaxGold.setText("Max Gold Earned: " + maxGold);
     lblMaxCreatureTypes.setText("Max Creature Types: " + maxCreatureTypes);
+    lblMaxArtifacts.setText("Max Artifacts: " + maxArtifacts);
     lblMaxSharedCreatureType.setText("Max Shared Creature Type: " + maxSharedCreatureType);
     lblMaxLegendaryPermanents.setText("Max Legendary Permanents: " + maxLegendaryPermanents);
     lblMaxNonbasicLands.setText("Max Nonbasic Lands: " + maxNonbasicLands);
@@ -304,6 +306,7 @@ public enum VSubmenuRogueCodex implements IVSubmenu<CSubmenuRogueCodex> {
     panel.add(lblMaxLife);
     panel.add(lblMaxGold);
     panel.add(lblMaxCreatureTypes);
+    panel.add(lblMaxArtifacts);
     panel.add(lblMaxSharedCreatureType);
     panel.add(lblMaxLegendaryPermanents);
     panel.add(lblMaxNonbasicLands, "gapbottom 20");

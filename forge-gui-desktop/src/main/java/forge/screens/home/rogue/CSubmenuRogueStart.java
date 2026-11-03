@@ -30,7 +30,7 @@ import java.util.Set;
 import javax.swing.SwingUtilities;
 
 /**
- * Controls the Rogue Commander start screen. Handles commander selection via card grid and new run
+ * Controls the Rogue Commander start screen. Handles commander selection via card carousel and new run
  * creation.
  */
 public enum CSubmenuRogueStart implements ICDoc {
@@ -61,6 +61,8 @@ public enum CSubmenuRogueStart implements ICDoc {
     view.getChkDescension().addItemListener(e -> onDescensionToggled());
     view.getBtnDescensionDown().addActionListener(e -> changeDescensionLevel(-1));
     view.getBtnDescensionUp().addActionListener(e -> changeDescensionLevel(1));
+    view.getBtnCommanderPrevious().setCommand(() -> selectAdjacentCommander(-1));
+    view.getBtnCommanderNext().setCommand(() -> selectAdjacentCommander(1));
     if (ForgePreferences.DEV_MODE) {
       view.getBtnDevUnlockAll().addActionListener(e -> devToggleUnlockAll());
       view.getBtnDevNPCProgress().addActionListener(e -> devEditNPCProgress());
@@ -153,7 +155,7 @@ public enum CSubmenuRogueStart implements ICDoc {
         .thenComparing(RogueDeck::getName));
 
     // Clear existing commander panels
-    view.getCommanderGridPanel().clear();
+    view.getCommanderCarouselPanel().clear();
 
     // Create card panel for each commander
     CommanderCardPanel firstUnlockedPanel = null;
@@ -164,7 +166,7 @@ public enum CSubmenuRogueStart implements ICDoc {
       // Set selection callback to update details and handle single-selection
       cardPanel.setSelectionCallback(this::onCommanderSelected);
 
-      view.getCommanderGridPanel().addCommanderPanel(cardPanel);
+      view.getCommanderCarouselPanel().addCommanderPanel(cardPanel);
 
       // Track first unlocked commander
       if (firstUnlockedPanel == null && !cardPanel.isLocked()) {
@@ -180,17 +182,24 @@ public enum CSubmenuRogueStart implements ICDoc {
     requestHiddenCardImageForLockedPanels();
 
     // Restore previous commander selection when returning to this view; otherwise use first unlocked.
-    CommanderCardPanel panelToSelect = previousCommanderPanel != null ? previousCommanderPanel : firstUnlockedPanel;
+    CommanderCardPanel panelToSelect = previousCommanderPanel != null ? previousCommanderPanel
+        : firstUnlockedPanel != null ? firstUnlockedPanel
+        : view.getCommanderPanels().isEmpty() ? null : view.getCommanderPanels().get(0);
     if (panelToSelect != null) {
-      panelToSelect.setSelected(true);
-      selectedDeck = panelToSelect.getCommander();
-      selectedDescensionLevel = previousDescensionLevel;
+      view.getCommanderCarouselPanel().centerOn(panelToSelect);
+      panelToSelect.setSelected(!panelToSelect.isLocked());
+      panelToSelect.setHighlighted(panelToSelect.isLocked());
+      selectedDeck = panelToSelect.isLocked() ? null : panelToSelect.getCommander();
+      selectedDescensionLevel = panelToSelect.isLocked() ? 0 : previousDescensionLevel;
       updateCommanderDetails(panelToSelect);
-      updateDescensionVisibility(panelToSelect, previousCommanderPanel != null);
+      updateDescensionVisibility(panelToSelect.isLocked() ? null : panelToSelect,
+          previousCommanderPanel != null);
     } else {
       selectedDeck = null;
       updateDescensionVisibility(null, true);
     }
+    view.getBtnCommanderPrevious().setEnabled(view.getCommanderPanels().size() > 1);
+    view.getBtnCommanderNext().setEnabled(view.getCommanderPanels().size() > 1);
     updateStartButtonState();
 
     // Update button states - locked until first run completed
@@ -206,8 +215,8 @@ public enum CSubmenuRogueStart implements ICDoc {
         .setToolTipText(hasCompletedRuns ? null : "Unlock Codex by completing your first Run.");
 
     // Refresh layout
-    view.getCommanderGridPanel().revalidate();
-    view.getCommanderGridPanel().repaint();
+    view.getCommanderCarouselPanel().revalidate();
+    view.getCommanderCarouselPanel().repaint();
   }
 
   private void requestHiddenCardImageForLockedPanels() {
@@ -230,7 +239,21 @@ public enum CSubmenuRogueStart implements ICDoc {
     }
   }
 
+  private void selectAdjacentCommander(int direction) {
+    List<CommanderCardPanel> panels = view.getCommanderPanels();
+    if (panels.isEmpty()) {
+      return;
+    }
+    int centeredIndex = panels.indexOf(view.getCommanderCarouselPanel().getCenteredPanel());
+    onCommanderSelected(panels.get(Math.floorMod(centeredIndex + direction, panels.size())));
+  }
+
   private void onCommanderSelected(CommanderCardPanel clickedPanel) {
+    if (clickedPanel == view.getCommanderCarouselPanel().getCenteredPanel()
+        && (clickedPanel.isSelected() || clickedPanel.isHighlighted())) {
+      return;
+    }
+    view.getCommanderCarouselPanel().centerOn(clickedPanel);
     // For locked commanders, just show details but don't select
     if (clickedPanel.isLocked()) {
       // Deselect and unhighlight all panels, then highlight clicked
@@ -253,31 +276,15 @@ public enum CSubmenuRogueStart implements ICDoc {
       }
     }
 
-    // Toggle the clicked panel
-    boolean newState = !clickedPanel.isSelected();
-    clickedPanel.setSelected(newState);
-
-    // Update selected deck and button state
-    if (newState) {
-      selectedDeck = clickedPanel.getCommander();
-      updateCommanderDetails(clickedPanel);
-      updateDescensionVisibility(clickedPanel, view.getChkCustomRuns().isSelected());
-    } else {
-      // If deselecting, clear details
-      selectedDeck = null;
-      view.getLblCommanderName().setText("");
-      view.getLblDescriptionLabel().setText("Description:");
-      view.getLblDescriptionLock().setVisible(false);
-      view.getTxtDescription().setText("");
-      view.getTxtTheme().setText("");
-      updateDescensionVisibility(null, true);
-    }
+    clickedPanel.setSelected(true);
+    selectedDeck = clickedPanel.getCommander();
+    updateCommanderDetails(clickedPanel);
+    updateDescensionVisibility(clickedPanel, view.getChkCustomRuns().isSelected());
     updateStartButtonState();
   }
 
   private void onCustomRunsToggled() {
     boolean custom = view.getChkCustomRuns().isSelected();
-    view.setCustomModificationsVisible(custom);
     if (!custom) {
       updatingCustomModUi = true;
       for (CustomRunModification modification : CustomRunModification.values()) {
@@ -295,6 +302,7 @@ public enum CSubmenuRogueStart implements ICDoc {
         .findFirst().orElse(null);
     updateDescensionVisibility(selectedPanel, true);
     updateStartButtonState();
+    view.setCustomModificationsVisible(custom);
   }
 
   private void onCustomModificationToggled(CustomRunModification modification) {

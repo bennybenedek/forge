@@ -122,6 +122,15 @@ public class CommanderCardPanel extends SkinnedPanel {
   }
 
   @Override
+  public void setVisible(boolean visible) {
+    if (!visible) {
+      hovered = false;
+      setCursor(Cursor.getDefaultCursor());
+    }
+    super.setVisible(visible);
+  }
+
+  @Override
   public void doLayout() {
     // Make card picture fill the panel
     cardPicture.setBounds(0, 0, getWidth(), getHeight());

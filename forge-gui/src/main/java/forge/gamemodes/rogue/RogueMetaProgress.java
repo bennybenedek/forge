@@ -466,6 +466,10 @@ public class RogueMetaProgress {
         return getStatValue(RogueStats.CREATURE_TYPES.getConditionKey());
     }
 
+    public int getMaxArtifactsInDeck() {
+        return getStatValue(RogueStats.MAX_ARTIFACTS.getConditionKey());
+    }
+
     public int getMaxSharedCreatureTypeInDeck() {
         return getStatValue(RogueStats.MAX_SHARED_CREATURE_TYPE.getConditionKey());
     }

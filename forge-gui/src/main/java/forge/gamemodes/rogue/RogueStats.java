@@ -48,6 +48,24 @@ public enum RogueStats {
             p.updateStat(this, evaluate(run, p), run);
         }
     },
+    MAX_ARTIFACTS("MaxArtifacts", "Have %s+ artifacts in your deck.") {
+        @Override public int evaluate(RogueRun run, RogueMetaProgress p) {
+            if (run.getCurrentDeck() == null || run.getCurrentDeck().getMain() == null) return 0;
+            int count = 0;
+            for (PaperCard card : run.getCurrentDeck().getMain().toFlatList()) {
+                if (card.getRules().getType().isArtifact()) {
+                    count++;
+                }
+            }
+            return count;
+        }
+        @Override public void onMatchCompleted(RogueRun run, RogueMetaProgress p, boolean won) {
+            p.updateStat(this, evaluate(run, p), run);
+        }
+        @Override public void onSideNodeCompleted(RogueRun run, RogueMetaProgress p) {
+            p.updateStat(this, evaluate(run, p), run);
+        }
+    },
     MAX_SHARED_CREATURE_TYPE("MaxSharedCreatureType", "Have %s+ creatures that share a creature type in your deck.") {
         @Override public int evaluate(RogueRun run, RogueMetaProgress p) {
             if (run.getCurrentDeck() == null || run.getCurrentDeck().getMain() == null) return 0;
