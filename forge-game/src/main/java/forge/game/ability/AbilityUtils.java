@@ -3260,7 +3260,7 @@ public class AbilityUtils {
             return num;
         }
 
-        final String[] s = operators.split("\\.");
+        final String[] s = operators.split("\\.", 2);
         int secondaryNum = 0;
 
         try {
@@ -3522,6 +3522,13 @@ public class AbilityUtils {
         //SacrificedPermanentTypesThisTurn
         if (l[0].startsWith("SacrificedPermanentTypesThisTurn")) {
             return doXMath(countCardTypesFromList(player.getSacrificedThisTurn(), true), m, source, ctb);
+        }
+
+        //LandsPlayed <type>
+        if (l[0].startsWith("LandsPlayed ")) {
+            String restrictions = l[0].substring("LandsPlayed ".length());
+            List<Card> list = CardLists.getValidCardsAsList(player.getPlayedLandsThisTurn(), restrictions, player, source, ctb);
+            return doXMath(list.size(), m, source, ctb);
         }
 
         final String[] sq = l[0].split("\\.");

@@ -8,6 +8,7 @@ import forge.card.ColorSet;
 import forge.card.MagicColor;
 import forge.deck.Deck;
 import forge.deck.DeckBase;
+import forge.deck.DeckStatistics;
 import forge.game.GameType;
 import forge.gui.framework.ICDoc;
 import forge.item.InventoryItem;
@@ -154,6 +155,12 @@ public enum CStatistics implements ICDoc {
             Localizer.getInstance().getMessage("lblAverageManaCostWithoutLands").toUpperCase(), amcNoLands));
         VStatistics.SINGLETON_INSTANCE.getLblExpectedLands().setText(String.format("%s: %.2f",
             Localizer.getInstance().getMessage("lblExpectedLands").toUpperCase(), expectedLands));
+        final DeckController<TModel> controller = ed.getDeckController();
+        final DeckBase model = controller == null ? null : controller.getModel();
+        final Deck wholeDeck = model == null ? null : model.getHumanDeck();
+        final String points = wholeDeck == null ? null : DeckStatistics.pointsSummary(wholeDeck);
+        VStatistics.SINGLETON_INSTANCE.getLblPoints().setText(points == null ? "" : points.toUpperCase());
+        VStatistics.SINGLETON_INSTANCE.getLblPoints().setVisible(points != null);
     }
 
     /**

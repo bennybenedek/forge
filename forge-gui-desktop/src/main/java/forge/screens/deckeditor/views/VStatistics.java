@@ -43,13 +43,15 @@ public enum VStatistics implements IVDoc<CStatistics> {
             .tooltip(Localizer.getInstance().getMessage("lblAverageManaCost"))
             .fontStyle(Font.BOLD).fontSize(11).fontStyle(Font.BOLD).build();
     private FLabel lblAMCWithoutLands = new FLabel.Builder()
-        .text(String.format("%s: 0.00", Localizer.getInstance().getMessage("lblAverageManaCost").toUpperCase()))
-        .tooltip(Localizer.getInstance().getMessage("lblAverageManaCost"))
+        .text(String.format("%s: 0.00", Localizer.getInstance().getMessage("lblAverageManaCostWithoutLands").toUpperCase()))
+        .tooltip(Localizer.getInstance().getMessage("lblAverageManaCostWithoutLands"))
         .fontStyle(Font.BOLD).fontSize(11).fontStyle(Font.BOLD).build();
     private FLabel lblExpectedLands = new FLabel.Builder()
             .text(String.format("%s: 0.00", Localizer.getInstance().getMessage("lblExpectedLands").toUpperCase()))
             .tooltip(Localizer.getInstance().getMessage("lblExpectedLands"))
             .fontStyle(Font.BOLD).fontSize(11).fontStyle(Font.BOLD).build();
+    private FLabel lblPoints = new FLabel.Builder()
+            .fontStyle(Font.BOLD).fontSize(11).build();
     private FLabel lblCardCountHeader = new FLabel.Builder()
             .text(Localizer.getInstance().getMessage("lblCardByColorTypeCMC")).tooltip(Localizer.getInstance().getMessage("lblBreakdownOfColorTypeCMC"))
             .fontStyle(Font.BOLD).fontSize(11).fontStyle(Font.BOLD).build();
@@ -162,6 +164,8 @@ public enum VStatistics implements IVDoc<CStatistics> {
         pnlStats.add(lblAMC, "w 96%!, h 20px!, span 3 1, gap 2% 0 0 0");
         pnlStats.add(lblAMCWithoutLands, "w 96%!, h 20px!, span 3 1, gap 2% 0 0 0");
         pnlStats.add(lblExpectedLands, "w 96%!, h 20px!, span 3 1, gap 2% 0 0 0");
+        lblPoints.setVisible(false);
+        pnlStats.add(lblPoints, "w 96%!, h 20px!, span 3 1, gap 2% 0 0 0, hidemode 3");
 
         // Add labels to container
         final String constraints = "w 32%!, h 35px!";
@@ -340,6 +344,7 @@ public enum VStatistics implements IVDoc<CStatistics> {
     public FLabel getLblAMCWithoutLands() { return lblAMCWithoutLands; }
     /** @return {@link forge.toolbox.FLabel} */
     public FLabel getLblExpectedLands() { return lblExpectedLands; }
+    public FLabel getLblPoints() { return lblPoints; }
 
     //========== Other methods
 
