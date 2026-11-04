@@ -3,6 +3,7 @@ package forge.ai.ability;
 
 import forge.ai.*;
 import forge.card.MagicColor;
+import forge.game.ability.AbilityFactory;
 import forge.game.ability.AbilityUtils;
 import forge.game.ability.ApiType;
 import forge.game.card.Card;
@@ -95,6 +96,16 @@ public class RollPlanarDiceAi extends SpellAbilityAi {
                         int minimumCount = zoneAndValidity.length > 2 ? Integer.parseInt(zoneAndValidity[2].trim()) : 1;
                         if ((zone != ZoneType.Battlefield && zone != ZoneType.Graveyard)
                                 || CardLists.getValidCards(ai.getGame().getCardsIn(zone), zoneAndValidity[1].trim(), ai, plane, sa).size() < minimumCount) {
+                            return false;
+                        }
+                        break;
+                    case "hasvalidopponenttarget":
+                        String abilityName = param.substring(param.indexOf('$') + 1).trim();
+                        SpellAbility targetAbility = AbilityFactory.getAbility(plane, abilityName);
+                        targetAbility.setActivatingPlayer(ai);
+                        if (!targetAbility.usesTargeting() || targetAbility.getTargetRestrictions().getAllCandidates(targetAbility).stream()
+                                .noneMatch(target -> target instanceof Player && ((Player) target).isOpponentOf(ai)
+                                        || target instanceof Card && ((Card) target).getController().isOpponentOf(ai))) {
                             return false;
                         }
                         break;

@@ -158,7 +158,8 @@ public enum CStatistics implements ICDoc {
         final DeckController<TModel> controller = ed.getDeckController();
         final DeckBase model = controller == null ? null : controller.getModel();
         final Deck wholeDeck = model == null ? null : model.getHumanDeck();
-        final String points = wholeDeck == null ? null : DeckStatistics.pointsSummary(wholeDeck);
+        final String points = gameType == GameType.RogueCommander || wholeDeck == null
+                ? null : DeckStatistics.pointsSummary(wholeDeck);
         VStatistics.SINGLETON_INSTANCE.getLblPoints().setText(points == null ? "" : points.toUpperCase());
         VStatistics.SINGLETON_INSTANCE.getLblPoints().setVisible(points != null);
     }
