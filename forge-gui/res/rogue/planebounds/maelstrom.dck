@@ -14,7 +14,8 @@ type=1
 1 Birds of Paradise|GK2|1
 1 Bloodbraid Elf|M3C|1
 1 Bountiful Landscape|MH3|1
-1 Breeding Pool|PEOE|1
+1 Breeding Pool|EOE|1
+1 Chaos Warp|FDC|1
 1 Cinder Glade|M3C|1
 1 Command Tower|CMR|1
 1 Cultivate|CMR|1
@@ -26,7 +27,6 @@ type=1
 3 Forest|CMR|1
 1 Frontier Bivouac|CMM|1
 1 Garruk's Uprising|FDN|1
-1 Genesis Ultimatum|IKO|1
 1 Goreclaw, Terror of Qal Sisma|CMM|1
 1 Gwenna, Eyes of Gaea|BRO|1
 1 Imoti, Celebrant of Bounty|CMR|1
@@ -37,7 +37,6 @@ type=1
 1 Rootbound Crag|ECC|1
 1 Sakashima's Protege|CMR|1
 1 Selvala, Heart of the Wilds|CMM|1
-1 Sol Ring|CMR|1
 1 Somberwald Sage|INR|1
 1 Steam Vents|ECL|1
 1 Stomping Ground|EOE|1
@@ -45,4 +44,5 @@ type=1
 1 Temur Ascendancy|TDC|1
 1 Temur Battlecrier|TDM|1
 1 Thryx, the Sudden Storm|CMM|1
+1 Volcanic Torrent|CMR|1
 1 Wooded Foothills|MH3|1
