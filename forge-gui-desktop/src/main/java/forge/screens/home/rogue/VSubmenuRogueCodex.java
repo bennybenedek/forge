@@ -8,6 +8,7 @@ import forge.gamemodes.rogue.RogueDeck;
 import forge.gamemodes.rogue.RogueMetaProgress;
 import forge.gamemodes.rogue.RoguePlanebound;
 import forge.gamemodes.rogue.RoguePlaneboundType;
+import forge.gamemodes.rogue.TextHelper;
 import forge.gamemodes.rogue.effect.RogueEffect;
 import forge.gui.GuiBase;
 import forge.gui.framework.DragCell;
@@ -106,6 +107,7 @@ public enum VSubmenuRogueCodex implements IVSubmenu<CSubmenuRogueCodex> {
   private final FLabel lblRunsCompleted = new FLabel.Builder().text("Runs Completed: 0").fontSize(14).build();
   private final FLabel lblRunsWon = new FLabel.Builder().text("Runs Won: 0").fontSize(14).build();
   private final FLabel lblRunsLost = new FLabel.Builder().text("Runs Lost: 0").fontSize(14).build();
+  private final FLabel lblTotalPlaytime = new FLabel.Builder().text("Total Playtime: 00:00:00").fontSize(14).build();
   private final FLabel lblMatchesWon = new FLabel.Builder().text("Matches Won: 0").fontSize(14).build();
   private final FLabel lblMatchesLost = new FLabel.Builder().text("Matches Lost: 0").fontSize(14).build();
   private final FLabel lblMaxLife = new FLabel.Builder().text("Max Life Reached: 0").fontSize(14).build();
@@ -145,7 +147,7 @@ public enum VSubmenuRogueCodex implements IVSubmenu<CSubmenuRogueCodex> {
     btnResetTutorials.setIcon(FSkin.getImage(FSkinProp.ICO_QUEST_BOOK).resize(24, 24).getIcon());
   }
 
-  public void updateDisplay(int runsStarted, int runsCompleted, int runsWon,
+  public void updateDisplay(int runsStarted, int runsCompleted, int runsWon, long totalPlaytimeMillis,
       int matchesWon, int matchesLost,
       int maxLife, int maxGold, int maxCreatureTypes, int maxArtifacts, int maxSharedCreatureType,
       int maxLegendaryPermanents, int maxNonbasicLands) {
@@ -153,6 +155,7 @@ public enum VSubmenuRogueCodex implements IVSubmenu<CSubmenuRogueCodex> {
     lblRunsCompleted.setText("Runs Completed: " + runsCompleted);
     lblRunsWon.setText("Runs Won: " + runsWon);
     lblRunsLost.setText("Runs Lost: " + (runsCompleted - runsWon));
+    lblTotalPlaytime.setText("Total Playtime: " + TextHelper.formatHoursMinutesSeconds(totalPlaytimeMillis));
     lblMatchesWon.setText("Matches Won: " + matchesWon);
     lblMatchesLost.setText("Matches Lost: " + matchesLost);
     lblMaxLife.setText("Max Life Reached: " + maxLife);
@@ -293,6 +296,7 @@ public enum VSubmenuRogueCodex implements IVSubmenu<CSubmenuRogueCodex> {
     panel.setOpaque(false);
 
     addSectionLabel(panel, "Run Statistics");
+    panel.add(lblTotalPlaytime);
     panel.add(lblRunsStarted);
     panel.add(lblRunsCompleted);
     panel.add(lblRunsWon);

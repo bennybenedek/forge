@@ -18,6 +18,12 @@ public enum RogueSaveMigration {
             // A run does not record its starting Aether Upgrade level, so retain rank 3.
             run.capAetherEffectRank(AetherEffect.TOLARIAN_ARCHIVE, 3);
         }
+    },
+    TOTAL_PLAYTIME(2) {
+        @Override
+        void migrateMetaProgress(RogueMetaProgress progress) {
+            progress.backfillTotalPlaytime();
+        }
     };
 
     private final int version;

@@ -83,6 +83,7 @@ public class RogueMetaProgress {
 
     // Run history
     private List<RogueRunHistoryEntry> runHistory;
+    private long totalPlaytimeMillis;
 
     // Dev-only: bypass all commander unlock checks (not serialized)
     private transient boolean devUnlockAll;
@@ -154,6 +155,7 @@ public class RogueMetaProgress {
 
         // Reset run history
         runHistory = new ArrayList<>();
+        totalPlaytimeMillis = 0;
 
         // Note: Tutorials are NOT reset here - use resetTutorials() separately
         save();
@@ -834,11 +836,22 @@ public class RogueMetaProgress {
         return runHistory;
     }
 
+    public long getTotalPlaytimeMillis() {
+        return totalPlaytimeMillis;
+    }
+
+    void backfillTotalPlaytime() {
+        totalPlaytimeMillis = getRunHistory().stream()
+            .mapToLong(entry -> Math.max(0, entry.getRunTimeMillis()))
+            .sum();
+    }
+
     public void addRunHistoryEntry(RogueRunHistoryEntry entry) {
         if (runHistory == null) {
             runHistory = new ArrayList<>();
         }
         runHistory.add(entry);
+        totalPlaytimeMillis += Math.max(0, entry.getRunTimeMillis());
         save();
     }
 

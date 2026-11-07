@@ -59,6 +59,7 @@ public enum CSubmenuRogueCodex implements ICDoc {
         progress.getTotalRunsStarted(),
         progress.getTotalRunsCompleted(),
         progress.getTotalRunsWon(),
+        progress.getTotalPlaytimeMillis(),
         progress.getTotalMatchesWon(),
         progress.getTotalMatchesLost(),
         progress.getMaxLifeInRun(),
