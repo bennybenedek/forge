@@ -313,7 +313,7 @@ public enum NPCEffect implements RogueEffect {
         }
     },
     NARSET_PASSAGE("npc_narset_passage", "Narset's Passage",
-        TRAIT_GAIN_DESCRIPTION + " Gain a random {{Wound}}. ![[Rogue's Passage|FDN|1]]", NPC.NARSET,
+        TRAIT_GAIN_DESCRIPTION + " Gain a random {{Wound}}. ![[Rogue's Passage|FDC|1]]", NPC.NARSET,
         EffectType.PERMANENT, "Narset Trait - Narset's Passage") {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
@@ -323,12 +323,12 @@ public enum NPCEffect implements RogueEffect {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
-            RogueEffect.addCardToBattlefield("Rogue's Passage|CMM|1", human);
+            RogueEffect.addCardToBattlefield("Rogue's Passage|FDC|1", human);
         }
 
         @Override
         public List<String> getDuplicateProtectedCardReferences() {
-            return List.of("Rogue's Passage|CMM|1");
+            return List.of("Rogue's Passage|FDC|1");
         }
 
         @Override
@@ -665,7 +665,7 @@ public enum NPCEffect implements RogueEffect {
         }
     },
     TYVAR_BEACON("npc_tyvar_beacon", "Tyvar's Beacon",
-        TRAIT_GAIN_DESCRIPTION + " Gain a random {{Wound}}. ![[Command Beacon]]", NPC.TYVAR,
+        TRAIT_GAIN_DESCRIPTION + " Gain a random {{Wound}}. ![[Command Beacon|OTC|1]]", NPC.TYVAR,
         EffectType.PERMANENT, "Tyvar Trait - Tyvar's Beacon") {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
@@ -675,7 +675,7 @@ public enum NPCEffect implements RogueEffect {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
-            RogueEffect.addCardToBattlefield("Command Beacon", human);
+            RogueEffect.addCardToBattlefield("Command Beacon|OTC|1", human);
         }
 
         @Override
@@ -684,7 +684,7 @@ public enum NPCEffect implements RogueEffect {
         }
     },
     TYVAR_PALACE("npc_tyvar_palace", "Tyvar's Palace",
-        TRAIT_GAIN_DESCRIPTION + " Gain a random {{Wound}}. ![[Opal Palace]]", NPC.TYVAR,
+        TRAIT_GAIN_DESCRIPTION + " Gain a random {{Wound}}. ![[Opal Palace|SOC|1]]", NPC.TYVAR,
         EffectType.PERMANENT, "Tyvar Trait - Tyvar's Palace") {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
@@ -694,7 +694,7 @@ public enum NPCEffect implements RogueEffect {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
-            RogueEffect.addCardToBattlefield("Opal Palace", human);
+            RogueEffect.addCardToBattlefield("Opal Palace|SOC|1", human);
         }
 
         @Override
@@ -703,7 +703,7 @@ public enum NPCEffect implements RogueEffect {
         }
     },
     TYVAR_SANCTUM("npc_tyvar_sanctum", "Tyvar's Sanctum",
-        TRAIT_GAIN_DESCRIPTION + " Gain a random {{Wound}}. ![[Sanctum of Eternity]]", NPC.TYVAR,
+        TRAIT_GAIN_DESCRIPTION + " Gain a random {{Wound}}. ![[Sanctum of Eternity|C19|1]]", NPC.TYVAR,
         EffectType.PERMANENT, "Tyvar Trait - Tyvar's Sanctum") {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
@@ -713,7 +713,7 @@ public enum NPCEffect implements RogueEffect {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
-            RogueEffect.addCardToBattlefield("Sanctum of Eternity", human);
+            RogueEffect.addCardToBattlefield("Sanctum of Eternity|C19|1", human);
         }
 
         @Override
@@ -722,7 +722,7 @@ public enum NPCEffect implements RogueEffect {
         }
     },
     TYVAR_WAR_ROOM("npc_tyvar_war_room", "Tyvar's War Room",
-        TRAIT_GAIN_DESCRIPTION + " Gain a random {{Wound}}. ![[War Room]]", NPC.TYVAR,
+        TRAIT_GAIN_DESCRIPTION + " Gain a random {{Wound}}. ![[War Room|FDC|1]]", NPC.TYVAR,
         EffectType.PERMANENT, "Tyvar Trait - Tyvar's War Room") {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
@@ -732,7 +732,7 @@ public enum NPCEffect implements RogueEffect {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             addEffectCardToCommandZone(human);
-            RogueEffect.addCardToBattlefield("War Room", human);
+            RogueEffect.addCardToBattlefield("War Room|FDC|1", human);
         }
 
         @Override

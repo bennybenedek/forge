@@ -1,6 +1,7 @@
 package forge.screens.home.rogue;
 
 import forge.deckchooser.FDeckViewer;
+import forge.gamemodes.rogue.BazaarPricing;
 import forge.gamemodes.rogue.RogueRun;
 import forge.gamemodes.rogue.effect.BazaarItem;
 import forge.localinstance.skin.FSkinProp;
@@ -508,7 +509,7 @@ public class BazaarDialog {
     @Override
     protected void toggleSelection() {
       if (!selected) {
-        int potentialCost = calculateTotalCost() + item.getPrice();
+        int potentialCost = BazaarPricing.calculateItemsTotalCost(selectedItems) + item.getPrice();
         if (potentialCost > availableGold) {
           return;
         }
@@ -585,16 +586,8 @@ public class BazaarDialog {
       g2d.drawString(discText, discountedX, textY);
     }
 
-    private int calculateTotalCost() {
-      int totalCost = 0;
-      for (BazaarItem item : selectedItems) {
-        totalCost += item.getPrice();
-      }
-      return totalCost;
-    }
-
     private void updateGoldStatus() {
-      int totalCost = calculateTotalCost();
+      int totalCost = BazaarPricing.calculateItemsTotalCost(selectedItems);
       lblCost.setText(totalCost > 0 ? "Cost: -" + totalCost : "Cost: 0");
       lblRemaining.setText("Remaining: " + (availableGold - totalCost));
       if (optionPane != null) {

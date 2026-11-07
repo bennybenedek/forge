@@ -5,7 +5,7 @@ import forge.gamemodes.rogue.RogueRun;
 
 public enum WoundEffect implements RogueEffect {
 
-    ARM("arm", "Arm", "You can't cast more than one spell each turn.",
+    ARM("arm", "Arm", "Whenever you cast your second spell each turn, this Trait deals 3 damage to you.",
             EffectType.PERMANENT, "Wound - Arm") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
@@ -13,7 +13,7 @@ public enum WoundEffect implements RogueEffect {
         }
     },
     LEFT_LEG("left_leg", "Left Leg",
-            "Spells you cast cost {1} more to cast.",
+            "Spells you cast from the command zone cost {1} more to cast.",
             EffectType.PERMANENT, "Wound - Left Leg") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {

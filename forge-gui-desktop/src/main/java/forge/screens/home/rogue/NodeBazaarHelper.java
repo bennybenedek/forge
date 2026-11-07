@@ -3,6 +3,7 @@ package forge.screens.home.rogue;
 import forge.card.CardRarity;
 import forge.card.CardSplitType;
 import forge.deck.DeckFormat;
+import forge.gamemodes.rogue.BazaarPricing;
 import forge.gamemodes.rogue.CardRewardHelper;
 import forge.gamemodes.rogue.CodexHelper;
 import forge.gamemodes.rogue.RogueConfig;
@@ -180,9 +181,9 @@ class NodeBazaarHelper {
             int basePrice = Math.max(0, item.getBasePrice() + bazaarCtx.priceAdjustment);
             int price = basePrice;
             if (discountedCardIndices.contains(i)) {
-                price = calculateDiscountedPrice(basePrice, bazaarCtx.discountAmount);
+                price = BazaarPricing.calculateDiscountedPrice(basePrice, bazaarCtx.discountAmount);
             } else if (discountedSpecialIndices.contains(i)) {
-                price = calculateSpecialDiscountedPrice(item, bazaarCtx, basePrice);
+                price = BazaarPricing.calculateSpecialDiscountedPrice(item, bazaarCtx, basePrice);
             }
             inventory.set(i, item.withPrice(price, basePrice));
         }
@@ -248,10 +249,6 @@ class NodeBazaarHelper {
         return new HashSet<>(indices.subList(0, Math.min(bazaarCtx.discountCount, indices.size())));
     }
 
-    private int calculateDiscountedPrice(int basePrice, int discountAmount) {
-        return Math.max(0, basePrice - discountAmount);
-    }
-
     private void addContextItemsToOrdinaryInventory(BazaarContext bazaarCtx, List<BazaarItem> inventory) {
         for (BazaarItem item : bazaarCtx.inventory) {
             if (item.type() == BazaarItem.Type.CURIO) {
@@ -274,10 +271,9 @@ class NodeBazaarHelper {
                                           List<BazaarItem> inventory) {
         int traitOffers = 5;
         int carryCardOffers = 5;
-        int traitGoldCost = 6;
 
         if (bazaarCtx.offersTraits) {
-            addTraitOffers(currentRun, inventory, traitOffers, traitGoldCost);
+            addTraitOffers(currentRun, inventory, traitOffers, BazaarPricing.TRAIT_PRICE);
         }
         if (bazaarCtx.offersCarryCards) {
             addCarryCardOffers(currentRun, inventory, carryCardOffers);
@@ -324,17 +320,6 @@ class NodeBazaarHelper {
             return fallbackIndices.remove(fallbackIndices.size() - 1);
         }
         return -1;
-    }
-
-    private int calculateSpecialDiscountedPrice(BazaarItem item, BazaarContext bazaarCtx, int basePrice) {
-        if (item.type() == BazaarItem.Type.TRAIT) {
-            int traitDiscountPrice = 3;
-            return Math.max(0, traitDiscountPrice + bazaarCtx.priceAdjustment);
-        }
-        if (item.type() == BazaarItem.Type.CARRY_CARD) {
-            return calculateDiscountedPrice(basePrice, bazaarCtx.discountAmount);
-        }
-        return basePrice;
     }
 
     private void addTraitOffers(RogueRun currentRun, List<BazaarItem> inventory, int offerCount, int price) {
@@ -486,7 +471,7 @@ class NodeBazaarHelper {
             }
         }
 
-        currentRun.spendGold(calculateTotalCost(selectedItems));
+        currentRun.spendGold(BazaarPricing.calculateItemsTotalCost(selectedItems));
         return realCards;
     }
 
@@ -508,14 +493,6 @@ class NodeBazaarHelper {
             }
         }
         return realCards;
-    }
-
-    private static int calculateTotalCost(Set<BazaarItem> selectedItems) {
-        int totalCost = 0;
-        for (BazaarItem item : selectedItems) {
-            totalCost += item.getPrice();
-        }
-        return totalCost;
     }
 
     private static List<PaperCard> getRewardPoolCards(Collection<BazaarItem> items) {

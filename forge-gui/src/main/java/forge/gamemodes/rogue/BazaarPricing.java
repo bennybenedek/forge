@@ -1,6 +1,8 @@
 package forge.gamemodes.rogue;
 
 import forge.card.CardRarity;
+import forge.gamemodes.rogue.effect.BazaarContext;
+import forge.gamemodes.rogue.effect.BazaarItem;
 import forge.item.PaperCard;
 import java.util.HashMap;
 import java.util.Map;
@@ -8,9 +10,12 @@ import java.util.Set;
 
 /**
  * Pricing utility for Bazaar nodes.
- * Centralized rarity-based gold pricing with support for price overrides.
+ * Centralized card and Trait prices and discount calculations.
  */
 public class BazaarPricing {
+    public static final int TRAIT_PRICE = 8;
+    public static final int DISCOUNTED_TRAIT_PRICE = 3;
+
     // Rarity-based gold pricing
     private static final Map<CardRarity, Integer> RARITY_PRICES = new HashMap<>();
 
@@ -29,32 +34,25 @@ public class BazaarPricing {
         return RARITY_PRICES.getOrDefault(card.getRarity(), 1);
     }
 
-    /**
-     * Get the gold price for a card, respecting price overrides.
-     */
-    public static int getCardPrice(PaperCard card, Map<String, Integer> priceOverrides) {
-        if (priceOverrides != null) {
-            Integer override = priceOverrides.get(card.getName());
-            if (override != null) return override;
-        }
-        return getCardPrice(card);
+    public static int calculateDiscountedPrice(int basePrice, int discountAmount) {
+        return Math.max(0, basePrice - discountAmount);
     }
 
-    /**
-     * Calculate total gold cost for a set of cards.
-     */
-    public static int calculateTotalCost(Set<PaperCard> cards) {
-        return calculateTotalCost(cards, null);
+    public static int calculateSpecialDiscountedPrice(BazaarItem item, BazaarContext bazaarCtx, int basePrice) {
+        if (item.type() == BazaarItem.Type.TRAIT) {
+            return Math.max(0, DISCOUNTED_TRAIT_PRICE + bazaarCtx.priceAdjustment);
+        }
+        if (item.type() == BazaarItem.Type.CARRY_CARD) {
+            return calculateDiscountedPrice(basePrice, bazaarCtx.discountAmount);
+        }
+        return basePrice;
     }
 
-    /**
-     * Calculate total gold cost for a set of cards, respecting price overrides.
-     */
-    public static int calculateTotalCost(Set<PaperCard> cards, Map<String, Integer> priceOverrides) {
-        int total = 0;
-        for (PaperCard card : cards) {
-            total += getCardPrice(card, priceOverrides);
+    public static int calculateItemsTotalCost(Set<BazaarItem> items) {
+        int totalCost = 0;
+        for (BazaarItem item : items) {
+            totalCost += item.getPrice();
         }
-        return total;
+        return totalCost;
     }
 }

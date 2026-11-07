@@ -1,5 +1,6 @@
 Name:Wound - Arm
 ManaCost:no cost
 Types:Wound
-S:Mode$ CantBeCast | ValidCard$ Card | Caster$ You | NumLimitEachTurn$ 1 | EffectZone$ Command | Description$ You can't cast more than one spell each turn.
-Oracle:You can't cast more than one spell each turn.
+T:Mode$ SpellCast | ValidCard$ Card | ValidActivatingPlayer$ You | ActivatorThisTurnCast$ EQ2 | TriggerZones$ Command | Execute$ TrigDealDamage | TriggerDescription$ Whenever you cast your second spell each turn, this Trait deals 3 damage to you.
+SVar:TrigDealDamage:DB$ DealDamage | Defined$ You | NumDmg$ 3
+Oracle:Whenever you cast your second spell each turn, this Trait deals 3 damage to you.
