@@ -162,7 +162,9 @@ public class RogueCommanderAchievements extends AchievementCollection {
     }
 
     public void evaluateCommanderUnlockAchievements() {
-        List<RogueDeck> decks = RogueConfig.loadRogueDecks();
+        List<RogueDeck> decks = RogueConfig.loadRogueDecks().stream()
+            .filter(deck -> !deck.isExperimental())
+            .toList();
         if (decks.isEmpty()) {
             return;
         }

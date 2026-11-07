@@ -176,6 +176,7 @@ public class RogueConfig {
         rogueDeck.setLandEdition(meta.getProperty("landEdition", ""));
         rogueDeck.setIncludeColorlessBasics(Boolean.parseBoolean(
             meta.getProperty("includeColorlessBasics", "false")));
+        rogueDeck.setExperimental(Boolean.parseBoolean(meta.getProperty("experimental", "false")));
 
         // Set unlock condition
         String unlockString = meta.getProperty("unlock", null);

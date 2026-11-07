@@ -13,6 +13,8 @@ import java.util.List;
 
 /** Optional run modifiers, including generated decks and persistent Rogue effects. */
 public enum CustomRunModification implements RogueEffect {
+    EXPERIMENT("custom:experiment", "Experiment",
+        "Choose from Rogue Commanders that are not or not yet in the official roster.", false),
     CHOSEN_ONE("custom:choose_rogue_commander", "Chosen One",
         "Choose any legendary creature as your Commander.", false) {
         @Override
@@ -149,6 +151,8 @@ public enum CustomRunModification implements RogueEffect {
 
     public boolean conflictsWith(CustomRunModification other) {
         return this != other && ((isGeneratedCommander() && other.isGeneratedCommander())
+            || (this == EXPERIMENT && other.isGeneratedCommander())
+            || (other == EXPERIMENT && isGeneratedCommander())
             || (this == RICH && other == PATH_OF_THE_BANNED)
             || (this == PATH_OF_THE_BANNED && other == RICH));
     }

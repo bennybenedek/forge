@@ -146,6 +146,9 @@ public enum CSubmenuRogueStart implements ICDoc {
     view.setCustomModificationsVisible(view.getChkCustomRuns().isSelected());
 
     List<RogueDeck> availableDecks = RogueConfig.loadRogueDecks();
+    boolean experimental = view.getChkCustomRuns().isSelected()
+        && view.getChkCustomModification(CustomRunModification.EXPERIMENT).isSelected();
+    availableDecks.removeIf(deck -> deck.isExperimental() != experimental);
     String previousCommanderName = selectedDeck != null ? selectedDeck.getCommanderCardName() : null;
     int previousDescensionLevel = selectedDescensionLevel;
 
@@ -285,6 +288,8 @@ public enum CSubmenuRogueStart implements ICDoc {
 
   private void onCustomRunsToggled() {
     boolean custom = view.getChkCustomRuns().isSelected();
+    boolean experimental = view.getChkCustomModification(
+        CustomRunModification.EXPERIMENT).isSelected();
     if (!custom) {
       updatingCustomModUi = true;
       for (CustomRunModification modification : CustomRunModification.values()) {
@@ -297,18 +302,26 @@ public enum CSubmenuRogueStart implements ICDoc {
       }
       updatingCustomModUi = false;
     }
+    view.setCustomModificationsVisible(custom);
+    if (experimental && !custom) {
+      loadAvailableCommanders();
+      return;
+    }
     CommanderCardPanel selectedPanel = view.getCommanderPanels().stream()
         .filter(panel -> panel.getCommander() == selectedDeck && !panel.isLocked())
         .findFirst().orElse(null);
     updateDescensionVisibility(selectedPanel, true);
     updateStartButtonState();
-    view.setCustomModificationsVisible(custom);
   }
 
   private void onCustomModificationToggled(CustomRunModification modification) {
     if (updatingCustomModUi) {
       return;
     }
+    boolean wasExperimental = view.getChkCustomModification(
+        CustomRunModification.EXPERIMENT).isSelected();
+    boolean wasGeneratedCommander = view.getChkRandomRogueCommander().isSelected()
+        || view.getChkChooseRogueCommander().isSelected();
     updatingCustomModUi = true;
     if (view.getChkCustomModification(modification).isSelected()) {
       for (CustomRunModification other : CustomRunModification.values()) {
@@ -323,13 +336,20 @@ public enum CSubmenuRogueStart implements ICDoc {
       if (!deckMod.isIncludedWithGeneratedCommander()) {
         continue;
       }
-      if (generatedCommander || modification.isGeneratedCommander()) {
+      if (generatedCommander || wasGeneratedCommander || modification.isGeneratedCommander()) {
         view.getChkCustomModification(deckMod).setSelected(generatedCommander);
       }
       view.getChkCustomModification(deckMod).setEnabled(!generatedCommander);
     }
+    boolean experimental = view.getChkCustomModification(
+        CustomRunModification.EXPERIMENT).isSelected();
     updatingCustomModUi = false;
-    updateStartButtonState();
+    if (modification == CustomRunModification.EXPERIMENT
+        || wasExperimental != experimental) {
+      loadAvailableCommanders();
+    } else {
+      updateStartButtonState();
+    }
   }
 
   private void updateStartButtonState() {

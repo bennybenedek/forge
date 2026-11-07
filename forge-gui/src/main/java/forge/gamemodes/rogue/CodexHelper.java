@@ -156,7 +156,9 @@ public final class CodexHelper {
         RogueMetaProgress.getInstance().updateCodexProgress(codexProgress -> {
             boolean changed = false;
             for (RogueDeck commander : RogueConfig.loadRogueDecks()) {
-                changed |= unlockCommanderCodex(codexProgress, commander);
+                if (!commander.isExperimental()) {
+                    changed |= unlockCommanderCodex(codexProgress, commander);
+                }
             }
             for (RoguePlanebound planebound : RogueConfig.loadPlanebounds()) {
                 changed |= unlockPlaneboundCodex(codexProgress, planebound);
@@ -175,7 +177,9 @@ public final class CodexHelper {
             return false;
         }
 
-        List<RogueDeck> commanders = RogueConfig.loadRogueDecks();
+        List<RogueDeck> commanders = RogueConfig.loadRogueDecks().stream()
+            .filter(commander -> !commander.isExperimental())
+            .toList();
         List<RoguePlanebound> planebounds = RogueConfig.loadPlanebounds();
         if (commanders.isEmpty() || planebounds.isEmpty()) {
             return false;
@@ -365,7 +369,7 @@ public final class CodexHelper {
 
     private static void recordCommanderRewardCard(RogueRun run, PaperCard card, boolean acquired) {
         if (run == null || card == null || run.getSelectedRogueDeck() == null
-            || !run.recordsCuratedCommanderRewards()) {
+            || run.getSelectedRogueDeck().isExperimental() || !run.recordsCuratedCommanderRewards()) {
             return;
         }
 

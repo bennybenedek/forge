@@ -105,6 +105,7 @@ public enum CSubmenuRogueCodex implements ICDoc {
 
   private List<RogueDeck> loadCommanders() {
     return RogueConfig.loadRogueDecks().stream()
+        .filter(deck -> !deck.isExperimental())
         .sorted(Comparator.comparing(RogueDeck::getName, String.CASE_INSENSITIVE_ORDER))
         .toList();
   }
