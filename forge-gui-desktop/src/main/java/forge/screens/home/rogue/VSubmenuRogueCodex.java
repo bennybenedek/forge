@@ -444,8 +444,24 @@ public enum VSubmenuRogueCodex implements IVSubmenu<CSubmenuRogueCodex> {
           ? mythicEntries : nonMythicEntries;
       entries.add(createCommanderRewardEntry(commanderName, card, progress));
     }
+    List<CodexCardGrid.Entry> startDeckEntries = new ArrayList<>();
+    Deck startDeck = selectedCommander.getStartDeck();
+    if (startDeck != null) {
+      Set<String> displayedBasicLandNames = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+      for (PaperCard card : startDeck.getMain().toFlatList()) {
+        if (card == null || card.getRules() == null) {
+          continue;
+        }
+        if (card.getRules().getType().isBasicLand() && !displayedBasicLandNames.add(card.getName())) {
+          continue;
+        }
+        startDeckEntries.add(new CodexCardGrid.Entry(card, card.getName(), card.getName(),
+            CodexCardGrid.CardState.NORMAL));
+      }
+    }
     sortCodexCardEntries(nonMythicEntries);
     sortCodexCardEntries(mythicEntries);
+    sortCodexCardEntries(startDeckEntries);
     panel.add(createCommanderStatsHeader(selectedCommander, progress, nonMythicEntries, mythicEntries),
         "growx, gapbottom 16");
 
@@ -454,6 +470,7 @@ public enum VSubmenuRogueCodex implements IVSubmenu<CSubmenuRogueCodex> {
     addCardGridSection(sections, "Commander", createCommanderCardEntries(selectedCommander));
     addCardGridSection(sections, "Reward Pool - Non Mythics", nonMythicEntries);
     addCardGridSection(sections, "Reward Pool - Mythics", mythicEntries);
+    addCardGridSection(sections, "Start Deck", startDeckEntries);
     panel.add(createPanelScrollPane(sections), "grow, push");
     return panel;
   }
