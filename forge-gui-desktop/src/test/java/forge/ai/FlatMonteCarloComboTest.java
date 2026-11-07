@@ -180,7 +180,7 @@ public class FlatMonteCarloComboTest extends AITest {
 
     private static final String[] REANIMATOR_DECK = { "Reanimate", "4", "Animate Dead", "4", "Exhume", "2", "Entomb", "4",
             "Griselbrand", "4", "Archon of Cruelty", "3", "Faithless Looting", "4", "Careful Study", "2",
-            "Thoughtseize", "4", "Cabal Therapy", "2", "Swamp", "12" };
+            "Thoughtseize", "4", "Cabal Therapy", "2", "Breakthrough", "2", "Swamp", "12" };
 
     private Player reanimatorPlayer(final Game game) {
         final Object[] args = new Object[REANIMATOR_DECK.length];
@@ -211,9 +211,9 @@ public class FlatMonteCarloComboTest extends AITest {
         final Game game = initAndCreateGame();
         final Player p = reanimatorPlayer(game);
         final DeckPlan plan = DeckPlan.forSetting("auto", p);
-        final Card therapy = addCardToZone("Cabal Therapy", p, ZoneType.Hand);
-        AssertJUnit.assertTrue(therapy.getRules().getAiHints().getRemAIDecks());
-        AssertJUnit.assertTrue(plan.combos.overridesRemAi(therapy));
+        final Card breakthrough = addCardToZone("Breakthrough", p, ZoneType.Hand);
+        AssertJUnit.assertTrue(breakthrough.getRules().getAiHints().getRemAIDecks());
+        AssertJUnit.assertTrue(plan.combos.overridesRemAi(breakthrough));
         // a card that is not a piece is never let through
         final Card swamp = addCardToZone("Swamp", p, ZoneType.Hand);
         AssertJUnit.assertFalse(plan.combos.overridesRemAi(swamp));
@@ -276,13 +276,13 @@ public class FlatMonteCarloComboTest extends AITest {
     }
 
     @Test
-    public void removeAiDiscardIsAKeyCardOfTheReanimatorDeck() {
+    public void removeAiFuelIsAKeyCardOfTheReanimatorDeck() {
         final Game game = initAndCreateGame();
         final Player p = reanimatorPlayer(game);
         final DeckPlan plan = DeckPlan.forSetting("auto", p);
-        final Card therapy = addCardToZone("Cabal Therapy", p, ZoneType.Hand);
-        AssertJUnit.assertTrue(ComputerUtilCard.isCardRemAIDeck(therapy)); // the premise of the bypass
-        AssertJUnit.assertTrue(plan.combos.isKeyCard(therapy));
+        final Card breakthrough = addCardToZone("Breakthrough", p, ZoneType.Hand);
+        AssertJUnit.assertTrue(ComputerUtilCard.isCardRemAIDeck(breakthrough)); // the premise of the bypass
+        AssertJUnit.assertTrue(plan.combos.isKeyCard(breakthrough));
         AssertJUnit.assertFalse(plan.combos.isKeyCard(addCardToZone("Swamp", p, ZoneType.Hand)));
     }
 
@@ -293,19 +293,19 @@ public class FlatMonteCarloComboTest extends AITest {
         final PlayerControllerAi pc = (PlayerControllerAi) p.getController();
         final Deck deck = new Deck();
         for (final PaperCard c : papers("Reanimate", 4, "Animate Dead", 4, "Exhume", 2, "Entomb", 4, "Griselbrand", 4,
-                "Archon of Cruelty", 3, "Faithless Looting", 4, "Careful Study", 2, "Cabal Therapy", 4, "Swamp", 12)) {
+                "Archon of Cruelty", 3, "Faithless Looting", 4, "Careful Study", 2, "Breakthrough", 4, "Swamp", 12)) {
             deck.getMain().add(c, 1);
         }
         AssertJUnit.assertTrue(deck.getUnplayableAICards().unplayable.values().stream()
-                .anyMatch(l -> l.stream().anyMatch(c -> c.getName().equals("Cabal Therapy")))); // premise
+                .anyMatch(l -> l.stream().anyMatch(c -> c.getName().equals("Breakthrough")))); // premise
 
         pc.getAi().setFlatMonteCarloOverride(false);
         AssertJUnit.assertTrue(pc.complainCardsCantPlayWell(deck).values().stream()
-                .anyMatch(l -> l.stream().anyMatch(c -> c.getName().equals("Cabal Therapy"))));
+                .anyMatch(l -> l.stream().anyMatch(c -> c.getName().equals("Breakthrough"))));
 
         pc.getAi().setFlatMonteCarloOverride(true);
         AssertJUnit.assertTrue(pc.complainCardsCantPlayWell(deck).values().stream()
-                .noneMatch(l -> l.stream().anyMatch(c -> c.getName().equals("Cabal Therapy"))));
+                .noneMatch(l -> l.stream().anyMatch(c -> c.getName().equals("Breakthrough"))));
     }
 
     // ---------------------------------------------------------------------------------------- ComboGuard

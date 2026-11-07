@@ -394,8 +394,8 @@ public class LandPlannerTest extends FlatMcTestBase {
     }
 
     @Test
-    public void landPlannerIsOnByDefault() {
+    public void landPlannerIsOffByDefault() {
         setUpGame();
-        assertTrue(brain().getBoolProperty(AiProps.LAND_PLANNER));
+        assertFalse(brain().getBoolProperty(AiProps.LAND_PLANNER));
     }
 }
