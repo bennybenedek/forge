@@ -14,7 +14,7 @@ import java.util.Set;
  */
 public class BazaarPricing {
     public static final int TRAIT_PRICE = 8;
-    public static final int DISCOUNTED_TRAIT_PRICE = 3;
+    public static final int DISCOUNTED_TRAIT_PRICE = TRAIT_PRICE / 2;
 
     // Rarity-based gold pricing
     private static final Map<CardRarity, Integer> RARITY_PRICES = new HashMap<>();

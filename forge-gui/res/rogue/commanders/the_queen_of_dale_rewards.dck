@@ -1,201 +1,195 @@
 [metadata]
 Name=The Queen of Dale Rewards
 [Main]
-1 Castle Ardenvale|eld
-1 War Room|clb
-1 Temple of the False God|soc
-1 Monumental Henge|mh3
-1 Guildless Commons|cmr
-1 Endless Sands|akh
-1 Ghost Quarter|sld|[468]
-1 Wasteland|ema
-1 Rogue's Passage|hoc
-1 Lazotep Quarry|m3c
-1 Minas Tirith|ltr
-1 Ancient Tomb|uma
-1 Nykthos, Shrine to Nyx|ths
-1 Three Tree City|blb
-1 Geier Reach Sanitarium|lcc
-1 Bonders' Enclave|otc
-1 Mage-Ring Network|ori
-1 Kjeldoran Outpost|vma
-1 An Unexpected Party|hob
-1 Call the Coppercoats|ncc
-1 Captain America, Unbowed|msc
-1 Catapult Master|ddf
-1 Cenn's Tactician|mor
-1 Conqueror's Pledge|zen
-1 Darien, King of Kjeldor|mkc
-1 Evangel of Heliod|khc
-1 Even the Odds|fut
-1 Heidegger, Shinra Executive|fic
-1 Timely Reinforcements|m12
-1 Knight-Captain of Eos|ala
-1 Lena, Selfless Champion|jmp
-1 Lossarnach Captain|ltc
-1 Prava of the Steel Legion|cmr
-1 Precinct Captain|e01
-1 Rescue Retriever|bro
-1 Raise the Alarm|cmr
-1 Martial Coup|frc
-1 Royal Talon Fighter Jet|msc
-1 Secure Detention|msc
-1 Seatower Imprisonment|hbg
-1 Siege Veteran|bro
-1 SOLDIER Military Program|fic
-1 Thousand Moons Smithy|lci
-1 Valiant Veteran|dmu
-1 Veteran Armorsmith|m10
-1 Everything Comes to Dust|who
-1 Veteran Swordsmith|m10
-1 You're Confronted by Robbers|clb
-1 Nomads' Assembly|c14
-1 Mirror Entity|c16
-1 Okoye, Dora Milaje Leader|msh
-1 Militia's Pride|msh
-1 Midnight Angel Armor|msc
-1 Launch the Fleet|jou
-1 Enlistment Officer|apc
-1 Entrapment Maneuver|c16
-1 Esper Sentinel|mh2
-1 Boromir, Warden of the Tower|ltr
-1 Charismatic Conqueror|lcc
-1 Thalia, Heretic Cathar|inr
-1 Stalwart Pathlighter|mic
-1 Loxodon Gatekeeper|rav
-1 Recruitment Officer|bro
-1 Odric, Lunarch Marshal|inr
-1 Thalia, Guardian of Thraben|dka
-1 Firemane Commando|soc
-1 Aerial Extortionist|mkc
-1 Kinscaer Sentry|ecl
-1 Evangel of Heliod|ths
-1 Goldnight Commander|tdc
-1 Aerial Responder|c20
-1 Rally the Ranks|khm
-1 Ranger of Eos|mm3
-1 Ballyrush Banneret|fdn
-1 Intrepid Hero|m13
-1 Lieutenant Kirtar|dmr
-1 Commander Eesha|jud
-1 Soltari Champion|tpr
-1 Leonin Warleader|m19
-1 Horn of Valhalla|clb
-1 General Leo Cristophe|fic
-1 Aven Brigadier|ons
-1 Oketra's Monument|dmc
-1 The Battle of Bywater|ltr
-1 Welcoming Vampire|vow
-1 Makindi Stampede|znr
-1 Conclave Tribunal|grn
-1 Benalish Marshal|dom
-1 Idol of Oblivion|c19
-1 Springjack Shepherd|eve
-1 Dazzling Theater|dsk
-1 Unbreakable Formation|cmr
-1 Hour of Reckoning|tdc
-1 Selfless Spirit|clb
-1 Valor in Akros|a25
-1 Austere Command|spg|[160]
-1 Reconnaissance|acr
-1 Anointed Procession|akh
-1 Tocasia's Welcome|bro
-1 Repurposed Enforcer|fra
-1 Phantom General|ddk
-1 Increasing Devotion|onc
-1 Battle Screech|cmm
-1 Rabble Rousing|snc
-1 Kinbinding|ecl
-1 Defiler of Faith|dmu
-1 Mirrormind Crown|ecl
-1 Decree of Justice|ddo
-1 Dusk|drc
-1 Greymond, Avacyn's Stalwart|slx
-1 Currency Converter|ncc
-1 Monument to Endurance|dft
-1 Heroic Return|msc
-1 Breath of Life|s99
-1 Kalemne's Captain|c20
-1 Reya Dawnbringer|uma
-1 Champions of Minas Tirith|ltc
-1 Hourglass of the Lost|m3c
-1 Heraldic Banner|eld
-1 Patchwork Banner|blb
-1 Emeria Shepherd|bfz
-1 Crovax, Ascendant Hero|plc
-1 Divine Reckoning|isd
-1 Mask of Memory|cmr
-1 Elspeth Conquers Death|thb
-1 Belonging|ecc
-1 Prismatic Strands|c19
-1 Smuggler's Copter|nec
-1 Angel of Indemnity|otc
-1 Rally the Ancestors|frf
-1 False Defeat|me3
-1 Ancient Stone Idol|cmm
-1 The Night of the Doctor|who
-1 Marshal's Anthem|c15
-1 Dawnbreak Reclaimer|c15
-1 God-Pharaoh's Gift|hou
-1 Ascend from Avernus|clb
-1 Dearly Departed|ltc
-1 Timeless Dragon|mh2
-1 Valor|jud
-1 Glory|jud
-1 Karmic Guide|c13
-1 Sevinne's Reclamation|c19
-1 The Restoration of Eiganjo|neo
-1 Profound Journey|dtk
-1 What Must Be Done|acr
-1 Victory's Herald|mbs
-1 The Eagles Are Coming!|hob
-1 Witch Enchanter|mh3
-1 Flare of Fortitude|mh3
-1 Flawless Maneuver|c20
-1 Razorgrass Ambush|mh3
-1 Skullclamp|dst
-1 Wand of the Worldsoul|moc
-1 Nyx Lotus|thb
-1 Akroma's Will|cmr
-1 Sejiri Shelter|znr
-1 Path to Exile|blc
-1 Staff of the Storyteller|onc
-1 Giver of Runes|mh1
-1 Grasp of Fate|wot
-1 Mind Stone|ltc
-1 Lightning Greaves|sld|[2558]
-1 Swiftfoot Boots|c13
-1 Sol Ring|ltc
-1 Arcane Signet|ltc
-1 Archangel Elspeth|mom
-1 Basri Ket|m21
-1 Brimaz, King of Oreskos|bng
-1 Cosmogrand Zenith|eoe
-1 Triceraton Commander|tmt
-1 Elspeth, Storm Slayer|tdm
-1 Season of the Burrow|blb|[282]
-1 Sun Titan|c14
-1 Serra's Emissary|mh2
-1 Recruiter of the Guard|mh3
-1 Solitude|mh2
-1 Cataclysmic Gearhulk|kld
-1 Elesh Norn, Grand Cenobite|nph
-1 Highcliff Felidar|gn2
-1 Avacyn, Angel of Hope|ima
-1 The Mind Stone|msh
-1 Angel of Serenity|c21
-1 Mondrak, Glory Dominus|one
-1 Angel of Sanctions|akh
-1 Wurmcoil Engine|c14
-1 Herald of Eternal Dawn|fdn
-1 Exalted Sunborn|eoe
-1 Gauntlet of Power|dmr
-1 Platoon Dispenser|bro
-1 Elspeth, Sun's Champion|ths
-1 Angel of Invention|kld
-1 Soul of Theros|m15
-1 Restoration Seminar|sos
-1 Elspeth, Sun's Nemesis|thb
-1 Finale of Glory|war
-1 Hero of Bladehold|tdc
-1 Myrel, Shield of Argive|bro
+1 Aerial Extortionist|MKC|[54]
+1 Aerial Responder|C20|[72]
+1 Akroma's Will|CMR|[3]
+1 An Unexpected Party|HOB|[29]
+1 Ancient Stone Idol|MKC|[222]
+1 Angel of Indemnity|OTC|[9]
+1 Anointed Procession|AKH|[2]
+1 Arcane Signet|LTC|[273]
+1 Ascend from Avernus|CLB|[5]
+1 Aven Brigadier|ONS|[7]
+1 Ballyrush Banneret|FDN|[567]
+1 Battle Screech|DMR|[2]
+1 Belonging|ECC|[5]
+1 Benalish Marshal|GNT|[8]
+1 Boromir, Warden of the Tower|LTR|[4]
+1 Breath of Life|VMA|[18]
+1 Call the Coppercoats|NCC|[195]
+1 Captain America, Unbowed|MSC|[505]
+1 Castle Ardenvale|ELD|[238]
+1 Catapult Master|DDF|[18]
+1 Cenn's Tactician|MOR|[5]
+1 Champions of Minas Tirith|LTC|[10]
+1 Charismatic Conqueror|LCC|[70]
+1 Commander Eesha|JUD|[9]
+1 Conclave Tribunal|J25|[182]
+1 Conqueror's Pledge|ZEN|[8]
+1 Crovax, Ascendant Hero|PLC|[3]
+1 Currency Converter|NCC|[81]
+1 Darien, King of Kjeldor|MKC|[59]
+1 Dawnbreak Reclaimer|CM2|[24]
+1 Dazzling Theater|DSK|[3]
+1 Dearly Departed|LTC|[165]
+1 Decree of Justice|MH3|[263]
+1 Defiler of Faith|DMU|[16]
+1 Divine Reckoning|C19|[62]
+1 Dusk|LTC|[166]
+1 Elspeth Conquers Death|THB|[13]
+1 Emeria Shepherd|FDC|[27]
+1 Endless Sands|C20|[272]
+1 Enlistment Officer|APC|[9]
+1 Entrapment Maneuver|C16|[2]
+1 Esper Sentinel|MH2|[12]
+1 Evangel of Heliod|KHC|[23]
+1 Even the Odds|FUT|[6]
+1 Everything Comes to Dust|WHO|[19]
+1 False Defeat|ME3|[11]
+1 Firemane Commando|FDC|[31]
+1 Flare of Fortitude|MH3|[26]
+1 Flawless Maneuver|CMM|[24]
+1 Geier Reach Sanitarium|FDC|[303]
+1 General Leo Cristophe|FIC|[20]
+1 Ghost Quarter|LTC|[314]
+1 Giver of Runes|MH1|[13]
+1 Glory|DMR|[7]
+1 God-Pharaoh's Gift|DRC|[131]
+1 Goldnight Commander|TDC|[117]
+1 Grasp of Fate|FDC|[32]
+1 Guildless Commons|CMR|[351]
+1 Heidegger, Shinra Executive|FIC|[21]
+1 Heraldic Banner|FDC|[263]
+1 Heroic Return|MSC|[17]
+1 Horn of Valhalla|CLB|[26]
+1 Hour of Reckoning|TDC|[120]
+1 Hourglass of the Lost|M3C|[92]
+1 Idol of Oblivion|M3C|[297]
+1 Increasing Devotion|LTC|[171]
+1 Intrepid Hero|M13|[20]
+1 Kalemne's Captain|C20|[92]
+1 Karmic Guide|VOC|[90]
+1 Kinbinding|ECL|[20]
+1 Kinscaer Sentry|ECL|[22]
+1 Kjeldoran Outpost|VMA|[301]
+1 Knight-Captain of Eos|ALA|[17]
+1 Launch the Fleet|40K|[188]
+1 Lazotep Quarry|M3C|[131]
+1 Lena, Selfless Champion|M19|[21]
+1 Leonin Warleader|J22|[208]
+1 Lieutenant Kirtar|DMR|[12]
+1 Lightning Greaves|LTC|[281]
+1 Lossarnach Captain|LTC|[16]
+1 Loxodon Gatekeeper|RAV|[25]
+1 Makindi Stampede|ZNR|[26]
+1 Marshal's Anthem|LTC|[172]
+1 Martial Coup|FRC|[28]
+1 Mask of Memory|CMR|[324]
+1 Midnight Angel Armor|MSC|[22]
+1 Militia's Pride|LRW|[30]
+1 Minas Tirith|LTR|[256]
+1 Mind Stone|LTC|[282]
+1 Mirror Entity|C16|[70]
+1 Mirrormind Crown|ECL|[258]
+1 Monument to Endurance|DFT|[237]
+1 Monumental Henge|MH3|[222]
+1 Nomads' Assembly|C14|[82]
+1 Nykthos, Shrine to Nyx|THS|[223]
+1 Nyx Lotus|THB|[235]
+1 Odric, Lunarch Marshal|INR|[36]
+1 Oketra's Monument|DMC|[188]
+1 Okoye, Dora Milaje Leader|MSH|[27]
+1 Patchwork Banner|FDC|[279]
+1 Path to Exile|LTC|[175]
+1 Phantom General|ONC|[85]
+1 Prava of the Steel Legion|CMR|[38]
+1 Precinct Captain|E01|[18]
+1 Prismatic Strands|C19|[69]
+1 Profound Journey|DTK|[30]
+1 Rabble Rousing|SNC|[24]
+1 Raise the Alarm|CMR|[41]
+1 Rally the Ancestors|FRF|[22]
+1 Rally the Ranks|KHM|[20]
+1 Ranger of Eos|MM3|[19]
+1 Razorgrass Ambush|MH3|[238]
+1 Reconnaissance|ACR|[82]
+1 Recruitment Officer|J25|[239]
+1 Repurposed Enforcer|FRA|[19]
+1 Rescue Retriever|BRO|[288]
+1 Reya Dawnbringer|FDC|[42]
+1 Rogue's Passage|HOC|[212]
+1 Royal Talon Fighter Jet|MSC|[24]
+1 Secure Detention|MSC|[608]
+1 Sejiri Shelter|ZNR|[37]
+1 Selfless Spirit|J22|[239]
+1 Sevinne's Reclamation|DMR|[27]
+1 Siege Veteran|BRO|[25]
+1 Skullclamp|TDC|[103]
+1 Smuggler's Copter|NEC|[160]
+1 Sol Ring|LTC|[284]
+1 SOLDIER Military Program|FIC|[25]
+1 Soltari Champion|TPR|[29]
+1 Springjack Shepherd|EVE|[15]
+1 Staff of the Storyteller|ONC|[10]
+1 Stalwart Pathlighter|MIC|[9]
+1 Swiftfoot Boots|FDC|[291]
+1 Thalia, Guardian of Thraben|VOW|[38]
+1 Thalia, Heretic Cathar|INR|[44]
+1 The Battle of Bywater|LTR|[2]
+1 The Eagles Are Coming!|HOB|[12]
+1 The Night of the Doctor|WHO|[24]
+1 The Restoration of Eiganjo|NEO|[34]
+1 Thousand Moons Smithy|LCI|[39]
+1 Three Tree City|BLB|[260]
+1 Timeless Dragon|MH2|[35]
+1 Timely Reinforcements|M12|[40]
+1 Tocasia's Welcome|BRO|[30]
+1 Unbreakable Formation|CMR|[388]
+1 Valiant Veteran|DMU|[38]
+1 Valor|TSB|[16]
+1 Valor in Akros|J22|[262]
+1 Veteran Armorsmith|DDO|[27]
+1 Veteran Swordsmith|DDO|[28]
+1 Victory's Herald|CM2|[38]
+1 Wand of the Worldsoul|MOC|[20]
+1 War Room|FDC|[317]
+1 Wasteland|EMA|[248]
+1 Welcoming Vampire|VOW|[46]
+1 What Must Be Done|ACR|[11]
+1 Witch Enchanter|MH3|[239]
+1 You're Confronted by Robbers|CLB|[53]
+1 Angel of Invention|M3C|[166]
+1 Angel of Sanctions|DRC|[62]
+1 Angel of Serenity|SLD|[1377]
+1 Archangel Elspeth|MOM|[320]
+1 Austere Command|SPG|[160]
+1 Avacyn, Angel of Hope|2XM|[335]
+1 Basri Ket|M21|[280]
+1 Brimaz, King of Oreskos|SLD|[497]
+1 Cataclysmic Gearhulk|MOC|[176]
+1 Cosmogrand Zenith|EOE|[304]
+1 Elesh Norn, Grand Cenobite|MUL|[3]
+1 Elspeth, Storm Slayer|TDM|[398]
+1 Elspeth, Sun's Champion|CMM|[820]
+1 Elspeth, Sun's Nemesis|THB|[14]
+1 Exalted Sunborn|EOE|[318]
+1 Finale of Glory|ONC|[67]
+1 Gauntlet of Power|DMR|[447]
+1 Greymond, Avacyn's Stalwart|SLX|[18]
+1 Herald of Eternal Dawn|FDN|[299]
+1 Hero of Bladehold|MOC|[188]
+1 Highcliff Felidar|PLST|[GN2-1]
+1 Mondrak, Glory Dominus|ONE|[299]
+1 Myrel, Shield of Argive|BRO|[305]
+1 Platoon Dispenser|BRO|[310]
+1 Recruiter of the Guard|MH3|[266]
+1 Restoration Seminar|SOS|[290]
+1 Season of the Burrow|BLB|[282]
+1 Serra's Emissary|MH2|[30]
+1 Solitude|MH2|[307]
+1 Soul of Theros|M15|[34]
+1 Sun Titan|TDC|[133]
+1 The Mind Stone|MSH|[386]
+1 Triceraton Commander|TMT|[226]
+1 Wurmcoil Engine|2XM|[368]
