@@ -3,29 +3,29 @@ Name=Merieke Ri Berit
 [Commander]
 1 Merieke Ri Berit|ICE
 [Main]
-1 Tundra|LEB
-1 Scrubland|LEB
-1 Underground Sea|LEB
-1 Darkwater Catacombs|ODY
-1 Skycloud Expanse|ODY
-3 Snow-Covered Island|ICE
-3 Snow-Covered Swamp|ICE
-3 Snow-Covered Plains|ICE
-1 Exalted Angel|ONS
-1 Preacher|DRK
-1 Mother of Runes|ULG
-1 Morphling|LEB
-1 Treachery|UDS
-1 Puppeteer|ODY
-1 Hypnotic Specter|LEB
-1 Royal Assassin|LEB
-1 Visara the Dreadful|ONS
-1 Puppet Strings|TMP
-1 Propaganda|TMP
-1 Chain Stasis|HML
-1 Wrath of God|LEB
-1 Swords to Plowshares|LEB
-1 Counterspell|LEB
-1 Dark Ritual|LEB
-1 Fellwar Stone|DRK
-1 Animate Dead|LEB
+1 Animate Dead|LEB|[93]
+1 Chain Stasis|HML|[23]
+1 Counterspell|LEB|[55]
+1 Dark Ritual|LEB|[99]
+1 Darkwater Catacombs|ODY|[319]
+1 Exalted Angel|ONS|[28]
+1 Fellwar Stone|DRK|[102]
+1 Hypnotic Specter|LEB|[113]
+1 Morphling|USG|[85]
+1 Mother of Runes|ULG|[14]
+1 Preacher|DRK|[16]
+1 Propaganda|TMP|[80]
+1 Puppet Strings|TMP|[304]
+1 Puppeteer|ODY|[97]
+1 Royal Assassin|LEB|[124]
+1 Scrubland|LEB|[282]
+1 Skycloud Expanse|ODY|[327]
+3 Snow-Covered Island|ICE|[371]
+3 Snow-Covered Plains|ICE|[367]
+3 Snow-Covered Swamp|ICE|[372]
+1 Stormscape Familiar|PLS|[36]
+1 Swords to Plowshares|LEB|[41]
+1 Treachery|UDS|[50]
+1 Tundra|LEB|[285]
+1 Underground Sea|LEB|[286]
+1 Visara the Dreadful|ONS|[179]
