@@ -183,7 +183,7 @@ public class SpecialAiLogic {
                 final boolean defTappedOut = ComputerUtilMana.getAvailableManaEstimate(defPlayer) == 0;
 
                 final boolean isInfect = source.hasKeyword(Keyword.INFECT); // Flesh-Eater Imp
-                int lethalDmg = isInfect ? 10 - defPlayer.getPoisonCounters() : defPlayer.getLife();
+                int lethalDmg = isInfect ? defPlayer.getGame().getRules().getPoisonCountersToLose() - defPlayer.getPoisonCounters() : defPlayer.getLife();
 
                 if (isInfect && !combat.getDefenderByAttacker(source).canReceiveCounters(CounterEnumType.POISON)) {
                     lethalDmg = Integer.MAX_VALUE; // won't be able to deal poison damage to kill the opponent
@@ -285,7 +285,7 @@ public class SpecialAiLogic {
                 final boolean defTappedOut = ComputerUtilMana.getAvailableManaEstimate(defPlayer) == 0;
 
                 final boolean isInfect = source.hasKeyword(Keyword.INFECT);
-                int lethalDmg = isInfect ? 10 - defPlayer.getPoisonCounters() : defPlayer.getLife();
+                int lethalDmg = isInfect ? defPlayer.getGame().getRules().getPoisonCountersToLose() - defPlayer.getPoisonCounters() : defPlayer.getLife();
 
                 if (isInfect && !combat.getDefenderByAttacker(source).canReceiveCounters(CounterEnumType.POISON)) {
                     lethalDmg = Integer.MAX_VALUE; // won't be able to deal poison damage to kill the opponent

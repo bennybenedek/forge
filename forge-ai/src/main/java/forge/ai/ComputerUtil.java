@@ -129,6 +129,7 @@ public class ComputerUtil {
     public static boolean handlePlayingSpellAbility(final Player ai, SpellAbility sa, Consumer<SpellAbility> chooseTargets) {
         final Card source = sa.getHostCard();
         final Game game = source.getGame();
+        RunawayLoop.note(ai, sa);
         if (!sa.isCopied() && !sa.isTrigger() && ai.getController() instanceof PlayerControllerAi pc) {
             if (pc.getAi().hasFailedToCast(sa)) {
                 return false;
@@ -1736,6 +1737,10 @@ public class ComputerUtil {
             return false;
         }
 
+        if (RunawayLoop.exceeded(sa)) {
+            return true;
+        }
+
         int activations = sa.getActivationsThisTurn();
 
         //10 activations should still be acceptable
@@ -2111,7 +2116,7 @@ public class ComputerUtil {
         // currently confirming optional threat ability:
         // need to ignore it so AI doesn't think some of its objects are already taken care of
         if (stack.isResolving() && sa == null) {
-            sa = stack.peekAbility();
+            sa = stack.getResolvingAbility();
             saviour = null;
         }
 
@@ -2123,13 +2128,15 @@ public class ComputerUtil {
             if (spell.isWrapper()) {
                 spell = ((WrappedAbility) spell).getWrappedAbility();
             }
+            // account for copied abilities on the stack as well
+            SpellAbility original = spell;
             if (spell.getOriginalAbility() != null && spell.getOriginalAbility().getHostCard().equals(spell.getHostCard())) {
-                spell = spell.getOriginalAbility();
+                original = spell.getOriginalAbility();
             }
             while (sub != null && sub != sa) {
                 sub = sub.getSubAbility();
             }
-            if (sa == null || (sa != spell && sa != sub)) {
+            if (sa == null || (sa != spell && sa != original && sa != sub)) {
                 predictThreatenedObjects(ai, saviour, spell).forEach(objects::add);
             }
             if (top) {
@@ -2289,7 +2296,7 @@ public class ComputerUtil {
                     }
                 } else if (o instanceof Player p) {
                     if (source.hasKeyword(Keyword.INFECT)) {
-                        if (p.canReceiveCounters(CounterEnumType.POISON) && ComputerUtilCombat.predictDamageTo(p, dmg, source, false) >= 10 - p.getPoisonCounters()) {
+                        if (p.canReceiveCounters(CounterEnumType.POISON) && ComputerUtilCombat.predictDamageTo(p, dmg, source, false) >= p.getGame().getRules().getPoisonCountersToLose() - p.getPoisonCounters()) {
                             threatened.add(p);
                         }
                     } else if (ComputerUtilCombat.predictDamageTo(p, dmg, source, false) >= p.getLife()) {
