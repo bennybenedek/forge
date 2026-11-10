@@ -59,13 +59,12 @@ public enum CustomRunModification implements RogueEffect {
         }
     },
     SEALED("custom:sealed", "Sealed",
-        "Choose 20 of up to 60 non-mythic cards from the Start Deck and Reward Pool. "
-            + "Basic lands are added to reach at least 30 cards and average at least 3 lands in your opening hand. "
-            + "Works with automatically generated decks and pools.", true) {
+        "Choose 25 out of 60 non-mythic cards from the Start and Reward Pool as your Start Deck. "
+            + "(also works with automatically generated decks and pools)", true) {
         @Override
         public RogueDeck createRogueDeck(RogueDeck selectedDeck, PaperCard commander,
                 BiFunction<RogueDeck, EffectResultContext, List<PaperCard>> selectCards) {
-            int pickCount = 20;
+            int pickCount = 25;
             CardPool startingMain = selectedDeck.getStartDeck().getMain();
             List<PaperCard> candidates = startingMain.toFlatList();
             candidates.addAll(selectedDeck.getRewardPoolCards());

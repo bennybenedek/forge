@@ -2,6 +2,7 @@ package forge.gamemodes.rogue;
 
 import forge.card.CardRarity;
 import forge.card.ColorSet;
+import forge.card.DeckHints;
 import forge.card.MagicColor;
 import forge.deck.CardPool;
 import forge.deck.CardRelationMatrixGenerator;
@@ -15,8 +16,10 @@ import forge.model.FModel;
 import forge.util.MyRandom;
 import org.tinylog.Logger;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -31,6 +34,7 @@ public final class RogueCustomDeckGenerator {
     private static final int MAX_GENERATION_ATTEMPTS = 8;
     private static final int STARTING_SPELL_COUNT = 19;
     private static final int STARTING_LAND_COUNT = 14;
+    private static final int STARTING_THEME_TARGET = 5;
     private static final int MAX_STARTING_CMC = 6;
     private static final int MAX_STARTING_SUPPORT_BRACKET = 2;
     private static final int REWARD_POOL_SIZE = 180;
@@ -125,13 +129,13 @@ public final class RogueCustomDeckGenerator {
             if (replaceStartingDeck) {
                 Deck start = buildStartingDeck(context, selectedDeck.getName(),
                     selectedDeck.getLandEdition());
-                if (start == null || isStartingDeckInvalid(context, start)) {
+                if (start == null) {
                     return null;
                 }
                 deck.setStartDeck(start);
             } else {
                 CardPool rewards = buildRewardPool(context, deck.getStartDeck());
-                if (isRewardPoolInvalid(rewards)) {
+                if (rewards == null) {
                     return null;
                 }
                 deck.setRewardPool(rewards);
@@ -176,11 +180,11 @@ public final class RogueCustomDeckGenerator {
         DeckGenerationContext context = prepareDeckGenerationContext(commander, synergy);
         Deck start = buildStartingDeck(context,
             (randomlyChosen ? "Random " : "Chosen ") + commander.getName(), null);
-        if (start == null || isStartingDeckInvalid(context, start)) {
+        if (start == null) {
             return null;
         }
         CardPool rewardPool = buildRewardPool(context, start);
-        if (isRewardPoolInvalid(rewardPool)) {
+        if (rewardPool == null) {
             return null;
         }
 
@@ -205,7 +209,55 @@ public final class RogueCustomDeckGenerator {
             LinkedHashMap<String, PaperCard> generatedRewardCards,
             LinkedHashMap<String, PaperCard> generatedLands,
             List<Map.Entry<PaperCard, Integer>> rankedSynergy, int maxBracket,
-            int targetStartingCreatures) {}
+            int targetStartingCreatures, ThemeMatches themeMatches) {}
+
+    private record ThemeMatches(Set<String> needs, Set<String> hints) {
+        private boolean matches(PaperCard card) {
+            return needs.contains(card.getName()) || hints.contains(card.getName());
+        }
+
+        private int count(Collection<PaperCard> cards) {
+            return (int) cards.stream().filter(card -> !card.getRules().getType().isLand())
+                .filter(this::matches).count();
+        }
+
+        private List<List<PaperCard>> prioritize(List<List<PaperCard>> sources) {
+            List<List<PaperCard>> prioritized = new ArrayList<>();
+            for (Set<String> names : List.of(needs, hints)) {
+                for (List<PaperCard> source : sources) {
+                    prioritized.add(source.stream().filter(card -> names.contains(card.getName())).toList());
+                }
+            }
+            return prioritized;
+        }
+    }
+
+    private enum RewardThemeCategory {
+        MYTHICS, CREATURES, SPELLS;
+
+        private boolean matches(PaperCard card) {
+            if (card.getRules().getType().isLand()) {
+                return false;
+            }
+            return switch (this) {
+                case MYTHICS -> card.getRarity() == CardRarity.MythicRare;
+                case CREATURES -> card.getRarity() != CardRarity.MythicRare
+                    && card.getRules().getType().isCreature();
+                case SPELLS -> card.getRarity() != CardRarity.MythicRare
+                    && !card.getRules().getType().isCreature();
+            };
+        }
+    }
+
+    private static Set<String> getThemeCardNames(DeckHints hints, List<PaperCard> candidates) {
+        Set<String> names = new HashSet<>();
+        if (hints != null && hints.isValid()) {
+            for (PaperCard card : hints.filter(candidates)) {
+                names.add(card.getName());
+            }
+        }
+        return names;
+    }
 
     private static DeckGenerationContext prepareDeckGenerationContext(PaperCard commander,
             List<Map.Entry<PaperCard, Integer>> synergy) {
@@ -222,6 +274,10 @@ public final class RogueCustomDeckGenerator {
         startingCards.removeIf(card -> excludedStartingCardNames.contains(card.getName()));
         Map<String, PaperCard> eligibleByName = indexByName(eligibleCards);
         Map<String, PaperCard> startingByName = indexByName(startingCards);
+        Set<String> needs = getThemeCardNames(commander.getRules().getAiHints().getDeckNeeds(), eligibleCards);
+        Set<String> hints = getThemeCardNames(commander.getRules().getAiHints().getDeckHints(), eligibleCards);
+        hints.removeAll(needs);
+        ThemeMatches themeMatches = new ThemeMatches(needs, hints);
 
         int commanderBracket = CommanderBracketCalculator.calculate(
             CommanderBracketCalculator.getCardNames(commander)).getBracket();
@@ -251,7 +307,7 @@ public final class RogueCustomDeckGenerator {
 
         return new DeckGenerationContext(commander, startingCards, startingByName, eligibleCards,
             eligibleByName, generatedSpells, generatedRewardCards, generatedLands,
-            rankedSynergy, maxBracket, targetStartingCreatures);
+            rankedSynergy, maxBracket, targetStartingCreatures, themeMatches);
     }
 
     private static List<PaperCard> getStartingPrints(List<PaperCard> eligibleCards,
@@ -316,15 +372,47 @@ public final class RogueCustomDeckGenerator {
 
     private static Deck buildStartingDeck(DeckGenerationContext context, String name,
             String landEdition) {
+        List<PaperCard> spellCandidates = new ArrayList<>(context.generatedSpells().values());
+        Collections.shuffle(spellCandidates, MyRandom.getRandom());
+        spellCandidates.sort(Comparator.comparingInt(card -> card.getRules().getManaCost().getCMC()));
+        List<PaperCard> synergyCandidates = getSynergyFallbackSpells(context);
+        Collections.shuffle(synergyCandidates, MyRandom.getRandom());
+        List<PaperCard> broadCandidates = new ArrayList<>(context.startingCards());
+        Collections.shuffle(broadCandidates, MyRandom.getRandom());
+        // Prefer Forge's generated deck, then other synergy cards, then the legal pool.
+        List<List<PaperCard>> sources = List.of(spellCandidates, synergyCandidates, broadCandidates);
+        List<PaperCard> nonbasicLands = new ArrayList<>(context.generatedLands().values());
+        Collections.shuffle(nonbasicLands, MyRandom.getRandom());
+
+        Deck start = selectStartingDeck(context, name, landEdition, sources, nonbasicLands, false);
+        if (start == null || isStartingDeckInvalid(context, start)) {
+            return null;
+        }
+        if (context.themeMatches().count(start.getMain().toFlatList()) >= STARTING_THEME_TARGET
+            || context.themeMatches().count(context.startingCards()) == 0) {
+            return start;
+        }
+        Deck retry = selectStartingDeck(context, name, landEdition, sources, nonbasicLands, true);
+        if (retry != null && !isStartingDeckInvalid(context, retry)
+            && context.themeMatches().count(retry.getMain().toFlatList()) >= STARTING_THEME_TARGET) {
+            return retry;
+        }
+        return start;
+    }
+
+    private static Deck selectStartingDeck(DeckGenerationContext context, String name,
+            String landEdition, List<List<PaperCard>> sources, List<PaperCard> nonbasicLands,
+            boolean prioritizeTheme) {
         Set<String> supportingNames = new HashSet<>();
         Set<String> completeNames = new HashSet<>(
             CommanderBracketCalculator.getCardNames(context.commander()));
-        Map<String, PaperCard> spells = selectStartingSpells(context, supportingNames, completeNames);
+        Map<String, PaperCard> spells = selectStartingSpells(context, supportingNames, completeNames,
+            sources, prioritizeTheme);
         if (spells.size() != STARTING_SPELL_COUNT) {
             return null;
         }
         List<PaperCard> lands = selectStartingLands(context, supportingNames, completeNames,
-            landEdition);
+            landEdition, nonbasicLands);
         if (lands.isEmpty()) {
             return null;
         }
@@ -341,27 +429,28 @@ public final class RogueCustomDeckGenerator {
     }
 
     private static Map<String, PaperCard> selectStartingSpells(DeckGenerationContext context,
-            Set<String> supportingNames, Set<String> completeNames) {
+            Set<String> supportingNames, Set<String> completeNames,
+            List<List<PaperCard>> sources, boolean prioritizeTheme) {
         LinkedHashMap<String, PaperCard> spells = new LinkedHashMap<>();
         addHighCurveSynergySpells(spells, supportingNames, completeNames, context);
 
-        List<PaperCard> spellCandidates = new ArrayList<>(context.generatedSpells().values());
-        Collections.shuffle(spellCandidates, MyRandom.getRandom());
-        spellCandidates.sort(Comparator.comparingInt(card -> card.getRules().getManaCost().getCMC()));
-        List<PaperCard> synergyCandidates = getSynergyFallbackSpells(context);
-        Collections.shuffle(synergyCandidates, MyRandom.getRandom());
-        List<PaperCard> broadCandidates = new ArrayList<>(context.startingCards());
-        Collections.shuffle(broadCandidates, MyRandom.getRandom());
-        // Prefer Forge's generated deck, then other synergy cards, then the legal pool.
-        List<List<PaperCard>> sources = List.of(spellCandidates, synergyCandidates, broadCandidates);
+        if (prioritizeTheme) {
+            int targetSize = spells.size()
+                + Math.max(0, STARTING_THEME_TARGET - context.themeMatches().count(spells.values()));
+            for (List<PaperCard> source : context.themeMatches().prioritize(sources)) {
+                addSpells(spells, source, supportingNames, completeNames, context.maxBracket(),
+                    context.targetStartingCreatures(), targetSize);
+            }
+        }
         for (List<PaperCard> source : sources) {
             addSpells(spells, source, supportingNames, completeNames, context.maxBracket(),
-                context.targetStartingCreatures());
+                context.targetStartingCreatures(), STARTING_SPELL_COUNT);
         }
         if (spells.size() < STARTING_SPELL_COUNT) {
             // Relax only the creature target if the preferred mix cannot fill every slot.
             for (List<PaperCard> source : sources) {
-                addSpells(spells, source, supportingNames, completeNames, context.maxBracket(), -1);
+                addSpells(spells, source, supportingNames, completeNames, context.maxBracket(), -1,
+                    STARTING_SPELL_COUNT);
             }
         }
         return spells;
@@ -396,9 +485,8 @@ public final class RogueCustomDeckGenerator {
     }
 
     private static List<PaperCard> selectStartingLands(DeckGenerationContext context,
-            Set<String> supportingNames, Set<String> completeNames, String landEdition) {
-        List<PaperCard> nonbasicLands = new ArrayList<>(context.generatedLands().values());
-        Collections.shuffle(nonbasicLands, MyRandom.getRandom());
+            Set<String> supportingNames, Set<String> completeNames, String landEdition,
+            List<PaperCard> nonbasicLands) {
         ColorSet commanderColors = context.commander().getRules().getColorIdentity();
         nonbasicLands.sort(Comparator.comparingInt(
             (PaperCard card) -> fixingColors(card, commanderColors)).reversed());
@@ -444,8 +532,55 @@ public final class RogueCustomDeckGenerator {
         for (PaperCard card : start.getMain().toFlatList()) {
             used.add(card.getName());
         }
+        Map<RewardThemeCategory, Integer> targets = new EnumMap<>(RewardThemeCategory.class);
+        CardPool normal = selectRewardPool(context, sources, used, targets);
+        if (isRewardPoolInvalid(normal)) {
+            return null;
+        }
+        List<PaperCard> normalCards = normal.toFlatList();
+        for (RewardThemeCategory category : RewardThemeCategory.values()) {
+            int availableMatches = (int) context.eligibleCards().stream()
+                .filter(card -> !used.contains(card.getName())
+                    && category.matches(card) && context.themeMatches().matches(card))
+                .map(PaperCard::getName).distinct().count();
+            if (availableMatches > 0) {
+                int count = (int) normalCards.stream().filter(category::matches).count();
+                targets.put(category, Math.min((int) Math.ceil(count * 0.25), availableMatches));
+            }
+        }
+        if (meetsRewardThemeTargets(normal, context.themeMatches(), targets)) {
+            return normal;
+        }
+        CardPool retry = selectRewardPool(context, sources, used, targets);
+        if (!isRewardPoolInvalid(retry)
+            && meetsRewardThemeTargets(retry, context.themeMatches(), targets)) {
+            return retry;
+        }
+        return normal;
+    }
+
+    private static boolean meetsRewardThemeTargets(CardPool rewardPool, ThemeMatches themeMatches,
+            Map<RewardThemeCategory, Integer> targets) {
+        List<PaperCard> cards = rewardPool.toFlatList();
+        for (Map.Entry<RewardThemeCategory, Integer> target : targets.entrySet()) {
+            long matches = cards.stream().filter(target.getKey()::matches).filter(themeMatches::matches).count();
+            if (matches < target.getValue()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static CardPool selectRewardPool(DeckGenerationContext context,
+            List<List<PaperCard>> sources, Set<String> startingNames,
+            Map<RewardThemeCategory, Integer> targets) {
+        Set<String> used = new HashSet<>(startingNames);
+        List<List<PaperCard>> themeSources = targets.isEmpty()
+            ? List.of() : context.themeMatches().prioritize(sources);
         CardPool rewardPool = new CardPool();
         // Reserve each required category from the same priority-ordered sources.
+        addRewards(rewardPool, used, themeSources, targets.getOrDefault(RewardThemeCategory.MYTHICS, 0),
+            RewardThemeCategory.MYTHICS::matches);
         addRewards(rewardPool, used, sources, 40,
             card -> card.getRarity() == CardRarity.MythicRare);
         int mythics = rewardPool.countAll();
@@ -458,10 +593,14 @@ public final class RogueCustomDeckGenerator {
         int nonlandNonMythics = nonMythics - lands;
         int minCreatures = (int) Math.ceil(nonlandNonMythics * MIN_REWARD_CREATURE_PERCENT / 100.0);
         int maxCreatures = (int) Math.floor(nonlandNonMythics * MAX_REWARD_CREATURE_PERCENT / 100.0);
-        addRewards(rewardPool, used, sources, rewardPool.countAll() + minCreatures,
-            card -> card.getRarity() != CardRarity.MythicRare
-                && !card.getRules().getType().isLand()
-                && card.getRules().getType().isCreature());
+        int creatureTargetSize = rewardPool.countAll() + minCreatures;
+        addRewards(rewardPool, used, themeSources, rewardPool.countAll()
+            + targets.getOrDefault(RewardThemeCategory.CREATURES, 0),
+            RewardThemeCategory.CREATURES::matches);
+        addRewards(rewardPool, used, sources, creatureTargetSize, RewardThemeCategory.CREATURES::matches);
+        addRewards(rewardPool, used, themeSources, rewardPool.countAll()
+            + targets.getOrDefault(RewardThemeCategory.SPELLS, 0),
+            RewardThemeCategory.SPELLS::matches);
         addRemainingNonlandRewards(rewardPool, used, sources, maxCreatures);
         return rewardPool;
     }
@@ -484,9 +623,7 @@ public final class RogueCustomDeckGenerator {
     private static void addRemainingNonlandRewards(CardPool rewardPool, Set<String> used,
             List<List<PaperCard>> sources, int maxCreatures) {
         int creatures = (int) rewardPool.toFlatList().stream()
-            .filter(card -> card.getRarity() != CardRarity.MythicRare
-                && !card.getRules().getType().isLand()
-                && card.getRules().getType().isCreature()).count();
+            .filter(RewardThemeCategory.CREATURES::matches).count();
         int remaining = REWARD_POOL_SIZE - rewardPool.countAll();
         for (List<PaperCard> source : sources) {
             for (PaperCard card : source) {
@@ -536,9 +673,7 @@ public final class RogueCustomDeckGenerator {
                 && card.getRules().getType().isLand()).count();
         int nonlandNonMythics = nonMythics - lands;
         int creatures = (int) cards.stream()
-            .filter(card -> card.getRarity() != CardRarity.MythicRare
-                && !card.getRules().getType().isLand()
-                && card.getRules().getType().isCreature()).count();
+            .filter(RewardThemeCategory.CREATURES::matches).count();
         return cards.size() != REWARD_POOL_SIZE || mythics < 30 || mythics > 45
             || lands * 100 < nonMythics * 8 || lands * 100 > nonMythics * 12
             || creatures * 100 < nonlandNonMythics * MIN_REWARD_CREATURE_PERCENT
@@ -547,9 +682,9 @@ public final class RogueCustomDeckGenerator {
 
     private static void addSpells(Map<String, PaperCard> spells, List<PaperCard> candidates,
             Set<String> supportingNames, Set<String> completeNames, int maxBracket,
-            int targetCreatures) {
+            int targetCreatures, int targetSize) {
         for (PaperCard card : candidates) {
-            if (spells.size() >= STARTING_SPELL_COUNT) {
+            if (spells.size() >= targetSize) {
                 return;
             }
             if (!card.getRules().getType().isLand()
