@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 /**
@@ -211,8 +212,8 @@ public interface RogueEffect {
     /** Whether this effect applies at the current run-start trigger. */
     default boolean appliesOnRunStart(RogueRun run) { return true; }
 
-    /** Fired when a new run or Endless Trail starts. Adjust starting life, gold, etc. */
-    default void onRunStart(RogueRun run) {}
+    /** Fired when a new run or Endless Trail starts. Submit any follow-up actions to handleResult. */
+    default void onRunStart(RogueRun run, Consumer<EffectResultContext> handleResult) {}
 
     /** Fired after path generation. Modify nodes via run.getPath().getNodes(). */
     default void afterPathGeneration(RogueRun run) {}

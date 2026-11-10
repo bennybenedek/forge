@@ -11,6 +11,7 @@ import java.util.List;
 public class CardRewardContext {
     public int maxPicks;
     public int nonMythicCardCountAdjustment;
+    public int additionalNonMythicCards;
     public int nonMythicCardReplacementCount;
     public String title;
     public List<PaperCard> rewardCards = new ArrayList<>();

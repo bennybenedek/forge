@@ -4,13 +4,17 @@ import forge.StaticData;
 import forge.card.CardEdition;
 import forge.card.CardRarity;
 import forge.card.CardRules;
+import forge.card.CardSplitType;
+import forge.card.CardType;
 import forge.card.ICardFace;
 import forge.deck.CardPool;
 import forge.deck.Deck;
 import forge.deck.DeckFormat;
 import forge.deck.DeckSection;
 import forge.deck.io.DeckSerializer;
+import forge.gamemodes.rogue.RogueRun.CarryCardType;
 import forge.item.PaperCard;
+import forge.item.PaperCardPredicates;
 import forge.localinstance.properties.ForgeConstants;
 import forge.model.FModel;
 import forge.util.FileSection;
@@ -347,6 +351,24 @@ public class RogueConfig {
         return FModel.getMagicDb().getCommonCards().getUniqueCards().stream()
                 .filter(effectiveFilter)
                 .toList();
+    }
+
+    /** Returns the Bazaar Carry Card type, or null if the card is ineligible. */
+    public static CarryCardType getBazaarCarryCardType(PaperCard card) {
+        if (card == null || !PaperCardPredicates.IS_RARE_OR_MYTHIC.test(card)
+            || card.hasFlavorName() || card.getRules().getSplitType() != CardSplitType.None
+            || !DeckFormat.RogueCommander.isLegalCard(card)) {
+            return null;
+        }
+
+        CardType type = card.getRules().getType();
+        if (type.isCreature()) {
+            return type.isLegendary() ? CarryCardType.FELLOW : null;
+        }
+        if (type.isArtifact()) {
+            return type.isLegendary() ? CarryCardType.ITEM : null;
+        }
+        return type.isInstant() || type.isSorcery() ? CarryCardType.SCROLL : null;
     }
 
     /** Database cards for random Rogue selections, excluding multiplayer-dependent text. */

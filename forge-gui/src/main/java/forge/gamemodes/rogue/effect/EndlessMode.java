@@ -10,6 +10,7 @@ import forge.gamemodes.rogue.path.NodePlanebound;
 import forge.gamemodes.rogue.path.RoguePathNode;
 import forge.item.PaperCard;
 import java.util.List;
+import java.util.function.Consumer;
 
 /** Difficulty and Bazaar pricing for each Trail continuation. */
 public enum EndlessMode implements RogueEffect {
@@ -62,7 +63,7 @@ public enum EndlessMode implements RogueEffect {
     }
 
     @Override
-    public void onRunStart(RogueRun run) {
+    public void onRunStart(RogueRun run, Consumer<EffectResultContext> handleResult) {
         run.setCurrentLife(run.getMaxLife());
     }
 

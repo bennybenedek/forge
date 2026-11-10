@@ -49,10 +49,10 @@ public enum RogueEffectComposite implements RogueEffect {
     }
 
     @Override
-    public void onRunStart(RogueRun run) {
+    public void onRunStart(RogueRun run, Consumer<EffectResultContext> handleResult) {
         forEachEffect(run, e -> {
             if (e.appliesOnRunStart(run)) {
-                e.onRunStart(run);
+                e.onRunStart(run, handleResult);
             }
         });
     }

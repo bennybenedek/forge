@@ -1,9 +1,23 @@
 package forge.gamemodes.rogue.effect;
 
+import forge.card.CardRules;
 import forge.game.player.RegisteredPlayer;
 import forge.gamemodes.rogue.AetherUpgrade;
+import forge.gamemodes.rogue.RogueConfig;
 import forge.gamemodes.rogue.RogueRun;
+import forge.gamemodes.rogue.RogueRun.CarryCardType;
+import forge.gamemodes.rogue.path.NodePlanebound;
 import forge.item.PaperCard;
+import forge.item.PaperCardPredicates;
+import forge.util.MyRandom;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Consumer;
+import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * Enum defining all available Aetherworks in Rogue Commander mode.
@@ -21,7 +35,7 @@ public enum AetherEffect implements RogueEffect {
             3, 0),
         EffectType.PERMANENT, null) {
         @Override
-        public void onRunStart(RogueRun run) {
+        public void onRunStart(RogueRun run, Consumer<EffectResultContext> handleResult) {
             int bonus = getEffectValueAtRank(run.getRunEffectRank(getId()));
             if (bonus > 0) run.addMaxLife(bonus);
         }
@@ -40,7 +54,7 @@ public enum AetherEffect implements RogueEffect {
             3, 0),
         EffectType.PERMANENT, null) {
         @Override
-        public void onRunStart(RogueRun run) {
+        public void onRunStart(RogueRun run, Consumer<EffectResultContext> handleResult) {
             int bonus = getEffectValueAtRank(run.getRunEffectRank(getId()));
             if (bonus > 0) run.addGold(bonus);
         }
@@ -97,44 +111,49 @@ public enum AetherEffect implements RogueEffect {
     },
 
     CONTINUUM_ENGINE("continuum_engine", "Continuum Engine",
-        "Survive defeat and revive with 5 life, %s time(s).",
+        "Survive defeat and revive with %s Life once.",
         new EffectRankContext(
-            new int[]{10, 20}, // Echo costs (rank 1-2)
-            new int[]{1, 2},   // Effect values: 1/2 revive charges
-            1, 0),
+            new int[]{10, 20, 30}, // Echo costs (rank 1-3)
+            new int[]{5, 10, 15},  // Life on revival
+            2, 0),
         EffectType.CONSUME, "Aetherwork - Continuum Engine") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
             int rank = run.getRunEffectRank(getId());
-            int charges = getEffectValueAtRank(rank);
-            if (charges > 0) {
+            if (rank > 0) {
                 RogueEffect.addCardToCommandZone(getEffectCardReferenceForRank(rank), human);
             }
         }
 
         @Override
-        public int getChargesForRank(int rank) { return getEffectValueAtRank(rank); }
+        public int getChargesForRank(int rank) { return rank > 0 ? 1 : 0; }
 
         @Override
         public void onDefeat(DefeatContext ctx, RogueRun run) {
             ctx.revived = true;
-            ctx.reviveLife = 5;
-            run.consumeEffect(getId());
+            ctx.reviveLife = getEffectValueAtRank(run.getRunEffectRank(getId()));
+            while (run.getRunEffectCharges(getId()) > 0) {
+                run.consumeEffect(getId());
+            }
         }
     },
 
     // Advanced Aetherworks — visible after Aether Upgrade(s)
 
     MEMORY_CACHE("memory_cache", "Memory Cache",
-        "Keep +%s extra cards from Card Rewards.",
+        "See 1 more card in standard Card Rewards. Keep up to %s extra cards from Card Rewards.",
         new EffectRankContext(
-            new int[]{8, 12}, // Echo costs (rank 1-2)
-            new int[]{1, 2},  // Effect values: +1/+2 extra picks
-            1, 2),
+            new int[]{8, 12, 16}, // Echo costs (rank 1-3)
+            new int[]{1, 2, 3},   // Extra picks
+            2, 2),
         EffectType.PERMANENT, null) {
         @Override
         public void onCardReward(CardRewardContext ctx, RogueRun run) {
-            ctx.maxPicks += getEffectValueAtRank(run.getRunEffectRank(getId()));
+            int extraPicks = getEffectValueAtRank(run.getRunEffectRank(getId()));
+            if (extraPicks > 0) {
+                ctx.maxPicks += extraPicks;
+                ctx.additionalNonMythicCards++;
+            }
         }
     },
 
@@ -158,11 +177,12 @@ public enum AetherEffect implements RogueEffect {
     },
 
     ZHALFIRIN_WARD("zhalfirin_ward", "Zhalfirin Ward",
-        "Fellows and Items you control have hexproof and indestructible.",
+        "Fellows and Items you control have hexproof and indestructible. "
+            + "Start each Run by choosing %s of 20 rare legendary colorless Fellows and Items.",
         new EffectRankContext(
-            new int[]{10}, // Echo cost
-            new int[]{1},  // Non-ranked Aetherwork
-            1, 2),
+            new int[]{10, 15, 20}, // Echo costs (rank 1-3)
+            new int[]{1, 2, 3},    // Starting Carry Cards
+            2, 2),
         EffectType.PERMANENT, "Aetherwork - Zhalfirin Ward") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
@@ -172,22 +192,47 @@ public enum AetherEffect implements RogueEffect {
         }
 
         @Override
-        public int getEffectiveMaxRank(int upgradeLevel) {
-            return 1;
+        public boolean appliesOnRunStart(RogueRun run) {
+            return run.getEndlessLevel() == 0;
+        }
+
+        @Override
+        public void onRunStart(RogueRun run, Consumer<EffectResultContext> handleResult) {
+            chooseStartingCarryCards(run, handleResult, card -> {
+                CardRules rules = card.getRules();
+                return PaperCardPredicates.IS_RARE.test(card) && rules.getColor().isColorless()
+                    && rules.getType().isLegendary()
+                    && (rules.getType().isCreature() || rules.getType().isArtifact());
+            }, card -> card.getRules().getType().isCreature() ? CarryCardType.FELLOW : CarryCardType.ITEM);
         }
     },
 
-    TEMPORAL_OBSERVATORY("temporal_observatory", "Temporal Observatory",
-        "Reveal %s more Planebound row(s) on the map.",
+    SPELLWRIGHTS_PRESS("spellwrights_press", "Spellwright's Press",
+        "Scrolls you cast cannot be countered. "
+            + "Start each Run by choosing %s of 20 mythic rare Scrolls.",
         new EffectRankContext(
-            new int[]{6, 10, 14}, // Echo costs (rank 1-3)
-            new int[]{1, 2, 3},   // Effect values: reveal 1/2/3 more Planebound rows
+            new int[]{10, 15, 20}, // Echo costs (rank 1-3)
+            new int[]{1, 2, 3},    // Starting Scrolls
             2, 2),
-        EffectType.PERMANENT, null) {
+        EffectType.PERMANENT, "Aetherwork - Spellwright's Press") {
         @Override
-        public void onPathUpdate(PathUpdateContext ctx, RogueRun run) {
-            ctx.additionalVisiblePlaneboundRows += getEffectValueAtRank(
-                run.getRunEffectRank(getId()));
+        public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
+            if (run.getRunEffectRank(getId()) > 0) {
+                RogueEffect.addCardToCommandZone(getEffectCardReference(), human);
+            }
+        }
+
+        @Override
+        public boolean appliesOnRunStart(RogueRun run) {
+            return run.getEndlessLevel() == 0;
+        }
+
+        @Override
+        public void onRunStart(RogueRun run, Consumer<EffectResultContext> handleResult) {
+            chooseStartingCarryCards(run, handleResult,
+                card -> PaperCardPredicates.IS_MYTHIC_RARE.test(card)
+                    && RogueConfig.getBazaarCarryCardType(card) == CarryCardType.SCROLL,
+                card -> CarryCardType.SCROLL);
         }
     },
 
@@ -225,7 +270,7 @@ public enum AetherEffect implements RogueEffect {
     },
 
     PLANEBENDER("planebender", "Planebender",
-        "Reroll Planebound Nodes of the next row on the map up to %s time(s) during the Run.",
+        "Reroll Planebound Nodes and their Wrathful / Cursed markers in the next row on the map up to %s time(s) during the Run.",
         new EffectRankContext(
             new int[]{6, 10, 14, 18}, // Echo costs (rank 1-4)
             new int[]{1, 2, 3, 4},    // Effect values: 1/2/3/4 reroll charges
@@ -243,6 +288,11 @@ public enum AetherEffect implements RogueEffect {
 
         @Override
         public void onPathNodeReroll(PathUpdateContext ctx, RogueRun run) {
+            if (run.getCurrentNode() instanceof NodePlanebound node) {
+                int descension = run.getDescensionLevel();
+                node.rerollMarkers(descension >= DescensionLevel.LEVEL_1.level,
+                    descension >= DescensionLevel.LEVEL_2.level);
+            }
             run.consumeEffect(getId());
         }
     };
@@ -261,6 +311,42 @@ public enum AetherEffect implements RogueEffect {
         this.rankContext = rankContext;
         this.effectType = effectType;
         this.effectCardReference = effectCardReference;
+    }
+
+    final void chooseStartingCarryCards(RogueRun run, Consumer<EffectResultContext> handleResult,
+                                       Predicate<PaperCard> filter, Function<PaperCard, CarryCardType> typeForCard) {
+        int pickCount = getEffectValueAtRank(run.getRunEffectRank(getId()));
+        if (pickCount <= 0) {
+            return;
+        }
+
+        List<PaperCard> candidates = new ArrayList<>(RogueConfig.getRandomCards(filter));
+        candidates.removeIf(card -> !run.canAddCardAsCarryCard(card));
+        Collections.shuffle(candidates, MyRandom.getRandom());
+
+        Set<String> offeredNames = new HashSet<>();
+        List<PaperCard> offers = candidates.stream()
+            .filter(card -> offeredNames.add(card.getRules().getNormalizedName()))
+            .limit(20)
+            .toList();
+        if (offers.isEmpty()) {
+            return;
+        }
+
+        int requiredPicks = Math.min(pickCount, offers.size());
+        EffectResultContext ctx = new EffectResultContext();
+        ctx.trigger = EffectResultContext.ActionTriggerType.CARD_ADDITION;
+        ctx.candidateCards = offers;
+        ctx.cardSelectionMinCount = requiredPicks;
+        ctx.cardSelectionMaxCount = requiredPicks;
+        ctx.cardSelectionSubtitle = getDisplayName() + " - Choose " + requiredPicks
+            + (requiredPicks == 1 ? " Carry Card." : " Carry Cards.");
+        ctx.onCardsSelected = selected -> {
+            for (PaperCard card : selected) {
+                addCarryCard(run, ctx, card, typeForCard.apply(card));
+            }
+        };
+        handleResult.accept(ctx);
     }
 
     @Override

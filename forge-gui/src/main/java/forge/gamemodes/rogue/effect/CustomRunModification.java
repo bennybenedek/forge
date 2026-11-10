@@ -1,5 +1,6 @@
 package forge.gamemodes.rogue.effect;
 
+import forge.deck.CardPool;
 import forge.gamemodes.rogue.CodexHelper;
 import forge.gamemodes.rogue.RogueCustomDeckGenerator;
 import forge.gamemodes.rogue.RogueDeck;
@@ -7,9 +8,14 @@ import forge.gamemodes.rogue.RogueRun;
 import forge.gamemodes.rogue.path.NodeBazaar;
 import forge.gamemodes.rogue.path.NodeChest;
 import forge.item.PaperCard;
+import forge.item.PaperCardPredicates;
 import forge.util.MyRandom;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.function.BiFunction;
+import java.util.function.Consumer;
 
 /** Optional run modifiers, including generated decks and persistent Rogue effects. */
 public enum CustomRunModification implements RogueEffect {
@@ -18,29 +24,73 @@ public enum CustomRunModification implements RogueEffect {
     CHOSEN_ONE("custom:choose_rogue_commander", "Chosen One",
         "Choose any legendary creature as your Commander.", false) {
         @Override
-        public RogueDeck createRogueDeck(RogueDeck selectedDeck, PaperCard commander) {
+        public RogueDeck createRogueDeck(RogueDeck selectedDeck, PaperCard commander,
+                BiFunction<RogueDeck, EffectResultContext, List<PaperCard>> selectCards) {
             return RogueCustomDeckGenerator.generateForChosenCommander(commander);
         }
     },
     MANIA("custom:random_rogue_commander", "Mania",
         "A random legendary creature will be chosen as your Commander.", false) {
         @Override
-        public RogueDeck createRogueDeck(RogueDeck selectedDeck, PaperCard commander) {
+        public RogueDeck createRogueDeck(RogueDeck selectedDeck, PaperCard commander,
+                BiFunction<RogueDeck, EffectResultContext, List<PaperCard>> selectCards) {
             return RogueCustomDeckGenerator.generate();
         }
     },
     RANDOM_START("custom:random_start", "Random Start",
         "Start with an automatically created Start Deck according to synergy and color identity for the selected Commander instead of its default deck.", true) {
         @Override
-        public RogueDeck createRogueDeck(RogueDeck selectedDeck, PaperCard commander) {
+        public RogueDeck createRogueDeck(RogueDeck selectedDeck, PaperCard commander,
+                BiFunction<RogueDeck, EffectResultContext, List<PaperCard>> selectCards) {
             return RogueCustomDeckGenerator.generateStartingDeck(selectedDeck);
         }
     },
     RANDOM_REWARDS("custom:random_rewards", "Random Rewards",
         "Start with an automatically created Reward Pool according to synergy and color identity for the selected Commander instead of its default pool.", false) {
         @Override
-        public RogueDeck createRogueDeck(RogueDeck selectedDeck, PaperCard commander) {
+        public RogueDeck createRogueDeck(RogueDeck selectedDeck, PaperCard commander,
+                BiFunction<RogueDeck, EffectResultContext, List<PaperCard>> selectCards) {
             return RogueCustomDeckGenerator.generateRewardPool(selectedDeck);
+        }
+    },
+    SEALED("custom:sealed", "Sealed",
+        "Draw 20 out of 60 non-mythic cards from the Start and Reward Pool as your starting deck. (also works with automatically generated decks & pools)", true) {
+        @Override
+        public RogueDeck createRogueDeck(RogueDeck selectedDeck, PaperCard commander,
+                BiFunction<RogueDeck, EffectResultContext, List<PaperCard>> selectCards) {
+            int pickCount = 20;
+            CardPool startingMain = selectedDeck.getStartDeck().getMain();
+            List<PaperCard> candidates = startingMain.toFlatList();
+            candidates.addAll(selectedDeck.getRewardPoolCards());
+
+            Set<String> usedNames = new HashSet<>();
+            for (PaperCard startingCommander : selectedDeck.getStartDeck().getCommanders()) {
+                usedNames.add(startingCommander.getRules().getNormalizedName());
+            }
+            candidates.removeIf(card -> card.getRules().getType().isBasicLand()
+                || PaperCardPredicates.IS_MYTHIC_RARE.test(card)
+                || !usedNames.add(card.getRules().getNormalizedName()));
+            if (candidates.size() < pickCount) {
+                return null;
+            }
+            Collections.shuffle(candidates, MyRandom.getRandom());
+
+            RogueDeck sealedDeck = selectedDeck.copy();
+            CardPool sealedMain = sealedDeck.getStartDeck().getMain();
+            sealedMain.clear();
+            sealedMain.addAll(startingMain.getFilteredPool(card -> card.getRules().getType().isBasicLand()));
+
+            EffectResultContext ctx = new EffectResultContext();
+            ctx.candidateCards = candidates.subList(0, Math.min(60, candidates.size()));
+            ctx.cardSelectionMinCount = pickCount;
+            ctx.cardSelectionMaxCount = pickCount;
+            ctx.cardSelectionSubtitle = "Choose cards for your starting deck.";
+            List<PaperCard> selected = selectCards.apply(sealedDeck, ctx);
+            if (selected.size() != pickCount) {
+                return null;
+            }
+            sealedMain.addAllFlat(selected);
+            return sealedDeck;
         }
     },
     PATHFINDER("custom:pathfinder", "Pathfinder",
@@ -65,7 +115,7 @@ public enum CustomRunModification implements RogueEffect {
     USURPER("custom:usurper", "Usurper",
         "Start with 2 random Chest Traits. All Planebounds gain +1 Cursed.", true) {
         @Override
-        public void onRunStart(RogueRun run) {
+        public void onRunStart(RogueRun run, Consumer<EffectResultContext> handleResult) {
             List<ChestEffect> traits = ChestEffect.getAvailableEffects(run, EffectType.PERMANENT);
             Collections.shuffle(traits, MyRandom.getRandom());
             for (int i = 0; i < Math.min(2, traits.size()); i++) {
@@ -91,7 +141,7 @@ public enum CustomRunModification implements RogueEffect {
         }
     },
     VOID("custom:void", "Void",
-        "No Planes are added for any battle.", true) {
+        "No Planes or Planar Die are added for any battle.", true) {
         @Override
         public void onBeforeMatchSetup(MatchSetupContext ctx, RogueRun run) {
             ctx.includePlanes = false;
@@ -133,7 +183,8 @@ public enum CustomRunModification implements RogueEffect {
     @Override
     public String getRawDescription() { return description; }
 
-    public RogueDeck createRogueDeck(RogueDeck selectedDeck, PaperCard commander) {
+    public RogueDeck createRogueDeck(RogueDeck selectedDeck, PaperCard commander,
+            BiFunction<RogueDeck, EffectResultContext, List<PaperCard>> selectCards) {
         return selectedDeck;
     }
 

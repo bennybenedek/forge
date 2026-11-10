@@ -553,7 +553,10 @@ public enum CSubmenuRogueStart implements ICDoc {
     RogueDeck runDeck = selectedDeck;
     try {
       for (CustomRunModification modification : modifications) {
-        runDeck = modification.createRogueDeck(runDeck, chosenCommander);
+        runDeck = modification.createRogueDeck(runDeck, chosenCommander,
+            (deck, ctx) -> new CardSelectionDialog("Starting Deck", ctx.cardSelectionSubtitle,
+                ctx.candidateCards, new RogueRun(deck), ctx.cardSelectionMinCount,
+                ctx.cardSelectionMaxCount).show());
         if (runDeck == null) {
           break;
         }
@@ -642,7 +645,7 @@ public enum CSubmenuRogueStart implements ICDoc {
   }
 
   void applyRunStartEffectsAndNpcBoon(RogueRun newRun, RogueMetaProgress progress) {
-    RogueEffectComposite.INSTANCE.onRunStart(newRun);
+    RogueEffectComposite.INSTANCE.onRunStart(newRun, ctx -> EffectResultHelper.handleTrigger(ctx, newRun));
 
     // Show NPC encounter dialogs (e.g. Tyvar offering npcEffect choices)
     for (NPCContext ctx : NPCEncounterComposite.INSTANCE.onRunStart(progress, newRun)) {

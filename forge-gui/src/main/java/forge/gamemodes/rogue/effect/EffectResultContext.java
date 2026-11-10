@@ -6,16 +6,17 @@ import forge.gamemodes.rogue.RogueRun;
 import forge.item.PaperCard;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
 
 /**
  * Mutable context for effect result handling.
- * Set by ONESHOT effects that trigger follow-up actions or card effects.
+ * Set by effects that trigger follow-up actions or card effects.
  */
 public class EffectResultContext {
     public enum ActionTriggerType { BAZAAR, PLANEBOUND, CARD_REMOVAL, CARD_ADDITION, CARD_REWARD, MYTHIC_CARD_REWARD, CHEST, SANCTUM, MOVE }
     public record CarryCardReward(PaperCard card, RogueRun.CarryCardType type, String sourceId) {}
 
-    /** Set by ONESHOT effects that trigger another action (e.g., "opens a bazaar"). Null = no follow-up. */
+    /** Set by effects that trigger another action (e.g., "opens a bazaar"). Null = no follow-up. */
     public ActionTriggerType trigger;
 
     /** Set by PLANEBOUND trigger to pass the picked planebound to the UI layer. */
@@ -34,6 +35,9 @@ public class EffectResultContext {
     public List<PaperCard> candidateCards;
     public int cardSelectionMinCount;
     public int cardSelectionMaxCount;
+    public String cardSelectionSubtitle;
+    /** Optional CARD_ADDITION handler that applies the selection and records the grants in addedCards. */
+    public Consumer<List<PaperCard>> onCardsSelected;
     public int cardSelectionCopyCount = 1;
     public DeckSection addSection = DeckSection.Main;
     public boolean replaceCurrentCardsInAddSection;

@@ -177,7 +177,8 @@ public class CardRewardHelper {
             baseNonMythics = 0;
             baseMythics = 3;
         } else {
-            baseNonMythics = Math.max(0, 6 - selCtx.extraMythics + rewardCtx.nonMythicCardCountAdjustment);
+            baseNonMythics = Math.max(0, 6 - selCtx.extraMythics + rewardCtx.nonMythicCardCountAdjustment)
+                + rewardCtx.additionalNonMythicCards;
             baseMythics = 1 + selCtx.extraMythics;
         }
 

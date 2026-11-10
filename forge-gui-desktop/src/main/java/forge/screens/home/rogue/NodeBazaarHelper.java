@@ -1,8 +1,5 @@
 package forge.screens.home.rogue;
 
-import forge.card.CardRarity;
-import forge.card.CardSplitType;
-import forge.deck.DeckFormat;
 import forge.gamemodes.rogue.BazaarPricing;
 import forge.gamemodes.rogue.CardRewardHelper;
 import forge.gamemodes.rogue.CodexHelper;
@@ -356,7 +353,7 @@ class NodeBazaarHelper {
 
     private void addCarryCardOffers(RogueRun currentRun, List<BazaarItem> inventory, int offerCount) {
         List<PaperCard> candidates = new ArrayList<>(RogueConfig.getRandomCards(
-            card -> isCarryCardCandidate(card) && !card.hasFlavorName()));
+            card -> RogueConfig.getBazaarCarryCardType(card) != null));
         candidates.removeIf(card -> !currentRun.canAddCardAsCarryCard(card));
 
         // Bucket first so the final offer mix is not dominated by the much larger creature pool.
@@ -366,7 +363,7 @@ class NodeBazaarHelper {
             candidatesByType.put(type, new ArrayList<>());
         }
         for (PaperCard card : candidates) {
-            candidatesByType.get(getCarryCardType(card)).add(card);
+            candidatesByType.get(RogueConfig.getBazaarCarryCardType(card)).add(card);
         }
         for (List<PaperCard> typedCandidates : candidatesByType.values()) {
             Collections.shuffle(typedCandidates, MyRandom.getRandom());
@@ -374,7 +371,7 @@ class NodeBazaarHelper {
 
         List<PaperCard> selectedCards = selectCarryCardOffers(candidatesByType, offerCount);
         for (PaperCard card : selectedCards) {
-            inventory.add(BazaarItem.forCarryCard(card, getCarryCardType(card)));
+            inventory.add(BazaarItem.forCarryCard(card, RogueConfig.getBazaarCarryCardType(card)));
         }
     }
 
@@ -412,43 +409,6 @@ class NodeBazaarHelper {
             selectedCards.add(candidateIterator.next());
             candidateIterator.remove();
         }
-    }
-
-    private static boolean isCarryCardCandidate(PaperCard card) {
-        if (card == null || !PaperCardPredicates.IS_RARE_OR_MYTHIC.test(card)) {
-            return false;
-        }
-
-        if (!DeckFormat.RogueCommander.isLegalCard(card)) {
-            return false;
-        }
-
-        CardRarity rarity = card.getRarity();
-        if (rarity != CardRarity.Rare && rarity != CardRarity.MythicRare) {
-            return false;
-        }
-        if (card.getRules().getSplitType() != CardSplitType.None) {
-            return false;
-        }
-
-        boolean isCreature = card.getRules().getType().isCreature();
-        boolean isArtifact = card.getRules().getType().isArtifact();
-        if (isCreature || isArtifact) {
-            return card.getRules().getType().isLegendary();
-        }
-
-        return card.getRules().getType().isInstant()
-            || card.getRules().getType().isSorcery();
-    }
-
-    private static RogueRun.CarryCardType getCarryCardType(PaperCard card) {
-        if (card.getRules().getType().isCreature()) {
-            return RogueRun.CarryCardType.FELLOW;
-        }
-        if (card.getRules().getType().isArtifact()) {
-            return RogueRun.CarryCardType.ITEM;
-        }
-        return RogueRun.CarryCardType.SCROLL;
     }
 
     private List<PaperCard> applyBazaarPurchases(RogueRun currentRun, RogueDeck rogueDeck,

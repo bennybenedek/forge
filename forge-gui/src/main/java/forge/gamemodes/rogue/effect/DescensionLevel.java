@@ -8,6 +8,7 @@ import forge.gamemodes.rogue.path.NodePlanebound;
 import forge.gamemodes.rogue.path.RoguePathNode;
 import forge.util.MyRandom;
 import java.util.*;
+import java.util.function.Consumer;
 
 /**
  * Descension levels for Rogue Commander — applies progressively harder modifiers.
@@ -35,7 +36,7 @@ public enum DescensionLevel implements RogueEffect {
             for (int i = 0; i < markerCount; i++) {
                 List<NodePlanebound> eligible = new ArrayList<>();
                 for (NodePlanebound np : planeboundNodes) {
-                    if (np.getWrathfulCount() < 2) eligible.add(np);
+                    if (np.canAddRandomWrathfulMarker()) eligible.add(np);
                 }
                 if (eligible.isEmpty()) break;
                 NodePlanebound target = eligible.get(rng.nextInt(eligible.size()));
@@ -62,7 +63,7 @@ public enum DescensionLevel implements RogueEffect {
             for (int i = 0; i < markerCount; i++) {
                 List<NodePlanebound> eligible = new ArrayList<>();
                 for (NodePlanebound np : planeboundNodes) {
-                    if (np.getCursedCount() < 2 && np.getWrathfulCount() + np.getCursedCount() < 3) eligible.add(np);
+                    if (np.canAddRandomCursedMarker()) eligible.add(np);
                 }
                 if (eligible.isEmpty()) break;
                 NodePlanebound target = eligible.get(rng.nextInt(eligible.size()));
@@ -75,7 +76,7 @@ public enum DescensionLevel implements RogueEffect {
         "Start the run with a random Wound.",
         null) {
         @Override
-        public void onRunStart(RogueRun run) {
+        public void onRunStart(RogueRun run, Consumer<EffectResultContext> handleResult) {
             gainWound(run, new EffectResultContext());
         }
     },

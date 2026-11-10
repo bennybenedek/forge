@@ -24,7 +24,20 @@ public enum RogueSaveMigration {
         void migrateMetaProgress(RogueMetaProgress progress) {
             progress.backfillTotalPlaytime();
         }
+    },
+    RETIRE_TEMPORAL_OBSERVATORY(3) {
+        @Override
+        void migrateMetaProgress(RogueMetaProgress progress) {
+            progress.retireAetherEffect(TEMPORAL_OBSERVATORY_ID, new int[]{6, 10, 14});
+        }
+
+        @Override
+        void migrateRun(RogueRun run) {
+            run.removeAetherEffect(TEMPORAL_OBSERVATORY_ID);
+        }
     };
+
+    private static final String TEMPORAL_OBSERVATORY_ID = "temporal_observatory";
 
     private final int version;
 

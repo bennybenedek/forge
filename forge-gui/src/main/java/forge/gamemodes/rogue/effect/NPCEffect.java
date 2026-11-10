@@ -312,6 +312,14 @@ public enum NPCEffect implements RogueEffect {
             return run.canAddCardToDeck(horizon) || run.canAddCardToDeck(talonGates);
         }
     },
+    NARSET_FARSIGHT("npc_narset_farsight", "Farsight",
+        TRAIT_GAIN_DESCRIPTION, NPC.NARSET,
+        EffectType.PERMANENT, "Narset Trait - Farsight") {
+        @Override
+        public void onPathUpdate(PathUpdateContext ctx, RogueRun run) {
+            ctx.additionalVisiblePlaneboundRows += 3;
+        }
+    },
     NARSET_PASSAGE("npc_narset_passage", "Narset's Passage",
         TRAIT_GAIN_DESCRIPTION + " Gain a random {{Wound}}. ![[Rogue's Passage|FDC|1]]", NPC.NARSET,
         EffectType.PERMANENT, "Narset Trait - Narset's Passage") {

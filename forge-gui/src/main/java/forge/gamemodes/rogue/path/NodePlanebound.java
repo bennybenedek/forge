@@ -2,6 +2,8 @@ package forge.gamemodes.rogue.path;
 
 import forge.gamemodes.rogue.RoguePlanebound;
 import forge.gamemodes.rogue.RoguePlaneboundType;
+import forge.util.MyRandom;
+import java.util.Random;
 
 /**
  * Represents a planebound encounter node in a Rogue Commander path.
@@ -9,6 +11,9 @@ import forge.gamemodes.rogue.RoguePlaneboundType;
  * The type (NORMAL/ELITE/BOSS) is now defined in the RoguePlanebound itself.
  */
 public class NodePlanebound extends RoguePathNode {
+
+    private static final int MAX_RANDOM_MARKERS_PER_TYPE = 2;
+    private static final int MAX_RANDOM_MARKERS = 3;
 
     private RoguePlanebound roguePlanebound;
     private int wrathfulCount;
@@ -48,6 +53,29 @@ public class NodePlanebound extends RoguePathNode {
 
     public void setCursedCount(int cursedCount) {
         this.cursedCount = cursedCount;
+    }
+
+    public boolean canAddRandomWrathfulMarker() {
+        return wrathfulCount < MAX_RANDOM_MARKERS_PER_TYPE;
+    }
+
+    public boolean canAddRandomCursedMarker() {
+        return cursedCount < MAX_RANDOM_MARKERS_PER_TYPE
+            && wrathfulCount + cursedCount < MAX_RANDOM_MARKERS;
+    }
+
+    public void rerollMarkers(boolean wrathfulUnlocked, boolean cursedUnlocked) {
+        if (wrathfulCount <= 0 && cursedCount <= 0) {
+            return;
+        }
+
+        int maxWrathful = wrathfulUnlocked || wrathfulCount > 0 ? MAX_RANDOM_MARKERS_PER_TYPE : 0;
+        int maxCursed = cursedUnlocked || cursedCount > 0 ? MAX_RANDOM_MARKERS_PER_TYPE : 0;
+        Random rng = MyRandom.getRandom();
+        int total = rng.nextInt(Math.min(MAX_RANDOM_MARKERS, maxWrathful + maxCursed) + 1);
+        int minWrathful = Math.max(0, total - maxCursed);
+        wrathfulCount = minWrathful + rng.nextInt(Math.min(total, maxWrathful) - minWrathful + 1);
+        cursedCount = total - wrathfulCount;
     }
 
     public int getStartingLifeModification() {

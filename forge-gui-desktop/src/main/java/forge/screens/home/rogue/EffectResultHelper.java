@@ -80,11 +80,19 @@ final class EffectResultHelper {
         }
 
         CodexHelper.recordCardRewardOptions(currentRun, ctx.candidateCards);
+        String subtitle = ctx.cardSelectionSubtitle != null
+            ? ctx.cardSelectionSubtitle : getCardAdditionSubtitle(addMinCount, addMaxCount);
         List<PaperCard> added = new CardSelectionDialog(
             "Card Selection",
-            getCardAdditionSubtitle(addMinCount, addMaxCount),
+            subtitle,
             ctx.candidateCards, currentRun, addMinCount, addMaxCount).show();
         if (added.isEmpty() && addMinCount > 0) {
+            return;
+        }
+
+        if (ctx.onCardsSelected != null) {
+            ctx.onCardsSelected.accept(added);
+            CodexHelper.recordAcquiredCards(currentRun, ctx.addedCards);
             return;
         }
 

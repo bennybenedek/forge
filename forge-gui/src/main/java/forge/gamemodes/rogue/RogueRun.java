@@ -786,6 +786,12 @@ public class RogueRun {
         }
     }
 
+    void removeAetherEffect(String id) {
+        if (activeAetherEffects != null) {
+            activeAetherEffects.removeIf(effect -> id.equals(effect.getId()));
+        }
+    }
+
     int getSaveVersion() {
         return saveVersion;
     }

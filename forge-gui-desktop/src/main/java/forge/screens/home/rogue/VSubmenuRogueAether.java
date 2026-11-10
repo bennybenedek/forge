@@ -396,7 +396,7 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
    */
   private static class AetherworkGridPanel extends JPanel implements Scrollable {
     private static final int CARD_W = 400;
-    private static final int CARD_H = 150;
+    private static final int CARD_H = 170;
     private static final int GAP    = 15;
     private static final int INSET  = 20;
 
@@ -492,7 +492,8 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
     private Consumer<AetherworkPanel> toggleCallback;
 
     public AetherworkPanel(AetherEffect aetherEffect) {
-      super(new MigLayout("insets 15 15 15 15, gap 5, wrap, fill"));
+      super(new MigLayout("insets 15, gap 5, fill",
+          "[grow,sg footer][160px!][grow,sg footer]", "[][grow,top][]"));
       this.aetherEffect = aetherEffect;
 
       // Create and cache own icon instance at construction time
@@ -531,17 +532,10 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
       btnUpgrade.setIcon(cachedEchoIcon);
       btnUpgrade.setHorizontalTextPosition(SwingConstants.LEFT);
 
-      add(lblName, "growx, ax center");
-      add(lblDescription, "growx, ax center, wmax 370px");
-      add(lblRank, "growx, ax center");
-
-      // Spacer to push controls to bottom
-      add(new JPanel() {{
-        setOpaque(false);
-      }}, "growy, pushy");
-
-      // Upgrade button centered at bottom
-      add(btnUpgrade, "ax center, w 160px!, h 30px!");
+      add(lblName, "span 3, growx, wrap");
+      add(lblDescription, "span 3, growx, wmax 370px, wrap");
+      add(lblRank, "alignx left");
+      add(btnUpgrade, "w 160px!, h 30px!");
 
       // Add mouse listener for hover and click
       addMouseListener(new MouseAdapter() {

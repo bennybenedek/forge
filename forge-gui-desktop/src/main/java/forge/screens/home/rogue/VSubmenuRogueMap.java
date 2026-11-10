@@ -41,6 +41,8 @@ import net.miginfocom.swing.MigLayout;
 public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
   SINGLETON_INSTANCE;
 
+  private static final int CARRY_CARDS_PER_ROW = 5;
+
   final Localizer localizer = Localizer.getInstance();
   private DragCell parentCell;
   private final DragTab tab = new DragTab("Rogue Commander");
@@ -93,6 +95,7 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
   private final JPanel pnlEffects;
   private final FScrollPane scrollEffects;
   private final JPanel pnlCarryCards;
+  private final FScrollPane scrollCarryCards;
   private final RogueMapPanel mapPanel;
   private final FButton btnEnterNode;
   private final FButton btnEditDeck;
@@ -130,8 +133,12 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
     scrollEffects = new FScrollPane(pnlEffects, false,
         ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED,
         ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
-    pnlCarryCards = new JPanel(new FlowLayout(FlowLayout.LEFT, 4, 0));
+    pnlCarryCards = new JPanel(new MigLayout("insets 0 4 0 4, gap 4 2, wrap " + CARRY_CARDS_PER_ROW));
     pnlCarryCards.setOpaque(false);
+    scrollCarryCards = new FScrollPane(pnlCarryCards, false,
+        ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER,
+        ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+    scrollCarryCards.setVisible(false);
     mapPanel = new RogueMapPanel(createInfoRow());
   }
 
@@ -316,7 +323,22 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
     }
 
     pnlCarryCards.revalidate();
-    pnlCarryCards.repaint();
+    int thumbnailCount = pnlCarryCards.getComponentCount();
+    boolean needsScrollbar = thumbnailCount > CARRY_CARDS_PER_ROW;
+    scrollCarryCards.setVerticalScrollBarPolicy(needsScrollbar
+        ? ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS : ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+    if (!needsScrollbar) {
+      scrollCarryCards.scrollToTop();
+    }
+
+    int viewportWidth = pnlCarryCards.getPreferredSize().width;
+    int viewportHeight = thumbnailCount == 0 ? 0 : pnlCarryCards.getComponent(0).getPreferredSize().height;
+    scrollCarryCards.getViewport().setPreferredSize(new Dimension(viewportWidth, viewportHeight));
+    int scrollbarWidth = needsScrollbar ? scrollCarryCards.getVerticalScrollBar().getPreferredSize().width : 0;
+    scrollCarryCards.setPreferredSize(new Dimension(viewportWidth + scrollbarWidth, viewportHeight));
+    scrollCarryCards.setVisible(thumbnailCount > 0);
+    scrollCarryCards.revalidate();
+    scrollCarryCards.repaint();
   }
 
   private JPanel createCarryCardThumbnail(CarryCard carryCard, PaperCard paperCard) {
@@ -371,7 +393,7 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
     infoRow.add(lblRemovalCredits);
     infoRow.add(lblDescension);
     infoRow.add(scrollEffects);
-    infoRow.add(pnlCarryCards);
+    infoRow.add(scrollCarryCards);
     infoRow.add(lblEndless);
     return infoRow;
   }

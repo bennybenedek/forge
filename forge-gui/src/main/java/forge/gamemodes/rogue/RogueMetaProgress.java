@@ -694,6 +694,22 @@ public class RogueMetaProgress {
         }
     }
 
+    void retireAetherEffect(String id, int[] echoCosts) {
+        if (activeAetherEffects != null) {
+            activeAetherEffects.remove(id);
+        }
+        if (aetherEffectRanks == null) {
+            return;
+        }
+
+        Integer rank = aetherEffectRanks.remove(id);
+        if (rank != null) {
+            for (int i = 0; i < Math.min(rank, echoCosts.length); i++) {
+                totalEchoes += echoCosts[i];
+            }
+        }
+    }
+
     /**
      * Attempt to upgrade an Aetherwork to the next rank.
      * @return true if upgrade was successful, false if not enough echoes or already max rank
