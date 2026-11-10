@@ -116,6 +116,7 @@ public class ChestDialog {
       optionPane = new FOptionPane(null, "Chest", null, panel,
           buttons, VIEW_DECK_OPTION);
       optionPane.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+      RogueUIHelper.disableSpacebarButtonActivation(optionPane.getContentPane());
       optionPane.getTitleBar().setVisible(false);
       optionPane.getButton(VIEW_DECK_OPTION).setIcon(FSkin.getIcon(FSkinProp.ICO_CARD_IMAGE));
       optionPane.getButton(VIEW_DECK_OPTION).setHorizontalTextPosition(SwingConstants.RIGHT);

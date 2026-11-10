@@ -133,6 +133,7 @@ public class NPCDialog {
         optionPane = new FOptionPane(null, "NPC Encounter", null, panel,
                 hasRerolls ? List.of("Reroll (" + rerollCtx.remainingRerolls + " left)") : List.of(), -1);
         optionPane.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+        RogueUIHelper.disableSpacebarButtonActivation(optionPane.getContentPane());
         optionPane.getTitleBar().setVisible(false);
         previewPopup = new RoguePreviewPopup();
         previewTargets.forEach(target -> previewPopup.attachTo(target.component(), target.references()));

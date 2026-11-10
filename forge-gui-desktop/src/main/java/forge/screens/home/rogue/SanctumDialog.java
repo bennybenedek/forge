@@ -168,6 +168,7 @@ public class SanctumDialog {
         0
     );
     optionPane.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+    RogueUIHelper.disableSpacebarButtonActivation(optionPane.getContentPane());
     optionPane.getTitleBar().setVisible(false);
     previewPopup = new RoguePreviewPopup();
     previewTargets.forEach(target -> previewPopup.attachTo(target.component(), target.references()));

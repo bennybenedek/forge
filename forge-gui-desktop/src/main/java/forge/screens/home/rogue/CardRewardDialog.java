@@ -204,6 +204,7 @@ public class CardRewardDialog {
           0
       );
       optionPane.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
+      RogueUIHelper.disableSpacebarButtonActivation(optionPane.getContentPane());
 
       optionPane.getButton(VIEW_DECK_OPTION).setIcon(FSkin.getIcon(FSkinProp.ICO_CARD_IMAGE));
       optionPane.getButton(VIEW_DECK_OPTION).setHorizontalTextPosition(SwingConstants.RIGHT);

@@ -5,12 +5,20 @@ import forge.gamemodes.rogue.RogueRunHistoryEntry;
 import forge.gamemodes.rogue.effect.RogueEffect;
 import forge.toolbox.FLabel;
 import forge.toolbox.FTextArea;
+import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.List;
+import javax.swing.AbstractAction;
+import javax.swing.AbstractButton;
+import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
+import javax.swing.KeyStroke;
 import javax.swing.Timer;
 import net.miginfocom.swing.MigLayout;
 
@@ -23,6 +31,26 @@ public final class RogueUIHelper {
   private static final int TYPEWRITER_CHARS_PER_TICK = 2;
 
   private RogueUIHelper() {
+  }
+
+  public static void disableSpacebarButtonActivation(Component component) {
+    if (component instanceof AbstractButton button) {
+      String ignoreSpace = "rogueIgnoreSpace";
+      button.getActionMap().put(ignoreSpace, new AbstractAction() {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+          // Consume Space without activating the focused decision button.
+        }
+      });
+      InputMap inputMap = button.getInputMap(JComponent.WHEN_FOCUSED);
+      inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0, false), ignoreSpace);
+      inputMap.put(KeyStroke.getKeyStroke(KeyEvent.VK_SPACE, 0, true), ignoreSpace);
+    }
+    if (component instanceof Container container) {
+      for (Component child : container.getComponents()) {
+        disableSpacebarButtonActivation(child);
+      }
+    }
   }
 
   public static JPanel createEffectPanel() {
