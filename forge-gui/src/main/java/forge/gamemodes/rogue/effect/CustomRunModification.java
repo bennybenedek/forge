@@ -1,7 +1,11 @@
 package forge.gamemodes.rogue.effect;
 
+import forge.card.CardRules;
+import forge.card.ColorSet;
 import forge.deck.CardPool;
+import forge.deck.Deck;
 import forge.gamemodes.rogue.CodexHelper;
+import forge.gamemodes.rogue.RogueConfig;
 import forge.gamemodes.rogue.RogueCustomDeckGenerator;
 import forge.gamemodes.rogue.RogueDeck;
 import forge.gamemodes.rogue.RogueRun;
@@ -10,6 +14,7 @@ import forge.gamemodes.rogue.path.NodeChest;
 import forge.item.PaperCard;
 import forge.item.PaperCardPredicates;
 import forge.util.MyRandom;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -54,7 +59,9 @@ public enum CustomRunModification implements RogueEffect {
         }
     },
     SEALED("custom:sealed", "Sealed",
-        "Draw 20 out of 60 non-mythic cards from the Start and Reward Pool as your starting deck. (also works with automatically generated decks & pools)", true) {
+        "Choose 20 of up to 60 non-mythic cards from the Start Deck and Reward Pool. "
+            + "Basic lands are added to reach at least 30 cards and average at least 3 lands in your opening hand. "
+            + "Works with automatically generated decks and pools.", true) {
         @Override
         public RogueDeck createRogueDeck(RogueDeck selectedDeck, PaperCard commander,
                 BiFunction<RogueDeck, EffectResultContext, List<PaperCard>> selectCards) {
@@ -63,9 +70,13 @@ public enum CustomRunModification implements RogueEffect {
             List<PaperCard> candidates = startingMain.toFlatList();
             candidates.addAll(selectedDeck.getRewardPoolCards());
 
+            List<PaperCard> commanders = selectedDeck.getStartDeck().getCommanders();
+            int commanderColors = 0;
             Set<String> usedNames = new HashSet<>();
-            for (PaperCard startingCommander : selectedDeck.getStartDeck().getCommanders()) {
-                usedNames.add(startingCommander.getRules().getNormalizedName());
+            for (PaperCard startingCommander : commanders) {
+                CardRules rules = startingCommander.getRules();
+                usedNames.add(rules.getNormalizedName());
+                commanderColors |= rules.getColorIdentity().getColor();
             }
             candidates.removeIf(card -> card.getRules().getType().isBasicLand()
                 || PaperCardPredicates.IS_MYTHIC_RARE.test(card)
@@ -78,18 +89,41 @@ public enum CustomRunModification implements RogueEffect {
             RogueDeck sealedDeck = selectedDeck.copy();
             CardPool sealedMain = sealedDeck.getStartDeck().getMain();
             sealedMain.clear();
-            sealedMain.addAll(startingMain.getFilteredPool(card -> card.getRules().getType().isBasicLand()));
 
             EffectResultContext ctx = new EffectResultContext();
             ctx.candidateCards = candidates.subList(0, Math.min(60, candidates.size()));
             ctx.cardSelectionMinCount = pickCount;
             ctx.cardSelectionMaxCount = pickCount;
             ctx.cardSelectionSubtitle = "Choose cards for your starting deck.";
+            ctx.buildDeckPreview = picks -> {
+                Deck preview = new Deck(sealedDeck.getStartDeck());
+                preview.getMain().addAllFlat(picks);
+                return preview;
+            };
             List<PaperCard> selected = selectCards.apply(sealedDeck, ctx);
             if (selected.size() != pickCount) {
                 return null;
             }
             sealedMain.addAllFlat(selected);
+            int cardCount = sealedMain.countAll();
+            int landCount = sealedMain.countAll(card -> {
+                CardRules rules = card.getRules();
+                return rules.getType().isLand()
+                    || (rules.getOtherPart() != null && rules.getOtherPart().getType().isLand());
+            });
+            int basicsNeeded = Math.max(0, 30 - cardCount);
+            // Expected lands in a seven-card hand = 7 * lands / deck size.
+            while (7 * (landCount + basicsNeeded) < 3 * (cardCount + basicsNeeded)) {
+                basicsNeeded++;
+            }
+
+            List<PaperCard> basics = new ArrayList<>();
+            String landEdition = RogueConfig.getBasicLandEdition(sealedDeck.getLandEdition(), commanders.get(0));
+            if (!RogueCustomDeckGenerator.addBasicLands(basics, ColorSet.fromMask(commanderColors),
+                    landEdition, basicsNeeded)) {
+                return null;
+            }
+            sealedMain.addAllFlat(basics);
             return sealedDeck;
         }
     },

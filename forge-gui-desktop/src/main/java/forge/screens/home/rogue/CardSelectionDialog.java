@@ -1,5 +1,6 @@
 package forge.screens.home.rogue;
 
+import forge.deck.Deck;
 import forge.deckchooser.FDeckViewer;
 import forge.gamemodes.rogue.RogueRun;
 import forge.gamemodes.rogue.RogueTutorial;
@@ -18,6 +19,7 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
@@ -38,6 +40,7 @@ public class CardSelectionDialog {
   private final String title;
   private final String subtitle;
   private final RogueRun currentRun;
+  private final Function<List<PaperCard>, Deck> buildDeckPreview;
   private final int minSelections;
   private final int maxSelections;
   private final Set<PaperCard> selectedCards;
@@ -49,10 +52,12 @@ public class CardSelectionDialog {
   private CardUtil zoomUtil;
 
   public CardSelectionDialog(String title, String subtitle, List<PaperCard> cards,
-      RogueRun currentRun, int minSelections, int maxSelections) {
+      RogueRun currentRun, int minSelections, int maxSelections,
+      Function<List<PaperCard>, Deck> buildDeckPreview) {
     this.title = title;
     this.subtitle = subtitle;
     this.currentRun = currentRun;
+    this.buildDeckPreview = buildDeckPreview;
     this.minSelections = minSelections;
     this.maxSelections = maxSelections;
     this.selectedCards = new HashSet<>();
@@ -160,7 +165,9 @@ public class CardSelectionDialog {
   }
 
   private void showCurrentDeck() {
-    if (currentRun != null && currentRun.getCurrentDeck() != null) {
+    if (buildDeckPreview != null) {
+      FDeckViewer.show(buildDeckPreview.apply(List.copyOf(selectedCards)));
+    } else if (currentRun != null && currentRun.getCurrentDeck() != null) {
       FDeckViewer.show(currentRun.getCurrentDeck());
     }
   }

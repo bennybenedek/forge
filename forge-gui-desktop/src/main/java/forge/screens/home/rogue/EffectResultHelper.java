@@ -45,7 +45,7 @@ final class EffectResultHelper {
         List<PaperCard> removed = new CardSelectionDialog(
             "Card Selection",
             getCardRemovalSubtitle(removeMinCount, removeMaxCount),
-            ctx.candidateCards, currentRun, removeMinCount, removeMaxCount).show();
+            ctx.candidateCards, currentRun, removeMinCount, removeMaxCount, ctx.buildDeckPreview).show();
         if (removed.size() < removeMinCount) {
             return false;
         }
@@ -85,7 +85,7 @@ final class EffectResultHelper {
         List<PaperCard> added = new CardSelectionDialog(
             "Card Selection",
             subtitle,
-            ctx.candidateCards, currentRun, addMinCount, addMaxCount).show();
+            ctx.candidateCards, currentRun, addMinCount, addMaxCount, ctx.buildDeckPreview).show();
         if (added.isEmpty() && addMinCount > 0) {
             return;
         }

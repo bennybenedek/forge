@@ -1,5 +1,6 @@
 package forge.gamemodes.rogue.effect;
 
+import forge.deck.Deck;
 import forge.deck.DeckSection;
 import forge.gamemodes.rogue.RoguePlanebound;
 import forge.gamemodes.rogue.RogueRun;
@@ -7,6 +8,7 @@ import forge.item.PaperCard;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.Function;
 
 /**
  * Mutable context for effect result handling.
@@ -36,6 +38,8 @@ public class EffectResultContext {
     public int cardSelectionMinCount;
     public int cardSelectionMaxCount;
     public String cardSelectionSubtitle;
+    /** Optional deck preview built from the current selection. */
+    public Function<List<PaperCard>, Deck> buildDeckPreview;
     /** Optional CARD_ADDITION handler that applies the selection and records the grants in addedCards. */
     public Consumer<List<PaperCard>> onCardsSelected;
     public int cardSelectionCopyCount = 1;

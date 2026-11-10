@@ -556,7 +556,7 @@ public enum CSubmenuRogueStart implements ICDoc {
         runDeck = modification.createRogueDeck(runDeck, chosenCommander,
             (deck, ctx) -> new CardSelectionDialog("Starting Deck", ctx.cardSelectionSubtitle,
                 ctx.candidateCards, new RogueRun(deck), ctx.cardSelectionMinCount,
-                ctx.cardSelectionMaxCount).show());
+                ctx.cardSelectionMaxCount, ctx.buildDeckPreview).show());
         if (runDeck == null) {
           break;
         }
