@@ -10,6 +10,7 @@ import forge.itemmanager.ItemManagerModel;
 import forge.itemmanager.views.ImageView;
 import forge.toolbox.FOptionPane;
 import forge.toolbox.FSkin;
+import forge.util.Localizer;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.GraphicsConfiguration;
@@ -29,63 +30,14 @@ public class CommanderSelectionDialog {
   public PaperCard show() {
     List<PaperCard> commanders = RogueCustomDeckGenerator.getEligibleCommanders();
     if (commanders.isEmpty()) {
-      FOptionPane.showMessageDialog("No legal Commanders are available.", "Choose any Commander");
+      FOptionPane.showMessageDialog(Localizer.getInstance().getMessage("lblRogueNoLegalCommanders"), Localizer.getInstance().getMessage("lblRogueChooseAnyCommander"));
       return null;
     }
 
     CardManager cardManager = new CardManager(null, false, false, false) {
       @Override
       protected ImageView<PaperCard> createImageView(ItemManagerModel<PaperCard> model) {
-        return new ImageView<PaperCard>(this, model, false) {
-          private final Set<String> requestedImages = new HashSet<>();
-          private boolean visibleImagesQueued;
-
-          {
-            getScroller().getViewport().addChangeListener(e -> queueVisibleImages());
-          }
-
-          @Override
-          protected void onRefresh() {
-            model.getOrderedList().sort((left, right) -> String.CASE_INSENSITIVE_ORDER.compare(
-                left.getKey().getName(), right.getKey().getName()));
-            super.onRefresh();
-            queueVisibleImages();
-          }
-
-          @Override
-          protected void showHoveredItem(PaperCard card) {
-            // Card images and the built-in zoom are sufficient in this picker.
-          }
-
-          private void queueVisibleImages() {
-            if (visibleImagesQueued) {
-              return;
-            }
-            visibleImagesQueued = true;
-            SwingUtilities.invokeLater(() -> {
-              visibleImagesQueued = false;
-              Rectangle visible = getScroller().getViewport().getViewRect();
-              if (visible.isEmpty()) {
-                return;
-              }
-              int step = Math.max(16, visible.width / (Math.max(1, getColumnCount()) * 2));
-              for (int y = visible.y + step / 2; y < visible.y + visible.height; y += step) {
-                for (int x = visible.x + step / 2; x < visible.x + visible.width; x += step) {
-                  PaperCard card = getItemAtIndex(getIndexAtPoint(new Point(x, y)));
-                  if (card == null) {
-                    continue;
-                  }
-                  String imageKey = card.getImageKey(false);
-                  if (requestedImages.add(imageKey)
-                      && ImageCache.getCardOriginalImageInfo(imageKey, true).getRight()) {
-                    GuiBase.getInterface().getImageFetcher().fetchImage(imageKey,
-                        () -> getComponent().repaint());
-                  }
-                }
-              }
-            });
-          }
-        };
+        return new CommanderImageView(this, model);
       }
     };
     cardManager.setAllowMultipleSelections(false);
@@ -107,8 +59,8 @@ public class CommanderSelectionDialog {
     content.setMinimumSize(dialogSize);
     content.setSize(dialogSize);
 
-    FOptionPane pane = new FOptionPane(null, "Choose any Commander", null, content,
-        List.of("Choose Commander", "Cancel"), 0);
+    FOptionPane pane = new FOptionPane(null, Localizer.getInstance().getMessage("lblRogueChooseAnyCommander"), null, content,
+        List.of(Localizer.getInstance().getMessage("lblRogueChooseCommander"), Localizer.getInstance().getMessage("lblCancel")), 0);
     pane.setButtonEnabled(0, cardManager.getSelectedItem() != null);
     cardManager.addSelectionListener(e ->
         pane.setButtonEnabled(0, cardManager.getSelectedItem() != null));
@@ -122,5 +74,62 @@ public class CommanderSelectionDialog {
     PaperCard selected = pane.getResult() == 0 ? cardManager.getSelectedItem() : null;
     pane.dispose();
     return selected;
+  }
+
+  private static final class CommanderImageView extends ImageView<PaperCard> {
+    private final Set<String> requestedImages = new HashSet<>();
+    private boolean visibleImagesQueued;
+
+    private CommanderImageView(CardManager cardManager, ItemManagerModel<PaperCard> model) {
+      super(cardManager, model, false);
+      getScroller().getViewport().addChangeListener(e -> queueVisibleImages());
+    }
+
+    @Override
+    protected void onRefresh() {
+      model.getOrderedList().sort((left, right) -> String.CASE_INSENSITIVE_ORDER.compare(
+          left.getKey().getName(), right.getKey().getName()));
+      super.onRefresh();
+      queueVisibleImages();
+    }
+
+    @Override
+    protected void showHoveredItem(PaperCard card) {
+      // Card images and the built-in zoom are sufficient in this picker.
+    }
+
+    private void queueVisibleImages() {
+      if (visibleImagesQueued) {
+        return;
+      }
+      visibleImagesQueued = true;
+      SwingUtilities.invokeLater(this::fetchVisibleImages);
+    }
+
+    private void fetchVisibleImages() {
+      visibleImagesQueued = false;
+      Rectangle visible = getScroller().getViewport().getViewRect();
+      if (visible.isEmpty()) {
+        return;
+      }
+
+      // Sample the viewport at roughly half a column's width, with a 16-pixel minimum.
+      // Start half a step from the top and left edges, then hit-test each point for a card.
+      int step = Math.max(16, visible.width / (Math.max(1, getColumnCount()) * 2));
+      for (int y = visible.y + step / 2; y < visible.y + visible.height; y += step) {
+        for (int x = visible.x + step / 2; x < visible.x + visible.width; x += step) {
+          PaperCard card = getItemAtIndex(getIndexAtPoint(new Point(x, y)));
+          if (card == null) {
+            continue;
+          }
+          String imageKey = card.getImageKey(false);
+          if (requestedImages.add(imageKey)
+              && Boolean.TRUE.equals(ImageCache.getCardOriginalImageInfo(imageKey, true).getRight())) {
+            GuiBase.getInterface().getImageFetcher().fetchImage(imageKey,
+                () -> getComponent().repaint());
+          }
+        }
+      }
+    }
   }
 }

@@ -1,5 +1,6 @@
 package forge.screens.home.rogue;
 
+import forge.util.Localizer;
 import forge.gamemodes.rogue.AetherUpgrade;
 import forge.gamemodes.rogue.RogueMetaProgress;
 import forge.gamemodes.rogue.effect.AetherEffect;
@@ -32,29 +33,30 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
   SINGLETON_INSTANCE;
 
   private DragCell parentCell;
-  private final DragTab tab = new DragTab("Aether");
+  private final Localizer localizer = Localizer.getInstance();
+  private final DragTab tab = new DragTab(localizer.getMessage("lblRogueAether"));
 
   private final FLabel lblTitle = new FLabel.Builder()
-      .text("The Aether")
+      .text(Localizer.getInstance().getMessage("lblRogueTheAether"))
       .fontAlign(SwingConstants.CENTER)
       .opaque(true)
       .fontSize(16)
       .build();
 
   private final FLabel lblEchoes = new FLabel.Builder()
-      .text("Echoes: 0")
+      .text(localizer.getMessage("lblRogueEchoTotal", 0))
       .fontSize(16)
       .fontStyle(Font.BOLD)
       .build();
 
   private final FLabel lblSparks = new FLabel.Builder()
-      .text("Sparks: 0")
+      .text(localizer.getMessage("lblRogueSparkTotal", 0))
       .fontSize(16)
       .fontStyle(Font.BOLD)
       .build();
 
   private final FLabel lblAetherEnergy = new FLabel.Builder()
-      .text("Aether Energy: 0/3 in use (click Aetherworks to toggle)")
+      .text(localizer.getMessage("lblRogueAetherEnergy", 0, 3))
       .fontSize(14)
       .build();
 
@@ -67,18 +69,18 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
 
   private final FButton btnBack;
   private final FButton btnResetAetherworks;
-  private final FButton btnDevMaxAether = new FButton("[Dev] Max Aether");
-  private final FButton btnDevGainEchoes = new FButton("[Dev] +10 Echoes");
-  private final FButton btnDevGainSparks = new FButton("[Dev] +10 Sparks");
+  private final FButton btnDevMaxAether = new FButton(localizer.getMessage("lblRogueDevMaxAether"));
+  private final FButton btnDevGainEchoes = new FButton(localizer.getMessage("lblRogueDevGainEchoes"));
+  private final FButton btnDevGainSparks = new FButton(localizer.getMessage("lblRogueDevGainSparks"));
 
   VSubmenuRogueAether() {
     lblTitle.setBackground(FSkin.getColor(FSkin.Colors.CLR_THEME2));
     lblEchoes.setIcon(FSkin.getIcon(FSkinProp.ICO_QUEST_GOLD));
     lblSparks.setIcon(FSkin.getIcon(FSkinProp.ICO_QUEST_ELIXIR));
     lblSparks.setVisible(false);
-    btnBack = new FButton("Back");
+    btnBack = new FButton(localizer.getMessage("lblBack"));
     btnBack.setIcon(FSkin.getImage(FSkinProp.ICO_OPEN).resize(24, 24).getIcon());
-    btnResetAetherworks = new FButton("Reset Aetherworks");
+    btnResetAetherworks = new FButton(localizer.getMessage("lblRogueResetAetherworks"));
     btnResetAetherworks.setIcon(FSkin.getImage(FSkinProp.ICO_DELETE).resize(24, 24).getIcon());
 
     // Create Aetherwork panels once so listeners can be attached in initialize
@@ -94,7 +96,7 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
 
   @Override
   public String getMenuTitle() {
-    return "Aether";
+    return Localizer.getInstance().getMessage("lblRogueAether");
   }
 
   @Override
@@ -154,12 +156,13 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
     // Buttons always below the scroll area — always visible
     JPanel buttonPanel = new JPanel(new MigLayout("insets 0, gap 10"));
     buttonPanel.setOpaque(false);
-    buttonPanel.add(btnBack, "w 180px!, h 40px!");
-    buttonPanel.add(btnResetAetherworks, "w 180px!, h 40px!");
+    final String buttonSize = "w 180px!, h 40px!";
+    buttonPanel.add(btnBack, buttonSize);
+    buttonPanel.add(btnResetAetherworks, buttonSize);
     if (ForgePreferences.DEV_MODE) {
-      buttonPanel.add(btnDevMaxAether, "w 180px!, h 40px!");
-      buttonPanel.add(btnDevGainEchoes, "w 180px!, h 40px!");
-      buttonPanel.add(btnDevGainSparks, "w 180px!, h 40px!");
+      buttonPanel.add(btnDevMaxAether, buttonSize);
+      buttonPanel.add(btnDevGainEchoes, buttonSize);
+      buttonPanel.add(btnDevGainSparks, buttonSize);
     }
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay().add(buttonPanel, "ax center, gap 0 0 10px 10px");
 
@@ -184,9 +187,7 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
     panel.setBackground(FSkin.getColor(FSkin.Colors.CLR_THEME2));
 
     FLabel lblInfo = new FLabel.Builder()
-        .text("<html><center>Unlock Descension Mode and earn Sparks<br>"
-            + "to restore more Aetherworks, expand Aether Energy<br>"
-            + "and unlock other upgrades for the Aether</center></html>")
+        .text(Localizer.getInstance().getMessage("lblRogueAetherEnergyHint"))
         .icon(FSkin.getImage(FSkinProp.ICO_LOCK).resize(20, 20))
         .iconScaleAuto(false)
         .fontSize(13)
@@ -202,8 +203,8 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
   public void updateDisplay(int echoes, int sparks, boolean descensionUnlocked,
       int activeAetherworkCount, int upgradeLevel, Map<AetherEffect, Integer> effectRanks,
       Set<AetherEffect> activeEffects) {
-    lblEchoes.setText("Echoes: " + echoes);
-    lblSparks.setText("Sparks: " + sparks);
+    lblEchoes.setText(localizer.getMessage("lblRogueEchoTotal", echoes));
+    lblSparks.setText(localizer.getMessage("lblRogueSparkTotal", sparks));
     lblSparks.setVisible(descensionUnlocked);
 
     // Compute actual slot count for label
@@ -212,8 +213,7 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
       AetherUpgrade u = AetherUpgrade.forLevel(l);
       if (u != null) energyCapacity += u.extraEnergy;
     }
-    lblAetherEnergy.setText("Aether Energy: " + activeAetherworkCount + "/" + energyCapacity
-        + " in use (click Aetherworks to toggle)");
+    lblAetherEnergy.setText(localizer.getMessage("lblRogueAetherEnergy", activeAetherworkCount, energyCapacity));
 
     // Update upgrade card if visible
     AetherUpgrade next = AetherUpgrade.forLevel(upgradeLevel + 1);
@@ -260,6 +260,7 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
   }
 
   @Override
+  @SuppressWarnings("java:S3066") // Required by IVDoc.
   public void setParentCell(DragCell cell0) {
     this.parentCell = cell0;
   }
@@ -296,19 +297,21 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
           .text("")
           .fontSize(14).fontAlign(SwingConstants.CENTER).build();
 
-      btnUpgrade = new FButton("Upgrade");
+      btnUpgrade = new FButton(Localizer.getInstance().getMessage("lblRogueUpgrade"));
       btnUpgrade.setHorizontalTextPosition(SwingConstants.LEFT);
 
       add(lblName, "growx, ax center");
       add(lblDescription, "growx, ax center, wmax 370px");
-      add(new JPanel() {{ setOpaque(false); }}, "growy, pushy");
+      JPanel spacer = new JPanel();
+      spacer.setOpaque(false);
+      add(spacer, "growy, pushy");
       add(btnUpgrade, "ax center, w 220px!, h 30px!");
     }
 
     void update(AetherUpgrade upgrade, int echoes, int sparks) {
       lblName.setText(upgrade.name);
       lblDescription.setText(upgrade.description);
-      btnUpgrade.setText("Upgrade:");
+      btnUpgrade.setText(Localizer.getInstance().getMessage("lblRogueUpgradeLabel"));
       btnUpgrade.setIcon(new UpgradeCostIcon(upgrade.sparkCost, upgrade.echoCost));
       btnUpgrade.setEnabled(sparks >= upgrade.sparkCost && echoes >= upgrade.echoCost);
     }
@@ -412,8 +415,8 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
       for (AetherworkPanel panel : panels) add(panel);
     }
 
-    private int cols() {
-      int avail = getWidth() - 2 * INSET;
+    private static int cols(int width) {
+      int avail = width - 2 * INSET;
       if (avail >= 3 * CARD_W + 2 * GAP) return 3;
       if (avail >= 2 * CARD_W +     GAP) return 2;
       return 1;
@@ -431,7 +434,7 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
       }
 
       if (!panels.isEmpty()) {
-        int cols = cols();
+        int cols = cols(getWidth());
         int gridW = cols * CARD_W + (cols - 1) * GAP;
         int startX = Math.max(INSET, (getWidth() - gridW) / 2);
         for (int i = 0; i < panels.size(); i++) {
@@ -448,16 +451,19 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
 
     @Override
     public Dimension getPreferredSize() {
-      int w = getWidth() > 0 ? getWidth() : (getParent() != null ? getParent().getWidth() : 1300);
+      int width = getWidth();
+      if (width <= 0) {
+        Container parent = getParent();
+        width = parent == null ? 1300 : parent.getWidth();
+      }
       int startY = INSET;
       if (upgradeCard != null) startY += CARD_H + GAP;
       if (!panels.isEmpty()) {
-        int avail = w - 2 * INSET;
-        int cols = avail >= 3 * CARD_W + 2 * GAP ? 3 : avail >= 2 * CARD_W + GAP ? 2 : 1;
+        int cols = cols(width);
         int rows = (int) Math.ceil(panels.size() / (double) cols);
         startY += rows * CARD_H + (rows - 1) * GAP;
       }
-      return new Dimension(w, startY + INSET);
+      return new Dimension(width, startY + INSET);
     }
 
     @Override public Dimension getPreferredScrollableViewportSize() { return getPreferredSize(); }
@@ -469,18 +475,15 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
 
   /**
    * Inner class representing a single Aetherwork panel in the grid. Click it to toggle active
-   * state (when unlocked). Shows green border and "ACTIVE" badge when active. Shows yellow/gold
+   * state (when unlocked). Shows green border and Active badge when active. Shows yellow/gold
    * border on hover.
    */
   public static class AetherworkPanel extends FSkin.SkinnedPanel {
-
     private final AetherEffect aetherEffect;
     private final FLabel lblName;
     private final FLabel lblDescription;
     private final FLabel lblRank;
     private final FButton btnUpgrade;
-    // Cache own icon instance to avoid shared state issues (similar to NodePlaneboundPanel pattern)
-    private final javax.swing.Icon cachedEchoIcon;
 
     // Visual state
     private boolean isActive = false;
@@ -489,22 +492,12 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
     private int currentRank = 0;
 
     // Click callback for toggling active state
-    private Consumer<AetherworkPanel> toggleCallback;
+    private transient Consumer<AetherworkPanel> toggleCallback;
 
     public AetherworkPanel(AetherEffect aetherEffect) {
       super(new MigLayout("insets 15, gap 5, fill",
           "[grow,sg footer][160px!][grow,sg footer]", "[][grow,top][]"));
       this.aetherEffect = aetherEffect;
-
-      // Create and cache own icon instance at construction time
-      final javax.swing.Icon rawEchoIcon = FSkin.getImage(FSkinProp.ICO_QUEST_GOLD).resize(20, 20).getIcon();
-      cachedEchoIcon = new javax.swing.Icon() {
-        public int getIconWidth()  { return rawEchoIcon.getIconWidth(); }
-        public int getIconHeight() { return rawEchoIcon.getIconHeight(); }
-        public void paintIcon(java.awt.Component c, java.awt.Graphics g, int x, int y) {
-          rawEchoIcon.paintIcon(c, g, x, y - 2);
-        }
-      };
 
       setOpaque(true);
       setBackground(FSkin.getColor(FSkin.Colors.CLR_THEME2));
@@ -522,14 +515,22 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
           .fontAlign(SwingConstants.CENTER)
           .build();
 
+      Localizer localizer = Localizer.getInstance();
       lblRank = new FLabel.Builder()
-          .text("Rank: 0/" + aetherEffect.getMaxRank())
+          .text(localizer.getMessage("lblRogueRank", 0, aetherEffect.getMaxRank()))
           .fontSize(12)
           .fontAlign(SwingConstants.CENTER)
           .build();
 
-      btnUpgrade = new FButton("Build");
-      btnUpgrade.setIcon(cachedEchoIcon);
+      btnUpgrade = new FButton(localizer.getMessage("lblRogueBuild"));
+      final Icon rawEchoIcon = FSkin.getImage(FSkinProp.ICO_QUEST_GOLD).resize(20, 20).getIcon();
+      btnUpgrade.setIcon(new Icon() {
+        @Override public int getIconWidth()  { return rawEchoIcon.getIconWidth(); }
+        @Override public int getIconHeight() { return rawEchoIcon.getIconHeight(); }
+        @Override public void paintIcon(Component c, Graphics g, int x, int y) {
+          rawEchoIcon.paintIcon(c, g, x, y - 2);
+        }
+      });
       btnUpgrade.setHorizontalTextPosition(SwingConstants.LEFT);
 
       add(lblName, "span 3, growx, wrap");
@@ -588,19 +589,18 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
       }
       this.canToggle = rank > 0 && (active || activeAetherworkCount < energyCapacity);
 
-      lblRank.setText("Rank: " + rank + "/" + effectiveMax);
+      Localizer localizer = Localizer.getInstance();
+      lblRank.setText(localizer.getMessage("lblRogueRank", rank, effectiveMax));
 
       // Update description to show all rank values with current rank highlighted
       lblDescription.setText(aetherEffect.getDescriptionWithAllRanks(rank, upgradeLevel));
 
-      // Update upgrade button using cached icon instance
       if (rank >= effectiveMax) {
-        btnUpgrade.setText("Max Rank");
+        btnUpgrade.setText(localizer.getMessage("lblRogueMaxRank"));
         btnUpgrade.setEnabled(false);
       } else {
         int cost = aetherEffect.getEchoCostForRank(rank + 1);
-        btnUpgrade.setText(rank == 0 ? "Build: " + cost : "Upgrade: " + cost);
-        btnUpgrade.setIcon(cachedEchoIcon);
+        btnUpgrade.setText(localizer.getMessage(rank == 0 ? "lblRogueBuildCost" : "lblRogueUpgradeCost", cost));
         btnUpgrade.setEnabled(echoes >= cost);
       }
 
@@ -652,7 +652,7 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
         g2d.drawRoundRect(1, 1, width - 2, height - 2, 10, 10);
       }
 
-      // Draw "ACTIVE" badge in top-right corner (always shown when active)
+      // Draw Active badge in top-right corner (always shown when active)
       if (isActive) {
         int badgeWidth = 60;
         int badgeHeight = 20;
@@ -666,7 +666,7 @@ public enum VSubmenuRogueAether implements IVSubmenu<CSubmenuRogueAether> {
         // Badge text
         g2d.setColor(Color.WHITE);
         g2d.setFont(g2d.getFont().deriveFont(Font.BOLD, 11f));
-        g2d.drawString("ACTIVE", badgeX + 8, badgeY + 14);
+        g2d.drawString(Localizer.getInstance().getMessage("lblRogueActiveAetherwork"), badgeX + 8, badgeY + 14);
       }
     }
 

@@ -1,5 +1,6 @@
 package forge.gamemodes.rogue.effect;
 
+import com.google.common.collect.ImmutableList;
 import forge.card.CardRules;
 import forge.card.ColorSet;
 import forge.deck.CardPool;
@@ -11,8 +12,10 @@ import forge.gamemodes.rogue.RogueDeck;
 import forge.gamemodes.rogue.RogueRun;
 import forge.gamemodes.rogue.path.NodeBazaar;
 import forge.gamemodes.rogue.path.NodeChest;
+import forge.gamemodes.rogue.path.RoguePathNode;
 import forge.item.PaperCard;
 import forge.item.PaperCardPredicates;
+import forge.util.Localizer;
 import forge.util.MyRandom;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -93,7 +96,7 @@ public enum CustomRunModification implements RogueEffect {
             ctx.candidateCards = candidates.subList(0, Math.min(60, candidates.size()));
             ctx.cardSelectionMinCount = pickCount;
             ctx.cardSelectionMaxCount = pickCount;
-            ctx.cardSelectionSubtitle = "Choose cards for your starting deck.";
+            ctx.cardSelectionSubtitle = Localizer.getInstance().getMessage("lblRogueChooseStartingDeckCards");
             ctx.buildDeckPreview = picks -> {
                 Deck preview = new Deck(sealedDeck.getStartDeck());
                 preview.getMain().addAllFlat(picks);
@@ -118,8 +121,8 @@ public enum CustomRunModification implements RogueEffect {
 
             List<PaperCard> basics = new ArrayList<>();
             String landEdition = RogueConfig.getBasicLandEdition(sealedDeck.getLandEdition(), commanders.get(0));
-            if (!RogueCustomDeckGenerator.addBasicLands(basics, ColorSet.fromMask(commanderColors),
-                    landEdition, basicsNeeded)) {
+            if (RogueCustomDeckGenerator.skipBasicLands(basics, ColorSet.fromMask(commanderColors),
+                landEdition, basicsNeeded)) {
                 return null;
             }
             sealedMain.addAllFlat(basics);
@@ -142,7 +145,7 @@ public enum CustomRunModification implements RogueEffect {
 
         @Override
         public void afterPathGeneration(RogueRun run) {
-            run.getPath().replaceNodes(node -> node.isSideNode(), NodeBazaar::new);
+            run.getPath().replaceNodes(RoguePathNode::isSideNode, NodeBazaar::new);
         }
     },
     USURPER("custom:usurper", "Usurper",
@@ -184,12 +187,12 @@ public enum CustomRunModification implements RogueEffect {
         "All Side Nodes are Chests offering only cards from the Commander Banlist.", true) {
         @Override
         public void afterPathGeneration(RogueRun run) {
-            run.getPath().replaceNodes(node -> node.isSideNode(), NodeChest::new);
+            run.getPath().replaceNodes(RoguePathNode::isSideNode, NodeChest::new);
         }
 
         @Override
         public void onBeforeChestLoot(ChoiceRerollContext ctx, RogueRun run) {
-            ctx.forcedChestChoices = List.of(ChestEffect.CARD_CACHE_BAN);
+            ctx.forcedChestChoices = ImmutableList.of(ChestEffect.CARD_CACHE_BAN);
             ctx.remainingRerolls = 0;
         }
     };

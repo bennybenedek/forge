@@ -1,5 +1,6 @@
 package forge.gamemodes.rogue.effect;
 
+import com.google.common.collect.ImmutableList;
 import forge.card.CardSplitType;
 import forge.game.player.RegisteredPlayer;
 import forge.gamemodes.rogue.CardReference;
@@ -15,6 +16,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * NPC effects granted during run start encounters.
@@ -28,13 +30,13 @@ public enum NPCEffect implements RogueEffect {
         EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            addCarryCards(run, ctx, List.of("Mana Vault|2X2|2", "Emrakul, the Aeons Torn|2X2|2"),
+            addCarryCards(run, ctx, ImmutableList.of("Mana Vault|2X2|2", "Emrakul, the Aeons Torn|2X2|2"),
                 CarryCardType.ITEM);
         }
 
         @Override
         public boolean isChoiceAvailable(RogueRun run) {
-            return canAddAllCarryCards(run, List.of("Mana Vault", "Emrakul, the Aeons Torn"));
+            return canAddAllCarryCards(run, ImmutableList.of("Mana Vault", "Emrakul, the Aeons Torn"));
         }
     },
     HENZIE_CONTRABAND("npc_henzie_contraband", "Henzie's Contraband",
@@ -56,13 +58,13 @@ public enum NPCEffect implements RogueEffect {
         EffectType.ONESHOT, "The One Ring|LTR|3") {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            addCarryCards(run, ctx, List.of(getEffectCardReference()),
+            addCarryCards(run, ctx, ImmutableList.of(getEffectCardReference()),
                 CarryCardType.ITEM);
         }
 
         @Override
         public boolean isChoiceAvailable(RogueRun run) {
-            return canAddAllCarryCards(run, List.of(getEffectCardReference()));
+            return canAddAllCarryCards(run, ImmutableList.of(getEffectCardReference()));
         }
     },
     HENZIE_EXQUISITE_TRAITS("npc_henzie_exquisite_traits", "Exquisite Traits",
@@ -104,7 +106,7 @@ public enum NPCEffect implements RogueEffect {
         EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            addCardsToDeck(run, ctx, List.of("Mana Crypt|2XM|2", "Ugin, the Spirit Dragon|M21|2"));
+            addCardsToDeck(run, ctx, ImmutableList.of("Mana Crypt|2XM|2", "Ugin, the Spirit Dragon|M21|2"));
         }
 
         @Override
@@ -130,7 +132,7 @@ public enum NPCEffect implements RogueEffect {
 
         @Override
         public List<String> getDuplicateProtectedCardReferences() {
-            return List.of("City of Brass|2X2|1");
+            return ImmutableList.of("City of Brass|2X2|1");
         }
     },
     HENZIE_FIELD("npc_henzie_field", "Henzie's Field",
@@ -149,7 +151,7 @@ public enum NPCEffect implements RogueEffect {
 
         @Override
         public List<String> getDuplicateProtectedCardReferences() {
-            return List.of("Field of the Dead|M20|1");
+            return ImmutableList.of("Field of the Dead|M20|1");
         }
     },
     HENZIE_DRAMATIC_ENTRANCE("npc_henzie_dramatic_entrance", "Dramatic Entrance",
@@ -196,7 +198,7 @@ public enum NPCEffect implements RogueEffect {
 
         @Override
         public List<String> getDuplicateProtectedCardReferences() {
-            return List.of("Ancient Tomb|UMA|1");
+            return ImmutableList.of("Ancient Tomb|UMA|1");
         }
     },
     HENZIE_TORMENTOR("npc_henzie_tormentor", "Tormentor",
@@ -232,13 +234,13 @@ public enum NPCEffect implements RogueEffect {
             List<PaperCard> candidateCards = run.getAllCardsForActiveCommander(getDBCardsFilter()).stream()
                 .map(RogueConfig::getRulesNamePrint)
                 .filter(Objects::nonNull)
-                .toList();
+                .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
             candidateCards = run.filterDuplicateCards(candidateCards);
             if (candidateCards.isEmpty()) {
                 return;
             }
 
-            List<CardReference> landsOfLegendsPrintOverrides = List.of(
+            List<CardReference> landsOfLegendsPrintOverrides = ImmutableList.of(
                 new CardReference("Gemstone Caverns", "PLST", 1),
                 new CardReference("Inventors' Fair", "KLD", 1),
                 new CardReference("Urborg, Tomb of Yawgmoth", "UMA", 1),
@@ -273,13 +275,13 @@ public enum NPCEffect implements RogueEffect {
         EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            addCarryCards(run, ctx, List.of("Fractured Powerstone|MOC|1", "Ichor Elixir|MOC|1"),
+            addCarryCards(run, ctx, ImmutableList.of("Fractured Powerstone|MOC|1", "Ichor Elixir|MOC|1"),
                 CarryCardType.ITEM);
         }
 
         @Override
         public boolean isChoiceAvailable(RogueRun run) {
-            return canAddAllCarryCards(run, List.of("Fractured Powerstone", "Ichor Elixir"));
+            return canAddAllCarryCards(run, ImmutableList.of("Fractured Powerstone", "Ichor Elixir"));
         }
     },
     NARSET_ESCORTS("npc_narset_escorts", "Narset's Escorts",
@@ -287,13 +289,13 @@ public enum NPCEffect implements RogueEffect {
         EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            addCarryCards(run, ctx, List.of("Roaming Throne|LCI|1", "Walking Ballista|2XM|1"),
+            addCarryCards(run, ctx, ImmutableList.of("Roaming Throne|LCI|1", "Walking Ballista|2XM|1"),
                 CarryCardType.FELLOW);
         }
 
         @Override
         public boolean isChoiceAvailable(RogueRun run) {
-            return canAddAllCarryCards(run, List.of("Roaming Throne", "Walking Ballista"));
+            return canAddAllCarryCards(run, ImmutableList.of("Roaming Throne", "Walking Ballista"));
         }
     },
     NARSET_TRAVELOGUE("npc_narset_travelogue", "Narset's Travelogue",
@@ -302,7 +304,7 @@ public enum NPCEffect implements RogueEffect {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
             addCardsToDeck(run, ctx,
-                List.of("Horizon of Progress|M3C|1", "Talon Gates of Madara|M3C|1"));
+                ImmutableList.of("Horizon of Progress|M3C|1", "Talon Gates of Madara|M3C|1"));
         }
 
         @Override
@@ -336,7 +338,7 @@ public enum NPCEffect implements RogueEffect {
 
         @Override
         public List<String> getDuplicateProtectedCardReferences() {
-            return List.of("Rogue's Passage|FDC|1");
+            return ImmutableList.of("Rogue's Passage|FDC|1");
         }
 
         @Override
@@ -360,7 +362,7 @@ public enum NPCEffect implements RogueEffect {
 
         @Override
         public List<String> getDuplicateProtectedCardReferences() {
-            return List.of("Reliquary Tower|CMM|1");
+            return ImmutableList.of("Reliquary Tower|CMM|1");
         }
 
         @Override
@@ -384,7 +386,7 @@ public enum NPCEffect implements RogueEffect {
 
         @Override
         public List<String> getDuplicateProtectedCardReferences() {
-            return List.of("Vault of the Archangel|TDC|1");
+            return ImmutableList.of("Vault of the Archangel|TDC|1");
         }
 
         @Override
@@ -408,7 +410,7 @@ public enum NPCEffect implements RogueEffect {
 
         @Override
         public List<String> getDuplicateProtectedCardReferences() {
-            return List.of("Kessig Wolf Run|TDC|1");
+            return ImmutableList.of("Kessig Wolf Run|TDC|1");
         }
 
         @Override
@@ -503,12 +505,12 @@ public enum NPCEffect implements RogueEffect {
         EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            addCarryCards(run, ctx, List.of("Loyal Apprentice|CMM|1", "Loyal Unicorn|CMM|1"), CarryCardType.FELLOW);
+            addCarryCards(run, ctx, ImmutableList.of("Loyal Apprentice|CMM|1", "Loyal Unicorn|CMM|1"), CarryCardType.FELLOW);
         }
 
         @Override
         public boolean isChoiceAvailable(RogueRun run) {
-            return canAddAllCarryCards(run, List.of("Loyal Apprentice", "Loyal Unicorn"));
+            return canAddAllCarryCards(run, ImmutableList.of("Loyal Apprentice", "Loyal Unicorn"));
         }
     },
     TYVAR_FOLLOWERS("npc_tyvar_followers", "Tyvar's Followers",
@@ -516,12 +518,12 @@ public enum NPCEffect implements RogueEffect {
         EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            addCarryCards(run, ctx, List.of("Loyal Guardian|CMM|1", "Loyal Subordinate|CMM|1"), CarryCardType.FELLOW);
+            addCarryCards(run, ctx, ImmutableList.of("Loyal Guardian|CMM|1", "Loyal Subordinate|CMM|1"), CarryCardType.FELLOW);
         }
 
         @Override
         public boolean isChoiceAvailable(RogueRun run) {
-            return canAddAllCarryCards(run, List.of("Loyal Guardian", "Loyal Subordinate"));
+            return canAddAllCarryCards(run, ImmutableList.of("Loyal Guardian", "Loyal Subordinate"));
         }
     },
     TYVAR_PETS("npc_tyvar_pets", "Tyvar's Pets",
@@ -529,12 +531,12 @@ public enum NPCEffect implements RogueEffect {
         EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            addCarryCards(run, ctx, List.of("Loyal Drake|CMM|1", "Loyal Unicorn|CMM|1"), CarryCardType.FELLOW);
+            addCarryCards(run, ctx, ImmutableList.of("Loyal Drake|CMM|1", "Loyal Unicorn|CMM|1"), CarryCardType.FELLOW);
         }
 
         @Override
         public boolean isChoiceAvailable(RogueRun run) {
-            return canAddAllCarryCards(run, List.of("Loyal Drake", "Loyal Unicorn"));
+            return canAddAllCarryCards(run, ImmutableList.of("Loyal Drake", "Loyal Unicorn"));
         }
     },
     TYVAR_ARMORY("npc_tyvar_armory", "Tyvar's Armory",
@@ -542,12 +544,12 @@ public enum NPCEffect implements RogueEffect {
         EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            addCarryCards(run, ctx, List.of("Commander's Sphere|CMM|1", "Commander's Plate|CMR|1"), CarryCardType.ITEM);
+            addCarryCards(run, ctx, ImmutableList.of("Commander's Sphere|CMM|1", "Commander's Plate|CMR|1"), CarryCardType.ITEM);
         }
 
         @Override
         public boolean isChoiceAvailable(RogueRun run) {
-            return canAddAllCarryCards(run, List.of("Commander's Sphere", "Commander's Plate"));
+            return canAddAllCarryCards(run, ImmutableList.of("Commander's Sphere", "Commander's Plate"));
         }
     },
     TYVAR_LOADOUT("npc_tyvar_loadout", "Tyvar's Loadout",
@@ -555,13 +557,13 @@ public enum NPCEffect implements RogueEffect {
         EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            addCarryCards(run, ctx, List.of("Skullclamp|MSC|2", "Swiftfoot Boots|FDN|2"),
+            addCarryCards(run, ctx, ImmutableList.of("Skullclamp|MSC|2", "Swiftfoot Boots|FDN|2"),
                 CarryCardType.ITEM);
         }
 
         @Override
         public boolean isChoiceAvailable(RogueRun run) {
-            return canAddAllCarryCards(run, List.of("Skullclamp", "Swiftfoot Boots"));
+            return canAddAllCarryCards(run, ImmutableList.of("Skullclamp", "Swiftfoot Boots"));
         }
     },
     TYVAR_RESPITE("npc_tyvar_respite", "Tyvar's Respite",
@@ -569,12 +571,12 @@ public enum NPCEffect implements RogueEffect {
         EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            addCarryCards(run, ctx, List.of("Campfire|CMM|1", "Tome of Legends|MKC|1"), CarryCardType.ITEM);
+            addCarryCards(run, ctx, ImmutableList.of("Campfire|CMM|1", "Tome of Legends|MKC|1"), CarryCardType.ITEM);
         }
 
         @Override
         public boolean isChoiceAvailable(RogueRun run) {
-            return canAddAllCarryCards(run, List.of("Campfire|CMM|1", "Tome of Legends|MKC|1"));
+            return canAddAllCarryCards(run, ImmutableList.of("Campfire|CMM|1", "Tome of Legends|MKC|1"));
         }
     },
     TYVAR_STAPLES("npc_tyvar_staples", "Tyvar's Staples",
@@ -582,7 +584,7 @@ public enum NPCEffect implements RogueEffect {
         EffectType.ONESHOT, null) {
         @Override
         public void applyEffect(RogueRun run, EffectResultContext ctx) {
-            addCardsToDeck(run, ctx, List.of("Sol Ring|CMM|2", "Arcane Signet|CMM|2"));
+            addCardsToDeck(run, ctx, ImmutableList.of("Sol Ring|CMM|2", "Arcane Signet|CMM|2"));
         }
 
         @Override
@@ -688,7 +690,7 @@ public enum NPCEffect implements RogueEffect {
 
         @Override
         public List<String> getDuplicateProtectedCardReferences() {
-            return List.of("Command Beacon");
+            return ImmutableList.of("Command Beacon");
         }
     },
     TYVAR_PALACE("npc_tyvar_palace", "Tyvar's Palace",
@@ -707,7 +709,7 @@ public enum NPCEffect implements RogueEffect {
 
         @Override
         public List<String> getDuplicateProtectedCardReferences() {
-            return List.of("Opal Palace");
+            return ImmutableList.of("Opal Palace");
         }
     },
     TYVAR_SANCTUM("npc_tyvar_sanctum", "Tyvar's Sanctum",
@@ -726,7 +728,7 @@ public enum NPCEffect implements RogueEffect {
 
         @Override
         public List<String> getDuplicateProtectedCardReferences() {
-            return List.of("Sanctum of Eternity");
+            return ImmutableList.of("Sanctum of Eternity");
         }
     },
     TYVAR_WAR_ROOM("npc_tyvar_war_room", "Tyvar's War Room",
@@ -745,7 +747,7 @@ public enum NPCEffect implements RogueEffect {
 
         @Override
         public List<String> getDuplicateProtectedCardReferences() {
-            return List.of("War Room");
+            return ImmutableList.of("War Room");
         }
     };
 
@@ -786,9 +788,9 @@ public enum NPCEffect implements RogueEffect {
     public boolean isChoiceAvailable(RogueRun run) { return true; }
 
     public static List<NPCEffect> getEffectsForNpc(NPC npc, RogueRun run) {
-        List<String> activeNpcEffectIds = run == null ? List.of() : run.getActiveNPCEffects().stream()
+        List<String> activeNpcEffectIds = run == null ? ImmutableList.of() : run.getActiveNPCEffects().stream()
             .map(RogueEffect::getId)
-            .toList();
+            .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
         List<NPCEffect> effects = new ArrayList<>();
         for (NPCEffect effect : values()) {
             if (effect.ownerNpc == npc

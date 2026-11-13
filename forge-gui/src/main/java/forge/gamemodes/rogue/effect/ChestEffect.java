@@ -5,8 +5,11 @@ import forge.gamemodes.rogue.RogueMetaProgress;
 import forge.gamemodes.rogue.RogueRun;
 import forge.item.PaperCard;
 
+import forge.util.Localizer;
+import java.util.Collections;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public enum ChestEffect implements RogueEffect {
 
@@ -33,7 +36,8 @@ public enum ChestEffect implements RogueEffect {
             if (gamechangerCards.isEmpty()) {
                 return;
             }
-            triggerCustomCardReward(ctx, "Choose Your Rewards", gamechangerCards, 7, 3);
+            triggerCustomCardReward(ctx, Localizer.getInstance().getMessage("lblRogueChooseRewards"),
+                gamechangerCards, 7, 3);
         }
     },
     CARD_CACHE_BAN("card_cache_ban", "Forbidden Card Cache",
@@ -44,7 +48,8 @@ public enum ChestEffect implements RogueEffect {
             if (banlistCards.isEmpty()) {
                 return;
             }
-            triggerCustomCardReward(ctx, "Choose Your Rewards", banlistCards, 7, 3);
+            triggerCustomCardReward(ctx, Localizer.getInstance().getMessage("lblRogueChooseRewards"),
+                banlistCards, 7, 3);
         }
     },
     POTION_OF_VITALITY("potion_of_vitality", "Potion Of Vitality", "Gain 10 {{Max. Life}}.",
@@ -624,7 +629,7 @@ public enum ChestEffect implements RogueEffect {
     public static List<ChestEffect> getAvailableEffects(RogueRun run, EffectType effectType) {
         List<String> activeChestEffectIds = run.getActiveChestEffects().stream()
             .map(RogueEffect::getId)
-            .toList();
+            .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
 
         List<ChestEffect> effects = new ArrayList<>();
         for (ChestEffect chestEffect : ChestEffect.values()) {

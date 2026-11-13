@@ -1,5 +1,6 @@
 package forge.gamemodes.rogue.npc;
 
+import com.google.common.collect.ImmutableList;
 import forge.gamemodes.rogue.RogueEvent;
 import forge.gamemodes.rogue.RogueMetaProgress;
 import forge.gamemodes.rogue.RogueRun;
@@ -11,6 +12,7 @@ import forge.localinstance.achievements.RogueCommanderAchievements;
 import forge.util.MyRandom;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Interface for NPC encounters that trigger at specific points during or between Rogue Commander runs.
@@ -36,7 +38,7 @@ public interface NPCEncounter {
 
     /** Run-start boon monologues for NPCs that offer choices. */
     default List<String> getOfferingBoonMonologues() {
-        return List.of();
+        return ImmutableList.of();
     }
 
     /** Picks one run-start boon monologue, or an empty string if none are configured. */
@@ -58,10 +60,10 @@ public interface NPCEncounter {
         Collections.shuffle(pool, MyRandom.getRandom());
         int choiceCount = Math.min(3, pool.size());
         return buildContext(
-            List.of(getRandomBoonMonologue()),
+            ImmutableList.of(getRandomBoonMonologue()),
             pool.subList(0, choiceCount).stream()
                 .map(effect -> new NPCContext.NPCChoice(effect.getDisplayName(), effect))
-                .toList()
+                .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList))
         );
     }
 
@@ -69,8 +71,8 @@ public interface NPCEncounter {
     default void incrementNpcLevel() {
         RogueMetaProgress p = RogueMetaProgress.getInstance();
         p.setNPCLevelIfHigher(getNpc().id, p.getNPCLevel(getNpc().id) + 1);
-        RogueCommanderAchievements.instance.evaluateNpcBoonUnlockAchievements(p);
-        RogueCommanderAchievements.instance.evaluateUpgradeAchievements(p);
+        RogueCommanderAchievements.getInstance().evaluateNpcBoonUnlockAchievements(p);
+        RogueCommanderAchievements.getInstance().evaluateUpgradeAchievements(p);
     }
 
     /** Returns whether this encounter's trigger condition has been met. */

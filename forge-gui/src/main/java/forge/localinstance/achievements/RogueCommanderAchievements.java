@@ -28,17 +28,21 @@ import forge.sound.SoundEffectType;
 import forge.sound.SoundSystem;
 import forge.util.CardTranslation;
 import forge.util.Localizer;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 import javax.xml.parsers.DocumentBuilderFactory;
 import org.w3c.dom.Element;
 
 public class RogueCommanderAchievements extends AchievementCollection {
-    public static final RogueCommanderAchievements instance = new RogueCommanderAchievements();
-
-    private RogueCommanderAchievements() {
+    public RogueCommanderAchievements() {
         super("lblRogueCommanderRuns", ForgeConstants.ACHIEVEMENTS_DIR + "rogue-commander.xml",
               false, ForgeConstants.ROGUE_COMMANDER_ACHIEVEMENT_LIST_FILE);
+    }
+
+    public static RogueCommanderAchievements getInstance() {
+        return (RogueCommanderAchievements) FModel.getAchievements(GameType.RogueCommander);
     }
 
     @Override
@@ -164,7 +168,7 @@ public class RogueCommanderAchievements extends AchievementCollection {
     public void evaluateCommanderUnlockAchievements() {
         List<RogueDeck> decks = RogueConfig.loadRogueDecks().stream()
             .filter(deck -> !deck.isExperimental())
-            .toList();
+            .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
         if (decks.isEmpty()) {
             return;
         }

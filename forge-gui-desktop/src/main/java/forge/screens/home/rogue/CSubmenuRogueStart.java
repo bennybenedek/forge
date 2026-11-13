@@ -1,5 +1,6 @@
 package forge.screens.home.rogue;
 
+import forge.util.Localizer;
 import forge.ImageCache;
 import forge.ImageKeys;
 import forge.gamemodes.rogue.*;
@@ -28,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.SwingUtilities;
+import org.tinylog.Logger;
 
 /**
  * Controls the Rogue Commander start screen. Handles commander selection via card carousel and new run
@@ -45,6 +47,7 @@ public enum CSubmenuRogueStart implements ICDoc {
 
   @Override
   public void register() {
+    // The start screen attaches its listeners in initialize().
   }
 
   @Override
@@ -85,13 +88,14 @@ public enum CSubmenuRogueStart implements ICDoc {
     RogueMetaProgress progress = RogueMetaProgress.getInstance();
     boolean newState = !progress.isDevUnlockAll();
     progress.setDevUnlockAll(newState);
-    view.getBtnDevUnlockAll().setText(newState ? "[Dev] Lock Commanders" : "[Dev] Unlock All");
+    view.getBtnDevUnlockAll().setText(Localizer.getInstance().getMessage(
+        newState ? "lblRogueDevLockCommanders" : "lblRogueDevUnlockAll"));
     loadAvailableCommanders();
   }
 
   private void devEditNPCProgress() {
     Map<NPC, Integer> updatedLevels = new NPCProgressDialog(RogueMetaProgress.getInstance()).show();
-    if (updatedLevels == null) {
+    if (updatedLevels.isEmpty()) {
       return;
     }
 
@@ -100,7 +104,7 @@ public enum CSubmenuRogueStart implements ICDoc {
       progress.setNPCLevel(entry.getKey().id, entry.getValue());
     }
 
-    FOptionPane.showMessageDialog("NPC progression levels updated.", "Dev NPC Progress");
+    FOptionPane.showMessageDialog(Localizer.getInstance().getMessage("lblRogueNpcProgressUpdated"), Localizer.getInstance().getMessage("lblRogueDevNpcProgressTitle"));
   }
 
   @Override
@@ -160,47 +164,14 @@ public enum CSubmenuRogueStart implements ICDoc {
     // Clear existing commander panels
     view.getCommanderCarouselPanel().clear();
 
-    // Create card panel for each commander
-    CommanderCardPanel firstUnlockedPanel = null;
-    CommanderCardPanel previousCommanderPanel = null;
     for (RogueDeck deck : availableDecks) {
       CommanderCardPanel cardPanel = new CommanderCardPanel(deck, view);
-
-      // Set selection callback to update details and handle single-selection
       cardPanel.setSelectionCallback(this::onCommanderSelected);
-
       view.getCommanderCarouselPanel().addCommanderPanel(cardPanel);
-
-      // Track first unlocked commander
-      if (firstUnlockedPanel == null && !cardPanel.isLocked()) {
-        firstUnlockedPanel = cardPanel;
-      }
-      if (previousCommanderPanel == null && !cardPanel.isLocked()
-          && previousCommanderName != null
-          && previousCommanderName.equals(cardPanel.getCommander().getCommanderCardName())) {
-        previousCommanderPanel = cardPanel;
-      }
     }
 
     requestHiddenCardImageForLockedPanels();
-
-    // Restore previous commander selection when returning to this view; otherwise use first unlocked.
-    CommanderCardPanel panelToSelect = previousCommanderPanel != null ? previousCommanderPanel
-        : firstUnlockedPanel != null ? firstUnlockedPanel
-        : view.getCommanderPanels().isEmpty() ? null : view.getCommanderPanels().get(0);
-    if (panelToSelect != null) {
-      view.getCommanderCarouselPanel().centerOn(panelToSelect);
-      panelToSelect.setSelected(!panelToSelect.isLocked());
-      panelToSelect.setHighlighted(panelToSelect.isLocked());
-      selectedDeck = panelToSelect.isLocked() ? null : panelToSelect.getCommander();
-      selectedDescensionLevel = panelToSelect.isLocked() ? 0 : previousDescensionLevel;
-      updateCommanderDetails(panelToSelect);
-      updateDescensionVisibility(panelToSelect.isLocked() ? null : panelToSelect,
-          previousCommanderPanel != null);
-    } else {
-      selectedDeck = null;
-      updateDescensionVisibility(null, true);
-    }
+    restoreCommanderSelection(previousCommanderName, previousDescensionLevel);
     view.getBtnCommanderPrevious().setEnabled(view.getCommanderPanels().size() > 1);
     view.getBtnCommanderNext().setEnabled(view.getCommanderPanels().size() > 1);
     updateStartButtonState();
@@ -209,17 +180,44 @@ public enum CSubmenuRogueStart implements ICDoc {
     boolean hasCompletedRuns = RogueMetaProgress.getInstance().getTotalRunsCompleted() > 0;
     view.getBtnAether().setEnabled(hasCompletedRuns);
     view.getBtnAether()
-        .setToolTipText(hasCompletedRuns ? null : "Unlock the Aether by completing your first Run.");
+        .setToolTipText(hasCompletedRuns ? null : Localizer.getInstance().getMessage("lblRogueUnlockAetherHint"));
     view.getBtnHistory().setEnabled(hasCompletedRuns);
     view.getBtnHistory()
-        .setToolTipText(hasCompletedRuns ? null : "Unlock the Run History by completing your first Run.");
+        .setToolTipText(hasCompletedRuns ? null : Localizer.getInstance().getMessage("lblRogueUnlockHistoryHint"));
     view.getBtnStats().setEnabled(hasCompletedRuns);
     view.getBtnStats()
-        .setToolTipText(hasCompletedRuns ? null : "Unlock Codex by completing your first Run.");
+        .setToolTipText(hasCompletedRuns ? null : Localizer.getInstance().getMessage("lblRogueUnlockCodexHint"));
 
     // Refresh layout
     view.getCommanderCarouselPanel().revalidate();
     view.getCommanderCarouselPanel().repaint();
+  }
+
+  private void restoreCommanderSelection(String previousCommanderName, int previousDescensionLevel) {
+    List<CommanderCardPanel> panels = view.getCommanderPanels();
+    if (panels.isEmpty()) {
+      selectedDeck = null;
+      updateDescensionVisibility(null, true);
+      return;
+    }
+
+    CommanderCardPanel previousCommanderPanel = panels.stream()
+        .filter(panel -> !panel.isLocked() && previousCommanderName != null
+            && previousCommanderName.equals(panel.getCommander().getCommanderCardName()))
+        .findFirst().orElse(null);
+    CommanderCardPanel panelToSelect = previousCommanderPanel;
+    if (panelToSelect == null) {
+      panelToSelect = panels.stream().filter(panel -> !panel.isLocked()).findFirst().orElse(panels.get(0));
+    }
+
+    boolean locked = panelToSelect.isLocked();
+    view.getCommanderCarouselPanel().centerOn(panelToSelect);
+    panelToSelect.setSelected(!locked);
+    panelToSelect.setHighlighted(locked);
+    selectedDeck = locked ? null : panelToSelect.getCommander();
+    selectedDescensionLevel = locked ? 0 : previousDescensionLevel;
+    updateCommanderDetails(panelToSelect);
+    updateDescensionVisibility(locked ? null : panelToSelect, previousCommanderPanel != null);
   }
 
   private void requestHiddenCardImageForLockedPanels() {
@@ -320,18 +318,10 @@ public enum CSubmenuRogueStart implements ICDoc {
     }
     boolean wasExperimental = view.getChkCustomModification(
         CustomRunModification.EXPERIMENT).isSelected();
-    boolean wasGeneratedCommander = view.getChkRandomRogueCommander().isSelected()
-        || view.getChkChooseRogueCommander().isSelected();
+    boolean wasGeneratedCommander = isGeneratedCommanderSelected();
     updatingCustomModUi = true;
-    if (view.getChkCustomModification(modification).isSelected()) {
-      for (CustomRunModification other : CustomRunModification.values()) {
-        if (modification.conflictsWith(other)) {
-          view.getChkCustomModification(other).setSelected(false);
-        }
-      }
-    }
-    boolean generatedCommander = view.getChkRandomRogueCommander().isSelected()
-        || view.getChkChooseRogueCommander().isSelected();
+    clearConflictingModifications(modification);
+    boolean generatedCommander = isGeneratedCommanderSelected();
     for (CustomRunModification deckMod : CustomRunModification.values()) {
       if (!deckMod.isIncludedWithGeneratedCommander()) {
         continue;
@@ -352,10 +342,24 @@ public enum CSubmenuRogueStart implements ICDoc {
     }
   }
 
+  private void clearConflictingModifications(CustomRunModification modification) {
+    if (!view.getChkCustomModification(modification).isSelected()) {
+      return;
+    }
+    for (CustomRunModification other : CustomRunModification.values()) {
+      if (modification.conflictsWith(other)) {
+        view.getChkCustomModification(other).setSelected(false);
+      }
+    }
+  }
+
+  private boolean isGeneratedCommanderSelected() {
+    return view.getChkRandomRogueCommander().isSelected() || view.getChkChooseRogueCommander().isSelected();
+  }
+
   private void updateStartButtonState() {
     boolean custom = view.getChkCustomRuns().isSelected();
-    boolean ignoresSelectedCommander = custom && (view.getChkRandomRogueCommander().isSelected()
-        || view.getChkChooseRogueCommander().isSelected());
+    boolean ignoresSelectedCommander = custom && isGeneratedCommanderSelected();
     for (CommanderCardPanel panel : view.getCommanderPanels()) {
       panel.setDimmed(ignoresSelectedCommander);
     }
@@ -379,13 +383,13 @@ public enum CSubmenuRogueStart implements ICDoc {
     if (panel.isLocked()) {
       // Show unlock condition for locked commanders
       view.getLblCommanderName().setText("???");
-      view.getLblDescriptionLabel().setText("Unlock:");
+      view.getLblDescriptionLabel().setText(Localizer.getInstance().getMessage("lblRogueUnlockLabel"));
       view.getLblDescriptionLock().setVisible(true);
       String unlockDesc = deck.getUnlockDescription();
       if (unlockDesc != null && !unlockDesc.isEmpty()) {
         view.getTxtDescription().setText(unlockDesc);
       } else {
-        view.getTxtDescription().setText("Locked");
+        view.getTxtDescription().setText(Localizer.getInstance().getMessage("lblRogueLocked"));
       }
       // Hide theme row for locked commanders
       view.getLblThemeLabel().setVisible(false);
@@ -393,7 +397,7 @@ public enum CSubmenuRogueStart implements ICDoc {
     } else {
       // Show normal details for unlocked commanders
       view.getLblCommanderName().setText(deck.getCommanderCardName());
-      view.getLblDescriptionLabel().setText("Description:");
+      view.getLblDescriptionLabel().setText(Localizer.getInstance().getMessage("lblRogueDescriptionLabel"));
       view.getLblDescriptionLock().setVisible(false);
       view.getTxtDescription().setText(deck.getDescription());
       view.getTxtTheme().setText(deck.getThemeDescription());
@@ -429,7 +433,7 @@ public enum CSubmenuRogueStart implements ICDoc {
     RogueMetaProgress progress = RogueMetaProgress.getInstance();
     if (!progress.isDescensionModeUnlocked()) {
       view.getLblDescensionLockText().setText(
-          "Descension Mode - Win a Run with 3 different Commanders to unlock.");
+          Localizer.getInstance().getMessage("lblRogueUnlockDescensionHint"));
       view.getPnlDescensionLock().setVisible(true);
       view.getChkDescension().setVisible(false);
       return;
@@ -454,7 +458,7 @@ public enum CSubmenuRogueStart implements ICDoc {
     int maxUnlocked = progress.getMaxDescensionUnlocked(commanderName);
     if (maxUnlocked == 0) {
       view.getLblDescensionLockText().setText(
-          "Win a Run with " + commanderName + " to unlock Descension Mode for this Commander.");
+          Localizer.getInstance().getMessage("lblRogueUnlockCommanderDescensionHint", commanderName));
       view.getPnlDescensionLock().setVisible(true);
       view.getChkDescension().setVisible(false);
     } else {
@@ -505,8 +509,8 @@ public enum CSubmenuRogueStart implements ICDoc {
     boolean locked = selectedDescensionLevel > maxUnlocked;
 
     String levelName = dl != null
-        ? String.format("Level %d - %s", selectedDescensionLevel, dl.name)
-        : String.format("Level %d", selectedDescensionLevel);
+        ? Localizer.getInstance().getMessage("lblRogueNamedLevel", selectedDescensionLevel, dl.name)
+        : Localizer.getInstance().getMessage("lblRogueLevel", selectedDescensionLevel);
     view.getLblDescensionLevel().setText(levelName);
     view.getLblDescensionLock().setVisible(locked);
     view.getBtnDescensionDown().setVisible(selectedDescensionLevel > 1);
@@ -516,31 +520,17 @@ public enum CSubmenuRogueStart implements ICDoc {
       view.getLblDescensionDesc().setText(dl != null ? dl.description : "");
       updateStartButtonState();
     } else {
-      view.getLblDescensionDesc().setText(String.format(
-          "Win a Run with %s in Descension Level %d to unlock Level %d.",
-          commanderName, selectedDescensionLevel - 1, selectedDescensionLevel));
+      view.getLblDescensionDesc().setText(Localizer.getInstance().getMessage("lblRogueUnlockNextDescensionHint", commanderName, selectedDescensionLevel - 1, selectedDescensionLevel));
       updateStartButtonState();
     }
   }
 
   private void beginNewRun() {
     boolean custom = view.getChkCustomRuns().isSelected();
-    boolean generatedCommander = view.getChkRandomRogueCommander().isSelected()
-        || view.getChkChooseRogueCommander().isSelected();
-    List<CustomRunModification> modifications = new ArrayList<>();
-    if (custom) {
-      for (CustomRunModification modification : CustomRunModification.values()) {
-        if (view.getChkCustomModification(modification).isSelected()
-            && (!generatedCommander || !modification.isIncludedWithGeneratedCommander())) {
-          modifications.add(modification);
-        }
-      }
-    }
-    if ((custom && !RogueMetaProgress.getInstance().isCustomRunsUnlocked())
-        || (selectedDescensionLevel > 0
-        && !RogueMetaProgress.getInstance().isDescensionModeUnlocked())
-        || (custom && (modifications.isEmpty() || (!generatedCommander && selectedDeck == null)))
-        || (!custom && selectedDeck == null)) {
+    boolean generatedCommander = isGeneratedCommanderSelected();
+    List<CustomRunModification> modifications = custom
+        ? getSelectedRunModifications(generatedCommander) : List.of();
+    if (!canBeginNewRun(custom, generatedCommander, modifications)) {
       return;
     }
 
@@ -550,63 +540,19 @@ public enum CSubmenuRogueStart implements ICDoc {
     if (chosenOne && chosenCommander == null) {
       return;
     }
-    RogueDeck runDeck = selectedDeck;
-    try {
-      for (CustomRunModification modification : modifications) {
-        runDeck = modification.createRogueDeck(runDeck, chosenCommander,
-            (deck, ctx) -> new CardSelectionDialog("Starting Deck", ctx.cardSelectionSubtitle,
-                ctx.candidateCards, new RogueRun(deck), ctx.cardSelectionMinCount,
-                ctx.cardSelectionMaxCount, ctx.buildDeckPreview).show());
-        if (runDeck == null) {
-          break;
-        }
-      }
-    } catch (RuntimeException e) {
-      System.err.println("Could not generate a custom Rogue Commander deck: " + e);
-      runDeck = null;
-    }
+    RogueDeck runDeck = createRunDeck(modifications, chosenCommander);
     if (runDeck == null) {
-      FOptionPane.showMessageDialog("Could not generate a valid Commander deck. Please try again.",
-          "Custom Run");
+      FOptionPane.showMessageDialog(Localizer.getInstance().getMessage("lblRogueCouldNotGenerateDeck"),
+          Localizer.getInstance().getMessage("lblRogueCustomRun"));
       return;
     }
     if (chosenOne) {
-      RogueDeck generatedDeck = runDeck;
-      AvatarSelector avatarSelector = new AvatarSelector(chosenCommander.getName(),
-          runDeck.getAvatarIndex(), List.of());
-      for (FLabel avatar : avatarSelector.getSelectables()) {
-        avatar.setCommand((UiCommand) () -> {
-          generatedDeck.setAvatarIndex(Integer.parseInt(avatar.getName().substring(11)));
-          avatarSelector.setVisible(false);
-        });
-      }
-      avatarSelector.setVisible(true);
-      avatarSelector.dispose();
+      chooseCommanderAvatar(runDeck, chosenCommander);
     }
 
-    var progress = RogueMetaProgress.getInstance();
-
-    List<RogueRun> runsToAbandon = getContinuableRunsToAbandon();
-    if (!runsToAbandon.isEmpty()) {
-      boolean confirmed = FOptionPane.showConfirmDialog(
-          "You have an active Run in progress.\nStarting a new Run will abandon it. Continue?",
-          "Abandon Current Run",
-          "Start New Run",
-          "Cancel",
-          false
-      );
-      if (!confirmed) return;
-
-      for (RogueRun run : runsToAbandon) {
-        run.getRunTimer().stop();
-        progress.addRunHistoryEntry(
-            RogueRunHistoryEntry.fromRun(run, "ABANDONED", ""));
-      }
-    }
-
-    // Delete all old run save files — history is preserved in RogueMetaProgress
-    for (RogueRun old : RogueIO.loadAllRuns()) {
-      RogueIO.deleteRun(old);
+    RogueMetaProgress progress = RogueMetaProgress.getInstance();
+    if (!abandonPreviousRuns(progress)) {
+      return;
     }
 
     // Create new run and snapshot active Aetherworks
@@ -644,6 +590,92 @@ public enum CSubmenuRogueStart implements ICDoc {
     CHomeUI.SINGLETON_INSTANCE.itemClick(EDocID.HOME_ROGUEMAP);
   }
 
+  private List<CustomRunModification> getSelectedRunModifications(boolean generatedCommander) {
+    List<CustomRunModification> modifications = new ArrayList<>();
+    for (CustomRunModification modification : CustomRunModification.values()) {
+      if (view.getChkCustomModification(modification).isSelected()
+          && (!generatedCommander || !modification.isIncludedWithGeneratedCommander())) {
+        modifications.add(modification);
+      }
+    }
+    return modifications;
+  }
+
+  private boolean canBeginNewRun(boolean custom, boolean generatedCommander,
+                                 List<CustomRunModification> modifications) {
+    if (custom && !RogueMetaProgress.getInstance().isCustomRunsUnlocked()) {
+      return false;
+    }
+    if (selectedDescensionLevel > 0 && !RogueMetaProgress.getInstance().isDescensionModeUnlocked()) {
+      return false;
+    }
+    if (custom) {
+      return !modifications.isEmpty() && (generatedCommander || selectedDeck != null);
+    }
+    return selectedDeck != null;
+  }
+
+  private RogueDeck createRunDeck(List<CustomRunModification> modifications, PaperCard chosenCommander) {
+    RogueDeck runDeck = selectedDeck;
+    try {
+      for (CustomRunModification modification : modifications) {
+        runDeck = modification.createRogueDeck(runDeck, chosenCommander,
+            (deck, ctx) -> new CardSelectionDialog(
+                Localizer.getInstance().getMessage("lblRogueStartingDeck"), ctx.cardSelectionSubtitle,
+                ctx.candidateCards, new RogueRun(deck), ctx.cardSelectionMinCount,
+                ctx.cardSelectionMaxCount, ctx.buildDeckPreview).show());
+        if (runDeck == null) {
+          return null;
+        }
+      }
+      return runDeck;
+    } catch (RuntimeException e) {
+      Logger.error(e, "Could not generate a custom Rogue Commander deck");
+      return null;
+    }
+  }
+
+  private void chooseCommanderAvatar(RogueDeck runDeck, PaperCard chosenCommander) {
+    AvatarSelector avatarSelector = new AvatarSelector(chosenCommander.getName(),
+        runDeck.getAvatarIndex(), List.of());
+    for (FLabel avatar : avatarSelector.getSelectables()) {
+      int avatarIndex = Integer.parseInt(avatar.getName().substring(11));
+      avatar.setCommand((UiCommand) () -> {
+        runDeck.setAvatarIndex(avatarIndex);
+        avatarSelector.setVisible(false);
+      });
+    }
+    avatarSelector.setVisible(true);
+    avatarSelector.dispose();
+  }
+
+  private boolean abandonPreviousRuns(RogueMetaProgress progress) {
+    List<RogueRun> runsToAbandon = getContinuableRunsToAbandon();
+    if (!runsToAbandon.isEmpty()) {
+      Localizer localizer = Localizer.getInstance();
+      boolean confirmed = FOptionPane.showConfirmDialog(
+          localizer.getMessage("lblRogueAbandonForNewRun"),
+          localizer.getMessage("lblRogueAbandonCurrentRun"),
+          localizer.getMessage("lblRogueStartNewRun"),
+          localizer.getMessage("lblCancel"),
+          false
+      );
+      if (!confirmed) {
+        return false;
+      }
+
+      for (RogueRun run : runsToAbandon) {
+        run.getRunTimer().stop();
+        progress.addRunHistoryEntry(RogueRunHistoryEntry.fromRun(run, "ABANDONED", ""));
+      }
+    }
+
+    for (RogueRun old : RogueIO.loadAllRuns()) {
+      RogueIO.deleteRun(old);
+    }
+    return true;
+  }
+
   void applyRunStartEffectsAndNpcBoon(RogueRun newRun, RogueMetaProgress progress) {
     RogueEffectComposite.INSTANCE.onRunStart(newRun, ctx -> EffectResultHelper.handleTrigger(ctx, newRun));
 
@@ -656,14 +688,11 @@ public enum CSubmenuRogueStart implements ICDoc {
 
       EffectResultContext effectCtx = new EffectResultContext();
       chosen.applyEffect(newRun, effectCtx);
-      if (chosen.getEffectType() == RogueEffect.EffectType.ONESHOT) {
-        if (!EffectResultHelper.handleTrigger(effectCtx, newRun)) {
-          continue;
-        }
+      if (chosen.getEffectType() != RogueEffect.EffectType.ONESHOT) {
+        newRun.addNPCEffect(chosen);
+      } else if (EffectResultHelper.handleTrigger(effectCtx, newRun)) {
         CodexHelper.recordAcquiredCards(newRun, effectCtx.addedCards);
         showNpcResultIfNeeded(chosen, effectCtx);
-      } else {
-        newRun.addNPCEffect(chosen);
       }
     }
   }
@@ -729,7 +758,7 @@ public enum CSubmenuRogueStart implements ICDoc {
     }
 
     CSubmenuRogueMap.SINGLETON_INSTANCE.showNodeResultDialog(
-        "NPC Reward Gained", "You gained a reward from " + effect.getDisplayName() + ".", sections);
+        Localizer.getInstance().getMessage("lblRogueNpcRewardGained"), Localizer.getInstance().getMessage("lblRogueGainedNpcReward", effect.getDisplayName()), sections);
   }
 
   private List<NodeResultPanel.CardSection> buildNpcResultSections(NPCEffect effect, EffectResultContext ctx) {
@@ -739,12 +768,12 @@ public enum CSubmenuRogueStart implements ICDoc {
     List<NodeResultPanel.CardSection> sections = new ArrayList<>();
     List<PaperCard> removedCards = filterResultCards(ctx.removedCards, excludedNames);
     if (!removedCards.isEmpty()) {
-      sections.add(new NodeResultPanel.CardSection("Cards removed:", removedCards));
+      sections.add(new NodeResultPanel.CardSection(Localizer.getInstance().getMessage("lblRogueCardsRemoved"), removedCards));
     }
 
     List<PaperCard> addedCards = filterResultCards(ctx.addedCards, excludedNames);
     if (!addedCards.isEmpty()) {
-      sections.add(new NodeResultPanel.CardSection("Cards added:", addedCards));
+      sections.add(new NodeResultPanel.CardSection(Localizer.getInstance().getMessage("lblRogueCardsAdded"), addedCards));
     }
     return sections;
   }

@@ -1,5 +1,7 @@
 package forge.gamemodes.rogue;
 
+import com.google.common.collect.ImmutableList;
+import org.apache.commons.lang3.StringUtils;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -36,6 +38,7 @@ public final class TextHelper {
 
     private static String stripCardPattern(String text) {
         Matcher matcher = CARD_MARKER_PATTERN.matcher(text);
+        // Matcher overloads taking StringBuilder require Android API 34.
         StringBuffer sb = new StringBuffer();
         while (matcher.find()) {
             String token = matcher.group(CARD_TOKEN_GROUP).trim();
@@ -62,7 +65,7 @@ public final class TextHelper {
 
     public static List<PreviewReference> extractPreviewReferences(String text) {
         if (text == null || text.isEmpty()) {
-            return List.of();
+            return ImmutableList.of();
         }
 
         LinkedHashMap<String, PreviewReference> cards = new LinkedHashMap<>();
@@ -85,7 +88,7 @@ public final class TextHelper {
         }
 
         if (cards.isEmpty() && keywords.isEmpty()) {
-            return List.of();
+            return ImmutableList.of();
         }
 
         List<PreviewReference> references = new ArrayList<>(cards.size() + keywords.size());
@@ -95,7 +98,7 @@ public final class TextHelper {
     }
 
     public static String extractCardNameFromReference(String token) {
-        if (token == null || token.isBlank()) {
+        if (StringUtils.isBlank(token)) {
             return "";
         }
 
@@ -123,11 +126,11 @@ public final class TextHelper {
         }
 
         String[] referenceParts = token.split("\\|", 3);
-        String setCode = referenceParts.length > 1 && !referenceParts[1].isBlank()
+        String setCode = referenceParts.length > 1 && !StringUtils.isBlank(referenceParts[1])
             ? referenceParts[1].trim()
             : null;
         Integer artIndex = null;
-        if (referenceParts.length > 2 && !referenceParts[2].isBlank()) {
+        if (referenceParts.length > 2 && !StringUtils.isBlank(referenceParts[2])) {
             try {
                 artIndex = Integer.parseInt(referenceParts[2].trim());
             } catch (NumberFormatException ignored) {

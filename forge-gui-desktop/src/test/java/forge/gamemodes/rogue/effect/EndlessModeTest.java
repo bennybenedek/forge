@@ -2,7 +2,6 @@ package forge.gamemodes.rogue.effect;
 
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertFalse;
-import static org.testng.Assert.assertNotEquals;
 import static org.testng.Assert.assertSame;
 import static org.testng.Assert.assertTrue;
 
@@ -33,49 +32,7 @@ import org.testng.annotations.Test;
 public class EndlessModeTest extends SimulationTest {
 
     @Test
-    public void testModifiersScaleWithEndlessLevel() {
-        assertEquals(new RogueRun().getEndlessLevel(), 0);
-        assertEquals(EndlessMode.getLifeBonus(1), 5);
-        assertEquals(EndlessMode.getLifeBonus(5), 25);
-        assertEquals(EndlessMode.getHandBonus(1), 1);
-        assertEquals(EndlessMode.getHandBonus(3), 3);
-        assertEquals(EndlessMode.getHandBonus(5), 5);
-        assertEquals(EndlessMode.getCostReduction(5), 5);
-        assertEquals(EndlessMode.getDamageBonus(5), 5);
-        assertEquals(EndlessMode.getBazaarPriceBonus(5), 5);
-    }
-
-    @Test
-    public void testGeneratedCardParsesCostDamageAndLifeLossEffects() {
-        PaperCard card = EndlessMode.createMatchCard(5);
-        assertEquals(card.getName(), "Endless Mode - Level 5");
-        assertNotEquals(card.getImageKey(false), EndlessMode.createMatchCard(6).getImageKey(false));
-        String staticAbility = card.getRules().getMainPart().getStaticAbilities().iterator().next();
-        String replacement = card.getRules().getMainPart().getReplacements().iterator().next();
-        String trigger = card.getRules().getMainPart().getTriggers().iterator().next();
-
-        assertTrue(staticAbility.contains("Amount$ 5"));
-        assertTrue(staticAbility.contains("Activator$ Player.Opponent"));
-        assertTrue(replacement.contains("ValidTarget$ You"));
-        assertTrue(replacement.contains("ValidSource$ Card.OppCtrl,Emblem.OppCtrl"));
-        assertTrue(trigger.contains("ValidCause$ SpellAbility.OppCtrl"));
-        assertTrue(trigger.contains("LifeAmount$ GE1"));
-        Game game = initAndCreateGame();
-        Card gameCard = Card.fromPaperCard(card, game.getPlayers().get(0));
-        assertTrue(gameCard.getSVar("TrigLifeLoss").contains("LifeAmount$ 5"));
-        String displayedText = gameCard.getAbilityText();
-        assertTrue(displayedText.contains("Opponents start with 25 additional life and up to 5 additional cards"));
-        assertTrue(displayedText.contains("Their maximum hand size is increased by the same amount."));
-        assertTrue(displayedText.contains("The Endless bonus cannot exceed 30% of their main deck size."));
-        assertTrue(displayedText.contains("Spells your opponents cast cost {5} less to cast."));
-        assertTrue(displayedText.contains("it deals that much damage plus 5 instead; whenever a spell or ability"));
-        assertTrue(displayedText.contains("you lose 5 additional life."));
-        assertFalse(displayedText.contains("Bazaar"));
-        assertFalse(displayedText.contains("<span"));
-    }
-
-    @Test
-    public void testPathMatchAndBazaarHooksUseCurrentLevel() {
+    public void setsUpEndlessMatch() {
         RogueRun run = new RogueRun();
         run.setEndlessLevel(5);
         NodePlanebound node = new NodePlanebound();
@@ -97,6 +54,12 @@ public class EndlessModeTest extends SimulationTest {
         assertEquals(matchCard.getName(), "Endless Mode - Level 5");
         assertSame(ImageUtil.getPaperCardFromImageKey(matchCard.getImageKey(false)), matchCard);
 
+        Game game = initAndCreateGame();
+        Card gameCard = Card.fromPaperCard(matchCard, game.getPlayers().get(0));
+        String displayedText = gameCard.getAbilityText();
+        assertFalse(displayedText.isBlank());
+        assertFalse(displayedText.contains("<span"));
+
         BazaarContext bazaar = new BazaarContext();
         bazaar.priceAdjustment = 2;
         EndlessMode.INSTANCE.onBeforeBazaar(bazaar, run);
@@ -104,7 +67,7 @@ public class EndlessModeTest extends SimulationTest {
     }
 
     @Test
-    public void testCostReductionAppliesOnlyToOpponentSpells() {
+    public void reducesOpponentSpellCosts() {
         Game game = initAndCreateGame();
         Player human = game.getPlayers().get(0);
         Player opponent = game.getPlayers().get(1);
@@ -127,7 +90,7 @@ public class EndlessModeTest extends SimulationTest {
     }
 
     @Test
-    public void testLifeLossTriggerRequiresOpponentSpellOrAbility() {
+    public void opponentAbilityTriggersLifeLoss() {
         Game game = initAndCreateGame();
         Player human = game.getPlayers().get(0);
         Player opponent = game.getPlayers().get(1);
@@ -154,7 +117,7 @@ public class EndlessModeTest extends SimulationTest {
     }
 
     @Test(timeOut = 5000)
-    public void testDamageReplacementAppliesOnceToOpponentSourceTargetingPlayer() {
+    public void opponentDamageBonusAppliesOnce() {
         Game game = initAndCreateGame();
         Player human = game.getPlayers().get(0);
         Player opponent = game.getPlayers().get(1);

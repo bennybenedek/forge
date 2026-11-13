@@ -1,7 +1,6 @@
 package forge.screens.home.rogue;
 
 import forge.LobbyPlayer;
-import forge.deck.CardPool;
 import forge.deck.Deck;
 import forge.game.Game;
 import forge.game.GameType;
@@ -27,6 +26,8 @@ import forge.sound.MusicPlaylist;
 import forge.sound.SoundSystem;
 import forge.toolbox.FOptionPane;
 import forge.toolbox.FSkin;
+import forge.toolbox.FSkin.SkinnedPanel;
+import forge.util.Localizer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.EnumSet;
@@ -39,6 +40,7 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import net.miginfocom.swing.MigLayout;
+import org.tinylog.Logger;
 
 class NodePlaneboundHelper {
 
@@ -56,7 +58,7 @@ class NodePlaneboundHelper {
 
         if (ForgePreferences.DEV_MODE) {
             RoguePlanebound picked = (RoguePlanebound) JOptionPane.showInputDialog(
-                null, "Override planebound:", "[DEV] Pick Planebound",
+                null, Localizer.getInstance().getMessage("lblRogueDevOverridePlanebound"), Localizer.getInstance().getMessage("lblRogueDevPickPlanebound"),
                 JOptionPane.PLAIN_MESSAGE, null,
                 RogueConfig.loadPlanebounds().toArray(), node.getRoguePlanebound());
             if (picked != null) {
@@ -69,20 +71,7 @@ class NodePlaneboundHelper {
             RogueEffectComposite.INSTANCE.onBeforeMatchSetup(setupCtx, currentRun);
 
             RoguePlanebound planebound = node.getRoguePlanebound();
-            List<PaperCard> sharedPlaneDeck = new ArrayList<>();
-            if (setupCtx.includePlanes) {
-                String cardPlaneName = planebound.planeName();
-                CardPool allPlanes = RogueConfig.getAllPlanes();
-                for (PaperCard card : allPlanes.toFlatList()) {
-                    if (cardPlaneName.equalsIgnoreCase(card.getName())) {
-                        sharedPlaneDeck.add(card);
-                        break;
-                    }
-                }
-                if (sharedPlaneDeck.isEmpty()) {
-                    System.err.println("Warning: Could not find plane card: " + cardPlaneName);
-                }
-            }
+            List<PaperCard> sharedPlaneDeck = getSharedPlaneDeck(planebound, setupCtx.includePlanes);
 
             Set<GameType> appliedVariants = setupCtx.includePlanes
                 ? EnumSet.of(GameType.Commander, GameType.Planechase)
@@ -110,7 +99,7 @@ class NodePlaneboundHelper {
 
             Deck planeboundDeck = RogueConfig.loadPlaneboundDeck(planebound);
             if (planeboundDeck == null) {
-                throw new RuntimeException("Planebound deck not found: " + planebound.deckPath());
+                throw new IllegalStateException("Planebound deck not found: " + planebound.deckPath());
             }
             CodexHelper.recordPlaneboundEncounter(planebound);
             CodexHelper.recordPlaneboundCommanderCards(planebound, planeboundDeck.getCommanders());
@@ -161,11 +150,27 @@ class NodePlaneboundHelper {
             );
         } catch (Exception e) {
             SoundSystem.instance.setRunWinSoundEnabled(false);
-            e.printStackTrace();
+            Logger.error(e, "Could not start Rogue match for Planebound {}", node.getRoguePlanebound());
+        } finally {
             SwingUtilities.invokeLater(SOverlayUtils::hideOverlay);
         }
+    }
 
-        SwingUtilities.invokeLater(SOverlayUtils::hideOverlay);
+    private static List<PaperCard> getSharedPlaneDeck(RoguePlanebound planebound, boolean includePlanes) {
+        List<PaperCard> sharedPlaneDeck = new ArrayList<>();
+        if (!includePlanes) {
+            return sharedPlaneDeck;
+        }
+
+        String planeName = planebound.planeName();
+        for (PaperCard card : RogueConfig.getAllPlanes().toFlatList()) {
+            if (planeName.equalsIgnoreCase(card.getName())) {
+                sharedPlaneDeck.add(card);
+                return sharedPlaneDeck;
+            }
+        }
+        Logger.warn("Could not find plane card: {}", planeName);
+        return sharedPlaneDeck;
     }
 
     private void recordPlaneboundPublicCards(RoguePlanebound planebound, HostedMatch hostedMatch,
@@ -201,12 +206,7 @@ class NodePlaneboundHelper {
             WrathfulEffect w = WrathfulEffect.getRandomExcluding(usedWrathfulEffect);
             usedWrathfulEffect.add(w);
             currentRun.addWrathful(w);
-            JLabel lbl = new JLabel(w.getDisplayName() + " - " + w.getDescription(), flameIcon, SwingConstants.LEFT);
-            lbl.setFont(FSkin.getRelativeFont(12).getBaseFont());
-            lbl.setForeground(FSkin.getColor(FSkin.Colors.CLR_TEXT).getColor());
-            lbl.setIconTextGap(5);
-            lbl.setOpaque(false);
-            effectsPanel.add(lbl, "growx, h 24px!, wrap");
+            createEffectLabel(flameIcon, effectsPanel, w.getDisplayName(), w.getDescription());
         }
 
         Set<CursedEffect> usedCursedEffect = new HashSet<>();
@@ -214,20 +214,35 @@ class NodePlaneboundHelper {
             CursedEffect c = CursedEffect.getRandomExcluding(usedCursedEffect);
             usedCursedEffect.add(c);
             currentRun.addCursed(c);
-            JLabel lbl = new JLabel(c.getDisplayName() + " - " + c.getDescription(), pentagramIcon, SwingConstants.LEFT);
-            lbl.setFont(FSkin.getRelativeFont(12).getBaseFont());
-            lbl.setForeground(FSkin.getColor(FSkin.Colors.CLR_TEXT).getColor());
-            lbl.setIconTextGap(5);
-            lbl.setOpaque(false);
-            effectsPanel.add(lbl, "growx, h 24px!, wrap");
+            createEffectLabel(pentagramIcon, effectsPanel, c.getDisplayName(), c.getDescription());
         }
 
         boolean hasWrathful = wrathfulCount > 0;
         boolean hasCursed = cursedCount > 0;
-        String title = hasWrathful && hasCursed ? "Wrathful & Cursed Planebound"
-            : hasCursed ? "Cursed Planebound" : "Wrathful Planebound";
-        String message = hasWrathful && hasCursed ? "This Planebound is Wrathful and Cursed!"
-            : hasCursed ? "This Planebound is Cursed!" : "This Planebound is Wrathful!";
-        FOptionPane.showOptionDialog(message, title, null, effectsPanel, List.of("OK"), 0);
+        String titleKey;
+        String messageKey;
+        if (hasWrathful && hasCursed) {
+            titleKey = "lblRogueWrathfulAndCursed";
+            messageKey = "lblRogueWrathfulAndCursedMessage";
+        } else if (hasCursed) {
+            titleKey = "lblRogueCursed";
+            messageKey = "lblRogueCursedMessage";
+        } else {
+            titleKey = "lblRogueWrathful";
+            messageKey = "lblRogueWrathfulMessage";
+        }
+        Localizer localizer = Localizer.getInstance();
+        FOptionPane.showOptionDialog(localizer.getMessage(messageKey), localizer.getMessage(titleKey),
+            null, effectsPanel, List.of(localizer.getMessage("lblOK")), 0);
+    }
+
+    private void createEffectLabel(ImageIcon pentagramIcon, SkinnedPanel effectsPanel,
+        String displayName, String description) {
+        JLabel lbl = new JLabel(displayName + " - " + description, pentagramIcon, SwingConstants.LEFT);
+        lbl.setFont(FSkin.getRelativeFont(12).getBaseFont());
+        lbl.setForeground(FSkin.getColor(FSkin.Colors.CLR_TEXT).getColor());
+        lbl.setIconTextGap(5);
+        lbl.setOpaque(false);
+        effectsPanel.add(lbl, "growx, h 24px!, wrap");
     }
 }

@@ -4,12 +4,8 @@ import forge.gamemodes.rogue.effect.ChestEffect;
 import forge.toolbox.FCheckBox;
 import forge.toolbox.FLabel;
 import forge.toolbox.FOptionPane;
-import forge.toolbox.FScrollPane;
 import forge.toolbox.FSkin.SkinnedPanel;
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.GridLayout;
+import forge.util.Localizer;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.BoxLayout;
@@ -46,28 +42,10 @@ class ChestChoiceOverrideDialog {
     }
 
     List<ChestEffect> show() {
-        SkinnedPanel wrapper = new SkinnedPanel(new BorderLayout(0, 10));
-        wrapper.setOpaque(false);
-
-        FLabel lblTitle = new FLabel.Builder()
-            .text("[DEV] Override Chest Loot")
-            .fontSize(16)
-            .fontStyle(Font.BOLD)
-            .fontAlign(SwingConstants.CENTER)
-            .build();
-
-        SkinnedPanel header = new SkinnedPanel(new GridLayout(2, 1));
-        header.setOpaque(false);
-        header.add(lblTitle);
-        header.add(lblInfo);
-
-        wrapper.add(header, BorderLayout.NORTH);
-        wrapper.add(new FScrollPane(checkBoxPanel, true), BorderLayout.CENTER);
-        wrapper.setPreferredSize(new Dimension(420, 420));
-        wrapper.setMinimumSize(new Dimension(420, 420));
-
-        optionPane = new FOptionPane(null, "[DEV] Chest Loot Override", null, wrapper,
-            List.of("OK", "Cancel"), 0);
+        Localizer localizer = Localizer.getInstance();
+        optionPane = RogueUIHelper.createChoiceOverridePane(
+            localizer.getMessage("lblRogueDevChestLootOverride"),
+            localizer.getMessage("lblRogueDevOverrideChestLoot"), lblInfo, checkBoxPanel);
         updateSelectionState();
         optionPane.setVisible(true);
         int result = optionPane.getResult();
@@ -93,14 +71,13 @@ class ChestChoiceOverrideDialog {
                 selectedCount++;
             }
         }
-        lblInfo.setText("Select exactly 2 effects (" + selectedCount + " / " + REQUIRED_SELECTIONS
-            + " selected). Current loot choices are preselected.");
+        lblInfo.setText(Localizer.getInstance().getMessage("lblRogueChestOverrideSelection", REQUIRED_SELECTIONS, selectedCount));
         if (optionPane != null) {
             optionPane.setButtonEnabled(0, selectedCount == REQUIRED_SELECTIONS);
         }
     }
 
-    private class EffectCheckBox extends FCheckBox {
+    private static class EffectCheckBox extends FCheckBox {
         private final ChestEffect effect;
 
         private EffectCheckBox(ChestEffect effect0, boolean selected) {

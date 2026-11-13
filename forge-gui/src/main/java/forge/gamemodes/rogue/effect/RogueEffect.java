@@ -1,5 +1,7 @@
 package forge.gamemodes.rogue.effect;
 
+import com.google.common.collect.ImmutableList;
+import org.apache.commons.lang3.StringUtils;
 import forge.deck.CardPool;
 import forge.gamemodes.rogue.*;
 import forge.game.player.RegisteredPlayer;
@@ -13,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * Interface for effects that trigger at specific points during a Rogue Commander run.
@@ -50,12 +53,12 @@ public interface RogueEffect {
     default String getEffectCardReference() { return null; }
 
     /** Cards this effect provides outside the deck but should still block singleton deck rewards. */
-    default List<String> getDuplicateProtectedCardReferences() { return List.of(); }
+    default List<String> getDuplicateProtectedCardReferences() { return ImmutableList.of(); }
 
     /** Optional ranked card reference for effects whose representative card varies by rank. */
     default String getEffectCardReferenceForRank(int rank) {
         String effectCardReference = getEffectCardReference();
-        if (effectCardReference == null || effectCardReference.isBlank() || rank <= 0) {
+        if (StringUtils.isBlank(effectCardReference) || rank <= 0) {
             return effectCardReference;
         }
         return effectCardReference + " " + rank;
@@ -64,7 +67,7 @@ public interface RogueEffect {
     /** Paper card associated with an effect, resolved from the optional reference token. */
     default PaperCard getEffectCard() {
         String effectCardReference = getEffectCardReference();
-        if (effectCardReference == null || effectCardReference.isBlank()) {
+        if (StringUtils.isBlank(effectCardReference)) {
             return null;
         }
 
@@ -88,10 +91,10 @@ public interface RogueEffect {
         }
 
         String effectCardDisplayName = getEffectCardDisplayName();
-        if (effectCardDisplayName.isBlank()) {
+        if (StringUtils.isBlank(effectCardDisplayName)) {
             return description;
         }
-        return description.formatted("**" + effectCardDisplayName + "**");
+        return String.format(description, "**" + effectCardDisplayName + "**");
     }
 
     /** Description for tooltips and display text. */
@@ -137,7 +140,7 @@ public interface RogueEffect {
         PaperCard effectCard = getEffectCard();
         if (effectCard != null && effectCard.getRules() != null
             && effectCard.getRules().getOracleText() != null
-            && !effectCard.getRules().getOracleText().isBlank()) {
+            && !StringUtils.isBlank(effectCard.getRules().getOracleText())) {
             return effectCard.getRules().getOracleText();
         }
 
@@ -147,7 +150,7 @@ public interface RogueEffect {
 
         List<PreviewReference> cardReferences = getPreviewReferences().stream()
             .filter(reference -> reference.type() == PreviewReferenceType.CARD)
-            .toList();
+            .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
         if (cardReferences.size() != 1) {
             return getDescription();
         }
@@ -156,7 +159,7 @@ public interface RogueEffect {
         PaperCard card = cardReference.cardName().isEmpty() ? null
             : RogueConfig.getCard(cardReference.cardName(), cardReference.setCode(), cardReference.artIndex());
         if (card == null || card.getRules() == null || card.getRules().getOracleText() == null
-            || card.getRules().getOracleText().isBlank()) {
+            || StringUtils.isBlank(card.getRules().getOracleText())) {
             return getDescription();
         }
         return card.getRules().getOracleText();
@@ -179,7 +182,7 @@ public interface RogueEffect {
     default List<PreviewReference> getPreviewReferences() {
         List<PreviewReference> references = new ArrayList<>(TextHelper.extractPreviewReferences(getRawDescription()));
         String effectCardReference = getEffectCardReference();
-        if (effectCardReference == null || effectCardReference.isBlank()) {
+        if (StringUtils.isBlank(effectCardReference)) {
             return references;
         }
 
@@ -438,7 +441,7 @@ public interface RogueEffect {
 
         List<RogueRun.CarryCard> removedCarryCards = new ArrayList<>(run.getCarryCards().stream()
             .filter(card -> card.type() == type)
-            .toList());
+            .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList)));
         run.getCarryCards().removeIf(card -> card.type() == type);
 
         for (RogueRun.CarryCard carryCard : removedCarryCards) {
@@ -537,7 +540,7 @@ public interface RogueEffect {
     }
 
     default void gainWound(RogueRun run, EffectResultContext ctx) {
-        List<WoundEffect> available = new ArrayList<>(List.of(WoundEffect.values()));
+        List<WoundEffect> available = new ArrayList<>(ImmutableList.copyOf(WoundEffect.values()));
         List<RogueEffect> active = run.getActiveWoundEffects();
         available.removeIf(w -> active.stream().anyMatch(a -> a == w));
         if (available.isEmpty()) return;
@@ -655,12 +658,12 @@ public interface RogueEffect {
 
         List<PaperCard> result = run.getAllCardsForActiveCommander(filter);
         if (result.isEmpty()) {
-            return List.of();
+            return ImmutableList.of();
         }
 
         List<PaperCard> selectedCards = getSubsetFromCollection(result, count);
         if (selectedCards.isEmpty()) {
-            return List.of();
+            return ImmutableList.of();
         }
 
         selectedCards = applyCardPrintOverrides(selectedCards, cardPrintOverrides);
@@ -670,7 +673,7 @@ public interface RogueEffect {
     // Get random subset of cards if specific count was passed, otherwise return ALL cards
     private static List<PaperCard> getSubsetFromCollection(List<PaperCard> cards, Integer count) {
         if (cards.isEmpty()) {
-            return List.of();
+            return ImmutableList.of();
         }
 
         if (count == null) {
@@ -678,12 +681,12 @@ public interface RogueEffect {
         }
 
         if (count <= 0) {
-            return List.of();
+            return ImmutableList.of();
         }
 
         if (count == 1) {
             PaperCard selected = Aggregates.random(cards);
-            return selected == null ? List.of() : new ArrayList<>(List.of(selected));
+            return selected == null ? ImmutableList.of() : new ArrayList<>(ImmutableList.of(selected));
         }
 
         Collections.shuffle(cards, MyRandom.getRandom());

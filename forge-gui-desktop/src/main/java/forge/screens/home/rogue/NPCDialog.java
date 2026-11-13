@@ -1,30 +1,24 @@
 package forge.screens.home.rogue;
 
-import forge.gamemodes.rogue.PreviewReference;
 import forge.gamemodes.rogue.effect.ChoiceRerollContext;
 import forge.gamemodes.rogue.effect.NPCEffect;
 import forge.gamemodes.rogue.npc.NPCContext;
 import forge.gamemodes.rogue.npc.NPCContext.NPCChoice;
 import forge.sound.SoundEffectType;
 import forge.sound.SoundSystem;
+import forge.screens.home.rogue.RogueUIHelper.PreviewTarget;
 import forge.toolbox.FButton;
 import forge.toolbox.FLabel;
 import forge.toolbox.FOptionPane;
 import forge.toolbox.FSkin;
 import forge.toolbox.FTextArea;
 import forge.toolbox.FSkin.SkinnedPanel;
+import forge.util.Localizer;
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.GraphicsConfiguration;
-import java.awt.GraphicsEnvironment;
-import java.awt.Insets;
-import java.awt.Rectangle;
-import java.awt.Toolkit;
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.JComponent;
 import javax.swing.SwingConstants;
-import javax.swing.WindowConstants;
 import net.miginfocom.swing.MigLayout;
 
 /**
@@ -90,7 +84,7 @@ public class NPCDialog {
         desiredHeight += txtFlavor.getPreferredSize().height + 10 + 20;
 
         if (flavorTextChunks.size() > 1 || ctx.choices().isEmpty()) {
-            btnContinue = RogueButtonHelper.createNavigationButton("Continue");
+            btnContinue = RogueButtonHelper.createNavigationButton(Localizer.getInstance().getMessage("lblContinue"));
             RogueButtonHelper.setChoiceButtonSizeHint(btnContinue, choiceButtonWidth);
             btnContinue.addActionListener(e -> advanceChunkOrClose());
             panel.add(btnContinue, "w 80%!, ax center, gap 0 0 10px 10px, wrap");
@@ -116,7 +110,8 @@ public class NPCDialog {
         }
         updateButtonVisibility();
 
-        int dialogHeight = Math.min(Math.max(desiredHeight + PANEL_INSETS, MIN_DIALOG_HEIGHT), getMaxDialogHeight());
+        int dialogHeight = Math.min(Math.max(desiredHeight + PANEL_INSETS, MIN_DIALOG_HEIGHT),
+                RogueUIHelper.getMaxChoiceDialogHeight());
         Dimension dialogSize = new Dimension(DIALOG_WIDTH, dialogHeight);
         panel.setPreferredSize(dialogSize);
         panel.setMinimumSize(dialogSize);
@@ -130,15 +125,9 @@ public class NPCDialog {
         typewriterText.setFullText(flavorTextChunks.get(currentChunkIndex));
         updateButtonVisibility();
         boolean hasRerolls = rerollCtx.remainingRerolls > 0;
-        optionPane = new FOptionPane(null, "NPC Encounter", null, panel,
-                hasRerolls ? List.of("Reroll (" + rerollCtx.remainingRerolls + " left)") : List.of(), -1);
-        optionPane.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-        RogueUIHelper.disableSpacebarButtonActivation(optionPane.getContentPane());
-        optionPane.getTitleBar().setVisible(false);
-        previewPopup = new RoguePreviewPopup();
-        previewTargets.forEach(target -> previewPopup.attachTo(target.component(), target.references()));
-        panel.revalidate();
-        panel.repaint();
+        optionPane = new FOptionPane(null, Localizer.getInstance().getMessage("lblRogueNpcEncounter"), null, panel,
+                hasRerolls ? List.of(Localizer.getInstance().getMessage("lblRogueRerollsRemaining", rerollCtx.remainingRerolls)) : List.of(), -1);
+        previewPopup = RogueUIHelper.prepareChoiceDialogWithPreviews(optionPane, panel, previewTargets);
         typewriterText.start();
         optionPane.setVisible(true);
         int result = optionPane.getResult();
@@ -179,17 +168,6 @@ public class NPCDialog {
             previewPopup.hide();
         }
     }
-
-    private static int getMaxDialogHeight() {
-        GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment()
-                .getDefaultScreenDevice().getDefaultConfiguration();
-        Rectangle screenBounds = gc.getBounds();
-        Insets screenInsets = Toolkit.getDefaultToolkit().getScreenInsets(gc);
-        int usableHeight = screenBounds.height - screenInsets.top - screenInsets.bottom;
-        return (int) (usableHeight * 0.9) - 80;
-    }
-
-    private record PreviewTarget(JComponent component, List<PreviewReference> references) {}
 
     public record DialogResult(boolean rerollRequested, NPCEffect choice) {}
 

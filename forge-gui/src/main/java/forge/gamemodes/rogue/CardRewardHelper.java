@@ -1,11 +1,14 @@
 package forge.gamemodes.rogue;
 
+import com.google.common.collect.ImmutableList;
+import org.apache.commons.lang3.StringUtils;
 import forge.gamemodes.rogue.effect.CardRewardContext;
 import forge.gamemodes.rogue.effect.CardSelectionContext;
 import forge.gamemodes.rogue.effect.MatchRewardContext;
 import forge.gamemodes.rogue.effect.RogueEffectComposite;
 import forge.item.PaperCard;
 import forge.item.PaperCardPredicates;
+import forge.util.Localizer;
 import forge.util.MyRandom;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -13,6 +16,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * Shared card reward logic used by RogueWinLoseController (post-match rewards)
@@ -66,7 +70,7 @@ public class CardRewardHelper {
                                             MatchRewardContext matchRewardCtx,
                                             CardRewardContext cardRewardCtx) {
         RogueDeck rogueDeck = run.getSelectedRogueDeck();
-        if (rogueDeck == null) return List.of();
+        if (rogueDeck == null) return ImmutableList.of();
 
         boolean customReward = cardRewardCtx != null;
         CardRewardContext rewardCtx = getRewardContext(cardRewardCtx, mythicOnly, matchRewardCtx);
@@ -99,7 +103,7 @@ public class CardRewardHelper {
         do {
             List<PaperCard> rewardOptions = buildRewardOptions(run, rogueDeck, mythicOnly, rewardCtx, selCtx,
                 customReward);
-            if (rewardOptions.isEmpty()) return List.of();
+            if (rewardOptions.isEmpty()) return ImmutableList.of();
             CodexHelper.recordCardRewardOptions(run, rewardOptions);
 
             chosenCards = showRewardDialog(run, dialog, rewardOptions, maxPicks, freeRerolls, rerollCount, title,
@@ -162,10 +166,11 @@ public class CardRewardHelper {
     }
 
     private static String getRewardTitle(CardRewardContext rewardCtx, boolean mythicOnly) {
-        if (rewardCtx.title != null && !rewardCtx.title.isBlank()) {
+        if (!StringUtils.isBlank(rewardCtx.title)) {
             return rewardCtx.title;
         }
-        return mythicOnly ? "Choose Your Mythic Reward" : "Choose Your Rewards";
+        return Localizer.getInstance().getMessage(mythicOnly
+            ? "lblRogueChooseMythicReward" : "lblRogueChooseRewards");
     }
 
     private static List<PaperCard> buildNormalRewardOptions(RogueRun run, RogueDeck rogueDeck,
@@ -249,12 +254,12 @@ public class CardRewardHelper {
 
     private static List<PaperCard> buildCustomRewardOptions(RogueRun run, CardRewardContext rewardCtx) {
         if (rewardCtx.rewardCards == null || rewardCtx.rewardCards.isEmpty()) {
-            return List.of();
+            return ImmutableList.of();
         }
         Predicate<PaperCard> notAlreadyOwned = run.getNotAlreadyInDeckPredicate();
         return rewardCtx.rewardCards.stream()
             .filter(notAlreadyOwned)
-            .toList();
+            .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
     }
 
     public static <T> Predicate<T> combineFilters(Predicate<T> baseFilter,

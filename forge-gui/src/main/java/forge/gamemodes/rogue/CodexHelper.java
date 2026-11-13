@@ -1,5 +1,9 @@
 package forge.gamemodes.rogue;
 
+import com.google.common.collect.ImmutableList;
+import java.util.Collections;
+import java.util.stream.Collectors;
+import org.apache.commons.lang3.StringUtils;
 import forge.deck.Deck;
 import forge.game.card.Card;
 import forge.game.player.Player;
@@ -103,16 +107,6 @@ public final class CodexHelper {
         RogueMetaProgress.getInstance().markTraitAcquired(effect);
     }
 
-    public static void recordTraitsAcquired(Collection<? extends RogueEffect> effects) {
-        if (effects == null || effects.isEmpty()) {
-            return;
-        }
-
-        for (RogueEffect effect : effects) {
-            recordTraitAcquired(effect);
-        }
-    }
-
     public static void recordPlaneboundEncounter(RoguePlanebound planebound) {
         RogueMetaProgress.getInstance().markPlaneboundEncountered(planebound);
     }
@@ -179,7 +173,7 @@ public final class CodexHelper {
 
         List<RogueDeck> commanders = RogueConfig.loadRogueDecks().stream()
             .filter(commander -> !commander.isExperimental())
-            .toList();
+            .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
         List<RoguePlanebound> planebounds = RogueConfig.loadPlanebounds();
         if (commanders.isEmpty() || planebounds.isEmpty()) {
             return false;
@@ -200,10 +194,10 @@ public final class CodexHelper {
 
     public static Map<TraitCategory, List<RogueEffect>> getCodexTraitsByCategory() {
         Map<TraitCategory, List<RogueEffect>> result = new EnumMap<>(TraitCategory.class);
-        addCodexTraits(result, List.of(NPCEffect.values()));
-        addCodexTraits(result, List.of(ChestEffect.values()));
-        addCodexTraits(result, List.of(EventEffect.values()));
-        addCodexTraits(result, List.of(WoundEffect.values()));
+        addCodexTraits(result, ImmutableList.copyOf(NPCEffect.values()));
+        addCodexTraits(result, ImmutableList.copyOf(ChestEffect.values()));
+        addCodexTraits(result, ImmutableList.copyOf(EventEffect.values()));
+        addCodexTraits(result, ImmutableList.copyOf(WoundEffect.values()));
         for (List<RogueEffect> traits : result.values()) {
             traits.sort(Comparator.comparing(RogueEffect::getUIDisplayName, String.CASE_INSENSITIVE_ORDER));
         }
@@ -211,7 +205,7 @@ public final class CodexHelper {
     }
 
     public static TraitCategory getTraitCategory(RogueEffect effect) {
-        if (effect == null || effect.getId() == null || effect.getId().isBlank()) {
+        if (effect == null || StringUtils.isBlank(effect.getId())) {
             return null;
         }
         if (effect instanceof NPCEffect) {
@@ -221,7 +215,7 @@ public final class CodexHelper {
             return TraitCategory.WOUND;
         }
         String effectCardReference = effect.getEffectCardReference();
-        if (effectCardReference == null || effectCardReference.isBlank()) {
+        if (StringUtils.isBlank(effectCardReference)) {
             return null;
         }
         if (effect instanceof ChestEffect) {
@@ -306,7 +300,7 @@ public final class CodexHelper {
 
     private static boolean unlockPlaneboundCodex(RogueMetaProgress.CodexProgress codexProgress,
                                                  RoguePlanebound planebound) {
-        if (planebound == null || planebound.deckPath() == null || planebound.deckPath().isBlank()) {
+        if (planebound == null || StringUtils.isBlank(planebound.deckPath())) {
             return false;
         }
 
@@ -320,7 +314,7 @@ public final class CodexHelper {
     private static List<PaperCard> getPlaneboundCodexCards(RoguePlanebound planebound) {
         Deck deck = RogueConfig.loadPlaneboundDeck(planebound);
         if (deck == null) {
-            return List.of();
+            return ImmutableList.of();
         }
 
         List<PaperCard> cards = new ArrayList<>();

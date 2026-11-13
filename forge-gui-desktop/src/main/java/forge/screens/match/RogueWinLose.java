@@ -12,6 +12,7 @@ import forge.screens.home.CHomeUI;
 import forge.screens.home.rogue.CSubmenuRogueMap;
 import forge.screens.home.rogue.NPCDialog;
 import forge.toolbox.FOptionPane;
+import forge.util.Localizer;
 
 /**
  * Win/Lose handler for Rogue Commander mode.
@@ -50,13 +51,13 @@ public class RogueWinLose extends ControlWinLose {
         var currentRun = CSubmenuRogueMap.SINGLETON_INSTANCE.getCurrentRun();
         if (controller.hasWonRun() && currentRun != null && !currentRun.isRunFailed()) {
             boolean unlocked = RogueMetaProgress.getInstance().isEndlessModeUnlocked();
-            getView().getBtnContinue().setText("Complete Run");
+            getView().getBtnContinue().setText(Localizer.getInstance().getMessage("lblRogueCompleteRun"));
             getView().getBtnContinue().setVisible(true);
             getView().getBtnContinue().setEnabled(true);
-            getView().getBtnQuit().setText("Go Endless");
+            getView().getBtnQuit().setText(Localizer.getInstance().getMessage("lblRogueGoEndless"));
             getView().getBtnQuit().setEnabled(unlocked);
             if (!unlocked) {
-                getView().showQuitButtonHint("<html><center>Win a Custom Run<br>to unlock Endless Mode.</center></html>",
+                getView().showQuitButtonHint(Localizer.getInstance().getMessage("lblRogueUnlockEndlessHint"),
                     FSkinProp.ICO_LOCK);
             }
         }
@@ -67,15 +68,15 @@ public class RogueWinLose extends ControlWinLose {
     public String getOutcomeTitleOverride() {
         var currentRun = CSubmenuRogueMap.SINGLETON_INSTANCE.getCurrentRun();
         if (currentRun != null && currentRun.getEndlessLevel() > 0 && currentRun.isRunWon()) {
-            return "Run Won!";
+            return Localizer.getInstance().getMessage("lblRogueRunWon");
         }
         if (controller.hasFailedRun()) {
-            return "Run Lost!";
+            return Localizer.getInstance().getMessage("lblRogueRunLost");
         }
         if (!controller.hasWonMatch()) {
-            return "Battle Lost!";
+            return Localizer.getInstance().getMessage("lblRogueBattleLost");
         }
-        return controller.hasWonRun() ? "Run Completed!" : "Battle Won!";
+        return controller.hasWonRun() ? Localizer.getInstance().getMessage("lblRogueRunCompleted") : Localizer.getInstance().getMessage("lblRogueBattleWon");
     }
 
     @Override
@@ -129,13 +130,13 @@ public class RogueWinLose extends ControlWinLose {
             if (goEndless) {
                 CSubmenuRogueMap.SINGLETON_INSTANCE.continueEndlessly();
             } else if (RogueWinLoseController.finalizeRunVictory(currentRun, null)) {
-                FOptionPane.showMessageDialog("You won 1 Spark!", "Spark Reward");
+                FOptionPane.showMessageDialog(Localizer.getInstance().getMessage("lblRogueSparkWon"), Localizer.getInstance().getMessage("lblRogueSparkReward"));
             }
         }
 
         if (currentRun != null && (currentRun.isRunFailed() || currentRun.isRunWon())) {
             // Run is over (won or lost) - send player back to Commander selection
-            CSubmenuRogueMap.SINGLETON_INSTANCE.setCurrentRun(null);
+            CSubmenuRogueMap.SINGLETON_INSTANCE.clearCurrentRun();
             CHomeUI.SINGLETON_INSTANCE.itemClick(EDocID.HOME_ROGUESTART);
         } else {
             // Continue run - return to map

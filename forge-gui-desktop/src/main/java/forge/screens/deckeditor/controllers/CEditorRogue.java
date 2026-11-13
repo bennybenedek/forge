@@ -17,6 +17,7 @@
  */
 package forge.screens.deckeditor.controllers;
 
+import forge.util.Localizer;
 import java.awt.event.ActionListener;
 import javax.swing.JPanel;
 import forge.card.MagicColor;
@@ -73,7 +74,6 @@ import org.eclipse.jetty.util.StringUtil;
 public final class CEditorRogue extends CDeckEditor<Deck> {
 
     private static final String WASTES = "Wastes";
-    private static final String REMOVAL_CREDITS = "Removal Credits";
     private final DeckController<Deck> controller;
     private final List<DeckSection> allSections = new ArrayList<>();
     private final ItemPool<PaperCard> basicLandPool;
@@ -134,7 +134,7 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
         final CardManager catalogManager = new CardManager(cDetailPicture0, false, false, false);
         final CardManager deckManager = new CardManager(cDetailPicture0, false, false, false);
 
-        catalogManager.setCaption("Card Catalog");
+        catalogManager.setCaption(Localizer.getInstance().getMessage("lblCardCatalog"));
         catalogManager.setAlwaysNonUnique(true);
         deckManager.setAlwaysNonUnique(true);
 
@@ -219,11 +219,11 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
         // Check if player has enough removal credits
         if (nonBasicLandsToRemove > rogueRun.getRemovalCredits()) {
             // Not enough removal credits
-            String message = "You cannot remove any more non-basic land cards (You need more removal credits, e.g. from adding non-basic land cards to your Deck from Card Rewards).";
+            String message = Localizer.getInstance().getMessage("lblRogueRemovalLimitHint");
             javax.swing.JOptionPane.showMessageDialog(
                 null,
                 message,
-                "Removal Limit Reached",
+                Localizer.getInstance().getMessage("lblRogueRemovalLimitReached"),
                 javax.swing.JOptionPane.WARNING_MESSAGE
             );
             return;
@@ -256,7 +256,7 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
         if (sectionMode != DeckSection.Main) {
             return;
         }
-        cmb.addMoveItems("Add", "to deck");
+        cmb.addMoveItems(Localizer.getInstance().getMessage("lblAdd"), Localizer.getInstance().getMessage("lbltodeck"));
     }
 
     @Override
@@ -265,7 +265,7 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
             return;
         }
         // Standard remove context menu
-        cmb.addMoveItems("Remove", null);
+        cmb.addMoveItems(Localizer.getInstance().getMessage("lblRemove"), null);
     }
 
     @Override
@@ -311,15 +311,15 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
         VCurrentDeck.SINGLETON_INSTANCE.getTxfTitle().setEnabled(false);
 
         // Set title
-        VCurrentDeck.SINGLETON_INSTANCE.getLblTitle().setText("Rogue Commander Deck:");
-        VCardCatalog.SINGLETON_INSTANCE.getTabLabel().setText("Basic Lands");
+        VCurrentDeck.SINGLETON_INSTANCE.getLblTitle().setText(Localizer.getInstance().getMessage("lblRogueDeckTitle"));
+        VCardCatalog.SINGLETON_INSTANCE.getTabLabel().setText(Localizer.getInstance().getMessage("lblRogueBasicLands"));
         getCbxSection().setVisible(true);
 
         final JPanel buttonPanel = this.getDeckManager().getPnlButtons();
         if (lblRemovalCredits == null) {
             lblRemovalCredits = new forge.toolbox.FLabel.Builder()
-                .text(REMOVAL_CREDITS + ": " + rogueRun.getRemovalCredits())
-                .tooltip(rogueRun.getRemovalCredits() + " Removal Credits left for removing non-basic land cards from current deck")
+                .text(Localizer.getInstance().getMessage("lblRogueRemovalCredits", rogueRun.getRemovalCredits()))
+                .tooltip(Localizer.getInstance().getMessage("lblRogueRemovalCreditsTooltip", rogueRun.getRemovalCredits()))
                 .fontSize(14)
                 .build();
         }
@@ -328,8 +328,8 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
         }
 
         if (btnUndo == null) {
-            btnUndo = new FButton("Undo");
-            btnUndo.setToolTipText("Undo last addition / removal");
+            btnUndo = new FButton(Localizer.getInstance().getMessage("lblUndo"));
+            btnUndo.setToolTipText(Localizer.getInstance().getMessage("lblRogueUndoTooltip"));
             btnUndo.setCommand(this::undoLastRemoval);
         }
         if (btnUndo.getParent() != buttonPanel) {
@@ -337,8 +337,8 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
         }
 
         if (btnBackToPath == null) {
-            btnBackToPath = new FButton("Back To Map");
-            btnBackToPath.setToolTipText("Return to the Rogue Commander map");
+            btnBackToPath = new FButton(Localizer.getInstance().getMessage("lblRogueBackToMap"));
+            btnBackToPath.setToolTipText(Localizer.getInstance().getMessage("lblRogueReturnToMapTooltip"));
             btnBackToPath.setCommand(this::navigateBackToPath);
         }
         if (btnBackToPath.getParent() != buttonPanel) {
@@ -359,7 +359,7 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
         // Save the RogueRun to persist deck changes
         if (rogueRun != null) {
             RogueIO.saveRun(rogueRun);
-            RogueCommanderAchievements.instance.evaluateRunAchievements(rogueRun);
+            RogueCommanderAchievements.getInstance().evaluateRunAchievements(rogueRun);
             // Reload to ensure we're working with the saved version
             // This prevents stale data if the editor is opened again
             resetTables();
@@ -597,8 +597,8 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
      */
     private void updateRemovalCreditsLabel() {
         if (lblRemovalCredits != null) {
-            lblRemovalCredits.setText(REMOVAL_CREDITS + ": " + rogueRun.getRemovalCredits());
-            lblRemovalCredits.setToolTipText(rogueRun.getRemovalCredits() + " Removal Credits left for removing non-basic land cards from current deck");
+            lblRemovalCredits.setText(Localizer.getInstance().getMessage("lblRogueRemovalCredits", rogueRun.getRemovalCredits()));
+            lblRemovalCredits.setToolTipText(Localizer.getInstance().getMessage("lblRogueRemovalCreditsTooltip", rogueRun.getRemovalCredits()));
 
             // Update undo button state
             if (btnUndo != null) {

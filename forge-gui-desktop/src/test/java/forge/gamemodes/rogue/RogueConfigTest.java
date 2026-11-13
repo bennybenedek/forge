@@ -37,7 +37,7 @@ public class RogueConfigTest extends CardMockTestCase {
     }
 
     @Test
-    public void basicLandEditionPrefersDeckSettingThenCommanderThenFallback() {
+    public void basicLandEditionPriority() {
         PaperCard commander = FModel.getMagicDb().getCommonCards().getCard("Sol Ring", "CMM");
         assertNotNull(commander);
 
@@ -48,7 +48,7 @@ public class RogueConfigTest extends CardMockTestCase {
     }
 
     @Test
-    public void basicLandPrintPrefersRequestedEditionAndFallsBackByLandType() {
+    public void basicLandPrintingFallsBack() {
         PaperCard plains = RogueConfig.getBasicLandPrint("Plains", "MH3");
         assertNotNull(plains);
         assertEquals(plains.getEdition(), "MH3");
@@ -65,7 +65,7 @@ public class RogueConfigTest extends CardMockTestCase {
     }
 
     @Test
-    public void basicLandsFromEditionIncludeOnlyBasicsFromThatEdition() {
+    public void basicLandListByEdition() {
         PaperCard plains = FModel.getMagicDb().getCommonCards().getCard("Plains", "MH3");
         PaperCard wastes = FModel.getMagicDb().getCommonCards().getCard("Wastes", "M3C");
         PaperCard solRing = FModel.getMagicDb().getCommonCards().getCard("Sol Ring", "CMM");
@@ -83,7 +83,7 @@ public class RogueConfigTest extends CardMockTestCase {
     }
 
     @Test
-    public void randomCardsExcludeMultiplayerTextAndPreferRequestedPrinting() {
+    public void randomPrintsRespectEligibility() {
         Set<String> names = Set.of("Sol Ring", "Battle Angels of Tyr");
         List<PaperCard> cards = RogueConfig.getRandomCardsForEdition(
                 card -> names.contains(card.getName()), "CMM");
@@ -94,7 +94,7 @@ public class RogueConfigTest extends CardMockTestCase {
     }
 
     @Test
-    public void nonMythicRandomPrintRejectsMythicOnlyCards() {
+    public void rejectsMythicOnlyCards() {
         PaperCard nonMythic = FModel.getMagicDb().getCommonCards().getCard("Sol Ring");
         assertNotNull(nonMythic);
         PaperCard chosen = RogueConfig.getNonMythicRandomPrint(nonMythic, card -> true, "CMM");

@@ -1,5 +1,6 @@
 package forge.gamemodes.rogue.path;
 
+import com.google.common.collect.ImmutableList;
 import forge.gamemodes.rogue.*;
 import forge.gamemodes.rogue.effect.ChestEffect;
 import forge.gamemodes.rogue.effect.RogueEffectComposite;
@@ -7,6 +8,7 @@ import forge.util.MyRandom;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Generates paths for Rogue Commander runs.
@@ -35,7 +37,7 @@ public class RoguePathGenerator {
         for (RogueEvent e : RogueEvent.values()) {
             if (e.isAvailable()) events.add(e);
         }
-        List<ChestEffect> chestEffect = new ArrayList<>(List.of(ChestEffect.values()));
+        List<ChestEffect> chestEffect = new ArrayList<>(ImmutableList.copyOf(ChestEffect.values()));
 
         // Split planebounds into normal, elite and boss lists
         List<RoguePlanebound> normalPlanebounds = getPlaneboundsOfType(
@@ -71,7 +73,7 @@ public class RoguePathGenerator {
         specialNodes.add(new NodeBazaar());
         specialNodes.add(new NodeEvent(events.get(eventIndex++)));
         specialNodes.add(new NodeEvent(events.get(eventIndex++)));
-        specialNodes.add(new NodeChest(List.of(
+        specialNodes.add(new NodeChest(ImmutableList.of(
             chestEffect.get(lootIndex++),
             chestEffect.get(lootIndex++))));
 
@@ -86,7 +88,7 @@ public class RoguePathGenerator {
         specialNodes.add(new NodeSanctum());
         specialNodes.add(new NodeBazaar());
         specialNodes.add(new NodeEvent(events.get(eventIndex++)));
-        specialNodes.add(new NodeChest(List.of(
+        specialNodes.add(new NodeChest(ImmutableList.of(
             chestEffect.get(lootIndex++),
             chestEffect.get(lootIndex++))));
 
@@ -109,7 +111,7 @@ public class RoguePathGenerator {
         specialNodes.add(new NodeBazaar());
         specialNodes.add(new NodeBazaar());
         specialNodes.add(new NodeEvent(events.get(eventIndex++)));
-        specialNodes.add(new NodeChest(List.of(
+        specialNodes.add(new NodeChest(ImmutableList.of(
             chestEffect.get(lootIndex++),
             chestEffect.get(lootIndex++))));
 
@@ -134,7 +136,7 @@ public class RoguePathGenerator {
         specialNodes.add(new NodeBazaar());
         specialNodes.add(new NodeEvent(events.get(eventIndex++)));
         specialNodes.add(new NodeEvent(events.get(eventIndex++)));
-        specialNodes.add(new NodeChest(List.of(
+        specialNodes.add(new NodeChest(ImmutableList.of(
             chestEffect.get(lootIndex++),
             chestEffect.get(lootIndex++))));
 
@@ -148,7 +150,7 @@ public class RoguePathGenerator {
         specialNodes.add(new NodeSanctum());
         specialNodes.add(new NodeBazaar());
         specialNodes.add(new NodeEvent(events.get(eventIndex)));
-        specialNodes.add(new NodeChest(List.of(
+        specialNodes.add(new NodeChest(ImmutableList.of(
             chestEffect.get(lootIndex++),
             chestEffect.get(lootIndex))));
 
@@ -167,7 +169,7 @@ public class RoguePathGenerator {
 
     static void ensureSideNodeTypes(RoguePath path, List<RogueEvent> events,
                                     List<ChestEffect> chestEffects) {
-        List<Class<? extends RoguePathNode>> sideTypes = List.of(
+        List<Class<? extends RoguePathNode>> sideTypes = ImmutableList.of(
             NodeBazaar.class, NodeSanctum.class, NodeEvent.class, NodeChest.class);
 
         for (Class<? extends RoguePathNode> missingType : sideTypes) {
@@ -184,8 +186,9 @@ public class RoguePathGenerator {
     private static RoguePathNode chooseMostCommonSideNode(RoguePath path,
             List<Class<? extends RoguePathNode>> sideTypes) {
         List<List<RoguePathNode>> groups = sideTypes.stream()
-            .map(type -> path.getNodes().stream().filter(type::isInstance).toList())
-            .toList();
+            .map(type -> path.getNodes().stream().filter(type::isInstance)
+                .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList)))
+            .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
         int highestCount = groups.stream().mapToInt(List::size).max().orElse(0);
         if (highestCount < 2) {
             throw new IllegalStateException("Not enough side nodes to include every type.");
@@ -194,7 +197,7 @@ public class RoguePathGenerator {
         List<RoguePathNode> donors = groups.stream()
             .filter(group -> group.size() == highestCount)
             .flatMap(List::stream)
-            .toList();
+            .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
         return donors.get(MyRandom.getRandom().nextInt(donors.size()));
     }
 
@@ -210,7 +213,7 @@ public class RoguePathGenerator {
             return new NodeEvent(events.get(0));
         }
         if (type == NodeChest.class) {
-            return new NodeChest(List.of(chestEffects.get(0), chestEffects.get(1)));
+            return new NodeChest(ImmutableList.of(chestEffects.get(0), chestEffects.get(1)));
         }
         throw new IllegalArgumentException("Unsupported side node type: " + type);
     }

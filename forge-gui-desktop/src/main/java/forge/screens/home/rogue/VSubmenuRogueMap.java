@@ -42,10 +42,13 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
   SINGLETON_INSTANCE;
 
   private static final int CARRY_CARDS_PER_ROW = 5;
+  private static final String LIFE_TOTAL_KEY = "lblRogueLifeTotal";
+  private static final String GOLD_TOTAL_KEY = "lblRogueGoldTotal";
+  private static final String REMOVAL_CREDITS_KEY = "lblRogueRemovalCredits";
 
   final Localizer localizer = Localizer.getInstance();
   private DragCell parentCell;
-  private final DragTab tab = new DragTab("Rogue Commander");
+  private final DragTab tab = new DragTab(localizer.getMessage("lblRogueCommander"));
 
   private final FLabel lblCommanderAvatar = new FLabel.Builder()
       .iconScaleFactor(0.99f).iconInBackground(true).build();
@@ -57,25 +60,25 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
       .build();
 
   private final FLabel lblLife = new FLabel.Builder()
-      .text("\u2665 Life: 20 / 20")
+      .text(localizer.getMessage(LIFE_TOTAL_KEY, 20, 20))
       .fontSize(14)
       .fontStyle(Font.BOLD)
       .build();
 
   private final FLabel lblGold = new FLabel.Builder()
-      .text("Gold: 0")
+      .text(localizer.getMessage(GOLD_TOTAL_KEY, 0))
       .fontSize(14)
       .fontStyle(Font.BOLD)
       .build();
 
   private final FLabel lblEchoes = new FLabel.Builder()
-      .text("Echoes: 0")
+      .text(localizer.getMessage("lblRogueEchoTotal", 0))
       .fontSize(14)
       .fontStyle(Font.BOLD)
       .build();
 
   private final FLabel lblRemovalCredits = new FLabel.Builder()
-      .text("Removal Credits: 0")
+      .text(localizer.getMessage(REMOVAL_CREDITS_KEY, 0))
       .fontSize(14)
       .fontStyle(Font.BOLD)
       .build();
@@ -101,8 +104,8 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
   private final FButton btnEditDeck;
   private final FButton btnRerollPlane;
   private final FButton btnAbandonRun;
-  private final FButton btnDevWinRun = new FButton("[DEV] Win Run");
-  private final FButton btnDevNextNode = new FButton("[DEV] Next Node");
+  private final FButton btnDevWinRun = new FButton(localizer.getMessage("lblRogueDevWinRun"));
+  private final FButton btnDevNextNode = new FButton(localizer.getMessage("lblRogueDevNextNode"));
   private CardUtil zoomUtil;
 
   VSubmenuRogueMap() {
@@ -116,17 +119,17 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
     lblEndless.setVisible(false);
 
     // Setup buttons with icons
-    btnEditDeck = new FButton("Edit Rogue Deck");
+    btnEditDeck = new FButton(localizer.getMessage("lblRogueEditDeck"));
     btnEditDeck.setIcon(FSkin.getIcon(FSkinProp.ICO_CARD_IMAGE));
 
-    btnEnterNode = new FButton("Enter Node");
+    btnEnterNode = new FButton(localizer.getMessage("lblRogueEnterNode"));
     btnEnterNode.setIcon(FSkin.getIcon(FSkinProp.ICO_OPEN));
 
-    btnRerollPlane = new FButton("Reroll Plane");
+    btnRerollPlane = new FButton(localizer.getMessage("lblRogueRerollPlane"));
     btnRerollPlane.setIcon(FSkin.getImage(FSkinProp.ICO_FLIPCARD).resize(24, 24).getIcon());
     btnRerollPlane.setVisible(false);
 
-    btnAbandonRun = new FButton("Abandon Run");
+    btnAbandonRun = new FButton(localizer.getMessage("lblRogueAbandonRun"));
     btnAbandonRun.setIcon(FSkin.getImage(FSkinProp.ICO_DELETE).resize(24, 24).getIcon());
 
     pnlEffects = RogueUIHelper.createEffectPanel();
@@ -148,37 +151,18 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
   public void updateDisplay(RogueRun run) {
     // Echoes come from meta progression (persistent), not from the run
     int totalEchoes = RogueMetaProgress.getInstance().getTotalEchoes();
-    lblEchoes.setText("Echoes: " + totalEchoes);
+    lblEchoes.setText(localizer.getMessage("lblRogueEchoTotal", totalEchoes));
 
     if (run != null) {
       lblCommanderName.setText(run.getCurrentCommanderName());
       lblCommanderAvatar.setIcon(FSkin.getAvatars().get(run.getSelectedRogueDeck().getAvatarIndex()));
-      lblLife.setText("\u2665 Life: " + run.getCurrentLife() + " / " + run.getMaxLife());
-      lblGold.setText("Gold: " + run.getCurrentGold());
-      lblRemovalCredits.setText("Removal Credits: " + run.getRemovalCredits());
-      int descLevel = run.getDescensionLevel();
-      lblDescension.setVisible(descLevel > 0);
-      if (descLevel > 0) {
-        lblDescension.setText("Descension: " + descLevel);
-        StringBuilder tooltip = new StringBuilder("<html>");
-        for (int level = 1; level <= descLevel; level++) {
-          DescensionLevel descension = DescensionLevel.forLevel(level);
-          if (descension == null) {
-            continue;
-          }
-          tooltip.append("* Level ").append(level)
-              .append(" - ").append(descension.name)
-              .append(": ").append(descension.description)
-              .append("<br>");
-        }
-        tooltip.append("</html>");
-        lblDescension.setToolTipText(tooltip.toString());
-      } else {
-        lblDescension.setToolTipText(null);
-      }
+      lblLife.setText(localizer.getMessage(LIFE_TOTAL_KEY, run.getCurrentLife(), run.getMaxLife()));
+      lblGold.setText(localizer.getMessage(GOLD_TOTAL_KEY, run.getCurrentGold()));
+      lblRemovalCredits.setText(localizer.getMessage(REMOVAL_CREDITS_KEY, run.getRemovalCredits()));
+      updateDescension(run.getDescensionLevel());
       int endlessLevel = run.getEndlessLevel();
       lblEndless.setVisible(endlessLevel > 0);
-      lblEndless.setText(endlessLevel > 0 ? "Endless Level " + endlessLevel : "");
+      lblEndless.setText(endlessLevel > 0 ? localizer.getMessage("lblRogueEndlessLevel", endlessLevel) : "");
       lblEndless.setToolTipText(endlessLevel > 0
           ? EndlessMode.getModifiersDescription(endlessLevel) : null);
 
@@ -186,18 +170,7 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
       List<RogueEffect> allEffects = RogueEffectComposite.getAllEffects(run);
       allEffects.removeIf(effect -> effect instanceof DescensionLevel || effect instanceof EndlessMode);
       RogueUIHelper.populateEffectPanel(pnlEffects, allEffects, run);
-      Dimension effectSize = pnlEffects.getPreferredSize();
-      int visibleRows = Math.min(3, allEffects.size());
-      int rowHeight = visibleRows == 0 ? 0 : pnlEffects.getComponent(0).getPreferredSize().height;
-      int viewportHeight = Math.min(effectSize.height,
-          visibleRows * rowHeight + Math.max(0, visibleRows - 1));
-      boolean needsScrollbar = allEffects.size() > 6;
-      scrollEffects.setVerticalScrollBarPolicy(needsScrollbar
-          ? ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS : ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
-      int rightGap = 16;
-      scrollEffects.getViewport().setPreferredSize(new Dimension(effectSize.width + rightGap, viewportHeight));
-      int scrollbarWidth = needsScrollbar ? scrollEffects.getVerticalScrollBar().getPreferredSize().width : 0;
-      scrollEffects.setPreferredSize(new Dimension(effectSize.width + rightGap + scrollbarWidth, viewportHeight));
+      RogueUIHelper.resizeEffectScroller(scrollEffects, pnlEffects);
       scrollEffects.revalidate();
       populateCarryCardPanel(run.getCarryCards());
 
@@ -205,17 +178,35 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
     } else {
       lblCommanderName.setText("");
       lblCommanderAvatar.setIcon(FSkin.getIcon(FSkinProp.ICO_MINUS));
-      lblLife.setText("\u2665 Life: 20 / 20");
-      lblGold.setText("Gold: 0");
-      lblRemovalCredits.setText("Removal Credits: 0");
-      lblDescension.setVisible(false);
-      lblDescension.setToolTipText(null);
+      lblLife.setText(localizer.getMessage(LIFE_TOTAL_KEY, 20, 20));
+      lblGold.setText(localizer.getMessage(GOLD_TOTAL_KEY, 0));
+      lblRemovalCredits.setText(localizer.getMessage(REMOVAL_CREDITS_KEY, 0));
+      updateDescension(0);
       lblEndless.setVisible(false);
       lblEndless.setToolTipText(null);
       btnRerollPlane.setVisible(false);
       populateCarryCardPanel(List.of());
       mapPanel.clearPath();
     }
+  }
+
+  private void updateDescension(int descLevel) {
+    lblDescension.setVisible(descLevel > 0);
+    if (descLevel <= 0) {
+      lblDescension.setToolTipText(null);
+      return;
+    }
+    lblDescension.setText(localizer.getMessage("lblRogueDescensionLevel", descLevel));
+    StringBuilder tooltip = new StringBuilder("<html>");
+    for (int level = 1; level <= descLevel; level++) {
+      DescensionLevel descension = DescensionLevel.forLevel(level);
+      if (descension != null) {
+        tooltip.append("* ")
+            .append(localizer.getMessage("lblRogueDescensionTooltip", level, descension.name, descension.description))
+            .append("<br>");
+      }
+    }
+    lblDescension.setToolTipText(tooltip.append("</html>").toString());
   }
 
   @Override
@@ -225,7 +216,7 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
 
   @Override
   public String getMenuTitle() {
-    return "Continue Run";
+    return Localizer.getInstance().getMessage("lblRogueContinueRun");
   }
 
   @Override
@@ -243,13 +234,14 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
 
     JPanel buttonRow = new JPanel(new MigLayout("insets 0, gap 10, fillx"));
     buttonRow.setOpaque(false);
-    buttonRow.add(btnEnterNode, "wmin 0, growx, shrinkx, h 40px!");
-    buttonRow.add(btnEditDeck, "wmin 0, growx, shrinkx, h 40px!");
-    buttonRow.add(btnRerollPlane, "wmin 0, growx, shrinkx, h 40px!, hidemode 3");
-    buttonRow.add(btnAbandonRun, "wmin 0, growx, shrinkx, h 40px!");
+    final String buttonConstraints = "wmin 0, growx, shrinkx, h 40px!";
+    buttonRow.add(btnEnterNode, buttonConstraints);
+    buttonRow.add(btnEditDeck, buttonConstraints);
+    buttonRow.add(btnRerollPlane, buttonConstraints + ", hidemode 3");
+    buttonRow.add(btnAbandonRun, buttonConstraints);
     if (ForgePreferences.DEV_MODE) {
-      buttonRow.add(btnDevNextNode, "wmin 0, growx, shrinkx, h 40px!");
-      buttonRow.add(btnDevWinRun, "wmin 0, growx, shrinkx, h 40px!");
+      buttonRow.add(btnDevNextNode, buttonConstraints);
+      buttonRow.add(btnDevWinRun, buttonConstraints);
     }
     VHomeUI.SINGLETON_INSTANCE.getPnlDisplay()
         .add(buttonRow, "w 96%!, h 40px!, gap 2% 2% 10px 20px, ax center");
@@ -302,6 +294,7 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
   }
 
   @Override
+  @SuppressWarnings("java:S3066") // Required by IVDoc.
   public void setParentCell(DragCell cell0) {
     this.parentCell = cell0;
   }
@@ -375,9 +368,9 @@ public enum VSubmenuRogueMap implements IVSubmenu<CSubmenuRogueMap> {
 
   private String buildCarryCardTooltip(CarryCard carryCard, PaperCard paperCard) {
     return paperCard.getName() + " (" + switch (carryCard.type()) {
-      case ITEM -> "Item";
-      case FELLOW -> "Fellow";
-      case SCROLL -> "Scroll";
+      case ITEM -> localizer.getMessage("lblRogueCarryItem");
+      case FELLOW -> localizer.getMessage("lblRogueCarryFellow");
+      case SCROLL -> localizer.getMessage("lblRogueCarryScroll");
     } + ")";
   }
 

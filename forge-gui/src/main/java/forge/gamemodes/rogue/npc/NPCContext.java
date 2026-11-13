@@ -1,5 +1,6 @@
 package forge.gamemodes.rogue.npc;
 
+import com.google.common.collect.ImmutableList;
 import forge.gamemodes.rogue.effect.NPCEffect;
 import java.util.List;
 
@@ -11,9 +12,11 @@ public record NPCContext(NPC npc, List<String> flavorTextChunks, List<NPCChoice>
 
     public NPCContext {
         flavorTextChunks = flavorTextChunks == null || flavorTextChunks.isEmpty()
-            ? List.of("")
-            : flavorTextChunks.stream().map(text -> text == null ? "" : text).toList();
-        choices = choices == null ? List.of() : List.copyOf(choices);
+            ? ImmutableList.of("")
+            : flavorTextChunks.stream()
+                .map(text -> text == null ? "" : text)
+                .collect(ImmutableList.toImmutableList());
+        choices = choices == null ? ImmutableList.of() : ImmutableList.copyOf(choices);
     }
 
     public String flavorText() {

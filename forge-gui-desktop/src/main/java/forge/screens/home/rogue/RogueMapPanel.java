@@ -1,5 +1,6 @@
 package forge.screens.home.rogue;
 
+import forge.util.Localizer;
 import forge.gamemodes.rogue.RogueRun;
 import forge.toolbox.FLabel;
 import forge.toolbox.FScrollPane;
@@ -26,7 +27,7 @@ final class RogueMapPanel extends SkinnedPanel {
     setOpaque(false);
 
     FLabel lblTitle = new FLabel.Builder()
-        .text("Rogue Commander - Map")
+        .text(Localizer.getInstance().getMessage("lblRogueRogueCommanderMap"))
         .fontAlign(SwingConstants.CENTER)
         .opaque(true)
         .fontSize(16)

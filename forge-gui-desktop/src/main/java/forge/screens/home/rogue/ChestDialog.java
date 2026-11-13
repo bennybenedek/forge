@@ -1,17 +1,16 @@
 package forge.screens.home.rogue;
 
+import forge.util.Localizer;
 import forge.deckchooser.FDeckViewer;
 import forge.gamemodes.rogue.PreviewReference;
 import forge.gamemodes.rogue.RogueRun;
 import forge.gamemodes.rogue.effect.ChestEffect;
 import forge.gamemodes.rogue.effect.ChoiceRerollContext;
-import forge.localinstance.skin.FSkinProp;
 import forge.sound.SoundEffectType;
 import forge.sound.SoundSystem;
 import forge.toolbox.FButton;
 import forge.toolbox.FLabel;
 import forge.toolbox.FOptionPane;
-import forge.toolbox.FSkin;
 import forge.toolbox.FSkin.SkinnedPanel;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -24,7 +23,6 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.SwingConstants;
-import javax.swing.WindowConstants;
 import net.miginfocom.swing.MigLayout;
 
 /**
@@ -54,7 +52,7 @@ public class ChestDialog {
     panel = new MainPanel();
 
     FLabel lblTitle = new FLabel.Builder()
-        .text("Choose Your Loot")
+        .text(Localizer.getInstance().getMessage("lblRogueChooseYourLoot"))
         .fontSize(20).fontStyle(Font.BOLD).fontAlign(SwingConstants.CENTER).build();
 
     int choiceButtonWidth = (DIALOG_WIDTH - 2 * PANEL_INSETS) * 4 / 5;
@@ -80,7 +78,7 @@ public class ChestDialog {
       desiredHeight += btnReward.getPreferredSize().height + 10 + 10;
     }
 
-    FButton btnSkip = RogueButtonHelper.createChoiceButton("Skip Loot", "");
+    FButton btnSkip = RogueButtonHelper.createChoiceButton(Localizer.getInstance().getMessage("lblRogueSkipLoot"), "");
     RogueButtonHelper.setChoiceButtonSizeHint(btnSkip, choiceButtonWidth);
     btnSkip.addActionListener(e -> {
       selectedLoot = null;
@@ -108,23 +106,14 @@ public class ChestDialog {
     int result;
     do {
       List<String> buttons = new ArrayList<>();
-      buttons.add("View Deck");
-      buttons.add("View Map");
+      buttons.add(Localizer.getInstance().getMessage("lblViewDeck"));
+      buttons.add(Localizer.getInstance().getMessage("lblRogueViewMap"));
       if (hasRerolls) {
-        buttons.add("Reroll (" + rerollCtx.remainingRerolls + " left)");
+        buttons.add(Localizer.getInstance().getMessage("lblRogueRerollsRemaining", rerollCtx.remainingRerolls));
       }
-      optionPane = new FOptionPane(null, "Chest", null, panel,
+      optionPane = new FOptionPane(null, Localizer.getInstance().getMessage("lblRogueChest"), null, panel,
           buttons, VIEW_DECK_OPTION);
-      optionPane.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
-      RogueUIHelper.disableSpacebarButtonActivation(optionPane.getContentPane());
-      optionPane.getTitleBar().setVisible(false);
-      optionPane.getButton(VIEW_DECK_OPTION).setIcon(FSkin.getIcon(FSkinProp.ICO_CARD_IMAGE));
-      optionPane.getButton(VIEW_DECK_OPTION).setHorizontalTextPosition(SwingConstants.RIGHT);
-      optionPane.getButton(VIEW_MAP_OPTION).setIcon(
-          FSkin.getImage(FSkinProp.ICO_QUEST_MAP).resize(24, 24).getIcon());
-      optionPane.getButton(VIEW_MAP_OPTION).setHorizontalTextPosition(SwingConstants.RIGHT);
-      panel.revalidate();
-      panel.repaint();
+      RogueUIHelper.prepareChoiceDialog(optionPane, panel, VIEW_DECK_OPTION, VIEW_MAP_OPTION);
       optionPane.setVisible(true);
       result = optionPane.getResult();
       hidePreview();

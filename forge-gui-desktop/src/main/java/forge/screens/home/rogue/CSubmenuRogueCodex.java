@@ -13,6 +13,7 @@ import forge.localinstance.achievements.RogueCommanderAchievements;
 import forge.localinstance.properties.ForgePreferences;
 import forge.screens.home.CHomeUI;
 import forge.toolbox.FOptionPane;
+import forge.util.Localizer;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -47,7 +48,7 @@ public enum CSubmenuRogueCodex implements ICDoc {
 
   @Override
   public void update() {
-    RogueCommanderAchievements.instance.evaluateCodexAchievements(RogueMetaProgress.getInstance());
+    RogueCommanderAchievements.getInstance().evaluateCodexAchievements(RogueMetaProgress.getInstance());
     RogueTutorialHelper.showIfNotSeen(RogueTutorial.CODEX, RogueTutorial.CARD_SELECTION_ZOOM);
     loadStatistics();
   }
@@ -55,21 +56,7 @@ public enum CSubmenuRogueCodex implements ICDoc {
   private void loadStatistics() {
     RogueMetaProgress progress = RogueMetaProgress.getInstance();
 
-    view.updateDisplay(
-        progress.getTotalRunsStarted(),
-        progress.getTotalRunsCompleted(),
-        progress.getTotalRunsWon(),
-        progress.getTotalPlaytimeMillis(),
-        progress.getTotalMatchesWon(),
-        progress.getTotalMatchesLost(),
-        progress.getMaxLifeInRun(),
-        progress.getMaxGoldInRun(),
-        progress.getMaxCreatureTypesInDeck(),
-        progress.getMaxArtifactsInDeck(),
-        progress.getMaxSharedCreatureTypeInDeck(),
-        progress.getMaxLegendaryPermanentsInDeck(),
-        progress.getMaxNonbasicLandsInDeck()
-    );
+    view.updateDisplay(progress);
 
     refreshActiveTab(progress);
   }
@@ -152,16 +139,16 @@ public enum CSubmenuRogueCodex implements ICDoc {
 
   private void devUnlockCodex() {
     CodexHelper.unlockCodex();
-    RogueCommanderAchievements.instance.evaluateCodexAchievements(RogueMetaProgress.getInstance());
+    RogueCommanderAchievements.getInstance().evaluateCodexAchievements(RogueMetaProgress.getInstance());
     loadStatistics();
   }
 
   private void confirmReset() {
     boolean confirmed = FOptionPane.showConfirmDialog(
-        "Are you sure you want to reset all Game progression?\nThis will delete all progress, history and stats.\nThis action cannot be undone.",
-        "Reset Game Progression",
-        "Reset",
-        "Cancel",
+        Localizer.getInstance().getMessage("lblRogueResetProgressConfirm"),
+        Localizer.getInstance().getMessage("lblRogueResetGameProgression"),
+        Localizer.getInstance().getMessage("lblReset"),
+        Localizer.getInstance().getMessage("lblCancel"),
         false
     );
 
@@ -175,10 +162,10 @@ public enum CSubmenuRogueCodex implements ICDoc {
 
   private void confirmResetTutorials() {
     boolean confirmed = FOptionPane.showConfirmDialog(
-        "Are you sure you want to reset all tutorials?\nThey will be shown again when you visit each screen.",
-        "Reset Tutorials",
-        "Reset",
-        "Cancel",
+        Localizer.getInstance().getMessage("lblRogueResetTutorialsConfirm"),
+        Localizer.getInstance().getMessage("lblRogueResetTutorials"),
+        Localizer.getInstance().getMessage("lblReset"),
+        Localizer.getInstance().getMessage("lblCancel"),
         false
     );
 

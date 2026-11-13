@@ -58,12 +58,16 @@ public abstract class AchievementCollection implements Iterable<Achievement> {
     }
 
     private static void doUpdateAllAchievements(final Match match, final Player player) {
-        FModel.getAchievements(match.getRules().getGameType()).updateAll(player);
+        final GameType gameType = match.getRules().getGameType();
+        // Standalone players earn Constructed trophies by playing Rogue Commander.
+        if (gameType == GameType.RogueCommander) {
+            FModel.getAchievements(GameType.Constructed).updateAll(player);
+        }
+        FModel.getAchievements(gameType).updateAll(player);
         AltWinAchievements.instance.updateAll(player);
         PlaneswalkerAchievements.instance.updateAll(player);
         ChallengeAchievements.instance.updateAll(player);
         CardActivationAchievements.instance.updateAll(player);
-        RogueCommanderAchievements.instance.updateAll(player);
     }
     
     public static void buildComboBox(IComboBox<AchievementCollection> cb) {
@@ -78,7 +82,7 @@ public abstract class AchievementCollection implements Iterable<Achievement> {
         cb.addItem(PlaneswalkerAchievements.instance);
         cb.addItem(CardActivationAchievements.instance);
         cb.addItem(ChallengeAchievements.instance);
-        cb.addItem(RogueCommanderAchievements.instance);
+        cb.addItem(FModel.getAchievements(GameType.RogueCommander));
     }
 
     protected AchievementCollection(String name0, String filename0, boolean isLimitedFormat0) {

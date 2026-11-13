@@ -18,6 +18,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * Enum defining all available Aetherworks in Rogue Commander mode.
@@ -328,7 +329,7 @@ public enum AetherEffect implements RogueEffect {
         List<PaperCard> offers = candidates.stream()
             .filter(card -> offeredNames.add(card.getRules().getNormalizedName()))
             .limit(20)
-            .toList();
+            .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
         if (offers.isEmpty()) {
             return;
         }
@@ -369,7 +370,7 @@ public enum AetherEffect implements RogueEffect {
 
     public String getDescriptionForRank(int rank) {
         int value = getEffectValueAtRank(rank);
-        return description.formatted(value > 0 ? Integer.toString(value) : "?");
+        return String.format(description, value > 0 ? Integer.toString(value) : "?");
     }
 
     @Override
@@ -445,7 +446,7 @@ public enum AetherEffect implements RogueEffect {
     @Override
     public String getDescriptionWithAllRanks(int currentRank, int upgradeLevel) {
         String allValues = buildAllValuesString(currentRank, upgradeLevel);
-        return "<html>" + description.formatted(allValues) + "</html>";
+        return "<html>" + String.format(description, allValues) + "</html>";
     }
 
     /**

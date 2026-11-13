@@ -1,5 +1,6 @@
 package forge.gamemodes.rogue.npc;
 
+import com.google.common.collect.ImmutableList;
 import forge.gamemodes.rogue.RogueRun;
 import java.util.List;
 
@@ -27,7 +28,7 @@ public enum NarsetEncounter implements NPCEncounter {
             if (run.getLastMatchData().chaosCount() <= 0) return null;
             incrementNpcLevel();
             return buildContext(
-                List.of(
+                ImmutableList.of(
                     "Out of nowhere, an Omenpath opens at the edge of the battlefield. A woman in " +
                         "travel-worn Jeskai robes stumbles out of it. " +
                         "She catches herself with one hand and looks back as the passage closes.\n" +
@@ -45,7 +46,7 @@ public enum NarsetEncounter implements NPCEncounter {
                         "When you tell her about the Aether, she listens closely. \"I'd like to join you there. " +
                         "I've learned a few things on my travels that could help with yours.\""
                 ),
-                List.of());
+                ImmutableList.of());
         }
     },
 
@@ -64,7 +65,7 @@ public enum NarsetEncounter implements NPCEncounter {
 
     @Override
     public List<String> getOfferingBoonMonologues() {
-        return List.of(
+        return ImmutableList.of(
             "Narset closes her book as you approach, keeping a finger between the pages.\n" +
                 "\"I once thought I understood a Plane because I'd read everything I could find about it. " +
                 "I had to abandon quite a few of those conclusions when I actually got there.\"\n" +

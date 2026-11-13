@@ -15,6 +15,7 @@ import forge.item.PaperCard;
 import forge.item.PaperCardPredicates;
 import forge.toolbox.FOptionPane;
 import forge.util.Aggregates;
+import forge.util.Localizer;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -45,29 +46,11 @@ class NodeSanctumHelper {
         NPCEncounterComposite.INSTANCE.onBeforeSanctum(sanctumCtx, currentRun, progress);
         showNpcDialogs(sanctumCtx.preSanctumDialogs);
 
-        int baseHealAmount = sanctumCtx.restLifeGainDisabled ? 0
-            : sanctumCtx.restFullHeal ? currentRun.getMaxLife() : sanctumNode.getHealAmount();
-        int missingLife = Math.max(0, currentRun.getMaxLife() - currentRun.getCurrentLife());
-        int effectiveHealAmount = Math.min(baseHealAmount, missingLife);
-        boolean hasWounds = !currentRun.getActiveWoundEffects().isEmpty();
-        boolean canPayRestCost = sanctumCtx.restLifeGainDisabled
-            || currentRun.getMaxLife() > sanctumCtx.restMaxLifeCost;
-        boolean restEnabled = canPayRestCost && (effectiveHealAmount > 0 || hasWounds);
-        String restDescription = sanctumCtx.restLifeGainDisabled
-            ? "Cure all {{Wound}}s."
-            : sanctumCtx.restFullHeal
-                ? "Heal to full Life. Lose " + sanctumCtx.restMaxLifeCost
-                    + " Max. Life. Cure all {{Wound}}s."
-                : "Gain " + effectiveHealAmount + " Life & Cure all {{Wound}}s.";
-        String restDisabledReason = restEnabled
-            ? null
-            : !canPayRestCost ? "You don't have enough Max. Life."
-                : sanctumCtx.restLifeGainDisabled
-                ? "You have no wounds to cure."
-                : "You are already at maximum life and have no wounds to cure.";
-
-        SanctumDialog dialog = new SanctumDialog(
-            restDescription, restEnabled, restDisabledReason, sanctumCtx);
+        int baseHealAmount = 0;
+        if (!sanctumCtx.restLifeGainDisabled) {
+            baseHealAmount = sanctumCtx.restFullHeal ? currentRun.getMaxLife() : sanctumNode.getHealAmount();
+        }
+        SanctumDialog dialog = createSanctumDialog(sanctumCtx, currentRun, baseHealAmount);
         SanctumDialog.SanctumChoice choice = dialog.show();
 
         switch (choice) {
@@ -84,14 +67,14 @@ class NodeSanctumHelper {
                 PaperCard craftedFood = craftSanctumFood(currentRun);
                 if (craftedFood == null) {
                     FOptionPane.showMessageDialog(
-                        "No Food items matching your commander's color identity were available to craft.",
-                        "Sanctum");
+                        Localizer.getInstance().getMessage("lblRogueNoFoodAvailable"),
+                        Localizer.getInstance().getMessage("lblRogueSanctum"));
                     break;
                 }
                 currentRun.addCarryCard(craftedFood, CarryCardType.ITEM, SANCTUM_COOK_SOURCE_ID);
                 map.showNodeResultDialog(
-                    "Sanctum",
-                    "You cooked:",
+                    Localizer.getInstance().getMessage("lblRogueSanctum"),
+                    Localizer.getInstance().getMessage("lblRogueYouCooked"),
                     List.of(new NodeResultPanel.CardSection(null, List.of(craftedFood))),
                     900,
                     700,
@@ -114,6 +97,39 @@ class NodeSanctumHelper {
             case SKIP:
                 break;
         }
+    }
+
+    private static SanctumDialog createSanctumDialog(SanctumContext sanctumCtx, RogueRun currentRun,
+                                                       int baseHealAmount) {
+        int missingLife = Math.max(0, currentRun.getMaxLife() - currentRun.getCurrentLife());
+        int effectiveHealAmount = Math.min(baseHealAmount, missingLife);
+        boolean hasWounds = !currentRun.getActiveWoundEffects().isEmpty();
+        boolean canPayRestCost = sanctumCtx.restLifeGainDisabled
+            || currentRun.getMaxLife() > sanctumCtx.restMaxLifeCost;
+        boolean restEnabled = canPayRestCost && (effectiveHealAmount > 0 || hasWounds);
+
+        Localizer localizer = Localizer.getInstance();
+        final String woundMarker = "{{Wound}}";
+        String restDescription;
+        if (sanctumCtx.restLifeGainDisabled) {
+            restDescription = localizer.getMessage("lblRogueCureWounds", woundMarker);
+        } else if (sanctumCtx.restFullHeal) {
+            restDescription = localizer.getMessage("lblRogueFullRest", sanctumCtx.restMaxLifeCost, woundMarker);
+        } else {
+            restDescription = localizer.getMessage("lblRogueGainLifeAndCureWounds", effectiveHealAmount, woundMarker);
+        }
+
+        String restDisabledReason = null;
+        if (!restEnabled) {
+            String reasonKey;
+            if (!canPayRestCost) {
+                reasonKey = "lblRogueNotEnoughMaxLife";
+            } else {
+                reasonKey = sanctumCtx.restLifeGainDisabled ? "lblRogueNoWoundsToCure" : "lblRogueFullLifeAndNoWounds";
+            }
+            restDisabledReason = localizer.getMessage(reasonKey);
+        }
+        return new SanctumDialog(restDescription, restEnabled, restDisabledReason, sanctumCtx);
     }
 
     private void showNpcDialogs(List<NPCContext> contexts) {

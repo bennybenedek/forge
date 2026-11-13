@@ -24,7 +24,6 @@ import forge.item.IPaperCard;
 import forge.localinstance.achievements.Achievement;
 import forge.localinstance.achievements.AchievementCollection;
 import forge.localinstance.achievements.ChallengeAchievements;
-import forge.localinstance.achievements.RogueCommanderAchievements;
 import forge.localinstance.skin.FSkinProp;
 import forge.model.FModel;
 import forge.screens.home.EMenuGroup;
@@ -131,7 +130,7 @@ public enum VSubmenuAchievements implements IVSubmenu<CSubmenuAchievements> {
 
         cbCollections.addItem(FModel.getAchievements(GameType.Constructed));
         cbCollections.addItem(ChallengeAchievements.instance);
-        cbCollections.addItem(RogueCommanderAchievements.instance);
+        cbCollections.addItem(FModel.getAchievements(GameType.RogueCommander));
 
         cbCollections.setSkinFont(FSkin.getRelativeBoldFont(14));
         cbCollections.setTextAlignment(TextAlignment.CENTER);
@@ -345,7 +344,7 @@ public enum VSubmenuAchievements implements IVSubmenu<CSubmenuAchievements> {
 
                 fm = g2d.getFontMetrics();
                 boolean isHiddenAndUnearned = achievement.isHidden() && !achievement.isActive();
-                label = isHiddenAndUnearned ? "Hidden" : achievement.getDisplayName();
+                label = isHiddenAndUnearned ? Localizer.getInstance().getMessage("lblRogueHiddenAchievement") : achievement.getDisplayName();
                 textY = plateY + (trophyPlateSize.height * 2 / 3 - fm.getHeight()) / 2 + fm.getAscent();
                 g2d.drawString(label, x + plateOffset + (trophyPlateSize.width - fm.stringWidth(label)) / 2, textY);
 
@@ -431,7 +430,7 @@ public enum VSubmenuAchievements implements IVSubmenu<CSubmenuAchievements> {
                 g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
                 fm = g2d.getFontMetrics();
                 y += fm.getAscent();
-                g2d.drawString(selectedHidden ? "Hidden" : selectedAchievement.getDisplayName(), x, y);
+                g2d.drawString(selectedHidden ? Localizer.getInstance().getMessage("lblRogueHiddenAchievement") : selectedAchievement.getDisplayName(), x, y);
                 y += nameHeight;
 
                 FSkin.setGraphicsFont(g2d, DESC_FONT);

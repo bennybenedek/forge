@@ -1,5 +1,8 @@
 package forge.gamemodes.rogue;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import org.apache.commons.lang3.StringUtils;
 import forge.StaticData;
 import forge.card.CardEdition;
 import forge.card.CardRarity;
@@ -26,6 +29,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.tinylog.Logger;
 
@@ -38,9 +42,9 @@ public class RogueConfig {
     private RogueConfig() {
     }
 
-    private static final Set<String> EXCLUDED_RANDOM_DRAW_SET_CODES = Set.of("UNK", "UNH");
+    private static final Set<String> EXCLUDED_RANDOM_DRAW_SET_CODES = ImmutableSet.of("UNK", "UNH");
     private static final Set<String> DEPRIORITIZED_RANDOM_PRINT_SET_CODES =
-        Set.of("SLZ", "MAR", "FCA", "TLE", "PF25", "PF26", "SLD", "PSPL", "MBC", "SCH", "HOC",
+        ImmutableSet.of("SLZ", "MAR", "FCA", "TLE", "PF25", "PF26", "SLD", "PSPL", "MBC", "SCH", "HOC",
             "PZA", "OTP", "PIO", "KLR", "EA2", "PSVC", "PRM");
     private static final String FALLBACK_LAND_SET = "MH3";
     private static final String WASTES_FALLBACK_LAND_SET = "M3C";
@@ -221,12 +225,12 @@ public class RogueConfig {
             File deckFile = new File(ForgeConstants.RES_DIR, "rogue/util/gamechangers.dck");
             if (!deckFile.exists()) {
                 Logger.warn("Gamechanger deck not found: {}", deckFile.getAbsolutePath());
-                cachedGamechangerCards = List.of();
+                cachedGamechangerCards = ImmutableList.of();
             } else {
                 Deck deck = DeckSerializer.fromFile(deckFile);
                 if (deck == null) {
                     Logger.warn("Failed to load Gamechanger deck from {}", deckFile.getAbsolutePath());
-                    cachedGamechangerCards = List.of();
+                    cachedGamechangerCards = ImmutableList.of();
                 } else {
                     cachedGamechangerCards = new ArrayList<>(deck.getMain().toFlatList());
                 }
@@ -244,12 +248,12 @@ public class RogueConfig {
             File deckFile = new File(ForgeConstants.RES_DIR, "rogue/util/commander_banlist.dck");
             if (!deckFile.exists()) {
                 Logger.warn("Commander banlist deck not found: {}", deckFile.getAbsolutePath());
-                cachedCommanderBanlistCards = List.of();
+                cachedCommanderBanlistCards = ImmutableList.of();
             } else {
                 Deck deck = DeckSerializer.fromFile(deckFile);
                 if (deck == null) {
                     Logger.warn("Failed to load Commander banlist deck from {}", deckFile.getAbsolutePath());
-                    cachedCommanderBanlistCards = List.of();
+                    cachedCommanderBanlistCards = ImmutableList.of();
                 } else {
                     cachedCommanderBanlistCards = new ArrayList<>(deck.getMain().toFlatList());
                 }
@@ -328,7 +332,7 @@ public class RogueConfig {
     }
 
     public static Deck loadPlaneboundDeck(RoguePlanebound planebound) {
-        if (planebound == null || planebound.deckPath() == null || planebound.deckPath().isBlank()) {
+        if (planebound == null || StringUtils.isBlank(planebound.deckPath())) {
             return null;
         }
 
@@ -350,7 +354,7 @@ public class RogueConfig {
 
         return FModel.getMagicDb().getCommonCards().getUniqueCards().stream()
                 .filter(effectiveFilter)
-                .toList();
+                .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
     }
 
     /** Returns the Bazaar Carry Card type, or null if the card is ineligible. */
@@ -384,7 +388,7 @@ public class RogueConfig {
         Predicate<PaperCard> effectiveFilter = getAllFilters(randomFilter);
         return getAllCards(randomFilter).stream()
                 .map(card -> findPreferredPrint(card, effectiveFilter, preferredEdition).orElse(card))
-                .toList();
+                .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
     }
 
     /** Finds a non-mythic printing for a generated starting deck, if one qualifies. */
@@ -444,17 +448,17 @@ public class RogueConfig {
 
     /** Deck setting first, then the actual Commander printing, then the standard land set. */
     public static String getBasicLandEdition(String landEdition, PaperCard commander) {
-        if (landEdition != null && !landEdition.isBlank()) {
+        if (!StringUtils.isBlank(landEdition)) {
             return landEdition;
         }
-        return commander != null && commander.getEdition() != null && !commander.getEdition().isBlank()
+        return commander != null && !StringUtils.isBlank(commander.getEdition())
                 ? commander.getEdition() : FALLBACK_LAND_SET;
     }
 
     /** All basic-land arts in an edition for the Rogue Deck Editor. */
     public static List<PaperCard> getBasicLandsFromEdition(String edition) {
-        if (edition == null || edition.isBlank()) {
-            return List.of();
+        if (StringUtils.isBlank(edition)) {
+            return ImmutableList.of();
         }
         List<PaperCard> basics = new ArrayList<>();
         for (Map.Entry<PaperCard, Integer> entry : FModel.getAllCards()) {

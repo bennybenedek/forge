@@ -1,5 +1,6 @@
 package forge.gamemodes.rogue;
 
+import com.google.common.collect.ImmutableList;
 import forge.LobbyPlayer;
 import forge.game.Game;
 import forge.game.GameView;
@@ -19,18 +20,16 @@ import forge.item.PaperCard;
 import forge.localinstance.achievements.RogueCommanderAchievements;
 import forge.localinstance.skin.FSkinProp;
 import forge.player.GamePlayerUtil;
+import forge.util.Localizer;
 import java.util.ArrayList;
 import java.util.List;
+import org.tinylog.Logger;
 
 /**
  * Controller for Rogue Commander win/lose screen.
  * Handles reward logic after matches.
  */
 public class RogueWinLoseController {
-    private static final String BTN_CONTINUE_RUN = "Continue Run";
-    private static final String BTN_WIN_RUN = "Complete Run";
-    private static final String BTN_LOSE_RUN = "End Run";
-    private static final String YOU_WON = "You won ";
 
     private final GameView lastGame;
     private final IWinLoseView<? extends IButton> view;
@@ -38,7 +37,8 @@ public class RogueWinLoseController {
     private final RogueRun currentRun;
 
     // Carry cards lost during the match (set by handleMatchData, shown by both victory/defeat)
-    private List<CarryCard> lostCarryCards = List.of();
+    private final Localizer localizer = Localizer.getInstance();
+    private List<CarryCard> lostCarryCards = ImmutableList.of();
 
     public RogueWinLoseController(final GameView game0, final IWinLoseView<? extends IButton> view0, final RogueRun currentRun0) {
         this.lastGame = game0;
@@ -61,9 +61,9 @@ public class RogueWinLoseController {
         // Setup buttons - we're in the win/lose screen, so match is effectively over
         view.getBtnContinue().setVisible(false);
         if (wonMatch) {
-            view.getBtnQuit().setText(BTN_CONTINUE_RUN);
+            view.getBtnQuit().setText(localizer.getMessage("lblRogueContinueRun"));
         } else {
-            view.getBtnQuit().setText(BTN_LOSE_RUN);
+            view.getBtnQuit().setText(localizer.getMessage("lblRogueEndRun"));
         }
 
         // Show rewards on a separate thread
@@ -90,7 +90,7 @@ public class RogueWinLoseController {
 
     private void handleMatchVictory() {
         if (currentRun == null) {
-            System.err.println("ERROR: No current run found in RogueWinLoseController");
+            Logger.error("Cannot record Rogue match victory without an active run");
             return;
         }
 
@@ -109,7 +109,7 @@ public class RogueWinLoseController {
             RogueEffectComposite.INSTANCE.onMatchWin(currentRun);
             int gainedLife = currentRun.getCurrentLife() - lifeBefore;
             if (gainedLife > 0) {
-                view.showMessage("Gained " + gainedLife + " life.", "Effect", FSkinProp.ICO_QUEST_CHARM);
+                view.showMessage(localizer.getMessage("lblRogueGainedLife", gainedLife), localizer.getMessage("lblRogueEffect"), FSkinProp.ICO_QUEST_CHARM);
             }
 
             // Won the match but life is still <= 0 (e.g. "can't lose the game" effect) — run is lost
@@ -167,7 +167,7 @@ public class RogueWinLoseController {
         recordMatchStats(progress, true);
 
         // Evaluate run-level achievements after rewards
-        RogueCommanderAchievements.instance.evaluateRunAchievements(currentRun);
+        RogueCommanderAchievements.getInstance().evaluateRunAchievements(currentRun);
 
         // Move to next node
         currentRun.nextNode();
@@ -178,7 +178,7 @@ public class RogueWinLoseController {
 
     private void handleTrailVictory(int echoReward) {
         if (echoReward > 0) {
-            view.showMessage(YOU_WON + echoReward + " Echoes.", "Echo Reward", FSkinProp.ICO_QUEST_GOLD);
+            view.showMessage(localizer.getMessage("lblRogueEchoesWon", echoReward), localizer.getMessage("lblRogueEchoReward"), FSkinProp.ICO_QUEST_GOLD);
         }
 
         RogueMetaProgress progress = RogueMetaProgress.getInstance();
@@ -188,11 +188,11 @@ public class RogueWinLoseController {
             return;
         }
         progress.recordEndlessLevelCompleted(currentRun);
-        RogueCommanderAchievements.instance.recordEndlessLevelWon(currentRun.getEndlessLevel());
+        RogueCommanderAchievements.getInstance().recordEndlessLevelWon(currentRun.getEndlessLevel());
         if (currentRun.isCustomRun() && currentRun.getEndlessLevel() == 0) {
             progress.unlockEndlessMode();
         }
-        view.getBtnContinue().setText(BTN_WIN_RUN);
+        view.getBtnContinue().setText(localizer.getMessage("lblRogueCompleteRun"));
     }
 
     public static boolean finalizeRunVictory(RogueRun run, String defeatedBy) {
@@ -216,11 +216,11 @@ public class RogueWinLoseController {
 
         RogueStats.fireOnRunCompleted(run, progress, true);
 
-        RogueCommanderAchievements.instance.recordRunWon(
+        RogueCommanderAchievements.getInstance().recordRunWon(
             run.getCurrentCommanderName());
 
         boolean sparkAwarded = progress.recordDescensionWin(run);
-        RogueCommanderAchievements.instance.evaluateRunAchievements(run);
+        RogueCommanderAchievements.getInstance().evaluateRunAchievements(run);
         progress.notifyDescensionL1IfFirstWin(run);
 
         RogueIO.saveRun(run);
@@ -239,15 +239,15 @@ public class RogueWinLoseController {
         }
 
         if (!chosenCards.isEmpty()) {
-            view.showCards("Cards Added to Your Deck", chosenCards);
+            view.showCards(localizer.getMessage("lblRogueCardsAdded"), chosenCards);
         }
 
         if (goldReward > 0) {
-            view.showMessage(YOU_WON + goldReward + " Gold.", "Gold Reward", FSkinProp.ICO_QUEST_COIN);
+            view.showMessage(localizer.getMessage("lblRogueGoldWon", goldReward), localizer.getMessage("lblRogueGoldReward"), FSkinProp.ICO_QUEST_COIN);
         }
 
         if (echoReward > 0) {
-            view.showMessage(YOU_WON + echoReward + " Echoes.", "Echo Reward", FSkinProp.ICO_QUEST_GOLD);
+            view.showMessage(localizer.getMessage("lblRogueEchoesWon", echoReward), localizer.getMessage("lblRogueEchoReward"), FSkinProp.ICO_QUEST_GOLD);
         }
     }
 
@@ -269,9 +269,9 @@ public class RogueWinLoseController {
             currentRun.setCurrentLife(defeatCtx.reviveLife);
             recordMatchStats(RogueMetaProgress.getInstance(), false);
             RogueIO.saveRun(currentRun);
-            view.getBtnQuit().setText(BTN_CONTINUE_RUN);
-            view.showMessage("Continuum Engine activated! You survived with " + defeatCtx.reviveLife + " life!",
-                "Continuum Engine!", FSkinProp.ICO_QUEST_ELIXIR);
+            view.getBtnQuit().setText(localizer.getMessage("lblRogueContinueRun"));
+            view.showMessage(localizer.getMessage("lblRogueContinuumRevive", defeatCtx.reviveLife),
+                localizer.getMessage("lblRogueContinuumEngine"), FSkinProp.ICO_QUEST_ELIXIR);
             return;
         }
 
@@ -281,9 +281,9 @@ public class RogueWinLoseController {
 
     private void handleRunDefeat(String defeatedBy) {
         if (finalizeRunDefeat(currentRun, defeatedBy)) {
-            view.showMessage("You won 1 Spark!", "Spark Reward", FSkinProp.ICO_QUEST_ELIXIR);
+            view.showMessage(localizer.getMessage("lblRogueSparkWon"), localizer.getMessage("lblRogueSparkReward"), FSkinProp.ICO_QUEST_ELIXIR);
         }
-        view.getBtnQuit().setText(BTN_LOSE_RUN);
+        view.getBtnQuit().setText(localizer.getMessage("lblRogueEndRun"));
     }
 
     public static boolean finalizeRunDefeat(RogueRun run, String defeatedBy) {
@@ -301,7 +301,7 @@ public class RogueWinLoseController {
                 defeatedBy != null ? defeatedBy : ""));
 
         RogueStats.fireOnRunCompleted(run, progress, false);
-        RogueCommanderAchievements.instance.evaluateRunAchievements(run);
+        RogueCommanderAchievements.getInstance().evaluateRunAchievements(run);
 
         RogueIO.saveRun(run);
         return false;
@@ -339,7 +339,7 @@ public class RogueWinLoseController {
 
     private void showLostCarryCards() {
         if (lostCarryCards.isEmpty()) return;
-        StringBuilder sb = new StringBuilder("You lost: ");
+        StringBuilder sb = new StringBuilder();
         for (int i = 0; i < lostCarryCards.size(); i++) {
             if (i > 0) sb.append(", ");
             RogueRun.CarryCard card = lostCarryCards.get(i);
@@ -348,14 +348,14 @@ public class RogueWinLoseController {
               .append(getCarryCardTypeLabel(card.type()))
               .append(")");
         }
-        view.showMessage(sb.toString(), "Lost Carry Cards", FSkinProp.ICO_QUEST_MINUS);
+        view.showMessage(localizer.getMessage("lblRogueYouLost", sb.toString()), localizer.getMessage("lblRogueLostCarryCards"), FSkinProp.ICO_QUEST_MINUS);
     }
 
     private static String getCarryCardTypeLabel(CarryCardType type) {
         return switch (type) {
-            case ITEM -> "item";
-            case FELLOW -> "fellow";
-            case SCROLL -> "scroll";
+            case ITEM -> Localizer.getInstance().getMessage("lblRogueItem");
+            case FELLOW -> Localizer.getInstance().getMessage("lblRogueFellow");
+            case SCROLL -> Localizer.getInstance().getMessage("lblRogueScroll");
         };
     }
 

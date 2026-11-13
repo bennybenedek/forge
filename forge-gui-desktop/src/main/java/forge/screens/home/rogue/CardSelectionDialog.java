@@ -13,6 +13,7 @@ import forge.toolbox.FSkin;
 import forge.toolbox.FSkin.SkinnedPanel;
 import forge.localinstance.skin.FSkinProp;
 import forge.view.arcane.CardPanel;
+import forge.util.Localizer;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -118,15 +119,10 @@ public class CardSelectionDialog {
     wrapper.add(scrollPane, BorderLayout.CENTER);
 
     // Dialog size — fit screen
-    GraphicsConfiguration gc = GraphicsEnvironment.getLocalGraphicsEnvironment()
-        .getDefaultScreenDevice().getDefaultConfiguration();
-    Rectangle screenBounds = gc.getBounds();
-    Insets screenInsets = Toolkit.getDefaultToolkit().getScreenInsets(gc);
-    int usableWidth = screenBounds.width - screenInsets.left - screenInsets.right;
-    int usableHeight = screenBounds.height - screenInsets.top - screenInsets.bottom;
-    int dialogWidth = Math.min((int) (usableWidth * 0.9),
+    Dimension screenSize = RogueUIHelper.getUsableDefaultScreenSize();
+    int dialogWidth = Math.min((int) (screenSize.width * 0.9),
         CARDS_PER_ROW * (BASE_CARD_WIDTH + CARD_SPACING) + 2 * PADDING + 30); // +30 for scrollbar
-    int dialogHeight = (int) (usableHeight * 0.85) - 80;
+    int dialogHeight = (int) (screenSize.height * 0.85) - 80;
 
     Dimension dialogSize = new Dimension(dialogWidth, dialogHeight);
     wrapper.setPreferredSize(dialogSize);
@@ -136,7 +132,7 @@ public class CardSelectionDialog {
     final int VIEW_DECK_OPTION = 1;
     int result;
     do {
-      optionPane = new FOptionPane(null, title, null, wrapper, List.of("OK", "View Deck"), 0);
+      optionPane = new FOptionPane(null, title, null, wrapper, List.of("OK", Localizer.getInstance().getMessage("lblViewDeck")), 0);
       optionPane.setDefaultCloseOperation(WindowConstants.DO_NOTHING_ON_CLOSE);
       RogueUIHelper.disableSpacebarButtonActivation(optionPane.getContentPane());
       optionPane.getTitleBar().setVisible(false);
@@ -174,10 +170,9 @@ public class CardSelectionDialog {
 
   private String getInfoText() {
     if (minSelections == maxSelections) {
-      return String.format("%s (%d / %d selected)", subtitle, selectedCards.size(), maxSelections);
+      return Localizer.getInstance().getMessage("lblRogueFixedCardSelectionCount", subtitle, selectedCards.size(), maxSelections);
     }
-    return String.format("%s (%d selected, choose %d to %d)", subtitle, selectedCards.size(),
-        minSelections, maxSelections);
+    return Localizer.getInstance().getMessage("lblRogueVariableCardSelectionCount", subtitle, selectedCards.size(), minSelections, maxSelections);
   }
 
   /** Returns type sort index matching Deck Editor order (GroupDef.CARD_TYPE). */

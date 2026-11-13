@@ -3,6 +3,7 @@ package forge.gamemodes.rogue.path;
 import forge.gamemodes.rogue.effect.ChestEffect;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Represents a Chest node in a Rogue Commander path.
@@ -37,8 +38,10 @@ public class NodeChest extends RoguePathNode {
     @Override
     public String toString() {
         List<ChestEffect> effects = getChestEffects();
-        return !effects.isEmpty()
-            ? "Loot (" + String.join(" / ", effects.stream().map(ChestEffect::getDisplayName).toList()) + ")"
-            : "Loot (Treasure)";
+        return effects.isEmpty()
+            ? "Loot (Treasure)"
+            : "Loot (" + effects.stream()
+                .map(ChestEffect::getDisplayName)
+                .collect(Collectors.joining(" / ")) + ")";
     }
 }
