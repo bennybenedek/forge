@@ -5,6 +5,7 @@ import forge.ai.AiPlayDecision;
 import forge.ai.ComputerUtil;
 import forge.ai.ComputerUtilCard;
 import forge.ai.ComputerUtilCost;
+import forge.ai.PlaceholderTargetAi;
 import forge.ai.SpellAbilityAi;
 import forge.game.Game;
 import forge.game.ability.AbilityUtils;
@@ -223,6 +224,9 @@ public class SacrificeAi extends SpellAbilityAi {
 
     @Override
     public boolean willPayUnlessCost(Player payer, SpellAbility sa, Cost cost, boolean alreadyPaid, FCollectionView<Player> payers) {
+        if ("PayIfBigger".equals(sa.getParam("AILogic"))) {
+            return !alreadyPaid && PlaceholderTargetAi.worthPaying(payer, sa, cost);
+        }
         // Icy Prison
         if (payers.size() > 1) {
             final Player p = sa.getActivatingPlayer();
