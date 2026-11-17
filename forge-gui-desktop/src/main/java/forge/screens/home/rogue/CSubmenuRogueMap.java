@@ -28,6 +28,7 @@ import java.awt.Toolkit;
 import java.awt.event.ActionListener;
 import java.util.*;
 import javax.swing.*;
+import org.tinylog.Logger;
 
 /**
  * Controls the "rogue map" submenu in the home UI.
@@ -118,6 +119,7 @@ public enum CSubmenuRogueMap implements ICDoc {
     view.getBtnEnterNode().addActionListener(actEnterNode);
     view.getBtnEditDeck().addActionListener(actEditDeck);
     view.getBtnRerollPlane().addActionListener(actRerollPlane);
+    view.getBtnBackToHome().addActionListener(e -> backToHome());
     view.getBtnAbandonRun().addActionListener(actAbandonRun);
     view.getBtnDevWinRun().addActionListener(e -> devWinRun());
     view.getBtnDevNextNode().addActionListener(e -> devNextNode());
@@ -193,6 +195,7 @@ public enum CSubmenuRogueMap implements ICDoc {
     view.getPathVisualizer().setSelectedNode(currentRun.getCurrentNodeIndex());
 
     boolean matchInProgress = currentRun.getHostedMatch() != null;
+    view.getBtnBackToHome().setEnabled(!matchInProgress);
     view.getBtnAbandonRun().setEnabled(!matchInProgress);
 
     // Update button state based on current node
@@ -202,6 +205,7 @@ public enum CSubmenuRogueMap implements ICDoc {
       view.getBtnEnterNode().setEnabled(false);
       view.getBtnEnterNode().setText(Localizer.getInstance().getMessage("lblRogueNoNodeAvailable"));
       view.getBtnRerollPlane().setVisible(false);
+      view.updateActionButtonLayout();
       return;
     }
 
@@ -213,6 +217,7 @@ public enum CSubmenuRogueMap implements ICDoc {
     view.getBtnEditDeck().setEnabled(!matchInProgress);
     view.getBtnEnterNode().setText(getEnterButtonText(currentNode, pathCtx));
     updatePlaneboundRerollButton(currentNode, matchInProgress, pathCtx);
+    view.updateActionButtonLayout();
   }
 
   /**
@@ -251,11 +256,6 @@ public enum CSubmenuRogueMap implements ICDoc {
       button.setEnabled(hasCandidates);
       button.setToolTipText(Localizer.getInstance().getMessage(
           hasCandidates ? "lblRogueRerollPlanebound" : "lblRogueNoAlternativePlanebound"));
-    }
-
-    if (button.getParent() != null) {
-      button.getParent().revalidate();
-      button.getParent().repaint();
     }
   }
 
@@ -518,6 +518,24 @@ public enum CSubmenuRogueMap implements ICDoc {
     progress.notifyDescensionL1IfFirstWin(currentRun);
     RogueIO.saveRun(currentRun);
     currentRun = null;
+    CHomeUI.SINGLETON_INSTANCE.itemClick(EDocID.HOME_ROGUESTART);
+  }
+
+  private void backToHome() {
+    if (currentRun == null || currentRun.getHostedMatch() != null) {
+      return;
+    }
+
+    RogueRunTimer timer = currentRun.getRunTimer();
+    timer.stop();
+    try {
+      RogueIO.saveRun(currentRun);
+    } catch (RuntimeException e) {
+      timer.start();
+      Logger.error(e, "Could not save Rogue Commander run before returning home");
+      FOptionPane.showErrorDialog(Localizer.getInstance().getMessage("lblSavefailed"));
+      return;
+    }
     CHomeUI.SINGLETON_INSTANCE.itemClick(EDocID.HOME_ROGUESTART);
   }
 

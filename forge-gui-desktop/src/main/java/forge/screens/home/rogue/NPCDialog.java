@@ -18,6 +18,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BooleanSupplier;
 import javax.swing.SwingConstants;
 import net.miginfocom.swing.MigLayout;
 
@@ -48,6 +49,14 @@ public class NPCDialog {
     private int currentChunkIndex;
 
     public NPCDialog(NPCContext ctx, ChoiceRerollContext rerollCtx) {
+        this(ctx, rerollCtx, null);
+    }
+
+    static NPCDialog forTutorial(NPCContext ctx, BooleanSupplier confirmSkip) {
+        return new NPCDialog(ctx, new ChoiceRerollContext(), confirmSkip);
+    }
+
+    private NPCDialog(NPCContext ctx, ChoiceRerollContext rerollCtx, BooleanSupplier confirmSkip) {
         this.rerollCtx = rerollCtx;
         soundEffect = switch (ctx.npc()) {
             case GONTI -> SoundEffectType.RogueNpcGonti;
@@ -89,6 +98,19 @@ public class NPCDialog {
             btnContinue.addActionListener(e -> advanceChunkOrClose());
             panel.add(btnContinue, "w 80%!, ax center, gap 0 0 10px 10px, wrap");
             desiredHeight += btnContinue.getPreferredSize().height + 10 + 10;
+        }
+
+        if (confirmSkip != null) {
+            FButton btnSkip = new FButton(Localizer.getInstance().getMessage("lblRogueSkipAllTutorials"));
+            btnSkip.setFont(btnSkip.getFont().deriveFont(Font.PLAIN, 12f));
+            int skipButtonWidth = btnSkip.getAutoSizeWidth() + 28;
+            btnSkip.addActionListener(e -> {
+                if (confirmSkip.getAsBoolean()) {
+                    closeDialog();
+                }
+            });
+            panel.add(btnSkip, "w " + skipButtonWidth + "px!, h 24px!, ax center, gapbottom 8px, wrap");
+            desiredHeight += 24 + 8;
         }
 
         for (NPCChoice choice : ctx.choices()) {
@@ -149,6 +171,10 @@ public class NPCDialog {
             return;
         }
 
+        closeDialog();
+    }
+
+    private void closeDialog() {
         optionPane.setResult(CHOICE_RESULT);
         optionPane.setVisible(false);
     }
