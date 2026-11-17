@@ -483,6 +483,18 @@ public class RogueConfig {
         return card != null && card.hasFlavorName() ? getCard(card.getName(), null, null) : card;
     }
 
+    /** Returns an eligible print of the same rarity on or after the cutoff, or null. */
+    public static PaperCard getPreferredRecentPrint(PaperCard card, Date cutoff) {
+        Predicate<PaperCard> recent = print -> isEligibleRoguePrinting(print)
+                && !db.getCardEdition(print.getEdition()).getDate().before(cutoff);
+        if (recent.test(card)) {
+            return card;
+        }
+
+        return findPreferredPrint(card, recent.and(print -> print.getRarity() == card.getRarity()), null)
+                .orElse(null);
+    }
+
     /** Prefers non-deprioritized prints, then the chosen edition, CMM, FDC, FDN, and newest set. */
     private static Optional<PaperCard> findPreferredPrint(PaperCard card, Predicate<PaperCard> filter,
             String preferredEdition) {

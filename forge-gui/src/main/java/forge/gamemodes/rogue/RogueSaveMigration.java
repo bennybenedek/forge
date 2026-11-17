@@ -35,6 +35,18 @@ public enum RogueSaveMigration {
         void migrateRun(RogueRun run) {
             run.removeAetherEffect(TEMPORAL_OBSERVATORY_ID);
         }
+    },
+    ZHALFIRIN_WARD_RANK(4) {
+        @Override
+        void migrateMetaProgress(RogueMetaProgress progress) {
+            AetherEffect effect = AetherEffect.ZHALFIRIN_WARD;
+            progress.capAetherEffectRank(effect, effect.getEffectiveMaxRank(progress.getAetherUpgradeLevel()));
+        }
+
+        @Override
+        void migrateRun(RogueRun run) {
+            run.capAetherEffectRank(AetherEffect.ZHALFIRIN_WARD, 2);
+        }
     };
 
     private static final String TEMPORAL_OBSERVATORY_ID = "temporal_observatory";
