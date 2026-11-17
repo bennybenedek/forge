@@ -327,7 +327,8 @@ public enum AetherEffect implements RogueEffect {
             return;
         }
 
-        List<PaperCard> candidates = new ArrayList<>(RogueConfig.getRandomCards(filter));
+        List<PaperCard> candidates = new ArrayList<>(
+            RogueConfig.getRandomCards(filter.and(Predicate.not(RogueConfig::isGamechanger))));
         candidates.removeIf(card -> !run.canAddCardAsCarryCard(card));
         Collections.shuffle(candidates, MyRandom.getRandom());
 
