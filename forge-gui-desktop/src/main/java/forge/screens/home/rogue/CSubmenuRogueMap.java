@@ -315,8 +315,10 @@ public enum CSubmenuRogueMap implements ICDoc {
       }
     }
 
+    int planeboundRow = currentRun.getPath().countPlaneboundRowsUpTo(selectedNode.getRowIndex());
     List<RoguePlanebound> candidates = new ArrayList<>(RogueConfig.loadPlanebounds());
     candidates.removeIf(planebound -> planebound.type() != selectedNode.getPlaneboundType()
+        || planebound.minRow() > planeboundRow
         || excludedPlanebounds.contains(planebound));
     return candidates;
   }

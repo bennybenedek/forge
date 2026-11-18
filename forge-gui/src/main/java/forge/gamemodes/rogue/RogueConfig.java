@@ -390,11 +390,12 @@ public class RogueConfig {
         int avatarIndex = metadata.getInt("avatarIndex", 1);
         int typeIndex = metadata.getInt("type", 0); // Default to NORMAL (0)
         RoguePlaneboundType type = RoguePlaneboundType.fromIndex(typeIndex);
+        int minRow = metadata.getInt("minRow", 0);
 
         // Build relative deck path
         String deckPath = "rogue/planebounds/" + deckFile.getName();
 
-        return new RoguePlanebound(planeName, planeboundName, deckPath, avatarIndex, type);
+        return new RoguePlanebound(planeName, planeboundName, deckPath, avatarIndex, type, minRow);
     }
 
     public static Deck loadPlaneboundDeck(RoguePlanebound planebound) {
