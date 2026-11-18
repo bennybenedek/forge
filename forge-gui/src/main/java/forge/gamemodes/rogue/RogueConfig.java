@@ -508,7 +508,7 @@ public class RogueConfig {
     }
 
     /** Prefers non-deprioritized prints, then the chosen edition, CMM, FDC, FDN, and newest set. */
-    private static Optional<PaperCard> findPreferredPrint(PaperCard card, Predicate<PaperCard> filter,
+    static Optional<PaperCard> findPreferredPrint(PaperCard card, Predicate<PaperCard> filter,
             String preferredEdition) {
         return FModel.getMagicDb().getCommonCards()
                 .getAllCards(card).stream()
