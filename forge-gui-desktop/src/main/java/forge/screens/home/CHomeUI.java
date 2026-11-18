@@ -6,6 +6,7 @@ import javax.swing.JMenu;
 
 import forge.Singletons;
 import forge.gui.framework.EDocID;
+import forge.gui.framework.FScreen;
 import forge.gui.framework.ICDoc;
 import forge.localinstance.properties.ForgePreferences;
 import forge.localinstance.properties.ForgePreferences.FPref;
@@ -14,6 +15,7 @@ import forge.menus.MenuUtil;
 import forge.model.FModel;
 import forge.screens.home.rogue.VSubmenuRogueStart;
 import forge.toolbox.FAbsolutePositioner;
+import forge.util.Localizer;
 
 /**
  * Assembles Swing components of exit submenu option singleton.
@@ -42,6 +44,8 @@ public enum CHomeUI implements ICDoc, IMenuProvider {
 
         currentDocID = id0;
         VHomeUI.SINGLETON_INSTANCE.setSidebarVisible(id0 != EDocID.HOME_ROGUEMAP);
+        FScreen.HOME_SCREEN.setTabCaption(Localizer.getInstance().getMessage(
+                id0 == EDocID.HOME_ROGUEMAP ? "lblRogueCommander" : "lblHomeWithSpaces"));
 
         if (previousDoc != null) {
             if (!previousDoc.equals(id0.getDoc().getLayoutControl())) {
