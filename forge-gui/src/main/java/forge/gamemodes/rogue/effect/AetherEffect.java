@@ -218,9 +218,9 @@ public enum AetherEffect implements RogueEffect {
         "Scrolls you cast cannot be countered. "
             + "Start each Run by choosing %s from up to 20 rare Scrolls.",
         new EffectRankContext(
-            new int[]{10, 15, 20}, // Echo costs (rank 1-3)
-            new int[]{1, 2, 3},    // Starting Scrolls
-            2, 2),
+            new int[]{10, 15, 20, 25}, // Echo costs (rank 1-4)
+            new int[]{1, 2, 3, 4},    // Starting Scrolls
+            3, 2),
         EffectType.PERMANENT, "Aetherwork - Spellwright's Press") {
         @Override
         public void onMatchStart(RegisteredPlayer human, RegisteredPlayer opponent, RogueRun run) {
