@@ -22,6 +22,7 @@ import com.google.common.collect.*;
 import forge.ai.AiCardMemory.MemorySet;
 import forge.ai.ability.ProtectAi;
 import forge.ai.ability.TokenAi;
+import forge.ai.simulation.ElfLoop;
 import forge.card.CardStateName;
 import forge.card.CardType;
 import forge.card.ColorSet;
@@ -1047,6 +1048,18 @@ public class ComputerUtil {
     private static CardCollection chooseDevourSacrifices(final Card host, final SpellAbility source,
             final CardCollection remaining, final Player ai, final int amount, final int considerSacThreshold,
             final int devourAmount) {
+        if (devourAmount > 0 && host.isCreature() && ElfLoop.devourAll(ai, host)) {
+            final CardCollection sacrificed = new CardCollection();
+            for (final Card card : remaining) {
+                if (sacrificed.size() >= amount) {
+                    break;
+                }
+                if (card.isCreature() && !card.equals(host)) {
+                    sacrificed.add(card);
+                }
+            }
+            return sacrificed;
+        }
         final CardCollection candidates = filterOptionalSacrificeCandidates(source, remaining, ai, considerSacThreshold);
         final CardCollection sacrificed = new CardCollection();
 
@@ -3939,6 +3952,29 @@ public class ComputerUtil {
             }
             if (sources < need.getValue()) {
                 return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Sacrificing this noncreature token would cost the AI: an opposing permanent punishes it (Bloodroot Apothecary: the
+     * player who sacrifices a noncreature token gets two poison counters, and a Treasure or a Clue is such a token).
+     */
+    public static boolean sacrificePunished(final Player ai, final Card card) {
+        if (card == null || !card.isToken() || card.isCreature()) {
+            return false;
+        }
+        for (final Card c : ai.getOpponents().getCardsIn(ZoneType.Battlefield)) {
+            for (final forge.game.trigger.Trigger t : c.getTriggers()) {
+                if (t.getMode() != forge.game.trigger.TriggerType.Sacrificed || !t.hasParam("ValidCard")
+                        || !t.getParam("ValidCard").contains("token") || !t.getParam("ValidCard").toLowerCase().contains("noncreature")) {
+                    continue;
+                }
+                final String valid = t.getParamOrDefault("ValidPlayer", "");
+                if (valid.contains("Opponent") || valid.contains("Player")) {
+                    return true;
+                }
             }
         }
         return false;
