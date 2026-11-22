@@ -51,11 +51,11 @@ This repository is a Java 17+ multi-module Maven project (Forge / Rogue Commande
 ## Git branch naming
 
 - Use one topic branch per follow-up PR/MR; related changes can share a branch when they form one coherent review topic.
-- Name new branches with one purpose prefix followed by a short lowercase topic with hyphens:
-  - `feature/<topic>` for new functionality, including features intended for both standalone Rogue Commander and the Forge port.
-  - `bugfix/<topic>` for bug fixes, including fixes needed in both standalone Rogue Commander and the Forge port.
-  - `follow-up/<topic>` for porting remaining standalone changes into Forge as part of the Rogue Commander integration backlog.
-- Choose the prefix by the purpose of the work, not where the issue was discovered. Do not stack prefixes.
+- Name new branches with one prefix followed by a short lowercase topic with hyphens:
+  - `feature/<topic>` for new functionality on standalone Rogue Commander-descended branches, including features also intended for Forge.
+  - `bugfix/<topic>` for fixes on standalone Rogue Commander-descended branches, including fixes also needed in Forge.
+  - `rogue-follow-up/<topic>` for Forge-targeted integration branches, including remaining standalone changes and the Forge counterparts of shared fixes or features.
+- Choose the prefix by the target and purpose of the work, not where the issue was discovered. Do not stack prefixes.
 - Preserve existing long-lived branch names.
 
 ## Project layout (quick map)
