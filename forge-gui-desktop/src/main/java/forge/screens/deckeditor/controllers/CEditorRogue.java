@@ -55,7 +55,6 @@ import forge.screens.match.controllers.CDetailPicture;
 import forge.sound.SoundEffectType;
 import forge.sound.SoundSystem;
 import forge.toolbox.FButton;
-import forge.toolbox.FMouseAdapter;
 import forge.toolbox.FOptionPane;
 import forge.util.ImageFetcher;
 import forge.util.ItemPool;
@@ -222,7 +221,6 @@ public final class CEditorRogue extends CDeckEditor<Deck> {
         if (nonBasicLandsToRemove > rogueRun.getRemovalCredits()) {
             // Not enough removal credits
             String message = Localizer.getInstance().getMessage("lblRogueRemovalLimitHint");
-            FMouseAdapter.forceMouseUp(); //double-click removal can open the dialog before mouse release
             FOptionPane.showMessageDialog(message,
                 Localizer.getInstance().getMessage("lblRogueRemovalLimitReached"), FOptionPane.WARNING_ICON);
             return;

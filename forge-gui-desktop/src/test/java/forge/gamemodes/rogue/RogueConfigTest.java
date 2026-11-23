@@ -3,16 +3,28 @@ package forge.gamemodes.rogue;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
+import static org.testng.Assert.assertSame;
 import static org.testng.Assert.assertTrue;
 
 import forge.StaticData;
 import forge.card.CardMockTestCase;
+import forge.deck.CardPool;
+import forge.deck.Deck;
+import forge.gamemodes.rogue.path.NodeBazaar;
+import forge.gamemodes.rogue.path.NodePlanebound;
+import forge.gamemodes.rogue.path.RoguePath;
 import forge.item.PaperCard;
 import forge.model.FModel;
 import forge.util.ItemPool;
+import forge.util.ImageUtil;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
+import java.util.zip.GZIPOutputStream;
 import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Test;
@@ -34,6 +46,62 @@ public class RogueConfigTest extends CardMockTestCase {
         if (testData != null) {
             testData.setCommanderPredicate(originalCommanderPredicate);
         }
+    }
+
+    @Test
+    public void runSaveRoundTrip() throws IOException {
+        String name = "Gonti Curio - Tarnished Relic";
+        PaperCard curio = RogueConfig.getCard(name, null, null);
+        assertNotNull(curio);
+        assertSame(RogueConfig.getCard(name, null, null), curio);
+        PaperCard foiledCurio = curio.getFoiled();
+
+        PaperCard solRing = testData.getCommonCards().getCard("Sol Ring", "CMM");
+        assertNotNull(solRing);
+        Deck startDeck = new Deck("Test Deck");
+        startDeck.getMain().add(solRing);
+        RogueDeck rogueDeck = new RogueDeck();
+        rogueDeck.setStartDeck(startDeck);
+
+        RogueRun run = new RogueRun(rogueDeck);
+        run.getCurrentDeck().getMain().add(foiledCurio, 2);
+        run.setCurrentGold(7);
+
+        NodePlanebound completed = new NodePlanebound();
+        completed.setCompleted(true);
+        NodeBazaar bazaar = new NodeBazaar();
+        bazaar.setRowIndex(1);
+        run.setPath(new RoguePath(new ArrayList<>(List.of(completed, bazaar))));
+        run.setCurrentNodeIndex(1);
+
+        Path save = Files.createTempFile("rogue-run-", RogueIO.SUFFIX_DATA);
+        RogueRun loaded;
+        try {
+            try (GZIPOutputStream output = new GZIPOutputStream(Files.newOutputStream(save))) {
+                RogueIO.getSerializer(false).toXML(run, output);
+            }
+            loaded = RogueIO.loadRun(save.toFile());
+        } finally {
+            Files.deleteIfExists(save);
+        }
+
+        assertNotNull(loaded);
+        assertEquals(loaded.getCurrentGold(), 7);
+        assertEquals(loaded.getCurrentNodeIndex(), 1);
+        assertTrue(loaded.getPath().getNode(0).isCompleted());
+        assertTrue(loaded.getCurrentNode() instanceof NodeBazaar);
+        assertEquals(loaded.getCurrentNode().getRowIndex(), 1);
+
+        CardPool loadedDeck = loaded.getCurrentDeck().getMain();
+        assertEquals(loadedDeck.countAll(), 3);
+        assertEquals(loadedDeck.count(solRing), 1);
+        List<PaperCard> loadedCurios = loadedDeck.toFlatList().stream()
+            .filter(card -> card.getName().equals(name)).toList();
+        assertEquals(loadedCurios, List.of(foiledCurio, foiledCurio));
+        assertTrue(loadedCurios.stream().allMatch(PaperCard::isFoil));
+
+        assertSame(testData.getCommonCards().getCard(name), curio);
+        assertSame(ImageUtil.getPaperCardFromImageKey(curio.getImageKey(false)), curio);
     }
 
     @Test

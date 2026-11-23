@@ -50,9 +50,11 @@ public class PlaneswalkEffect extends SpellAbilityEffect {
             List<Card> currentPlanes = game.getActivePlanes();
             if (currentPlanes != null && !currentPlanes.isEmpty()) {
                 // Trigger "planeswalk away" effects
-                final Map<AbilityKey, Object> fromParams = AbilityKey.newMap();
-                fromParams.put(AbilityKey.Cards, new CardCollection(currentPlanes));
-                game.getTriggerHandler().runTrigger(TriggerType.PlaneswalkedFrom, fromParams, false);
+                if (!sa.hasParam("DontPlaneswalkAway")) {
+                    final Map<AbilityKey, Object> fromParams = AbilityKey.newMap();
+                    fromParams.put(AbilityKey.Cards, new CardCollection(currentPlanes));
+                    game.getTriggerHandler().runTrigger(TriggerType.PlaneswalkedFrom, fromParams, false);
+                }
 
                 // Trigger "planeswalk to" effects (same plane, we stay)
                 final Map<AbilityKey, Object> toParams = AbilityKey.newMap();

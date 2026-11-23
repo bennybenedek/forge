@@ -265,7 +265,8 @@ public abstract class Achievement {
         if (timestamp == 0) { return null; }
 
         final DateFormat formatter = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, Locale.getDefault());
-        return formatter.format(new Date(timestamp));
+        // Newer JDK locale formats use spaces the skin font cannot render.
+        return formatter.format(new Date(timestamp)).replaceAll("\\h", " ");
     }
 
     public String getSubTitle(final boolean includeTimestamp) {
