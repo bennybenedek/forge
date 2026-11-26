@@ -166,7 +166,8 @@ public class TapAi extends TapAiBase {
         final List<SpellAbility> all = ComputerUtilAbility.getSpellAbilities(
                 payer.getCardsIn(ZoneType.Hand, ZoneType.Command), payer);
         final boolean fetched = land.isInZone(ZoneType.Library) && payer.getGame().getStack().isResolving()
-                && payer.getGame().getPhaseHandler().is(PhaseType.MAIN1, payer);
+                && (payer.getGame().getPhaseHandler().is(PhaseType.MAIN1, payer)
+                || payer.getGame().getPhaseHandler().is(PhaseType.MAIN2, payer));
         if (fetched) {
             for (final Card card : payer.getCardsIn(ZoneType.Hand, ZoneType.Command)) {
                 for (final SpellAbility spell : card.getSpells()) {

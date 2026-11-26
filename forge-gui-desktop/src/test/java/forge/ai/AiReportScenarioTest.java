@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -26,6 +27,7 @@ import forge.ai.simulation.SpellAbilityPicker;
 import forge.ai.ability.TapAi;
 import forge.game.Game;
 import forge.game.GameObject;
+import forge.game.GameState;
 import forge.game.card.Card;
 import forge.game.card.CardCollection;
 import forge.game.card.CounterEnumType;
@@ -37,6 +39,7 @@ import forge.game.player.Player;
 import forge.game.spellability.SpellAbility;
 import forge.game.zone.ZoneType;
 import forge.util.collect.FCollection;
+import forge.util.ThreadUtil;
 
 /**
  * One scenario per open "AI doesn't / AI wrongly ..." report (issue number in the scenario name).
@@ -1441,19 +1444,30 @@ public class AiReportScenarioTest extends AITest {
                     c.ai.getManaPool().addMana(new Mana(MagicColor.RED, mountain, null, c.ai));
                     c.bf("Plains", 2, c.ai); c.hand("Hill Giant", c.ai);
                 }));
-        l.add(new Scenario("shock-fetch-rock-commander", "Fetched Overgrown Tomb plus Sol Ring enables Anikthea", Fid.EXACT, M1, true,
-                c -> {
-                    c.bf("Swamp", c.ai); c.bf("Plains", c.ai); c.bf("Sol Ring", c.ai); c.bf("Windswept Heath", c.ai);
-                    c.lib("Overgrown Tomb", c.ai);
-                    c.ai.addCommander(addCardToZone("Anikthea, Hand of Erebos", c.ai, ZoneType.Command));
-                },
-                c -> {
-                    final SpellAbility fetch = c.playOf("Windswept Heath");
-                    if (fetch == null) { return "AI did not crack the fetchland"; }
-                    c.resolve(fetch);
-                    final Card tomb = c.ai.getCardsIn(ZoneType.Battlefield).stream().filter(k -> k.getName().equals("Overgrown Tomb")).findFirst().orElse(null);
-                    return tomb != null && !tomb.isTapped() ? null : "fetched shockland did not enter untapped";
-                }));
+        for (final String phase : List.of(M1, "MAIN2")) {
+            l.add(new Scenario("shock-fetch-rock-commander-" + phase, "Fetched Overgrown Tomb plus Sol Ring enables Anikthea in " + phase, Fid.EXACT, phase, true,
+                    c -> {
+                        final GameState state = new GameState();
+                        state.parse(List.of("turn=4", "activeplayer=p1", "activephase=" + phase, "p0life=20",
+                                "p0library=Island;Island;Island;Island", "p1life=20", "p1landsplayed=0",
+                                "p1hand=Windswept Heath", "p1battlefield=Swamp;Plains;Sol Ring",
+                                "p1command=Anikthea, Hand of Erebos|IsCommander", "p1graveyard=Mirari's Wake",
+                                "p1library=Overgrown Tomb;Ornithopter;Ornithopter;Ornithopter;Ornithopter"));
+                        CompletableFuture.runAsync(() -> state.applyToGame(c.game), ThreadUtil::invokeInGameThread).join();
+                    },
+                    c -> {
+                        final SpellAbility drop = c.playOf("Windswept Heath");
+                        if (drop == null || !drop.isLandAbility()) { return "AI did not play the fetchland from hand"; }
+                        c.ctl().playChosenSpellAbility(drop);
+                        final SpellAbility fetch = c.playOf("Windswept Heath");
+                        if (fetch == null) { return "AI did not crack the fetchland"; }
+                        c.ctl().playChosenSpellAbility(fetch);
+                        c.resolveAll();
+                        final Card tomb = c.ai.getCardsIn(ZoneType.Battlefield).stream().filter(k -> k.getName().equals("Overgrown Tomb")).findFirst().orElse(null);
+                        if (tomb == null || tomb.isTapped()) { return "fetched shockland did not enter untapped (life " + c.ai.getLife() + ")"; }
+                        return c.ai.getLife() == 17 ? null : "expected fetch plus shock payment to leave 17 life, got " + c.ai.getLife();
+                    }));
+        }
         l.add(new Scenario("shock-pays-for-curve", "Plenty of life and a four-drop that needs the untapped land: pay", Fid.APPROX, M1, true,
                 c -> { c.bf("Mountain", 3, c.ai); c.hand("Hill Giant", c.ai); c.hand("Sacred Foundry", c.ai); },
                 c -> {
