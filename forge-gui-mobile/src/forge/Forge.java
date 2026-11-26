@@ -49,7 +49,7 @@ import forge.screens.FScreen;
 import forge.screens.SplashScreen;
 import forge.screens.TransitionScreen;
 import forge.screens.home.HomeScreen;
-import forge.screens.home.NewGameMenu;
+import forge.screens.rogue.RogueMenu;
 import forge.screens.match.DiceOverlay;
 import forge.screens.match.MatchController;
 import forge.screens.match.MatchScreen;
@@ -61,8 +61,6 @@ import forge.util.*;
 import io.sentry.ScopeType;
 import io.sentry.Sentry;
 
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -210,8 +208,7 @@ public class Forge implements ApplicationListener {
          */
         Gdx.input.setCatchKey(Keys.BACK, true);
         destroyThis = true; //Prevent back()
-        if (Files.exists(Paths.get(ForgeConstants.DEFAULT_SKINS_DIR+ForgeConstants.ADV_TEXTURE_BG_FILE)))
-            selector = getForgePreferences().getPref(FPref.UI_SELECTOR_MODE);
+        selector = "Classic";
 
         //screenWidth and screenHeight should be set initially and only change upon restarting the app
         screenWidth = Gdx.app.getGraphics().getWidth();
@@ -418,9 +415,7 @@ public class Forge implements ApplicationListener {
         isMobileAdventureMode = false;
         MusicPlaylist.invalidateMusicPlaylist();
         SoundSystem.instance.setBackgroundMusic(MusicPlaylist.MENUS);
-        if (isLandscapeMode()) { //open preferred new game screen by default if landscape mode
-            NewGameMenu.getPreferredScreen().open();
-        }
+        RogueMenu.launch();
         stopContinuousRendering(); //save power consumption by disabling continuous rendering once assets loaded
     }
 
@@ -509,41 +504,13 @@ public class Forge implements ApplicationListener {
                     if (splash != null && !splash.isBarSettled() && System.currentTimeMillis() < giveUpAt) { Timer.schedule(this, 0.03f); return; }
                     Gdx.graphics.requestRendering();
                     Gdx.app.postRunnable(() -> {
-                        if (selector.equals("Adventure")) {
-                            //preload adventure resources to speedup startup if selector is adventure. Needs in edt when setting up worldstage
-                            loadAdventureResources(false);
-                            isMobileAdventureMode = true;
-                        }
                         //selection transition
                         setTransitionScreen(new TransitionScreen(() -> {
-                            boolean openedRealScreen;
-                            if (createNewAdventureMap) {
-                                openAdventure();
-                                clearSplashScreen();
-                                openedRealScreen = true;
-                            } else {
-                                if (selector.equals("Classic")) {
-                                    openHomeDefault();
-                                    clearSplashScreen();
-                                    openedRealScreen = true;
-                                } else if (selector.equals("Adventure")) {
-                                    openAdventure();
-                                    clearSplashScreen();
-                                    openedRealScreen = true;
-                                } else if (splashScreen != null) {
-                                    splashScreen.setShowModeSelector(true);
-                                    openedRealScreen = false;
-                                } else {//default mode in case splashscreen is null at some point as seen on resume..
-                                    openHomeDefault();
-                                    clearSplashScreen();
-                                    openedRealScreen = true;
-                                }
-                            }
+                            openHomeDefault();
+                            clearSplashScreen();
                             safeToClose = true;
                             clearTransitionScreen();
-                            if (openedRealScreen) {
-                                maybePromptForBulkCdnSync();
-                            }
+                            maybePromptForBulkCdnSync();
                             if (GuiBase.isIOS()) {
                                 // POST-LOAD memory reclaim (iOS): booting parses ~32k card rules +
                                 // builds ~100k PaperCards + loads skin assets — a large transient

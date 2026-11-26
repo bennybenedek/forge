@@ -17,6 +17,7 @@ import forge.screens.limited.NewSealedScreen;
 import forge.screens.planarconquest.NewConquestScreen;
 import forge.screens.quest.NewQuestScreen;
 import forge.screens.rogue.RogueLaunchScreen;
+import forge.screens.rogue.RogueMenu;
 
 public class NewGameMenu extends FPopupMenu {
 
@@ -60,6 +61,10 @@ public class NewGameMenu extends FPopupMenu {
             open(false);
         }
         private void open(boolean replaceBackScreen) {
+            if (this == RogueCommander) {
+                RogueMenu.launch();
+                return;
+            }
             initializeScreen();
             if (screen != null)
                 Forge.openScreen(screen, replaceBackScreen);
@@ -89,9 +94,7 @@ public class NewGameMenu extends FPopupMenu {
     }
 
     public static NewGameScreen getPreferredScreen() {
-        if (preferredScreen == null) //shouldn't happen but we return constructed as default
-            return NewGameScreen.Constructed;
-        return preferredScreen;
+        return NewGameScreen.RogueCommander;
     }
     public static void setPreferredScreen(NewGameScreen preferredScreen0) {
         if (preferredScreen == preferredScreen0) { return; }
@@ -113,10 +116,7 @@ public class NewGameMenu extends FPopupMenu {
 
     @Override
     protected void buildMenu() {
-        FScreen currentScreen = Forge.getCurrentScreen();
-        for (NewGameScreen ngs : NewGameScreen.values()) {
-            addItem(ngs.item);
-            ngs.item.setSelected(currentScreen == ngs.screen);
-        }
+        addItem(NewGameScreen.RogueCommander.item);
+        NewGameScreen.RogueCommander.item.setSelected(true);
     }
 }

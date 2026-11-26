@@ -38,7 +38,10 @@ Join the **Forge community** on [Discord](https://discord.gg/HcPJNyD66a)!
 
 ### 📱 Android Installation
 - _(Note: **Android 11** is the minimum requirement with at least **6GB RAM** to run smoothly. You need to enable **"Install unknown apps"** for Forge to initialize and update itself)_
-- Download the **APK** from the [Snapshot Build](https://github.com/Card-Forge/forge/releases/tag/daily-snapshots). On the first launch, Forge will automatically download all necessary assets.
+- Download `rogue-commander-android.apk` from the [Rogue Commander release](https://github.com/bennybenedek/forge/releases/tag/rogue-commander-latest). Android downloads become available after the first signed Android release build.
+- Allow your browser or file manager to install the APK. On first launch, allow Rogue Commander to download its matching resource files. No separate Java installation is needed.
+- Rogue Commander installs separately from Forge and opens directly into Rogue's run selection. Install future APKs over the existing app to preserve progress; do not uninstall first.
+- See [Standalone Android instructions](docs/Development/Rogue-Commander-Android.md) for signing, building, installation, updates, and the pre-release device checklist.
 
 ### 📱 iOS (early stage)
 - Build the **IPA** according to Wiki

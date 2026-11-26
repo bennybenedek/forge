@@ -115,7 +115,7 @@ public class GameLauncher {
             config.setResizable(false);
         }
         config.setHdpiMode(HdpiMode.Logical);
-        config.setTitle("Forge - " + versionString);
+        config.setTitle("Rogue Commander - " + versionString);
         config.setWindowListener(new Lwjgl3WindowAdapter() {
             @Override
             public boolean closeRequested() {

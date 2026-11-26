@@ -9,10 +9,10 @@
         <packaging.type>jar</packaging.type>
         <build.min.memory>-Xms1024m</build.min.memory>
         <build.max.memory>-Xmx1536m</build.max.memory>
-        <sign.keystore>keystore</sign.keystore>
-        <sign.alias>alias</sign.alias>
-        <sign.storepass>storepass</sign.storepass>
-        <sign.keypass>keypass</sign.keypass>
+        <sign.keystore>${env.ROGUE_ANDROID_KEYSTORE_PATH}</sign.keystore>
+        <sign.alias>${env.ROGUE_ANDROID_KEY_ALIAS}</sign.alias>
+        <sign.storepass>${env.ROGUE_ANDROID_STORE_PASSWORD}</sign.storepass>
+        <sign.keypass>${env.ROGUE_ANDROID_KEY_PASSWORD}</sign.keypass>
         <cardforge.user>user</cardforge.user>
         <cardforge.pass>pass</cardforge.pass>
         <cardforge.server>ftp.cardforge.org</cardforge.server>
@@ -385,14 +385,13 @@
                                 <argument>-a</argument>
                                 <argument>${pom.basedir}/target/</argument>
                                 <argument>--ks</argument>
-                                <argument>forge.keystore</argument>
+                                <argument>${sign.keystore}</argument>
                                 <argument>--ksAlias</argument>
-                                <argument>Forge</argument>
+                                <argument>${sign.alias}</argument>
                                 <argument>--ksKeyPass</argument>
-                                <argument>forge72</argument>
+                                <argument>${sign.keypass}</argument>
                                 <argument>--ksPass</argument>
-                                <argument>forge72</argument>
-                                <argument>--debug</argument>
+                                <argument>${sign.storepass}</argument>
                             </arguments>
                         </configuration>
                     </plugin>

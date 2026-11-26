@@ -13,16 +13,12 @@ import forge.assets.FSkin;
 import forge.assets.FSkinColor;
 import forge.assets.FSkinColor.Colors;
 import forge.assets.FSkinImage;
-import forge.deck.FDeckChooser;
-import forge.game.GameType;
 import forge.gamemodes.replay.ReplayLauncher;
 import forge.gamemodes.tutorial.HowToPlay;
 import forge.gui.FThreads;
 import forge.screens.FScreen;
 import forge.screens.achievements.AchievementsScreen;
-import forge.screens.online.OnlineMenu.OnlineScreen;
-import forge.screens.planarconquest.ConquestMenu;
-import forge.screens.quest.QuestMenu;
+import forge.screens.rogue.RogueMenu;
 import forge.screens.settings.SettingsScreen;
 import forge.toolbox.FButton;
 import forge.toolbox.FEvent.FEventHandler;
@@ -64,52 +60,24 @@ public class HomeScreen extends FScreen {
     private final ButtonScroller buttonScroller = add(new ButtonScroller());
     private final List<MenuButton> buttons = new ArrayList<>();
     private int activeButtonIndex, baseButtonCount;
-    private FDeckChooser deckManager;
     private boolean QuestCommander = false;
     private String QuestWorld = "";
 
     private HomeScreen() {
         super((Header)null);
 
-        addButton(Forge.getLocalizer().getMessage("lblNewGame"), e -> {
+        addButton(Forge.getLocalizer().getMessage("lblRogueCommander"), e -> {
             activeButtonIndex = 0;
             Forge.lastButtonIndex = activeButtonIndex;
-            NewGameMenu.getPreferredScreen().open();
-        });
-        addButton(Forge.getLocalizer().getMessage("lblLoadGame"), e -> {
-            activeButtonIndex = 1;
-            Forge.lastButtonIndex = activeButtonIndex;
-            LoadGameMenu.getPreferredScreen().open();
-        });
-        addButton(Forge.getLocalizer().getMessage("lblPlayOnline"), e -> {
-            activeButtonIndex = 2;
-            Forge.lastButtonIndex = activeButtonIndex;
-            OnlineScreen.Lobby.open();
-        });
-        addButton(Forge.getLocalizer().getMessage("lblDeckManager"), e -> {
-            activeButtonIndex = 3;
-            Forge.lastButtonIndex = activeButtonIndex;
-            if (deckManager == null) {
-                deckManager = new FDeckChooser(GameType.DeckManager, false, null) {
-                    @Override
-                    protected float doLandscapeLayout(float width, float height) {
-                        //don't show header in landscape mode
-                        getHeader().setBounds(0, 0, 0, 0);
-                        doLayout(0, width, height);
-                        return 0;
-                    }
-                };
-                deckManager.setHeaderCaption(Forge.getLocalizer().getMessage("lblDeckManager"));
-            }
-            Forge.openScreen(deckManager);
+            RogueMenu.launch();
         });
         addButton(Forge.getLocalizer().getMessage("lblAchievements"), e -> {
-            activeButtonIndex = 4;
+            activeButtonIndex = 1;
             Forge.lastButtonIndex = activeButtonIndex;
             AchievementsScreen.show();
         });
         addButton(Forge.getLocalizer().getMessage("lblSettings"), e -> {
-            activeButtonIndex = 5;
+            activeButtonIndex = 2;
             Forge.lastButtonIndex = activeButtonIndex;
             SettingsScreen.show(true);
         });
@@ -155,14 +123,7 @@ public class HomeScreen extends FScreen {
     public void openMenu(int index){
         if (index < 0)
             return; //menu on startup
-        if (index == 2)
-            OnlineScreen.Lobby.open();
-        else if (index < 6)
-            NewGameMenu.getPreferredScreen().open();
-        else if (index == 6)
-            QuestMenu.launchQuestMode(QuestMenu.LaunchReason.StartQuestMode, HomeScreen.instance.getQuestCommanderMode());
-        else if (index == 7)
-            ConquestMenu.launchPlanarConquest(ConquestMenu.LaunchReason.StartPlanarConquest);
+        RogueMenu.launch();
     }
 
     public boolean getQuestCommanderMode() {

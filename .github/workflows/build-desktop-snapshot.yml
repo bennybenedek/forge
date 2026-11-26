@@ -1,4 +1,4 @@
-name: Build Desktop Snapshot (Fork-Friendly)
+name: Build Standalone Snapshot (Desktop and Android)
 
 on:
   workflow_dispatch:
@@ -13,6 +13,10 @@ on:
       - master
       - rogueCommander
 
+concurrency:
+  group: standalone-release-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: ubuntu-24.04
@@ -23,10 +27,10 @@ jobs:
       version: ${{ steps.read_version.outputs.version }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v6
 
       - name: Set up JDK 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v5
         with:
           java-version: '17'
           distribution: 'temurin'
@@ -40,13 +44,113 @@ jobs:
           git config user.email "actions@github.com"
           git config user.name "GitHub Actions"
 
-      - name: Build Desktop Distribution
+      - name: Configure Android release signing
+        if: github.ref == 'refs/heads/rogueCommander'
+        env:
+          ROGUE_ANDROID_KEYSTORE_BASE64: ${{ secrets.ROGUE_ANDROID_KEYSTORE_BASE64 }}
+          ROGUE_ANDROID_KEY_ALIAS: ${{ secrets.ROGUE_ANDROID_KEY_ALIAS }}
+          ROGUE_ANDROID_STORE_PASSWORD: ${{ secrets.ROGUE_ANDROID_STORE_PASSWORD }}
+          ROGUE_ANDROID_KEY_PASSWORD: ${{ secrets.ROGUE_ANDROID_KEY_PASSWORD }}
         run: |
+          set -euo pipefail
+          for name in ROGUE_ANDROID_KEYSTORE_BASE64 ROGUE_ANDROID_KEY_ALIAS ROGUE_ANDROID_STORE_PASSWORD ROGUE_ANDROID_KEY_PASSWORD; do
+            if [[ -z "${!name}" ]]; then
+              echo "::error::Missing signing secret: $name"
+              exit 1
+            fi
+          done
+          umask 077
+          KEYSTORE="$RUNNER_TEMP/rogue-commander.keystore"
+          printf '%s' "$ROGUE_ANDROID_KEYSTORE_BASE64" | base64 --decode > "$KEYSTORE"
+          keytool -list -keystore "$KEYSTORE" -alias "$ROGUE_ANDROID_KEY_ALIAS" -storepass:env ROGUE_ANDROID_STORE_PASSWORD > /dev/null
+          CERT_SHA256=$(keytool -exportcert -keystore "$KEYSTORE" -alias "$ROGUE_ANDROID_KEY_ALIAS" -storepass:env ROGUE_ANDROID_STORE_PASSWORD | sha256sum | cut -d ' ' -f 1)
+          echo "ROGUE_ANDROID_KEYSTORE_PATH=$KEYSTORE" >> "$GITHUB_ENV"
+          echo "ROGUE_ANDROID_CERT_SHA256=$CERT_SHA256" >> "$GITHUB_ENV"
+
+      - name: Set up Android build tools
+        if: github.ref == 'refs/heads/rogueCommander'
+        run: |
+          set -euo pipefail
+          SDK_ROOT="${ANDROID_SDK_ROOT:-$ANDROID_HOME}"
+          "$SDK_ROOT/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$SDK_ROOT" --install "build-tools;35.0.0" "platform-tools" "platforms;android-35"
+          echo "ANDROID_SDK_ROOT=$SDK_ROOT" >> "$GITHUB_ENV"
+          echo "$SDK_ROOT/build-tools/35.0.0" >> "$GITHUB_PATH"
+          PLUGIN_DIR="$HOME/.m2/repository/com/simpligility/maven/plugins/android-maven-plugin/4.6.2"
+          mkdir -p "$PLUGIN_DIR"
+          for extension in jar pom; do
+            curl --fail --location --retry 3 "https://github.com/Card-Forge/android-maven-plugin/releases/download/4.6.2/android-maven-plugin-4.6.2.$extension" -o "$PLUGIN_DIR/android-maven-plugin-4.6.2.$extension"
+          done
+
+      - name: Build release distributions
+        run: |
+          set -euo pipefail
           export DISPLAY=":1"
           Xvfb :1 -screen 0 800x600x8 &
-          mvn -U -B clean -P windows-linux install -T 1C
+          PROFILES=windows-linux
+          ANDROID_ARGS=()
+          if [[ "$GITHUB_REF" == refs/heads/rogueCommander ]]; then
+            PROFILES+=,android-release-build
+            ANDROID_ARGS=(-Dandroid.sdk.path="$ANDROID_SDK_ROOT" -Dandroid.manifest.versionCodeUpdateFromVersion=false -Dandroid.manifestMerger.versionCode="$GITHUB_RUN_NUMBER")
+          fi
+          mvn -U -B clean -P "$PROFILES" install -T 1C "${ANDROID_ARGS[@]}"
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          ROGUE_ANDROID_KEY_ALIAS: ${{ secrets.ROGUE_ANDROID_KEY_ALIAS }}
+          ROGUE_ANDROID_STORE_PASSWORD: ${{ secrets.ROGUE_ANDROID_STORE_PASSWORD }}
+          ROGUE_ANDROID_KEY_PASSWORD: ${{ secrets.ROGUE_ANDROID_KEY_PASSWORD }}
+
+      - name: Validate Android release
+        if: github.ref == 'refs/heads/rogueCommander'
+        run: |
+          set -euo pipefail
+          mkdir -p android-artifacts
+          MATCHES=0
+          for apk in forge-gui-android/target/*.apk; do
+            if ! CERT_INFO=$(apksigner verify --print-certs "$apk" 2>/dev/null); then
+              continue
+            fi
+            CERT_SHA256=$(printf '%s\n' "$CERT_INFO" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p')
+            if [[ "${CERT_SHA256,,}" != "$ROGUE_ANDROID_CERT_SHA256" ]]; then
+              continue
+            fi
+            BADGING=$(aapt dump badging "$apk")
+            grep -q "package: name='com.bennybenedek.roguecommander' versionCode='$GITHUB_RUN_NUMBER'" <<< "$BADGING"
+            grep -q "launchable-activity: name='forge.app.Launcher'" <<< "$BADGING"
+            if grep -q '^application-debuggable' <<< "$BADGING"; then
+              echo '::error::Refusing to publish a debuggable APK'
+              exit 1
+            fi
+            cp "$apk" android-artifacts/rogue-commander-android.apk
+            MATCHES=$((MATCHES + 1))
+          done
+          [[ "$MATCHES" == 1 ]] || { echo '::error::Expected exactly one APK signed with the Rogue Commander key'; exit 1; }
+          cp forge-gui-android/target/assets.zip android-artifacts/assets.zip
+          cp forge-gui-android/target/classes/assets/version.txt android-artifacts/android-version.txt
+          cp forge-gui-android/target/classes/assets/build.txt android-artifacts/android-build.txt
+          python3 - <<'PY'
+          from datetime import datetime
+          from pathlib import Path
+          from zipfile import ZipFile
+          artifacts = Path('android-artifacts')
+          version = (artifacts / 'android-version.txt').read_text().strip()
+          build = (artifacts / 'android-build.txt').read_text().strip()
+          assert version, 'Missing Android version'
+          datetime.strptime(build, '%Y-%m-%d %H:%M:%S')
+          with ZipFile(artifacts / 'rogue-commander-android.apk') as apk:
+              assert apk.read('assets/version.txt').decode().strip() == version
+              assert apk.read('assets/build.txt').decode().strip() == build
+          with ZipFile(artifacts / 'assets.zip') as resources:
+              assert resources.testzip() is None, 'Corrupt assets.zip'
+              assert resources.read('res/build.txt').decode().strip() == build
+              for required in ('res/rogue/commanders/aragorn.dck', 'res/skins/default/sprite_avatars.png',
+                               'res/sound/run_start.mp3', 'res/cardsfolder/cardsfolder.zip'):
+                  assert required in resources.namelist(), f'Missing resource: {required}'
+              assert any(name.startswith('res/music/match/') and name.endswith('.mp3') for name in resources.namelist())
+          PY
+
+      - name: Remove temporary Android signing key
+        if: always() && github.ref == 'refs/heads/rogueCommander'
+        run: rm -f "$RUNNER_TEMP/rogue-commander.keystore"
 
       - name: Setup tmate session
         uses: mxschmitt/action-tmate@v3
@@ -92,6 +196,12 @@ jobs:
           cp artifacts/*.tar.bz2 release-artifacts/ || true
           cp artifacts/build.txt release-artifacts/ || true
           cp artifacts/version.txt release-artifacts/ || true
+          cp android-artifacts/* release-artifacts/
+          for required in rogue-commander-android.apk assets.zip android-version.txt android-build.txt build.txt version.txt; do
+            test -s "release-artifacts/$required"
+          done
+          compgen -G 'release-artifacts/forge-installer-*.jar' > /dev/null
+          compgen -G 'release-artifacts/*.tar.bz2' > /dev/null
           ls -lh release-artifacts/
 
       - name: Upload artifacts to GitHub
@@ -140,6 +250,12 @@ jobs:
             **Windows (recommended — no Java required):**
             Download `forge-rogue-commander.msi` and double-click it. Java is bundled — no separate installation needed.
             After installation, launch `forge.exe` from the install folder.
+
+            **Android:**
+            Download `rogue-commander-android.apk` and allow your browser/file manager to install it.
+            On first launch, allow Rogue Commander to download its matching resources from this release.
+            Keep the app installed when upgrading so your runs and progression are preserved.
+            Android 8 is the minimum supported version; Android 11 or newer is recommended.
 
             **All platforms (Java 17 required):**
             1. Ensure you have Java 17 or later installed. You can download it from [Adoptium](https://adoptium.net/de/temurin/releases?version=17&os=any&arch=any).

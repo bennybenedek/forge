@@ -9,7 +9,6 @@ import java.util.List;
 import com.badlogic.gdx.files.FileHandle;
 import forge.gui.GuiBase;
 import forge.util.BuildInfo;
-import forge.util.DateUtil;
 import org.apache.commons.lang3.StringUtils;
 
 import com.badlogic.gdx.Gdx;
@@ -56,7 +55,8 @@ public class AssetsDownloader {
         final String guiChannel = GuiBase.isAndroid() ? "forge/forge-gui-android/" : "forge/forge-gui-desktop/";
         final String releaseURL = RELEASE_URL +  guiChannel;
         // desktop and mobile-dev uses maven-metadata.xml on earlier releases
-        final String versionText = isSnapshots ? snapsURL + "version.txt" : releaseURL + "maven-metadata.xml";
+        final String versionText = GuiBase.isAndroid() ? snapsURL + "android-version.txt"
+                : isSnapshots ? snapsURL + "version.txt" : releaseURL + "maven-metadata.xml";
         FileHandle assetsDir = Gdx.files.absolute(ASSETS_DIR);
         FileHandle resDir = Gdx.files.absolute(RES_DIR);
         FileHandle buildTxtFileHandle = GuiBase.isAndroid() ? Gdx.files.internal("build.txt") : Gdx.files.classpath("build.txt");
@@ -69,15 +69,16 @@ public class AssetsDownloader {
         boolean connectedToInternet = Forge.getDeviceAdapter().isConnectedToInternet();
         if (connectedToInternet) {
             //currently for desktop/mobile-dev release on github
-            final String releaseTag = Forge.getDeviceAdapter().getReleaseTag(GITHUB_RELEASES_ATOM);
+            final String releaseTag = GuiBase.isAndroid() ? "" : Forge.getDeviceAdapter().getReleaseTag(GITHUB_RELEASES_ATOM);
             try {
                 URL versionUrl = new URL(versionText);
-                String version = isSnapshots ? FileUtil.readFileToString(versionUrl) : releaseTag.replace("forge-", "");
+                String version = GuiBase.isAndroid() || isSnapshots
+                        ? FileUtil.readFileToString(versionUrl).trim() : releaseTag.replace("forge-", "");
                 String filename = "";
                 String installerURL = "";
                 if (GuiBase.isAndroid()) {
-                    filename = "forge-android-" + version + "-signed-aligned.apk";
-                    installerURL = isSnapshots ? snapsURL + filename : releaseURL + version + "/" + filename;
+                    filename = "rogue-commander-android.apk";
+                    installerURL = snapsURL + filename;
                 } else {
                     //current release on github is tar.bz2, update this to jar installer in the future...
                     filename = isSnapshots ? "forge-installer-" + version + ".jar" : releaseTag.replace("forge-", "forge-gui-desktop-") + ".tar.bz2";
@@ -86,8 +87,8 @@ public class AssetsDownloader {
                     installerURL = isSnapshots ? snapsBZ2URL : releaseBZ2URL;
                 }
                 String snapsBuildDate = "", buildDate = "";
-                if (isSnapshots) {
-                    URL url = new URL(snapsURL + "build.txt");
+                if (GuiBase.isAndroid() || isSnapshots) {
+                    URL url = new URL(snapsURL + (GuiBase.isAndroid() ? "android-build.txt" : "build.txt"));
                     snapsTimestamp = format.parse(FileUtil.readFileToString(url));
                     snapsBuildDate = snapsTimestamp.toString();
                     if (!GuiBase.isAndroid()) {
@@ -97,8 +98,7 @@ public class AssetsDownloader {
                         if (buildTxtFileHandle.exists()) {
                             buildTimeStamp = format.parse(buildTxtFileHandle.readString());
                             buildDate = buildTimeStamp.toString();
-                            // if morethan 23 hours the difference, then allow to update..
-                            verifyUpdatable = DateUtil.getElapsedHours(buildTimeStamp, snapsTimestamp) > 23;
+                            verifyUpdatable = snapsTimestamp.after(buildTimeStamp);
                         } else {
                             //fallback to old version comparison
                             verifyUpdatable = !StringUtils.isEmpty(version) && !versionString.equals(version);
@@ -111,7 +111,7 @@ public class AssetsDownloader {
                 if (verifyUpdatable) {
                     Forge.getSplashScreen().prepareForDialogs();
 
-                    message = "A new version of Forge is available.\n(v." + version + " | " + snapsBuildDate + ")\n" +
+                    message = "A new version of Rogue Commander is available.\n(v." + version + " | " + snapsBuildDate + ")\n" +
                             "You are currently on an older version.\n(v." + versionString + " | " + buildDate + ")\n" +
                             "Would you like to update to the new version now?";
                     if (!Forge.getDeviceAdapter().isConnectedToWifi()) {
@@ -120,14 +120,13 @@ public class AssetsDownloader {
                     if (isSnapshots) // this is for snaps initial info
                         message += Forge.getDeviceAdapter().getLatestChanges(GITHUB_COMMITS_ATOM, buildTimeStamp, snapsTimestamp);
                     //failed to grab latest github tag
-                    if (!isSnapshots && releaseTag.isEmpty()) {
+                    if (!GuiBase.isAndroid() && !isSnapshots && releaseTag.isEmpty()) {
                         if (!GuiBase.isAndroid())
                             run(runnable);
                     } else if (SOptionPane.showConfirmDialog(message, "New Version Available", "Update Now", "Update Later", true, true)) {
                         String installer = new GuiDownloadZipService("", "update", installerURL,
                                 Forge.getDeviceAdapter().getDownloadsDir(), null, Forge.getSplashScreen().getProgressBar()).download(filename);
-                        if (installer != null) {
-                            Forge.getDeviceAdapter().openFile(installer);
+                        if (installer != null && Forge.getDeviceAdapter().openFile(installer)) {
                             Forge.isMobileAdventureMode = Forge.advStartup;
                             Forge.exitAnimation(false);
                             return;
@@ -274,7 +273,7 @@ public class AssetsDownloader {
 
         //allow deletion on Android 10 or if using app-specific directory
         boolean allowDeletion = Forge.androidVersion < 30 || GuiBase.isUsingAppDirectory();
-        String assetURL = isSnapshots ? snapsURL + "assets.zip" : releaseURL + versionString + "/" + "assets.zip";
+        String assetURL = snapsURL + "assets.zip";
         new GuiDownloadZipService("", "resource files", assetURL,
                 ASSETS_DIR, RES_DIR, Forge.getSplashScreen().getProgressBar(), allowDeletion).downloadAndUnzip();
 
