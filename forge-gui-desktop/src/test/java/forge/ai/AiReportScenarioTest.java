@@ -23,12 +23,15 @@ import forge.ai.simulation.ActivationGuard;
 import forge.ai.simulation.DeckPlan;
 import forge.ai.simulation.OpeningHand;
 import forge.ai.simulation.SpellAbilityPicker;
+import forge.ai.ability.TapAi;
 import forge.game.Game;
 import forge.game.GameObject;
 import forge.game.card.Card;
 import forge.game.card.CardCollection;
 import forge.game.card.CounterEnumType;
 import forge.game.combat.Combat;
+import forge.game.mana.Mana;
+import forge.card.MagicColor;
 import forge.game.phase.PhaseType;
 import forge.game.player.Player;
 import forge.game.spellability.SpellAbility;
@@ -360,6 +363,27 @@ public class AiReportScenarioTest extends AITest {
                                    final String card, final Setup s) {
         return new Scenario(id, t + " (should NOT play " + card + ")", f, ph, aiTurn, s,
                 c -> c.plays(card) ? "AI played/activated " + card + ": " + c.plays() : null);
+    }
+
+    private static Scenario shockPayment(final String id, final String title, final String landName,
+                                          final boolean expected, final Setup setup) {
+        return new Scenario(id, title, Fid.EXACT, "MAIN1", true,
+                c -> { setup.run(c); c.hand(landName, c.ai); },
+                c -> {
+                    final Card land = c.ai.getCardsIn(ZoneType.Hand).stream().filter(k -> k.getName().equals(landName)).findFirst().orElseThrow();
+                    final SpellAbility replacement = land.getReplacementEffects().get(0).ensureAbility();
+                    replacement.setActivatingPlayer(c.ai);
+                    final int life = c.ai.getLife();
+                    final int floating = c.ai.getManaPool().totalMana();
+                    final List<Card> tapped = c.ai.getCardsIn(ZoneType.Battlefield).stream().filter(Card::isTapped).collect(Collectors.toList());
+                    final boolean pays = new TapAi().willPayUnlessCost(c.ai, replacement,
+                            AbilityUtils.calculateUnlessCost(replacement, "PayLife<2>", false), false, null);
+                    AssertJUnit.assertEquals("estimating payment must not spend life", life, c.ai.getLife());
+                    AssertJUnit.assertEquals("estimating payment must not spend floating mana", floating, c.ai.getManaPool().totalMana());
+                    AssertJUnit.assertEquals("estimating payment must not tap sources", tapped,
+                            c.ai.getCardsIn(ZoneType.Battlefield).stream().filter(Card::isTapped).collect(Collectors.toList()));
+                    return pays == expected ? null : "shockland payment was " + pays + ", expected " + expected;
+                });
     }
 
     /**
@@ -1392,6 +1416,43 @@ public class AiReportScenarioTest extends AITest {
                     if (PlayRelevance.isBait(c.ai, pump)) { return "the pump on the attacker in combat was taken for a bluff"; }
                     final Card idle = c.opp.getCardsIn(ZoneType.Battlefield).stream().filter(k -> k.getName().equals("Grizzly Bears")).findFirst().get();
                     return PlayRelevance.combatRelevant(idle) ? "a tapped creature that is not in the fight counted as part of it" : null;
+                }));
+        l.add(shockPayment("shock-rock-enables-spell", "Sol Ring contributes two mana toward Hill Giant", "Sacred Foundry", true,
+                c -> { c.bf("Mountain", c.ai); c.bf("Sol Ring", c.ai); c.hand("Hill Giant", c.ai); }));
+        l.add(shockPayment("shock-rock-already-payable", "Mana rocks already pay for Hill Giant without shocking", "Sacred Foundry", false,
+                c -> { c.bf("Mountain", 2, c.ai); c.bf("Sol Ring", c.ai); c.hand("Hill Giant", c.ai); }));
+        l.add(shockPayment("shock-rock-commander", "A green source plus Sol Ring enables Anikthea in Command", "Overgrown Tomb", true,
+                c -> {
+                    c.bf("Swamp", c.ai); c.bf("Plains", c.ai); c.bf("Sol Ring", c.ai);
+                    c.ai.addCommander(addCardToZone("Anikthea, Hand of Erebos", c.ai, ZoneType.Command));
+                    c.gy("Mirari's Wake", c.ai);
+                }));
+        l.add(shockPayment("shock-alternate-evoke", "The new third mana enables Mulldrifter's evoke cost, not its printed cost", "Sacred Foundry", true,
+                c -> { c.bf("Island", c.ai); c.bf("Plains", c.ai); c.hand("Mulldrifter", c.ai); }));
+        l.add(shockPayment("shock-filter-activation", "Plains pays for Azorius Signet and the new black source enables Strix", "Watery Grave", true,
+                c -> { c.bf("Plains", c.ai); c.bf("Azorius Signet", c.ai); c.hand("Baleful Strix", c.ai); }));
+        l.add(shockPayment("shock-single-color-batch", "Gilded Lotus cannot choose both blue and black in one activation", "Sacred Foundry", false,
+                c -> { c.bf("Gilded Lotus", c.ai); c.hand("Baleful Strix", c.ai); }));
+        l.add(shockPayment("shock-multicolor-production", "Bloom Tender contributes its three actual mana units", "Sacred Foundry", true,
+                c -> { c.bf("Bloom Tender", c.ai); c.bf("Baleful Strix", c.ai); c.hand("Hostage Taker", c.ai); c.bf("Hill Giant", c.opp); }));
+        l.add(shockPayment("shock-floating-mana", "Floating red plus the new land enables Hill Giant", "Sacred Foundry", true,
+                c -> {
+                    final Card mountain = c.bf("Mountain", c.ai); mountain.setTapped(true);
+                    c.ai.getManaPool().addMana(new Mana(MagicColor.RED, mountain, null, c.ai));
+                    c.bf("Plains", 2, c.ai); c.hand("Hill Giant", c.ai);
+                }));
+        l.add(new Scenario("shock-fetch-rock-commander", "Fetched Overgrown Tomb plus Sol Ring enables Anikthea", Fid.EXACT, M1, true,
+                c -> {
+                    c.bf("Swamp", c.ai); c.bf("Plains", c.ai); c.bf("Sol Ring", c.ai); c.bf("Windswept Heath", c.ai);
+                    c.lib("Overgrown Tomb", c.ai);
+                    c.ai.addCommander(addCardToZone("Anikthea, Hand of Erebos", c.ai, ZoneType.Command));
+                },
+                c -> {
+                    final SpellAbility fetch = c.playOf("Windswept Heath");
+                    if (fetch == null) { return "AI did not crack the fetchland"; }
+                    c.resolve(fetch);
+                    final Card tomb = c.ai.getCardsIn(ZoneType.Battlefield).stream().filter(k -> k.getName().equals("Overgrown Tomb")).findFirst().orElse(null);
+                    return tomb != null && !tomb.isTapped() ? null : "fetched shockland did not enter untapped";
                 }));
         l.add(new Scenario("shock-pays-for-curve", "Plenty of life and a four-drop that needs the untapped land: pay", Fid.APPROX, M1, true,
                 c -> { c.bf("Mountain", 3, c.ai); c.hand("Hill Giant", c.ai); c.hand("Sacred Foundry", c.ai); },
