@@ -7,7 +7,6 @@ import forge.deck.Deck;
 import forge.gamemodes.rogue.AetherUpgrade;
 import forge.gamemodes.rogue.CodexHelper;
 import forge.gamemodes.rogue.RogueConfig;
-import forge.gamemodes.rogue.RogueDeck;
 import forge.gamemodes.rogue.RogueMetaProgress;
 import forge.gamemodes.rogue.RoguePlanebound;
 import forge.gamemodes.rogue.RogueRun;
@@ -43,7 +42,6 @@ import forge.sound.SoundEffectType;
 import forge.sound.SoundSystem;
 import forge.util.CardTranslation;
 import forge.util.Localizer;
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -181,14 +179,14 @@ public class RogueCommanderAchievements extends AchievementCollection {
     }
 
     public void evaluateCommanderUnlockAchievements() {
-        List<RogueDeck> decks = RogueConfig.loadRogueDecks().stream()
-            .filter(deck -> !deck.isExperimental())
-            .collect(Collectors.collectingAndThen(Collectors.toList(), Collections::unmodifiableList));
-        if (decks.isEmpty()) {
+        List<RogueConfig.CommanderUnlock> unlocks = RogueConfig.getCommanderUnlocks().stream()
+            .filter(unlock -> !unlock.experimental())
+            .collect(Collectors.toList());
+        if (unlocks.isEmpty()) {
             return;
         }
-        for (RogueDeck deck : decks) {
-            if (!deck.isUnlocked()) {
+        for (RogueConfig.CommanderUnlock unlock : unlocks) {
+            if (!unlock.isUnlocked()) {
                 return;
             }
         }

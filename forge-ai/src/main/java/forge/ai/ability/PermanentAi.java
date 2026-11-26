@@ -36,7 +36,7 @@ public class PermanentAi extends SpellAbilityAi {
             return false;
         }
 
-        // Only temporary shockland evaluation copies bypass the ordinary postcombat preference.
+        // Temporary evaluation copies can inspect spells held for Main 2.
         if (sa.isSpell() && ph.is(PhaseType.MAIN1, ai) && "True".equals(sa.getParam("AIIgnoreMain2Preference"))) {
             return true;
         }
@@ -74,6 +74,20 @@ public class PermanentAi extends SpellAbilityAi {
     @Override
     protected AiAbilityDecision checkApiLogic(final Player ai, final SpellAbility sa) {
         final Card source = sa.getHostCard();
+
+        if ("SleeperAgent".equals(sa.getParam("AILogic"))) {
+            final AiAbilityDecision lend = ControlGainAi.lendToOpponent(ai, source);
+            if (!lend.willingToPlay()) {
+                return lend;
+            }
+        }
+
+        if ("SleeperAgent".equals(source.getSVar("AICastLogic"))) {
+            final AiAbilityDecision lend = ControlGainAi.lendToOpponent(ai, source);
+            if (!lend.willingToPlay()) {
+                return lend;
+            }
+        }
 
         // check on legendary
         if (!source.ignoreLegendRule() && ai.isCardInPlay(source.getName())) {

@@ -2,6 +2,7 @@ package forge.screens.home.rogue;
 
 import forge.gamemodes.rogue.effect.ChoiceRerollContext;
 import forge.gamemodes.rogue.effect.NPCEffect;
+import forge.gamemodes.rogue.flow.RogueDecisions.Pick;
 import forge.gamemodes.rogue.npc.NPCContext;
 import forge.gamemodes.rogue.npc.NPCContext.NPCChoice;
 import forge.sound.SoundEffectType;
@@ -140,7 +141,7 @@ public class NPCDialog {
     }
 
     /** Show dialog and return the selected action. */
-    public DialogResult show() {
+    public Pick<NPCEffect> show() {
         selectedBoon = null;
         SoundSystem.instance.play(soundEffect, soundEffect.isSynced());
         currentChunkIndex = 0;
@@ -156,7 +157,7 @@ public class NPCDialog {
         typewriterText.stop();
         hidePreview();
         optionPane.dispose();
-        return new DialogResult(result == REROLL_OPTION && hasRerolls, selectedBoon);
+        return new Pick<>(result == REROLL_OPTION && hasRerolls, selectedBoon);
     }
 
     private void advanceChunkOrClose() {
@@ -194,8 +195,6 @@ public class NPCDialog {
             previewPopup.hide();
         }
     }
-
-    public record DialogResult(boolean rerollRequested, NPCEffect choice) {}
 
     private static class MainPanel extends SkinnedPanel {
         private MainPanel() {

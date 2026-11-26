@@ -8,6 +8,10 @@ import forge.ai.AITest;
 import forge.ai.ComputerUtilMana;
 import forge.ai.LobbyPlayerAi;
 import forge.game.Game;
+import forge.game.GameRules;
+import forge.game.GameStage;
+import forge.game.GameType;
+import forge.game.Match;
 import forge.game.ability.AbilityFactory;
 import forge.game.card.Card;
 import forge.game.phase.PhaseType;
@@ -93,6 +97,25 @@ public class RollPlanarDiceAiTest extends AITest {
     }
 
     @Test
+    public void rogueCommanderHintsOverrideOnlyInRogueCommander() {
+        for (final GameType gameType : new GameType[] {GameType.Constructed, GameType.RogueCommander}) {
+            final GameRules rules = new GameRules(gameType);
+            final Match match = new Match(rules, initAndCreateGame().getMatch().getPlayers(), "Test");
+            game = match.createGame();
+            ai = game.getPlayers().get(1);
+            ((LobbyPlayerAi) ai.getLobbyPlayer()).setAiProfile("Reckless");
+            game.setAge(GameStage.Play);
+            game.getPhaseHandler().devModeSet(PhaseType.MAIN2, ai);
+            game.getPhaseHandler().onStackResolved();
+
+            final Card plane = plane("Mode$ Never | MinTurn$ 0");
+            plane.setSVar("AIRollPlanarDieParamsRogueCommander", "Mode$ Always | MinTurn$ 0");
+            AssertJUnit.assertEquals("Roll hints for " + gameType, gameType == GameType.RogueCommander,
+                    planarAi.willRollOnPlane(ai, roll(0), plane));
+        }
+    }
+
+    @Test
     public void modeAlwaysWaitsForMain2UnlessRollInMain1() {
         start("MAIN1");
         AssertJUnit.assertFalse(planarAi.willRollOnPlane(ai, roll(0), plane("Mode$ Always | MinTurn$ 0")));
@@ -164,6 +187,21 @@ public class RollPlanarDiceAiTest extends AITest {
         addCardToZone("Plains", ai, ZoneType.Battlefield);
         addCardToZone("Grizzly Bears", ai, ZoneType.Hand);
         AssertJUnit.assertFalse(planarAi.canSpendSurplusMana(ai, roll(2)));
+        game.getPhaseHandler().incPlanarDiceSpecialActionThisTurn();
+        game.getPhaseHandler().incPlanarDiceSpecialActionThisTurn();
+        AssertJUnit.assertFalse(planarAi.willRollOnPlane(ai, roll(2),
+                plane("Mode$ Always | MinTurn$ 0 | RollInMain1$ True | MaxRollsPerTurn$ 9")));
+
+        start("MAIN2");
+        addCardToZone("Island", ai, ZoneType.Battlefield);
+        addCardToZone("Island", ai, ZoneType.Battlefield);
+        addCardToZone("Counterspell", ai, ZoneType.Hand);
+        final Card plane = plane("Mode$ Always | MinTurn$ 0 | MaxRollsPerTurn$ 9");
+        AssertJUnit.assertTrue(planarAi.willRollOnPlane(ai, roll(0), plane));
+        game.getPhaseHandler().incPlanarDiceSpecialActionThisTurn();
+        AssertJUnit.assertFalse(planarAi.willRollOnPlane(ai, roll(1), plane));
+        addCardToZone("Island", ai, ZoneType.Battlefield);
+        AssertJUnit.assertTrue(planarAi.willRollOnPlane(ai, roll(1), plane));
     }
 
     @Test

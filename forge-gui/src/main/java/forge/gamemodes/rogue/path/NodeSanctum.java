@@ -45,6 +45,11 @@ public class NodeSanctum extends RoguePathNode {
     }
 
     @Override
+    public NodeType getType() {
+        return NodeType.SANCTUM;
+    }
+
+    @Override
     public String toString() {
         return "Sanctum (Heal " + healAmount + ", Cook random Food, or gain 3 Removal Credits)";
     }

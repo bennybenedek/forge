@@ -466,6 +466,7 @@ public class CountersPutEffect extends SpellAbilityEffect {
                     if (sa.usesTargeting() && sa.isDividedAsYouChoose()) {
                         Integer dividedAmount = sa.getDividedValue(gameCard);
                         if (dividedAmount == null) {
+                            // Only apply counters explicitly allocated to this target.
                             continue;
                         }
                         counterAmount = dividedAmount;

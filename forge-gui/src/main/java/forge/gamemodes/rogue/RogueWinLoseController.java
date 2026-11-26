@@ -33,6 +33,7 @@ public class RogueWinLoseController {
 
     private final GameView lastGame;
     private final IWinLoseView<? extends IButton> view;
+    private final CardRewardHelper.RewardDialog rewardDialog;
     private final boolean wonMatch;
     private final RogueRun currentRun;
 
@@ -40,9 +41,11 @@ public class RogueWinLoseController {
     private final Localizer localizer = Localizer.getInstance();
     private List<CarryCard> lostCarryCards = ImmutableList.of();
 
-    public RogueWinLoseController(final GameView game0, final IWinLoseView<? extends IButton> view0, final RogueRun currentRun0) {
+    public RogueWinLoseController(final GameView game0, final IWinLoseView<? extends IButton> view0,
+                                 final RogueRun currentRun0, final CardRewardHelper.RewardDialog rewardDialog0) {
         this.lastGame = game0;
         this.view = view0;
+        this.rewardDialog = rewardDialog0;
         this.currentRun = currentRun0;
 
         // Determine if player won using GameOutcome (more reliable than isMatchWonBy)
@@ -154,14 +157,14 @@ public class RogueWinLoseController {
             return;
         }
 
+        // Lost carry cards come before the card choice, so a view can show them with it
+        showLostCarryCards();
+
         // Award card rewards (only for non-final nodes, skip if distortion)
         if (planeboundNode != null && !rewardCtx.skipRewards) {
             boolean isElite = planeboundNode.getPlaneboundType() == RoguePlaneboundType.ELITE;
             awardCardRewards(isElite, goldReward, echoReward, rewardCtx);
         }
-
-        // Show lost carry card message
-        showLostCarryCards();
 
         // Track meta progress for match
         recordMatchStats(progress, true);
@@ -228,26 +231,27 @@ public class RogueWinLoseController {
     }
 
     private void awardCardRewards(boolean isElite, int goldReward, int echoReward, MatchRewardContext rewardCtx) {
-        List<PaperCard> chosenCards = CardRewardHelper.runReward(currentRun,
-                view::showCardRewardDialog, false, rewardCtx, null);
-
-        // If Elite opponent, show second reward screen with mythic cards
-        if (isElite) {
-            List<PaperCard> chosenMythics = CardRewardHelper.runReward(currentRun,
-                    view::showCardRewardDialog, true, rewardCtx, null);
-            chosenCards.addAll(chosenMythics);
-        }
-
-        if (!chosenCards.isEmpty()) {
-            view.showCards(localizer.getMessage("lblRogueCardsAdded"), chosenCards);
-        }
-
+        // The gold and Echoes come before the card choice, so a view can show them with it
         if (goldReward > 0) {
             view.showMessage(localizer.getMessage("lblRogueGoldWon", goldReward), localizer.getMessage("lblRogueGoldReward"), FSkinProp.ICO_QUEST_COIN);
         }
 
         if (echoReward > 0) {
             view.showMessage(localizer.getMessage("lblRogueEchoesWon", echoReward), localizer.getMessage("lblRogueEchoReward"), FSkinProp.ICO_QUEST_GOLD);
+        }
+
+        List<PaperCard> chosenCards = new ArrayList<>(CardRewardHelper.runReward(currentRun,
+                rewardDialog, false, rewardCtx, null));
+
+        // If Elite opponent, show second reward screen with mythic cards
+        if (isElite) {
+            List<PaperCard> chosenMythics = CardRewardHelper.runReward(currentRun,
+                    rewardDialog, true, rewardCtx, null);
+            chosenCards.addAll(chosenMythics);
+        }
+
+        if (!chosenCards.isEmpty()) {
+            view.showCards(localizer.getMessage("lblRogueCardsAdded"), chosenCards);
         }
     }
 
@@ -403,10 +407,5 @@ public class RogueWinLoseController {
                 .anyMatch(c -> c.getName().equals(card.cardName()))
             || human.getCardsIn(ZoneType.Stack).stream()
                 .anyMatch(c -> c.getName().equals(card.cardName()));
-    }
-
-    public void actionOnQuit() {
-        // Any cleanup needed before quitting
-        // Currently handled by RogueWinLose.actionOnQuit()
     }
 }
