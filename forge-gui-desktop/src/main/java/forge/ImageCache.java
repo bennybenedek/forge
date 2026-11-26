@@ -583,8 +583,12 @@ public class ImageCache {
         if (1 == bestFitScale) {
             result = original;
         } else {
-            int destWidth  = Math.max(3, (int)(original.getWidth()  * bestFitScale));
-            int destHeight = Math.max(3, (int)(original.getHeight() * bestFitScale));
+            int destWidth  = (int)(original.getWidth()  * bestFitScale);
+            int destHeight = (int)(original.getHeight() * bestFitScale);
+            if (!isSupportedImageSize(destWidth, destHeight)) {
+                // keeping the aspect ratio can shrink one side below what the resampler accepts
+                return null;
+            }
 
             ResampleOp resampler = new ResampleOp(destWidth, destHeight);
             result = resampler.filter(original, null);
