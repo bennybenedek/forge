@@ -100,10 +100,15 @@ jobs:
           ROGUE_ANDROID_KEY_PASSWORD: ${{ secrets.ROGUE_ANDROID_KEY_PASSWORD }}
 
       - name: Validate Android release
+        id: android_release
         if: github.ref == 'refs/heads/rogueCommander'
         run: |
           set -euo pipefail
           mkdir -p android-artifacts
+          cp forge-gui-android/target/classes/assets/version.txt android-artifacts/android-version.txt
+          APK_VERSION=$(python3 -c 'from pathlib import Path; print(Path("android-artifacts/android-version.txt").read_text().strip())')
+          [[ "$APK_VERSION" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ ]] || { echo '::error::Invalid Android version'; exit 1; }
+          APK_NAME="rogue-commander-android-${APK_VERSION}.apk"
           MATCHES=0
           for apk in forge-gui-android/target/*.apk; do
             if ! CERT_INFO=$(apksigner verify --print-certs "$apk" 2>/dev/null); then
@@ -120,12 +125,11 @@ jobs:
               echo '::error::Refusing to publish a debuggable APK'
               exit 1
             fi
-            cp "$apk" android-artifacts/rogue-commander-android.apk
+            cp "$apk" "android-artifacts/$APK_NAME"
             MATCHES=$((MATCHES + 1))
           done
           [[ "$MATCHES" == 1 ]] || { echo '::error::Expected exactly one APK signed with the Rogue Commander key'; exit 1; }
           cp forge-gui-android/target/assets.zip android-artifacts/assets.zip
-          cp forge-gui-android/target/classes/assets/version.txt android-artifacts/android-version.txt
           cp forge-gui-android/target/classes/assets/build.txt android-artifacts/android-build.txt
           python3 - <<'PY'
           from datetime import datetime
@@ -134,9 +138,10 @@ jobs:
           artifacts = Path('android-artifacts')
           version = (artifacts / 'android-version.txt').read_text().strip()
           build = (artifacts / 'android-build.txt').read_text().strip()
-          assert version, 'Missing Android version'
+          expected_apk = artifacts / f'rogue-commander-android-{version}.apk'
+          assert list(artifacts.glob('*.apk')) == [expected_apk], f'Expected exactly one APK named {expected_apk.name}'
           datetime.strptime(build, '%Y-%m-%d %H:%M:%S')
-          with ZipFile(artifacts / 'rogue-commander-android.apk') as apk:
+          with ZipFile(expected_apk) as apk:
               assert apk.read('assets/version.txt').decode().strip() == version
               assert apk.read('assets/build.txt').decode().strip() == build
           with ZipFile(artifacts / 'assets.zip') as resources:
@@ -147,6 +152,7 @@ jobs:
                   assert required in resources.namelist(), f'Missing resource: {required}'
               assert any(name.startswith('res/music/match/') and name.endswith('.mp3') for name in resources.namelist())
           PY
+          printf 'apk=%s\n' "$APK_NAME" >> "$GITHUB_OUTPUT"
 
       - name: Remove temporary Android signing key
         if: always() && github.ref == 'refs/heads/rogueCommander'
@@ -190,6 +196,8 @@ jobs:
 
       - name: Prepare Rogue Commander release assets
         if: github.ref == 'refs/heads/rogueCommander'
+        env:
+          ANDROID_APK: ${{ steps.android_release.outputs.apk }}
         run: |
           mkdir release-artifacts
           cp artifacts/*.jar release-artifacts/ || true
@@ -197,7 +205,7 @@ jobs:
           cp artifacts/build.txt release-artifacts/ || true
           cp artifacts/version.txt release-artifacts/ || true
           cp android-artifacts/* release-artifacts/
-          for required in rogue-commander-android.apk assets.zip android-version.txt android-build.txt build.txt version.txt; do
+          for required in "$ANDROID_APK" assets.zip android-version.txt android-build.txt build.txt version.txt; do
             test -s "release-artifacts/$required"
           done
           compgen -G 'release-artifacts/forge-installer-*.jar' > /dev/null
@@ -252,7 +260,7 @@ jobs:
             After installation, launch `forge.exe` from the install folder.
 
             **Android:**
-            Download `rogue-commander-android.apk` and allow your browser/file manager to install it.
+            Download the versioned APK (`${{ steps.android_release.outputs.apk }}`) and allow your browser/file manager to install it.
             On first launch, allow Rogue Commander to download its matching resources from this release.
             Keep the app installed when upgrading so your runs and progression are preserved.
             Android 8 is the minimum supported version; Android 11 or newer is recommended.

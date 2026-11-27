@@ -77,7 +77,10 @@ public class AssetsDownloader {
                 String filename = "";
                 String installerURL = "";
                 if (GuiBase.isAndroid()) {
-                    filename = "rogue-commander-android.apk";
+                    if (!version.matches("[A-Za-z0-9][A-Za-z0-9._-]*")) {
+                        throw new IOException("Invalid Android update version: " + version);
+                    }
+                    filename = "rogue-commander-android-" + version + ".apk";
                     installerURL = snapsURL + filename;
                 } else {
                     //current release on github is tar.bz2, update this to jar installer in the future...
@@ -124,21 +127,24 @@ public class AssetsDownloader {
                         if (!GuiBase.isAndroid())
                             run(runnable);
                     } else if (SOptionPane.showConfirmDialog(message, "New Version Available", "Update Now", "Update Later", true, true)) {
+                        boolean android = GuiBase.isAndroid();
+                        String downloadDir = android ? Gdx.files.local("updates").file().getAbsolutePath() + "/"
+                                : Forge.getDeviceAdapter().getDownloadsDir();
                         String installer = new GuiDownloadZipService("", "update", installerURL,
-                                Forge.getDeviceAdapter().getDownloadsDir(), null, Forge.getSplashScreen().getProgressBar()).download(filename);
+                                downloadDir, null, Forge.getSplashScreen().getProgressBar()).download(android ? "update.apk" : filename);
                         if (installer != null && Forge.getDeviceAdapter().openFile(installer)) {
                             Forge.isMobileAdventureMode = Forge.advStartup;
                             Forge.exitAnimation(false);
                             return;
                         }
-                        switch (SOptionPane.showOptionDialog("Could not download update. " +
-                                "Press OK to proceed without update.", "Update Failed", null, ImmutableList.of("Ok"))) {
-                            default:
-                                if (!GuiBase.isAndroid()) {
-                                    run(runnable);
-                                    return;
-                                }
-                                break;
+                        String failure = android && installer != null
+                                ? "Could not open the Android package installer."
+                                : "Could not download update.";
+                        SOptionPane.showOptionDialog(failure + " Press OK to proceed without update.",
+                                "Update Failed", null, ImmutableList.of("Ok"));
+                        if (!android) {
+                            run(runnable);
+                            return;
                         }
                     }
                 } else {

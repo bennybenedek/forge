@@ -11,7 +11,7 @@ The GitHub release tag remains `rogue-commander-latest`. Android uses:
 
 | File | Purpose |
 | --- | --- |
-| `rogue-commander-android.apk` | Signed Android application |
+| `rogue-commander-android-<version>.apk` | Signed Android application, named using `android-version.txt` |
 | `assets.zip` | Matching resources, including Rogue scripts, portraits, sound and music |
 | `android-version.txt` | Android display version |
 | `android-build.txt` | Android build timestamp |
@@ -123,7 +123,7 @@ the changed startup/navigation so normal desktop saves are not modified.
 
 ## Player Installation and Updates
 
-1. Download `rogue-commander-android.apk` from this fork's GitHub release.
+1. Download the versioned `rogue-commander-android-<version>.apk` from this fork's GitHub release.
 2. Allow the browser or file manager to install unknown apps, then install the APK.
 3. Launch Rogue Commander and grant the storage access requested by the launcher.
 4. Download the matching resources when prompted. The app restarts after extraction.
